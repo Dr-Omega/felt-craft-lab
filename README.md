@@ -7,11 +7,10 @@
 - 组织仓库：`Dr-Omega/felt-craft-lab`
 - 组长工作分支：`feature/material-ai-services`
 
-## 第 2 步：ASR（进行中）
+## 第 3 步：统一格式与统计（进行中）
 
-- Provider：`qwen_cloud_http`（已接）+ `mock`（已接）+ realtime/local（占位）
-- 浏览器冒烟测试：http://127.0.0.1:8788/api/asr/smoke-test
-- Mock：http://127.0.0.1:8788/api/asr/mock
+- 契约说明：http://127.0.0.1:8788/api/asr/contract
+- 延迟统计：http://127.0.0.1:8788/api/asr/metrics
 
 ## 本地启动（验收）
 

@@ -2,7 +2,8 @@
 统一 AI 服务后端（安全代理）
 
 第 1 步：健康检查
-第 2 步：Qwen3-ASR-Flash 云端 HTTP 识别 + Provider 抽象 + Mock
+第 2 步：Qwen3-ASR-Flash 云端 HTTP
+第 3 步：统一输出格式 + 错误码 + P50/P95 统计
 """
 
 from __future__ import annotations
@@ -14,7 +15,10 @@ from dotenv import load_dotenv
 from flask import Flask, jsonify, request
 
 from providers.asr.qwen_cloud_http import SAMPLE_AUDIO_URL
+from services.asr_errors import list_error_codes
+from services.asr_metrics import summarize_asr_metrics
 from services.asr_service import AsrService
+from services.asr_types import contract_doc
 
 BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(BASE_DIR / ".env")
@@ -44,7 +48,7 @@ def health():
         {
             "ok": True,
             "service": "felt-craft-lab-ai-proxy",
-            "version": "step2",
+            "version": "step3",
             "env": os.getenv("APP_ENV", "development"),
             "keys": {
                 "qwen_asr": _mask(_asr_key()),
@@ -63,7 +67,25 @@ def health():
 
 @app.get("/api/ready")
 def ready():
-    return jsonify({"ready": True, "step": 2, "asr": True})
+    return jsonify({"ready": True, "step": 3, "asr": True})
+
+
+@app.get("/api/asr/contract")
+def asr_contract():
+    """给 SXY / XR 看的统一字段说明。"""
+    return jsonify(
+        {
+            "ok": True,
+            "contract": contract_doc(),
+            "errorCodes": list_error_codes(),
+        }
+    )
+
+
+@app.get("/api/asr/metrics")
+def asr_metrics():
+    """延迟 P50/P95、失败率、空文本率（用于验收）。"""
+    return jsonify({"ok": True, "metrics": summarize_asr_metrics()})
 
 
 @app.post("/api/asr/transcribe")
@@ -86,11 +108,13 @@ def asr_transcribe():
             return jsonify(
                 {
                     "ok": False,
+                    "provider": "qwen_cloud_http",
                     "error": {
                         "code": "ASR_MISSING_AUDIO",
                         "message": "请用 multipart 字段 file 上传音频",
                         "retryable": False,
                     },
+                    "latencyMs": 0,
                 }
             ), 400
         audio_bytes = f.read()
@@ -114,11 +138,13 @@ def asr_transcribe():
         return jsonify(
             {
                 "ok": False,
+                "provider": "qwen_cloud_http",
                 "error": {
                     "code": "ASR_MISSING_AUDIO",
                     "message": "请提供 audioUrl，或改用 multipart 上传 file",
                     "retryable": False,
                 },
+                "latencyMs": 0,
             }
         ), 400
 
@@ -134,10 +160,7 @@ def asr_transcribe():
 
 @app.get("/api/asr/smoke-test")
 def asr_smoke_test():
-    """
-    一键冒烟测试：用官方示例音频调用 qwen3-asr-flash。
-    浏览器直接打开即可，方便验收第 2 步。
-    """
+    """一键冒烟测试：用官方示例音频调用 qwen3-asr-flash。"""
     result = asr_service.transcribe(audio_url=SAMPLE_AUDIO_URL, session_id="smoke-test")
     status = 200 if result.get("ok") else 502
     return jsonify(

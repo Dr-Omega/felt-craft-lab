@@ -60,11 +60,14 @@ class AsrService:
         ok = bool(result.get("ok"))
         body = result.get("result") or {}
         error = result.get("error") or {}
+        latency = body.get("latencyMs")
+        if latency is None:
+            latency = result.get("latencyMs")
         record_asr_event(
             {
                 "ok": ok,
                 "provider": body.get("provider") or result.get("provider"),
-                "latencyMs": body.get("latencyMs"),
+                "latencyMs": latency,
                 "empty": body.get("empty"),
                 "errorCode": error.get("code"),
                 "sessionId": session_id,

@@ -1,4 +1,4 @@
-"""统一 ASR 返回结构（对应规范 AsrResult + 错误信息）。"""
+"""统一 ASR 返回结构（对应规范 AsrResult + SharedError）。"""
 
 from __future__ import annotations
 
@@ -13,7 +13,6 @@ class AsrResult(TypedDict, total=False):
     durationMs: int
     confidence: float
     requestId: str
-    # 扩展：便于验收延迟与排错（不影响 SXY 主字段）
     latencyMs: int
     empty: bool
 
@@ -23,6 +22,16 @@ class SharedError(TypedDict, total=False):
     message: str
     retryable: bool
     details: dict[str, Any]
+
+
+# SXY 可依赖的成功态固定字段（缺一不可）
+ASR_RESULT_REQUIRED_FIELDS = (
+    "transcript",
+    "provider",
+    "durationMs",
+    "latencyMs",
+    "empty",
+)
 
 
 def ok_result(
@@ -35,21 +44,17 @@ def ok_result(
     confidence: Optional[float] = None,
 ) -> dict[str, Any]:
     text = (transcript or "").strip()
-    payload: dict[str, Any] = {
-        "ok": True,
-        "result": {
-            "transcript": text,
-            "provider": provider,
-            "durationMs": int(duration_ms),
-            "latencyMs": int(latency_ms),
-            "empty": text == "",
-        },
+    result: dict[str, Any] = {
+        "transcript": text,
+        "provider": provider,
+        "durationMs": int(duration_ms or 0),
+        "latencyMs": int(latency_ms or 0),
+        "empty": text == "",
+        "requestId": request_id or "",
     }
-    if request_id:
-        payload["result"]["requestId"] = request_id
     if confidence is not None:
-        payload["result"]["confidence"] = confidence
-    return payload
+        result["confidence"] = confidence
+    return {"ok": True, "result": result}
 
 
 def err_result(
@@ -59,6 +64,7 @@ def err_result(
     retryable: bool = True,
     provider: AsrProviderName | str = "qwen_cloud_http",
     details: Optional[dict[str, Any]] = None,
+    latency_ms: int = 0,
 ) -> dict[str, Any]:
     error: SharedError = {
         "code": code,
@@ -71,4 +77,36 @@ def err_result(
         "ok": False,
         "provider": provider,
         "error": error,
+        # 失败时也尽量带回耗时，方便统计
+        "latencyMs": int(latency_ms or 0),
+    }
+
+
+def contract_doc() -> dict[str, Any]:
+    return {
+        "version": "step3",
+        "successShape": {
+            "ok": True,
+            "result": {
+                "transcript": "string 识别文本",
+                "provider": "qwen_cloud_http | mock | ...",
+                "durationMs": "number 音频时长（毫秒，能取到则填）",
+                "latencyMs": "number 请求耗时（毫秒）",
+                "empty": "boolean 是否空文本（SXY 不得把 empty=true 交给 DeepSeek）",
+                "requestId": "string 可选",
+                "confidence": "number 可选",
+            },
+        },
+        "errorShape": {
+            "ok": False,
+            "provider": "string",
+            "error": {
+                "code": "string",
+                "message": "string",
+                "retryable": "boolean",
+                "details": "object 可选",
+            },
+            "latencyMs": "number",
+        },
+        "requiredResultFields": list(ASR_RESULT_REQUIRED_FIELDS),
     }
