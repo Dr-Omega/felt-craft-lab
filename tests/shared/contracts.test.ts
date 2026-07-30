@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
+  isSafeResourceRef,
+  isSharedError,
   toSharedError,
   validateAssetAccessState,
   validateAssetRecord,
@@ -8,10 +10,13 @@ import {
   validateProjectRecord,
   validateQaResult,
   validateSceneDocument,
+  validateSceneDocumentAgainstSnapshot,
   validateSceneObject,
   validateSharedError,
   validateTtsResult,
-  type SceneDocument
+  type ResourceRefValidationPolicy,
+  type SceneDocument,
+  type SceneSnapshotValidationContext
 } from '../../src/shared/contracts'
 import {
   cloneFixture,
@@ -24,6 +29,7 @@ import {
   validScene,
   validSceneObject,
   validSharedError,
+  validSnapshotContext,
   validTtsResult
 } from './contracts.fixtures'
 
@@ -33,6 +39,7 @@ describe('shared material-library contracts', () => {
     expect(validateAssetAccessState(validAccess).ok).toBe(true)
     expect(validateSceneObject(validSceneObject).ok).toBe(true)
     expect(validateSceneDocument(validScene).ok).toBe(true)
+    expect(validateSceneDocumentAgainstSnapshot(validScene, validSnapshotContext).ok).toBe(true)
     expect(validateDraftRecord(validDraft).ok).toBe(true)
     expect(validateProjectRecord(validProject).ok).toBe(true)
     expect(validateAsrResult(validAsrResult).ok).toBe(true)
@@ -77,12 +84,25 @@ describe('shared material-library contracts', () => {
     expect(validateSceneObject({ ...validSceneObject, scaleY: 0.7 }).ok).toBe(false)
   })
 
-  it('rejects unstable, absolute, and unsafe remote preview references', () => {
+  it('uses mock by default and accepts a formal protocol only when injected by the resolver', () => {
+    const resolverPolicy: ResourceRefValidationPolicy = { allowedProtocols: ['felt-resource:'] }
+    expect(isSafeResourceRef('mock://assets/lantern.png')).toBe(true)
+    expect(isSafeResourceRef('felt-resource://previews/saved.png')).toBe(false)
+    expect(isSafeResourceRef('felt-resource://previews/saved.png', resolverPolicy)).toBe(true)
+    expect(validateProjectRecord({ ...validProject, previewUrl: 'felt-resource://previews/saved.png' }, resolverPolicy).ok).toBe(true)
+  })
+
+  it('rejects unstable, unsafe, credential-bearing, fragmented, and traversal resource references', () => {
     for (const previewUrl of [
       'blob:https://app.example/preview',
       'C:\\Users\\child\\preview.png',
       'https://example.com/preview.png',
-      'app://previews/saved.png?token=secret'
+      'mock://previews/saved.png?rawToken=secret',
+      'mock://user:password@previews/saved.png',
+      'mock://previews/saved.png#fragment',
+      'mock://previews/../saved.png',
+      'mock://previews/%2e%2e/saved.png',
+      'mock://previews/%252e%252e/saved.png'
     ]) {
       expect(validateProjectRecord({ ...validProject, previewUrl }).ok).toBe(false)
     }
@@ -92,16 +112,66 @@ describe('shared material-library contracts', () => {
     const missingPreview = cloneFixture(validProject) as unknown as Record<string, unknown>
     delete missingPreview.previewUrl
     expect(validateProjectRecord(missingPreview).ok).toBe(false)
-    expect(validateProjectRecord({ ...validProject, projectName: '涓嶅悓鐨勫悕瀛? }).ok).toBe(false)
+    expect(validateProjectRecord({ ...validProject, projectName: '不同的名字' }).ok).toBe(false)
+  })
+
+  it('rebuilds a clean SharedError and drops unknown provider fields', () => {
+    const providerError = {
+      ...validSharedError,
+      rawToken: 'do-not-leak',
+      rawHeaders: 'authorization: Bearer do-not-leak'
+    }
+    expect(isSharedError(providerError)).toBe(false)
+    expect(toSharedError(providerError)).toEqual(validSharedError)
+    expect(toSharedError(providerError)).not.toHaveProperty('rawToken')
+    expect(toSharedError(providerError)).not.toHaveProperty('rawHeaders')
+    expect(validateSharedError(providerError).ok).toBe(false)
   })
 
   it('rejects unknown frozen error codes and does not leak an unknown exception', () => {
     expect(validateSharedError({ ...validSharedError, code: 'SOMETHING_NEW' }).ok).toBe(false)
     expect(toSharedError(new Error('provider key=do-not-leak'))).toEqual({
       code: 'UNKNOWN',
-      message: '璇锋眰鏆傛椂鏃犳硶瀹屾垚锛岃绋嶅悗閲嶈瘯銆?,
+      message: '请求暂时无法完成，请稍后重试。',
       retryable: true
     })
+  })
+
+  it('returns a structured failure instead of throwing for calendar-invalid UTC timestamps', () => {
+    const malformedScene = { ...validScene, createdAt: '2026-99-99T99:99:99.999Z' }
+    expect(() => validateSceneDocument(malformedScene)).not.toThrow()
+    expect(validateSceneDocument(malformedScene).ok).toBe(false)
+  })
+
+  it('checks snapshot existence, asset membership, and background/sticker types without changing SceneDocument', () => {
+    expect(validateSceneDocumentAgainstSnapshot(validScene, { snapshots: {} }).ok).toBe(false)
+
+    const wrongBackgroundType: SceneSnapshotValidationContext = {
+      snapshots: {
+        [validScene.assetSnapshotId]: [
+          { assetId: 'background_moon_001', type: 'sticker' },
+          { assetId: validAsset.assetId, type: 'sticker' }
+        ]
+      }
+    }
+    expect(validateSceneDocumentAgainstSnapshot(validScene, wrongBackgroundType).ok).toBe(false)
+
+    const wrongStickerType: SceneSnapshotValidationContext = {
+      snapshots: {
+        [validScene.assetSnapshotId]: [
+          { assetId: 'background_moon_001', type: 'background' },
+          { assetId: validAsset.assetId, type: 'background' }
+        ]
+      }
+    }
+    expect(validateSceneDocumentAgainstSnapshot(validScene, wrongStickerType).ok).toBe(false)
+
+    const foreignSticker: SceneSnapshotValidationContext = {
+      snapshots: {
+        [validScene.assetSnapshotId]: [{ assetId: 'background_moon_001', type: 'background' }]
+      }
+    }
+    expect(validateSceneDocumentAgainstSnapshot(validScene, foreignSticker).ok).toBe(false)
   })
 
   it('keeps ASR end-to-end duration distinct from optional recording duration', () => {
