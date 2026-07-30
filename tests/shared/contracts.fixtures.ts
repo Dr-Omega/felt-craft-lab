@@ -7,6 +7,7 @@ import type {
   QaResult,
   SceneDocument,
   SceneObject,
+  SceneSnapshotValidationContext,
   SharedError,
   TtsResult
 } from '../../src/shared/contracts'
@@ -18,10 +19,10 @@ export const validAsset: AssetRecord = {
   type: 'sticker',
   themeId: 'theme_mid_autumn',
   categoryIds: ['festival_object', 'decoration'],
-  nameZh: '鐏',
+  nameZh: '灯笼',
   nameEn: 'Lantern',
-  introZh: '鐏鏃㈠彲浠ョ収鏄庯紝涔熷父琚敤浣滆妭鏃ヨ楗般€?,
-  keywords: ['鐏', '鑺傛棩', '瑁呴グ'],
+  introZh: '灯笼既可以照明，也常被用作节日装饰。',
+  keywords: ['灯笼', '节日', '装饰'],
   imageUrl: 'mock://assets/sticker_lantern_001.png',
   thumbnailUrl: 'mock://thumbnails/sticker_lantern_001.png',
   preSplitDataUrl: 'mock://pre-split/sticker_lantern_001.json',
@@ -58,7 +59,7 @@ export const validScene: SceneDocument = {
   schemaVersion: 1,
   sceneId: '7a3435d2-2c2f-4df1-a38c-5b7e32ce91a8',
   userId: validAccess.userId,
-  workName: '鎴戠殑涓鏈堝',
+  workName: '我的中秋月夜',
   themeId: validAsset.themeId,
   assetSnapshotId: 'snapshot_demo_20260730_001',
   canvas: { width: 1200, height: 800, backgroundColor: '#FFF8E7' },
@@ -66,6 +67,15 @@ export const validScene: SceneDocument = {
   objects: [validSceneObject],
   createdAt: '2026-07-30T05:10:00.000Z',
   updatedAt: fixtureTime
+}
+
+export const validSnapshotContext: SceneSnapshotValidationContext = {
+  snapshots: {
+    snapshot_demo_20260730_001: [
+      { assetId: 'background_moon_001', type: 'background' },
+      { assetId: validAsset.assetId, type: 'sticker' }
+    ]
+  }
 }
 
 export const validDraft: DraftRecord = {
@@ -86,7 +96,7 @@ export const validProject: ProjectRecord = {
 }
 
 export const validAsrResult: AsrResult = {
-  transcript: '鐏涓轰粈涔堟槸绾㈣壊鐨?,
+  transcript: '灯笼为什么是红色的',
   provider: 'qwen_cloud_http',
   durationMs: 1260,
   audioDurationMs: 3100,
@@ -95,7 +105,7 @@ export const validAsrResult: AsrResult = {
 }
 
 export const validQaResult: QaResult = {
-  answer: '绾㈣壊鍦ㄥ緢澶氫腑鍥借妭鏃ヤ腑浠ｈ〃鍠滃簡鍜岀绂忋€?,
+  answer: '红色在很多中国节日中代表喜庆和祝福。',
   requestId: 'qa_req_demo_001',
   safetyAction: 'allow'
 }
@@ -108,7 +118,7 @@ export const validTtsResult: TtsResult = {
 
 export const validSharedError: SharedError = {
   code: 'ASSET_NOT_FOUND',
-  message: '绱犳潗鏆傛椂涓嶅彲鐢ㄣ€?,
+  message: '素材暂时不可用。',
   retryable: false,
   details: { assetId: validAsset.assetId }
 }
