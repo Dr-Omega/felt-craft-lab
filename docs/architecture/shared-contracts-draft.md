@@ -63,7 +63,7 @@ V0.2已经替团队完成以下决策，不再作为开放问题：
 16.素材快照必须有`assetSnapshotId`，Scene必须记录创建或最后保存时使用的快照；
 17.所有异步Service以规范化`SharedError`失败，Renderer不得接触Provider原始错误；
 18.`setBackground`与`addSticker`都必须在EditorService入口校验素材类型、素材状态、用户和解锁状态；
-19.`importScene`必须返回结构化导入结果，使页面能够区分可编辑、受限和只读恢复状态。
+19.素材一旦解锁，V1默认永久保持解锁，不设计常规重新锁定流程；素材缺失、损坏或正式下架按资源异常处理，不回写为用户未解锁。
 
 ---
 
@@ -244,6 +244,8 @@ export interface AssetAccessState {
 
 - 由上游主题学习与素材解锁模块维护；
 - 未解锁素材允许查看、收听和收藏，但不能作为新素材加入画布；
+- 一旦`unlocked=true`，V1中默认永久保持解锁，不设计重新锁定流程；
+- 素材授权撤下、文件损坏或资源缺失属于素材异常，不通过把`unlocked`改回`false`表达；
 - `updatedAt`使用UTC的ISO8601格式；
 - `AssetAccessState.assetId`必须与待操作素材一致；
 - 当前用户必须与Scene的`userId`一致。
@@ -286,7 +288,7 @@ V1不变量：
 - `zIndex`为从1开始的唯一连续整数；
 - `assetType`固定为`sticker`；
 - 正常可编辑贴纸`visible=true`、`locked=false`；
-- 仅恢复缺失、已撤销权限或不兼容素材时，允许`locked=true`的受限占位对象；
+- 仅恢复素材文件缺失、原快照不可用、文件损坏或正式下架时，允许`locked=true`的受限占位对象；
 - 不支持的不透明度、倾斜、翻转等Fabric属性不得静默写入Scene。
 
 ### 7.2`SceneDocument`
@@ -355,53 +357,20 @@ export interface SceneDocument {
 - 原快照不可用时返回明确导入问题，不得静默使用当前素材覆盖；
 - 快照保留或项目打包策略由SXY在存储设计中实现，但不得删除Scene中的快照引用。
 
-### 7.6恢复时的权限与缺失素材
+### 7.6恢复时的解锁与异常素材
 
-为同时满足防绕过和作品不丢失：
+为同时满足“只有解锁后才能使用”和“旧作品不能因资源异常被破坏”：
 
 - 新增背景或贴纸必须使用当前`AssetAccessState.unlocked=true`；
+- 素材一旦解锁，V1默认永久保持解锁，不设计常规重新锁定；
 - 导入已存在Scene不调用“新增素材”逻辑；
-- 若素材当前已锁定、原快照缺失或文件不可用，不删除对象；
+- 正常恢复旧作品时，不需要重新执行一次可能改变结果的解锁判定；
+- 若原快照缺失、素材文件损坏、资源不可用或素材因授权问题被正式下架，不删除对象；
 - 编辑器使用受限占位恢复其`objectId`、`assetId`和变换，并设置`locked=true`；
 - 受限对象不能复制、替换资源或作为新素材再次加入；
 - 页面向用户显示恢复警告；
 - 若预览图仍可用，可以只读查看；
 - 正式再次保存前必须明确处理全部阻塞级导入问题。
-
-### 7.7导入结果
-
-```ts
-export type SceneImportMode = 'editable' | 'restricted' | 'readonly';
-
-export type SceneImportIssueCode =
-  | 'ASSET_NOT_FOUND'
-  | 'ASSET_NOT_UNLOCKED'
-  | 'ASSET_SNAPSHOT_MISMATCH'
-  | 'ASSET_RESOURCE_UNAVAILABLE'
-  | 'SCENE_MIGRATED';
-
-export interface SceneImportIssue {
-  code: SceneImportIssueCode;
-  severity: 'warning' | 'blocking';
-  message: string;
-  assetId?: string;
-  objectId?: string;
-}
-
-export interface SceneImportResult {
-  mode: SceneImportMode;
-  issues: SceneImportIssue[];
-}
-```
-
-规则：
-
-- 无问题导入返回`editable`和空数组；
-- 可以恢复但存在受限占位时返回`restricted`；
-- Scene不可编辑但预览可用时返回`readonly`；
-- `blocking`问题未解决前不得正式再次保存；
-- `message`必须是安全、可展示的提示；
-- 问题列表不得包含Provider密钥、操作系统绝对路径或儿童隐私。
 
 ---
 
@@ -573,12 +542,11 @@ export interface SharedError {
 技术执行规范中的EditorService在实现时必须收紧为以下语义：
 
 ```ts
-export type SetBackgroundInput =
-  | { asset: null }
-  | { asset: AssetRecord; access: AssetAccessState };
-
 export interface EditorService {
-  setBackground(input: SetBackgroundInput): Promise<void>;
+  setBackground(
+    asset: AssetRecord | null,
+    access?: AssetAccessState,
+  ): Promise<void>;
 
   addSticker(
     asset: AssetRecord,
@@ -599,15 +567,15 @@ export interface EditorService {
     themeId: string;
     assetSnapshotId: string;
   }): SceneDocument;
-  importScene(scene: SceneDocument): Promise<SceneImportResult>;
+  importScene(scene: SceneDocument): Promise<void>;
   exportPreview(): Promise<Blob>;
 }
 ```
 
 `setBackground`规则：
 
-- `{asset:null}`表示取消素材背景；
-- 非空背景必须在同一对象中提供`access`，避免编译期出现“有素材但漏传权限”的调用；
+- `asset===null`表示取消素材背景，不需要`access`；
+- 非空背景必须提供`access`；
 - 必须校验`asset.type==='background'`；
 - 必须校验`asset.status==='ready'`，测试环境除外；
 - 必须校验`access.assetId===asset.assetId`；
@@ -905,8 +873,7 @@ tests/shared/
 - 背景状态三种编码；
 - 未解锁背景和贴纸均无法新增；
 - 调用方伪造不匹配`access.assetId`时被拒绝；
-- 旧锁定或缺失素材恢复时不静默删除；
-- 导入结果正确区分`editable/restricted/readonly`；
+- 素材缺失、损坏、原快照不可用或正式下架时，恢复不静默删除；
 - 未知Schema明确失败；
 - 正式项目必须有稳定预览引用；
 - 项目名称与Scene名称保持一致；
@@ -946,10 +913,10 @@ Codex不得：
 - [x] 技术职责与执行规范V2.0一致；
 - [x] 内容真源、授权和快照边界明确；
 - [x] 素材、解锁、画布、草稿、项目和AI状态分离；
+- [x] 素材解锁后默认永久保持，不把资源异常误表示为重新锁定；
 - [x] 背景、无背景和透明状态可以无歧义恢复；
 - [x] 坐标、缩放、角度和层级语义已冻结；
 - [x] 背景和贴纸均具备EditorService防绕过校验；
-- [x] 导入结果能够驱动受限恢复与只读查看；
 - [x] 正式保存必须同时包含Scene和稳定预览；
 - [x] 项目名称重复字段的一致性责任已确定；
 - [x] 资源快照与旧作品恢复策略已确定；
