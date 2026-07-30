@@ -62,7 +62,8 @@ V0.2已经替团队完成以下决策，不再作为开放问题：
 15.Scene迁移失败时，不允许进入编辑模式；若预览图可用，则允许只读查看；
 16.素材快照必须有`assetSnapshotId`，Scene必须记录创建或最后保存时使用的快照；
 17.所有异步Service以规范化`SharedError`失败，Renderer不得接触Provider原始错误；
-18.`setBackground`与`addSticker`都必须在EditorService入口校验素材类型、素材状态、用户和解锁状态。
+18.`setBackground`与`addSticker`都必须在EditorService入口校验素材类型、素材状态、用户和解锁状态；
+19.`importScene`必须返回结构化导入结果，使页面能够区分可编辑、受限和只读恢复状态。
 
 ---
 
@@ -367,6 +368,41 @@ export interface SceneDocument {
 - 若预览图仍可用，可以只读查看；
 - 正式再次保存前必须明确处理全部阻塞级导入问题。
 
+### 7.7导入结果
+
+```ts
+export type SceneImportMode = 'editable' | 'restricted' | 'readonly';
+
+export type SceneImportIssueCode =
+  | 'ASSET_NOT_FOUND'
+  | 'ASSET_NOT_UNLOCKED'
+  | 'ASSET_SNAPSHOT_MISMATCH'
+  | 'ASSET_RESOURCE_UNAVAILABLE'
+  | 'SCENE_MIGRATED';
+
+export interface SceneImportIssue {
+  code: SceneImportIssueCode;
+  severity: 'warning' | 'blocking';
+  message: string;
+  assetId?: string;
+  objectId?: string;
+}
+
+export interface SceneImportResult {
+  mode: SceneImportMode;
+  issues: SceneImportIssue[];
+}
+```
+
+规则：
+
+- 无问题导入返回`editable`和空数组；
+- 可以恢复但存在受限占位时返回`restricted`；
+- Scene不可编辑但预览可用时返回`readonly`；
+- `blocking`问题未解决前不得正式再次保存；
+- `message`必须是安全、可展示的提示；
+- 问题列表不得包含Provider密钥、操作系统绝对路径或儿童隐私。
+
 ---
 
 ## 8.草稿与正式作品
@@ -537,11 +573,12 @@ export interface SharedError {
 技术执行规范中的EditorService在实现时必须收紧为以下语义：
 
 ```ts
+export type SetBackgroundInput =
+  | { asset: null }
+  | { asset: AssetRecord; access: AssetAccessState };
+
 export interface EditorService {
-  setBackground(
-    asset: AssetRecord | null,
-    access?: AssetAccessState,
-  ): Promise<void>;
+  setBackground(input: SetBackgroundInput): Promise<void>;
 
   addSticker(
     asset: AssetRecord,
@@ -562,15 +599,15 @@ export interface EditorService {
     themeId: string;
     assetSnapshotId: string;
   }): SceneDocument;
-  importScene(scene: SceneDocument): Promise<void>;
+  importScene(scene: SceneDocument): Promise<SceneImportResult>;
   exportPreview(): Promise<Blob>;
 }
 ```
 
 `setBackground`规则：
 
-- `asset===null`表示取消素材背景，不需要`access`；
-- 非空背景必须提供`access`；
+- `{asset:null}`表示取消素材背景；
+- 非空背景必须在同一对象中提供`access`，避免编译期出现“有素材但漏传权限”的调用；
 - 必须校验`asset.type==='background'`；
 - 必须校验`asset.status==='ready'`，测试环境除外；
 - 必须校验`access.assetId===asset.assetId`；
@@ -869,6 +906,7 @@ tests/shared/
 - 未解锁背景和贴纸均无法新增；
 - 调用方伪造不匹配`access.assetId`时被拒绝；
 - 旧锁定或缺失素材恢复时不静默删除；
+- 导入结果正确区分`editable/restricted/readonly`；
 - 未知Schema明确失败；
 - 正式项目必须有稳定预览引用；
 - 项目名称与Scene名称保持一致；
@@ -911,6 +949,7 @@ Codex不得：
 - [x] 背景、无背景和透明状态可以无歧义恢复；
 - [x] 坐标、缩放、角度和层级语义已冻结；
 - [x] 背景和贴纸均具备EditorService防绕过校验；
+- [x] 导入结果能够驱动受限恢复与只读查看；
 - [x] 正式保存必须同时包含Scene和稳定预览；
 - [x] 项目名称重复字段的一致性责任已确定；
 - [x] 资源快照与旧作品恢复策略已确定；
