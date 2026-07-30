@@ -1,6 +1,3 @@
-Exit code: 0
-Wall time: 0.8 seconds
-Output:
 import { ASR_PROVIDERS, ASSET_RUNTIME_STATUSES, ASSET_TYPES, SCHEMA_VERSION } from './common'
 import type { AssetAccessState, AssetRecord } from './asset'
 import type { AsrResult, QaResult, TtsResult } from './ai'
