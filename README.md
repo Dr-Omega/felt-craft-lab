@@ -7,13 +7,11 @@
 - 组织仓库：`Dr-Omega/felt-craft-lab`
 - 组长工作分支：`feature/material-ai-services`
 
-## 第 1 步已完成内容（组长）
+## 第 2 步：ASR（进行中）
 
-统一 **AI 服务后端 / 安全代理** 空架子：
-
-- 前端不存放真实 API Key
-- Key 只放在本机 `.env`（不会上传到 GitHub）
-- 目前提供健康检查接口；ASR / DeepSeek / MiniMax 后续再接
+- Provider：`qwen_cloud_http`（已接）+ `mock`（已接）+ realtime/local（占位）
+- 浏览器冒烟测试：http://127.0.0.1:8788/api/asr/smoke-test
+- Mock：http://127.0.0.1:8788/api/asr/mock
 
 ## 本地启动（验收）
 
