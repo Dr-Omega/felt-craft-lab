@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+out/
+dist/
+release/
+*.exe
+*.blockmap
+*.dmg
+*.AppImage
+*.deb
+*.rpm
+
+# Logs and caches
+*.log
+npm-debug.log*
+.npm/
+.cache/
+.vite/
+.turbo/
+coverage/
+.eslintcache
+*.tsbuildinfo
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json.example
+
+# Test / temp
+tmp/
+temp/
+*.tmp
+
+# Electron builder
+*.asar.unpacked/
+electron-builder.yaml.lock
