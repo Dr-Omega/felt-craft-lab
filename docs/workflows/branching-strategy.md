@@ -146,6 +146,6 @@ integration/*
 
 1.由ZXR发起`develop`到`integration/material-library`的同步PR；
 2.模块集成分支合并工程基线；
-3.ZXR、组长和SXY分别同步模块集成分支；
+3.ZXR、TSH和SXY分别同步模块集成分支；
 4.三条角色分支再开始提交正式业务代码；
 5.不得在工程基线同步前各自创建不同的Vue、Electron或依赖配置。
