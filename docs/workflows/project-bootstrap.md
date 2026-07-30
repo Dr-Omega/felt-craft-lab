@@ -2,38 +2,45 @@
 
 ## 目标
 
-为素材库与背景贴纸模块建立可运行、可测试、可构建的最小工程基线。此阶段只搭建工程骨架，不实现业务功能。
+为“不织布儿童美育创作工具”整个项目建立可运行、可测试、可构建的最小工程基线。此阶段只搭建全项目工程骨架，不实现素材库、拆分、排版、制作指导等具体业务功能。
 
 ## 责任人
 
 - 主负责人：SXY
-- 根级结构与共享依赖审核：XR
-- AI服务接口占位建议：组长
+- 根级结构、共享依赖与集成路径审核：XR
+- 服务端、AI服务与环境变量结构建议：组长
+- 素材内容不在本阶段进入代码仓库，由YWN继续在飞书总表和统一素材文件夹中准备
 
-## 目标分支
+## 工作分支与合并目标
 
-`chore/project-bootstrap`
+- 工作分支：`chore/project-bootstrap`
+- PR目标分支：`develop`
+- 不直接合并到`main`
+- 完成后，各模块集成分支从`develop`同步工程基线
 
 ## 必须完成
 
 1.使用Vue3、TypeScript和Electron建立最小可运行桌面应用。
-2.确定并锁定包管理器，不混用锁文件。
-3.提供开发、类型检查、测试、构建和Windows打包命令。
-4.建立renderer、main、shared、server、scripts、assets、docs和tests的最小目录映射；不提前填充其他成员负责的业务实现。
+2.确定并锁定唯一包管理器，不混用锁文件。
+3.提供开发、类型检查、测试、生产构建和Windows打包命令。
+4.根据实际工程需要建立`main`、`renderer`、`shared`、`server`、`scripts`、`assets`、`docs`和`tests`的最小目录映射；不提前填充其他成员负责的业务实现。
 5.配置基础TypeScript、Vite、Electron安全入口和路径别名。
-6.提供最小首页，用于确认Renderer和Electron主进程能够正常启动。
+6.提供最小首页，用于确认Renderer和Electron主进程能够正常启动与通信。
 7.建立`.gitignore`和`.env.example`，禁止真实密钥进入仓库。
-8.提交README中的本地启动与验证说明。
+8.更新README，写明本地安装、启动、测试、构建和打包方式。
+9.确认Windows环境下静态资源路径和Electron启动链路可用。
+10.不得在工程启动PR中引入未经讨论的第二套前端、画布、服务层或状态管理架构。
 
 ## 暂不完成
 
-- Fabric编辑器；
-- 素材库业务页面；
-- Dexie收藏和草稿；
+- Fabric编辑器和SceneDocument业务实现；
+- 素材库、详情、收藏和草稿页面；
+- Dexie业务表和迁移；
 - Qwen、DeepSeek和MiniMax真实调用；
-- AudioService和AnimationService实现；
+- AudioService和AnimationService业务实现；
 - 素材Manifest转换；
-- 任何真实API密钥或儿童数据。
+- 主体生成、图层拆分、裁剪排版和制作指导；
+- 任何真实API密钥、儿童录音、用户作品或其他敏感数据。
 
 ## 验收命令
 
@@ -48,8 +55,20 @@
 Windows打包或等价构建验证
 ```
 
+每条命令必须在PR说明中记录结果；无法执行的命令必须说明原因和后续补验方式。
+
+## 目录与依赖约束
+
+- 根级配置属于全项目共享内容，修改前必须说明影响范围。
+- `shared`只放跨模块契约、错误形态和公共常量，不放具体业务页面。
+- `server`只建立安全服务入口，不在本PR接入真实模型。
+- `assets`只建立目录和说明，不提交来源不明的正式素材。
+- 具体模块继续使用`integration/<module>`和`feature/<module>/<task>`分支开发。
+
 ## 合并要求
 
-- 目标分支：`integration/material-library`
+- 目标分支：`develop`
+- 至少由XR审核根级目录、依赖和构建方式
 - 不直接合并到`main`
-- PR中必须说明变更文件、命令结果、已知问题及XR后续建立共享Contracts所需的路径
+- PR中必须说明变更文件、命令结果、已知问题、后续模块接入点和是否改变共享依赖
+- Bootstrap合并后，由各模块通过PR将`develop`同步到自己的`integration/*`分支
