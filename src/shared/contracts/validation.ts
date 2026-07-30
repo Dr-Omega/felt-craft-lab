@@ -1,3 +1,6 @@
+Exit code: 0
+Wall time: 0.8 seconds
+Output:
 import { ASR_PROVIDERS, ASSET_RUNTIME_STATUSES, ASSET_TYPES, SCHEMA_VERSION } from './common'
 import type { AssetAccessState, AssetRecord } from './asset'
 import type { AsrResult, QaResult, TtsResult } from './ai'
@@ -366,9 +369,17 @@ export function validateSceneDocumentAgainstSnapshot(raw: unknown, snapshotConte
   const context = validateSceneSnapshotValidationContext(snapshotContext)
   if (!context.ok) return failure(context.errors)
 
-  const snapshotAssets = context.value.snapshots[scene.value.assetSnapshotId]
-  if (!snapshotAssets) {
+  const snapshots = context.value.snapshots
+  const snapshotId = scene.value.assetSnapshotId
+  if (!Object.prototype.hasOwnProperty.call(snapshots, snapshotId)) {
     return failure([{ path: 'scene.assetSnapshotId', message: '引用的素材快照不存在。' }])
+  }
+  const snapshotsById = new Map<string, readonly AssetSnapshotAsset[]>(
+    Object.entries(snapshots).filter((entry): entry is [string, readonly AssetSnapshotAsset[]] => Array.isArray(entry[1]))
+  )
+  const snapshotAssets = snapshotsById.get(snapshotId)
+  if (!Array.isArray(snapshotAssets)) {
+    return failure([{ path: 'scene.assetSnapshotId', message: '引用的素材快照无效。' }])
   }
   const assetsById = new Map(snapshotAssets.map((asset) => [asset.assetId, asset]))
   const errors: ValidationIssue[] = []
