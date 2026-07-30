@@ -1,5 +1,5 @@
 import { ASR_PROVIDERS, ASSET_RUNTIME_STATUSES, ASSET_TYPES, SCHEMA_VERSION } from './common'
-import type { AssetAccessState, AssetAudioRefs, AssetRecord } from './asset'
+import type { AssetAccessState, AssetRecord } from './asset'
 import type { AsrResult, QaResult, TtsResult } from './ai'
 import { SHARED_ERROR_CODES } from './error'
 import type { SharedError } from './error'
@@ -108,7 +108,7 @@ function requireUtcTimestamp(value: unknown, path: string, errors: ValidationIss
 }
 
 export function isSafeResourceRef(value: unknown): value is string {
-  if (typeof value !== 'string' || !value.trim() || value.includes('..') || /[\\\r\n]/.test(value)) return false
+  if (typeof value !== 'string' || !value.trim() || /(^|\/)\.\.(?:\/|$)/.test(value) || /[\\\r\n]/.test(value)) return false
   try {
     const resource = new URL(value)
     if (!SAFE_RESOURCE_PROTOCOLS.has(resource.protocol)) return false
@@ -221,9 +221,8 @@ export function validateSceneObject(raw: unknown): ValidationResult<SceneObject>
     errors.push({ path: 'sceneObject.zIndex', message: '璐寸焊zIndex蹇呴』涓轰粠1寮€濮嬬殑鏁存暟銆? })
   }
   const visible = requireBoolean(value.visible, 'sceneObject.visible', errors)
-  const locked = requireBoolean(value.locked, 'sceneObject.locked', errors)
+  requireBoolean(value.locked, 'sceneObject.locked', errors)
   if (visible && value.visible !== true) errors.push({ path: 'sceneObject.visible', message: 'V1鎸佷箙鍖栬创绾稿繀椤诲彲瑙併€? })
-  if (locked && value.locked !== false && value.locked !== true) errors.push({ path: 'sceneObject.locked', message: '鍙楅檺鍗犱綅瀵硅薄鐨刲ocked蹇呴』涓簍rue銆? })
   return errors.length ? failure(errors) : success(raw as SceneObject)
 }
 
