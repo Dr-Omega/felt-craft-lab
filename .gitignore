@@ -22,9 +22,7 @@ tmp/
 temp/
 .cache/
 
-# 后续 TTS 缓存 / 本地日志 / ASR 指标
+# 后续 TTS 缓存 / 本地日志
 backend/cache/
 backend/data/generated/
 backend/data/logs/
-backend/data/*.jsonl
-

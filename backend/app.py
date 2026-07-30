@@ -5,6 +5,7 @@
 第 2 步：Qwen3-ASR-Flash 云端 HTTP
 第 3 步：统一输出格式 + 错误码 + P50/P95 统计
 第 4 步：DeepSeek 儿童适龄问答
+第 5 步：MiniMax 动态 TTS + 哈希缓存
 """
 
 from __future__ import annotations
@@ -22,6 +23,9 @@ from services.asr_service import AsrService
 from services.asr_types import contract_doc
 from services.qa_service import QaService
 from services.qa_types import QA_ERROR_CODES
+from services.tts_service import TtsService
+from services.tts_types import TTS_ERROR_CODES
+from providers.tts.minimax_provider import CACHE_DIR
 
 BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(BASE_DIR / ".env")
@@ -29,6 +33,7 @@ load_dotenv(BASE_DIR / ".env")
 app = Flask(__name__)
 asr_service = AsrService()
 qa_service = QaService()
+tts_service = TtsService()
 
 SAMPLE_ASSET = {
     "assetId": "sticker_rabbit_demo",
@@ -59,7 +64,7 @@ def health():
         {
             "ok": True,
             "service": "felt-craft-lab-ai-proxy",
-            "version": "step4",
+            "version": "step5",
             "env": os.getenv("APP_ENV", "development"),
             "keys": {
                 "qwen_asr": _mask(_asr_key()),
@@ -70,7 +75,7 @@ def health():
                 "asr": ["qwen_cloud_http", "mock"],
                 "asr_reserved": ["qwen_cloud_realtime", "qwen_local"],
                 "qa": ["deepseek", "mock"],
-                "tts": ["minimax"],
+                "tts": ["minimax", "mock"],
             },
         }
     )
@@ -78,7 +83,7 @@ def health():
 
 @app.get("/api/ready")
 def ready():
-    return jsonify({"ready": True, "step": 4, "asr": True, "qa": True})
+    return jsonify({"ready": True, "step": 5, "asr": True, "qa": True, "tts": True})
 
 
 @app.get("/api/asr/contract")
@@ -250,6 +255,90 @@ def qa_contract():
                 },
             },
             "errorCodes": QA_ERROR_CODES,
+        }
+    )
+
+
+@app.post("/api/tts/synthesize")
+def tts_synthesize():
+    """
+    SXY 调用：
+    { "text": "要朗读的文字", "voicePurpose": "qa_answer", "provider": "minimax|mock" }
+    """
+    data = request.get_json(silent=True) or {}
+    text = data.get("text") or ""
+    purpose = data.get("voicePurpose") or data.get("voice_purpose") or "qa_answer"
+    provider = data.get("provider")
+    service = TtsService(provider) if provider else tts_service
+    result = service.synthesize(text=text, voice_purpose=purpose)
+    status = 200 if result.get("ok") else 502
+    return jsonify(result), status
+
+
+@app.get("/api/tts/smoke-test")
+def tts_smoke_test():
+    """浏览器一键测试 MiniMax TTS；成功后可用 audioUrl 播放。"""
+    sample = "小兔子贴纸很适合春天的不织布手工，我们一起贴一贴吧。"
+    result = tts_service.synthesize(text=sample, voice_purpose="qa_answer")
+    status = 200 if result.get("ok") else 502
+    return jsonify(
+        {
+            "smokeTest": True,
+            "sampleText": sample,
+            **result,
+        }
+    ), status
+
+
+@app.get("/api/tts/mock")
+def tts_mock():
+    result = TtsService("mock").synthesize(text="mock", voice_purpose="qa_answer")
+    return jsonify(result)
+
+
+@app.get("/api/tts/audio/<path:filename>")
+def tts_audio(filename: str):
+    """提供缓存音频文件。"""
+    from flask import send_from_directory
+
+    safe = Path(filename).name
+    if not safe.endswith(".mp3"):
+        return jsonify({"ok": False, "error": {"code": "TTS_BAD_FILE", "message": "仅支持 mp3"}}), 400
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    path = CACHE_DIR / safe
+    if not path.exists():
+        return jsonify({"ok": False, "error": {"code": "TTS_NOT_FOUND", "message": "音频不存在"}}), 404
+    return send_from_directory(CACHE_DIR, safe, mimetype="audio/mpeg")
+
+
+@app.get("/api/tts/mock-audio")
+def tts_mock_audio():
+    return jsonify(
+        {
+            "ok": True,
+            "message": "这是 Mock 音频占位，不产生真实声音。正式环境请用 /api/tts/smoke-test",
+        }
+    )
+
+
+@app.get("/api/tts/contract")
+def tts_contract():
+    return jsonify(
+        {
+            "ok": True,
+            "contract": {
+                "successShape": {
+                    "ok": True,
+                    "result": {
+                        "audioUrl": "string 可播放地址",
+                        "cacheHit": "boolean",
+                        "requestId": "string",
+                        "latencyMs": "number",
+                    },
+                },
+                "onFailure": "keep_text_only（TTS 失败时页面仍显示文字回答）",
+            },
+            "errorCodes": TTS_ERROR_CODES,
         }
     )
 
