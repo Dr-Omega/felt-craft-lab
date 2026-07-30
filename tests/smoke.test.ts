@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { isAllowedExternalUrl } from '../src/main/external-url'
 import { APP_DISPLAY_NAME, APP_ID, IPC_CHANNELS } from '../src/shared/constants/app'
 import { getServerBootstrapInfo } from '../server/index'
 
@@ -13,5 +14,13 @@ describe('project bootstrap smoke', () => {
     const info = getServerBootstrapInfo()
     expect(info.ready).toBe(false)
     expect(info.name).toContain('felt-craft-lab')
+  })
+
+  it('only allows http and https external urls', () => {
+    expect(isAllowedExternalUrl('https://example.com')).toBe(true)
+    expect(isAllowedExternalUrl('http://localhost:5173')).toBe(true)
+    expect(isAllowedExternalUrl('file:///C:/temp/x.txt')).toBe(false)
+    expect(isAllowedExternalUrl('javascript:alert(1)')).toBe(false)
+    expect(isAllowedExternalUrl('not-a-url')).toBe(false)
   })
 })
