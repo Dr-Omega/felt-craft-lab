@@ -107,7 +107,7 @@ describe('shared material-library contracts', () => {
   it('keeps ASR end-to-end duration distinct from optional recording duration', () => {
     expect(validateAsrResult(validAsrResult).ok).toBe(true)
     expect(validateAsrResult({ ...validAsrResult, audioDurationMs: undefined }).ok).toBe(true)
-    const missingDuration = cloneFixture(validAsrResult) as Record<string, unknown>
+    const missingDuration = cloneFixture(validAsrResult) as unknown as Record<string, unknown>
     delete missingDuration.durationMs
     expect(validateAsrResult(missingDuration).ok).toBe(false)
     expect(validateAsrResult({ ...validAsrResult, durationMs: -1 }).ok).toBe(false)
