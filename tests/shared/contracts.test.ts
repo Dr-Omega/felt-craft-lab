@@ -1,3 +1,6 @@
+Exit code: 0
+Wall time: 0.8 seconds
+Output:
 import { describe, expect, it } from 'vitest'
 import {
   isSafeResourceRef,
@@ -172,6 +175,14 @@ describe('shared material-library contracts', () => {
       }
     }
     expect(validateSceneDocumentAgainstSnapshot(validScene, foreignSticker).ok).toBe(false)
+  })
+
+  it('returns structured failures for prototype-chain snapshot IDs without throwing', () => {
+    for (const assetSnapshotId of ['toString', 'constructor', '__proto__']) {
+      const sceneWithPrototypeKey = { ...validScene, assetSnapshotId }
+      expect(() => validateSceneDocumentAgainstSnapshot(sceneWithPrototypeKey, validSnapshotContext)).not.toThrow()
+      expect(validateSceneDocumentAgainstSnapshot(sceneWithPrototypeKey, validSnapshotContext).ok).toBe(false)
+    }
   })
 
   it('keeps ASR end-to-end duration distinct from optional recording duration', () => {
