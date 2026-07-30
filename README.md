@@ -7,10 +7,11 @@
 - 组织仓库：`Dr-Omega/felt-craft-lab`
 - 组长工作分支：`feature/material-ai-services`
 
-## 第 3 步：统一格式与统计（进行中）
+## 第 4 步：DeepSeek 问答（进行中）
 
-- 契约说明：http://127.0.0.1:8788/api/asr/contract
-- 延迟统计：http://127.0.0.1:8788/api/asr/metrics
+- 冒烟测试：http://127.0.0.1:8788/api/qa/smoke-test
+- Mock：http://127.0.0.1:8788/api/qa/mock
+- 契约：http://127.0.0.1:8788/api/qa/contract
 
 ## 本地启动（验收）
 
