@@ -177,12 +177,11 @@ export function validateAssetRecord(raw: unknown): ValidationResult<AssetRecord>
   return errors.length ? failure(errors) : success(raw as AssetRecord)
 }
 
-function validateAssetAudioRefs(value: RawObject, path: string, errors: ValidationIssue[]): value is AssetAudioRefs {
+function validateAssetAudioRefs(value: RawObject, path: string, errors: ValidationIssue[]): void {
   hasOnlyKeys(value, ['nameZhUrl', 'nameEnUrl', 'introZhUrl'], path, errors)
   for (const key of ['nameZhUrl', 'nameEnUrl', 'introZhUrl'] as const) {
     if (value[key] !== undefined) requireResourceRef(value[key], `${path}.${key}`, errors)
   }
-  return errors.length === 0
 }
 
 export function validateAssetAccessState(raw: unknown): ValidationResult<AssetAccessState> {
@@ -208,9 +207,11 @@ export function validateSceneObject(raw: unknown): ValidationResult<SceneObject>
   if (value.assetType !== 'sticker') errors.push({ path: 'sceneObject.assetType', message: '鑳屾櫙闅愬紡鍥哄畾鍦▃Index=0锛宱bjects鍙兘鍖呭惈璐寸焊銆? })
   requireFiniteNumber(value.left, 'sceneObject.left', errors)
   requireFiniteNumber(value.top, 'sceneObject.top', errors)
-  const hasScaleX = requireFiniteNumber(value.scaleX, 'sceneObject.scaleX', errors)
-  const hasScaleY = requireFiniteNumber(value.scaleY, 'sceneObject.scaleY', errors)
-  if (hasScaleX && hasScaleY && (value.scaleX <= 0 || value.scaleY <= 0 || value.scaleX !== value.scaleY)) {
+  const scaleX = value.scaleX
+  const scaleY = value.scaleY
+  const hasScaleX = requireFiniteNumber(scaleX, 'sceneObject.scaleX', errors)
+  const hasScaleY = requireFiniteNumber(scaleY, 'sceneObject.scaleY', errors)
+  if (hasScaleX && hasScaleY && (scaleX <= 0 || scaleY <= 0 || scaleX !== scaleY)) {
     errors.push({ path: 'sceneObject.scaleX', message: 'V1鍙敮鎸佸ぇ浜?鐨勭瓑姣斾緥缂╂斁銆? })
   }
   if (requireFiniteNumber(value.angle, 'sceneObject.angle', errors) && (value.angle < -180 || value.angle >= 180)) {
