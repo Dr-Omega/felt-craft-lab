@@ -1,0 +1,27 @@
+# 操作系统 / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# 环境变量（绝对不要提交真实密钥）
+.env
+.env.local
+.env.*.local
+
+# 日志与临时
+*.log
+tmp/
+temp/
+.cache/
+
+# 后续 TTS 缓存
+backend/cache/
+backend/data/generated/
