@@ -1,6 +1,3 @@
-Exit code: 0
-Wall time: 0.8 seconds
-Output:
 import { describe, expect, it } from 'vitest'
 import {
   isSafeResourceRef,
