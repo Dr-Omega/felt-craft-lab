@@ -1,4 +1,4 @@
-import type { ResourceRef, SchemaVersion, UtcIso8601 } from './common'
+import type { SchemaVersion, UtcIso8601 } from './common'
 
 export interface SceneObject {
   objectId: string
@@ -42,7 +42,4 @@ export interface SceneDocument {
   createdAt: UtcIso8601
   updatedAt: UtcIso8601
 }
-
-/** Stable resource reference used by a saved project's preview only. */
-export type ProjectPreviewRef = ResourceRef
 
