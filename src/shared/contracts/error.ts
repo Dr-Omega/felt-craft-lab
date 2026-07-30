@@ -37,46 +37,83 @@ export interface SharedError {
   details?: Record<string, JsonPrimitive>
 }
 
+const SHARED_ERROR_FIELDS = ['code', 'message', 'retryable', 'requestId', 'details'] as const
+const SENSITIVE_DETAIL_KEY = /(?:token|secret|signature|sig|password|authorization|cookie|header|recording|audio|question|provider)/i
+
 /**
- * Converts unknown provider, IPC, or JavaScript exceptions into a safe error
- * payload. Raw exception text is intentionally not copied into the message or
- * details, because it can contain provider diagnostics or credentials.
+ * Normalizes unknown provider, IPC, and JavaScript exceptions into a safe,
+ * serializable SharedError. The result is always reconstructed from a field
+ * whitelist; it never returns the original object reference.
  */
 export function toSharedError(
   error: unknown,
   fallbackCode: SharedErrorCode = 'UNKNOWN'
 ): SharedError {
-  if (isSharedError(error)) {
-    return error
+  const normalized = readSharedError(error, false)
+  if (normalized) return normalized
+
+  const code = isSharedErrorCode(fallbackCode) ? fallbackCode : 'UNKNOWN'
+  return {
+    code,
+    message: code === 'REQUEST_CANCELLED' ? '请求已取消。' : '请求暂时无法完成，请稍后重试。',
+    retryable: code !== 'REQUEST_CANCELLED'
+  }
+}
+
+/**
+ * Strict guard for values that are already safe to cross Service or IPC
+ * boundaries. Unknown top-level fields make the value invalid.
+ */
+export function isSharedError(value: unknown): value is SharedError {
+  return readSharedError(value, true) !== undefined
+}
+
+export function isSharedErrorCode(value: unknown): value is SharedErrorCode {
+  return typeof value === 'string' && SHARED_ERROR_CODES.includes(value as SharedErrorCode)
+}
+
+function readSharedError(value: unknown, rejectUnknownFields: boolean): SharedError | undefined {
+  if (!isPlainObject(value)) return undefined
+  if (rejectUnknownFields && Object.keys(value).some((key) => !SHARED_ERROR_FIELDS.includes(key as (typeof SHARED_ERROR_FIELDS)[number]))) {
+    return undefined
+  }
+  if (!isSharedErrorCode(value.code) || typeof value.message !== 'string' || !value.message.trim() || typeof value.retryable !== 'boolean') {
+    return undefined
+  }
+  if (value.requestId !== undefined && (typeof value.requestId !== 'string' || !value.requestId.trim())) {
+    return undefined
   }
 
-  return {
-    code: fallbackCode,
-    message: fallbackCode === 'REQUEST_CANCELLED' ? '璇锋眰宸插彇娑堛€? : '璇锋眰鏆傛椂鏃犳硶瀹屾垚锛岃绋嶅悗閲嶈瘯銆?,
-    retryable: fallbackCode !== 'REQUEST_CANCELLED'
+  const clean: SharedError = {
+    code: value.code,
+    message: value.message,
+    retryable: value.retryable
   }
+  if (value.requestId !== undefined) clean.requestId = value.requestId
+
+  if (value.details !== undefined) {
+    const details = readSafeDetails(value.details)
+    if (!details) return undefined
+    clean.details = details
+  }
+  return clean
+}
+
+function readSafeDetails(value: unknown): Record<string, JsonPrimitive> | undefined {
+  if (!isPlainObject(value)) return undefined
+  const clean: Record<string, JsonPrimitive> = {}
+  for (const [key, detail] of Object.entries(value)) {
+    if (!key.trim() || SENSITIVE_DETAIL_KEY.test(key) || !isJsonPrimitive(detail)) return undefined
+    clean[key] = detail
+  }
+  return clean
 }
 
 function isJsonPrimitive(value: unknown): value is JsonPrimitive {
   return value === null || typeof value === 'string' || typeof value === 'boolean' || (typeof value === 'number' && Number.isFinite(value))
 }
 
-/** Lightweight guard for normalizing an error at a service boundary. */
-export function isSharedError(value: unknown): value is SharedError {
-  if (!value || typeof value !== 'object') return false
-  const candidate = value as Record<string, unknown>
-  if (
-    !SHARED_ERROR_CODES.includes(candidate.code as SharedErrorCode) ||
-    typeof candidate.message !== 'string' ||
-    typeof candidate.retryable !== 'boolean'
-  ) {
-    return false
-  }
-  if (candidate.requestId !== undefined && (typeof candidate.requestId !== 'string' || !candidate.requestId.trim())) {
-    return false
-  }
-  if (candidate.details === undefined) return true
-  if (!candidate.details || typeof candidate.details !== 'object' || Array.isArray(candidate.details)) return false
-  return Object.values(candidate.details).every(isJsonPrimitive)
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
 }
 
