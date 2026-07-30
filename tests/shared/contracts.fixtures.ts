@@ -1,0 +1,119 @@
+import type {
+  AssetAccessState,
+  AssetRecord,
+  AsrResult,
+  DraftRecord,
+  ProjectRecord,
+  QaResult,
+  SceneDocument,
+  SceneObject,
+  SharedError,
+  TtsResult
+} from '../../src/shared/contracts'
+
+export const fixtureTime = '2026-07-30T05:20:00.000Z'
+
+export const validAsset: AssetRecord = {
+  assetId: 'sticker_lantern_001',
+  type: 'sticker',
+  themeId: 'theme_mid_autumn',
+  categoryIds: ['festival_object', 'decoration'],
+  nameZh: '鐏',
+  nameEn: 'Lantern',
+  introZh: '鐏鏃㈠彲浠ョ収鏄庯紝涔熷父琚敤浣滆妭鏃ヨ楗般€?,
+  keywords: ['鐏', '鑺傛棩', '瑁呴グ'],
+  imageUrl: 'mock://assets/sticker_lantern_001.png',
+  thumbnailUrl: 'mock://thumbnails/sticker_lantern_001.png',
+  preSplitDataUrl: 'mock://pre-split/sticker_lantern_001.json',
+  audio: {},
+  source: 'mock_only',
+  license: 'test_only',
+  contentVersion: 1,
+  status: 'test_only'
+}
+
+export const validAccess: AssetAccessState = {
+  userId: 'user_demo_001',
+  assetId: validAsset.assetId,
+  unlocked: true,
+  unlockSource: 'theme_complete',
+  updatedAt: fixtureTime
+}
+
+export const validSceneObject: SceneObject = {
+  objectId: '62d775d8-e6f8-439a-9d04-0934cb03f81f',
+  assetId: validAsset.assetId,
+  assetType: 'sticker',
+  left: 420,
+  top: 260,
+  scaleX: 0.8,
+  scaleY: 0.8,
+  angle: 15,
+  zIndex: 1,
+  visible: true,
+  locked: false
+}
+
+export const validScene: SceneDocument = {
+  schemaVersion: 1,
+  sceneId: '7a3435d2-2c2f-4df1-a38c-5b7e32ce91a8',
+  userId: validAccess.userId,
+  workName: '鎴戠殑涓鏈堝',
+  themeId: validAsset.themeId,
+  assetSnapshotId: 'snapshot_demo_20260730_001',
+  canvas: { width: 1200, height: 800, backgroundColor: '#FFF8E7' },
+  backgroundAssetId: 'background_moon_001',
+  objects: [validSceneObject],
+  createdAt: '2026-07-30T05:10:00.000Z',
+  updatedAt: fixtureTime
+}
+
+export const validDraft: DraftRecord = {
+  draftId: 'cc2b2db3-0ef0-4db9-a89c-b2fb0eff1dc1',
+  scene: validScene,
+  updatedAt: validScene.updatedAt,
+  status: 'draft'
+}
+
+export const validProject: ProjectRecord = {
+  projectId: 'c3ac4f13-c4be-4ce0-8781-c60b78a21e83',
+  projectName: validScene.workName,
+  scene: validScene,
+  previewUrl: 'mock://previews/c3ac4f13-c4be-4ce0-8781-c60b78a21e83.png',
+  syncStatus: 'local_only',
+  createdAt: fixtureTime,
+  updatedAt: fixtureTime
+}
+
+export const validAsrResult: AsrResult = {
+  transcript: '鐏涓轰粈涔堟槸绾㈣壊鐨?,
+  provider: 'qwen_cloud_http',
+  durationMs: 1260,
+  audioDurationMs: 3100,
+  confidence: 0.93,
+  requestId: 'asr_req_demo_001'
+}
+
+export const validQaResult: QaResult = {
+  answer: '绾㈣壊鍦ㄥ緢澶氫腑鍥借妭鏃ヤ腑浠ｈ〃鍠滃簡鍜岀绂忋€?,
+  requestId: 'qa_req_demo_001',
+  safetyAction: 'allow'
+}
+
+export const validTtsResult: TtsResult = {
+  audioUrl: 'mock://tts/qa_req_demo_001.mp3',
+  cacheHit: false,
+  requestId: 'tts_req_demo_001'
+}
+
+export const validSharedError: SharedError = {
+  code: 'ASSET_NOT_FOUND',
+  message: '绱犳潗鏆傛椂涓嶅彲鐢ㄣ€?,
+  retryable: false,
+  details: { assetId: validAsset.assetId }
+}
+
+export function cloneFixture<T>(fixture: T): T {
+  return JSON.parse(JSON.stringify(fixture)) as T
+}
+
