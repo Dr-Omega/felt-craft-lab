@@ -4,6 +4,10 @@
 
 → **[SXY对接指南.md](./SXY对接指南.md)**
 
+固定介绍语音批量工具：
+
+→ **[固定TTS批量工具.md](./固定TTS批量工具.md)**
+
 ## 进度
 
 - 第 1 步：安全代理 + 健康检查
@@ -14,6 +18,7 @@
 - 第 6 步：AudioService（Howler）
 - 第 7 步：AnimationService（lottie）
 - 第 8 步：SXY Mock / 对接文档 + 轻量 HTTP 客户端
+- 第 9 步：固定文案 TTS 批量工具 + 音频快照索引
 
 ## 基址
 
@@ -32,11 +37,13 @@
 | POST | `/api/qa/ask` | 儿童问答 |
 | GET | `/api/qa/mock` | QA Mock |
 | GET | `/api/qa/contract` | QA 契约 |
-| POST | `/api/tts/synthesize` | 文字转语音 |
+| POST | `/api/tts/synthesize` | 文字转语音（动态） |
 | GET | `/api/tts/mock` | TTS Mock |
 | GET | `/api/tts/contract` | TTS 契约 |
+| GET | `/fixed-audio/<file>` | 固定语音快照文件 |
 | GET | `/demo/audio` | AudioService 演示 |
 | GET | `/demo/animation` | AnimationService 演示 |
+| GET | `/demo/fixed-audio` | 固定语音试听 |
 
 ## 产品硬规则
 

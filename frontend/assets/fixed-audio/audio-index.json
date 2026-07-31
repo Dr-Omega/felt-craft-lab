@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "purpose": "fixed_snapshot",
+  "source": "scripts.example.csv",
+  "generatedAt": "2026-07-31T12:52:18",
+  "summary": {
+    "ok": 2,
+    "failed": 0,
+    "total": 2
+  },
+  "items": [
+    {
+      "id": "rabbit_intro",
+      "assetId": "sticker_rabbit_demo",
+      "text": "小兔子有圆圆的耳朵和短尾巴，很适合春天的不织布贴画。你可以把它贴在草地上，再加点小花。",
+      "file": "rabbit_intro.mp3",
+      "url": "/fixed-audio/rabbit_intro.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "flower_intro",
+      "assetId": "sticker_flower_demo",
+      "text": "这朵小花颜色明亮，可以装饰在帽子上、衣服上，也可以点缀在背景角落。",
+      "file": "flower_intro.mp3",
+      "url": "/fixed-audio/flower_intro.mp3",
+      "status": "ok",
+      "cacheHit": false
+    }
+  ]
+}

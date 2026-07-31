@@ -9,6 +9,7 @@
 第 6 步：AudioService（Howler）演示页由后端托管
 第 7 步：AnimationService（lottie-web）演示页由后端托管
 第 8 步：SXY Mock / 对接文档（见 docs/ai-services/SXY对接指南.md）
+第 9 步：固定文案 TTS 批量工具 + 音频快照索引
 """
 
 from __future__ import annotations
@@ -68,7 +69,7 @@ def health():
         {
             "ok": True,
             "service": "felt-craft-lab-ai-proxy",
-            "version": "step8",
+            "version": "step9",
             "env": os.getenv("APP_ENV", "development"),
             "keys": {
                 "qwen_asr": _mask(_asr_key()),
@@ -90,12 +91,13 @@ def ready():
     return jsonify(
         {
             "ready": True,
-            "step": 8,
+            "step": 9,
             "asr": True,
             "qa": True,
             "tts": True,
             "audioService": True,
             "animationService": True,
+            "fixedTtsBatch": True,
         }
     )
 
@@ -367,6 +369,21 @@ def demo_audio_page():
 def demo_animation_page():
     """第 7 步：AnimationService 浏览器演示页。"""
     return send_from_directory(ROOT_DIR / "frontend" / "demos", "animation-demo.html")
+
+
+@app.get("/demo/fixed-audio")
+def demo_fixed_audio_page():
+    """第 9 步：固定语音快照试听页。"""
+    return send_from_directory(ROOT_DIR / "frontend" / "demos", "fixed-audio-demo.html")
+
+
+@app.get("/fixed-audio/<path:filename>")
+def fixed_audio_static(filename: str):
+    """提供批量工具生成的固定 mp3 / 索引。"""
+    folder = ROOT_DIR / "frontend" / "assets" / "fixed-audio"
+    folder.mkdir(parents=True, exist_ok=True)
+    safe = Path(filename).name
+    return send_from_directory(folder, safe)
 
 
 @app.get("/frontend/<path:filename>")

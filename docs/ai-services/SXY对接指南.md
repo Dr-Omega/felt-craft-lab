@@ -267,7 +267,26 @@ anim.stop('loading');
 
 ---
 
-## 10. 有问题找谁
+## 10. 固定介绍语音（第 9 步快照）
+
+贴纸「听介绍」等**固定文案**，不要每次调 `/api/tts/synthesize`。  
+批量生成后的索引：
+
+```text
+GET /fixed-audio/audio-index.json
+GET /fixed-audio/{id}.mp3
+```
+
+试听页：`/demo/fixed-audio`  
+说明：`docs/ai-services/固定TTS批量工具.md`
+
+```js
+await audio.play('/fixed-audio/rabbit_intro.mp3', 'primary');
+```
+
+---
+
+## 11. 有问题找谁
 
 | 现象 | 找谁 |
 |------|------|
