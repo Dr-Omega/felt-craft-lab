@@ -1,4 +1,4 @@
-import { isAbsolute, join, normalize, relative, resolve, sep } from 'node:path'
+import { basename, dirname, isAbsolute, join, normalize, relative, resolve, sep } from 'node:path'
 import { existsSync, realpathSync, statSync } from 'node:fs'
 import { toSharedError } from '../contracts/error'
 import { parseFeltResourceRef } from './parse'
@@ -15,6 +15,12 @@ function isInsideRoot(root: string, candidate: string): boolean {
   const resolvedCandidate = resolve(candidate)
   const rel = relative(resolvedRoot, resolvedCandidate)
   return rel !== '' && !rel.startsWith(`..${sep}`) && rel !== '..' && !isAbsolute(rel)
+}
+
+function isInsideRootOrEqual(root: string, candidate: string): boolean {
+  const resolvedRoot = resolve(root)
+  const resolvedCandidate = resolve(candidate)
+  return resolvedRoot === resolvedCandidate || isInsideRoot(resolvedRoot, resolvedCandidate)
 }
 
 function invalidRef(message: string): FeltResourceResolveResult {
@@ -55,11 +61,38 @@ function safeRealpath(target: string): string | undefined {
 }
 
 /**
+ * For missing targets, walk to the nearest existing ancestor, realpath it, and
+ * rebuild the candidate so junction/symlink parents cannot escape the root.
+ */
+function resolveMissingCandidate(absolutePath: string, realRoot: string): string | undefined {
+  const missingSegments: string[] = []
+  let cursor = resolve(absolutePath)
+
+  while (!existsSync(cursor)) {
+    missingSegments.unshift(basename(cursor))
+    const parent = dirname(cursor)
+    if (parent === cursor) return undefined
+    cursor = parent
+  }
+
+  const realAncestor = safeRealpath(cursor)
+  if (!realAncestor || !isInsideRootOrEqual(realRoot, realAncestor)) {
+    return undefined
+  }
+
+  const reconstructed = normalize(join(realAncestor, ...missingSegments))
+  if (!isInsideRoot(realRoot, reconstructed)) {
+    return undefined
+  }
+  return reconstructed
+}
+
+/**
  * Pure path resolver used by Main and unit tests. Renderer must not call this
  * with filesystem roots; it only consumes ResourceRef / inspect results.
  *
- * Existing targets are re-checked with realpath so symlinks / Windows junctions
- * cannot escape the kind root. Native fs errors never propagate to callers.
+ * Existing targets and missing-target parents are re-checked with realpath so
+ * symlinks / Windows junctions cannot escape the kind root.
  */
 export function resolveFeltResourcePath(
   ref: string,
@@ -90,12 +123,18 @@ export function resolveFeltResourcePath(
 
     if (!existsSync(absolutePath)) {
       if (requireExists) return notFound(parsed.kind, parsed.relativePath)
+
+      const safeMissingPath = resolveMissingCandidate(absolutePath, realRoot)
+      if (!safeMissingPath) {
+        return invalidRef('资源引用无效：检测到路径穿越或不安全路径。')
+      }
+
       return {
         ok: true,
         ref: parsed.ref,
         kind: parsed.kind,
         relativePath: parsed.relativePath,
-        absolutePath: lexicalUnderRealRoot,
+        absolutePath: safeMissingPath,
         exists: false
       }
     }

@@ -46,12 +46,13 @@ felt-resource://preview/project-demo.png
 
 ## 安全实现要点
 
-1. 读取前对 root 与候选路径执行 `realpath`，阻止根目录内的 symlink / Windows junction 逃逸。
+1. 读取前对 root 与候选路径执行 `realpath`；缺失目标会校验最近存在父目录的真实路径，阻止 junction 下的新文件逃逸。
 2. IPC 始终返回 `ResourceInspectResult` / `SharedError`，捕获 fs 异常，不向 Renderer 泄露绝对路径。
-3. IPC 校验 `event.senderFrame.url`；主窗口限制 `will-navigate` / `will-redirect`。
-4. 协议层使用 `protocol.handle + net.fetch(pathToFileURL(...))` 流式响应，支持音视频 Range/seek。
+3. IPC 校验 `event.senderFrame.url`；信任集绑定实际 `ELECTRON_RENDERER_URL` 与打包 `out/renderer/index.html` 文件 URL。
+4. 协议层使用 `handleFeltResourceRequest` + `net.fetch(pathToFileURL(...))` 流式响应；仅允许 `GET/HEAD/OPTIONS`。
 5. Bootstrap ping 仅返回 `markerFound`，不再返回 `markerPath` / `markerUrl`。
-6. Fabric / Canvas：推荐 `fetch(ref) → blob → ObjectURL/ImageBitmap` 再绘制，可稳定避免跨源污染；若直接使用 `<img src="felt-resource://...">`，必须设置 `crossOrigin = 'anonymous'`（协议已启用 CORS）。
+6. Fabric / Canvas：推荐 `fetch(ref) → blob → ObjectURL/ImageBitmap`。
+7. Electron 冒烟通过 `FELT_RESOURCE_SMOKE=1` 启动同一 Main 入口，复用生产注册/resolver/roots。
 
 ## 异常
 

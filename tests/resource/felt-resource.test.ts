@@ -1,7 +1,7 @@
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync, symlinkSync } from 'node:fs'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { isSafeResourceRef } from '../../src/shared/contracts/validation'
 import {
   FELT_RESOURCE_REF_POLICY,
@@ -9,7 +9,15 @@ import {
   parseFeltResourceRef
 } from '../../src/shared/resource'
 import { resolveFeltResourcePath } from '../../src/shared/resource/resolve-path'
-import { isAllowedRendererUrl } from '../../src/main/security/renderer-origin'
+import {
+  configureTrustedRendererTargets,
+  isAllowedRendererUrl,
+  resetTrustedRendererTargetsForTests
+} from '../../src/main/security/renderer-origin'
+import {
+  isFeltResourceMethodAllowed,
+  methodNotAllowedResponse
+} from '../../src/main/resource/methods'
 
 const tempDirs: string[] = []
 
@@ -33,6 +41,7 @@ afterEach(() => {
     const dir = tempDirs.pop()
     if (dir) rmSync(dir, { recursive: true, force: true })
   }
+  resetTrustedRendererTargetsForTests()
 })
 
 describe('felt-resource parse', () => {
@@ -126,14 +135,73 @@ describe('felt-resource path resolve', () => {
       expect(JSON.stringify(escaped.error)).not.toMatch(/[A-Za-z]:\\/)
     }
   })
+
+  it('blocks missing escape/new.png under junction parent when requireExists=false', () => {
+    const { dir, roots } = makeRoots()
+    const outsideDir = join(dir, 'outside')
+    mkdirSync(outsideDir, { recursive: true })
+
+    const linkPath = join(roots.materialRoot, 'escape')
+    let linked = false
+    try {
+      symlinkSync(outsideDir, linkPath, process.platform === 'win32' ? 'junction' : 'dir')
+      linked = true
+    } catch {
+      linked = false
+    }
+
+    if (!linked) {
+      expect(true).toBe(true)
+      return
+    }
+
+    const escaped = resolveFeltResourcePath('felt-resource://material/escape/new.png', roots, {
+      requireExists: false
+    })
+    expect(escaped.ok).toBe(false)
+    if (!escaped.ok) {
+      expect(escaped.error.code).toBe('INVALID_ARGUMENT')
+      expect(JSON.stringify(escaped.error)).not.toMatch(/[A-Za-z]:\\/)
+    }
+  })
 })
 
 describe('renderer origin allow-list', () => {
-  it('allows localhost vite and packaged renderer file urls', () => {
+  beforeEach(() => {
+    resetTrustedRendererTargetsForTests()
+  })
+
+  it('binds exact ELECTRON_RENDERER_URL and packaged renderer file URL only', () => {
+    configureTrustedRendererTargets({
+      devRendererUrl: 'http://localhost:5173/',
+      packagedRendererFileUrl: 'file:///C:/app/out/renderer/index.html'
+    })
+
     expect(isAllowedRendererUrl('http://localhost:5173/')).toBe(true)
-    expect(isAllowedRendererUrl('http://127.0.0.1:5173/index.html')).toBe(true)
+    expect(isAllowedRendererUrl('http://localhost:5173')).toBe(true)
     expect(isAllowedRendererUrl('file:///C:/app/out/renderer/index.html')).toBe(true)
-    expect(isAllowedRendererUrl('https://evil.example/')).toBe(false)
+
+    expect(isAllowedRendererUrl('http://localhost:5174/')).toBe(false)
+    expect(isAllowedRendererUrl('http://127.0.0.1:5173/')).toBe(false)
+    expect(isAllowedRendererUrl('http://localhost:5173/evil')).toBe(false)
+    expect(isAllowedRendererUrl('file:///C:/other/renderer/index.html')).toBe(false)
     expect(isAllowedRendererUrl('file:///C:/Windows/System32/drivers/etc/hosts')).toBe(false)
+  })
+})
+
+describe('felt-resource methods', () => {
+  it('allows only GET HEAD OPTIONS', () => {
+    expect(isFeltResourceMethodAllowed('GET')).toBe(true)
+    expect(isFeltResourceMethodAllowed('HEAD')).toBe(true)
+    expect(isFeltResourceMethodAllowed('OPTIONS')).toBe(true)
+    expect(isFeltResourceMethodAllowed('POST')).toBe(false)
+    expect(isFeltResourceMethodAllowed('PUT')).toBe(false)
+    expect(isFeltResourceMethodAllowed('DELETE')).toBe(false)
+  })
+
+  it('returns 405 with Allow header for disallowed methods', () => {
+    const response = methodNotAllowedResponse()
+    expect(response.status).toBe(405)
+    expect(response.headers.get('Allow')).toBe('GET, HEAD, OPTIONS')
   })
 })
