@@ -1,28 +1,61 @@
-# 操作系统 / IDE
+# Dependencies
+node_modules/
+
+# Build outputs
+out/
+dist/
+release/
+*.exe
+*.blockmap
+*.dmg
+*.AppImage
+*.deb
+*.rpm
+
+# Logs and caches
+*.log
+npm-debug.log*
+.npm/
+.cache/
+.vite/
+.turbo/
+coverage/
+.eslintcache
+*.tsbuildinfo
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Editor / OS
 .DS_Store
 Thumbs.db
-.vscode/
+Desktop.ini
 .idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json.example
 
-# Python
+# Test / temp
+tmp/
+temp/
+*.tmp
+
+# Electron builder
+*.asar.unpacked/
+electron-builder.yaml.lock
+
+tmp-pr-*.md
+
+# Python AI gateway (组长)
 __pycache__/
 *.py[cod]
 .venv/
 venv/
 *.egg-info/
-
-# 环境变量（绝对不要提交真实密钥）
-.env
-.env.local
-.env.*.local
-
-# 日志与临时
-*.log
-tmp/
-temp/
-.cache/
-
-# 后续 TTS 缓存 / 本地日志
 backend/cache/
 backend/data/generated/
 backend/data/logs/
+backend/data/*.jsonl
