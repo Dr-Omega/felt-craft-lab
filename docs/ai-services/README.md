@@ -8,6 +8,10 @@
 
 → **[固定TTS批量工具.md](./固定TTS批量工具.md)**
 
+错误码 / 重试 / 降级：
+
+→ **[错误码与重试降级.md](./错误码与重试降级.md)**
+
 ## 进度
 
 - 第 1 步：安全代理 + 健康检查
@@ -19,6 +23,7 @@
 - 第 7 步：AnimationService（lottie）
 - 第 8 步：SXY Mock / 对接文档 + 轻量 HTTP 客户端
 - 第 9 步：固定文案 TTS 批量工具 + 音频快照索引
+- 第 10 步：`.env.example` + 错误码 + 重试/降级规则
 
 ## 基址
 
@@ -44,9 +49,11 @@
 | GET | `/demo/audio` | AudioService 演示 |
 | GET | `/demo/animation` | AnimationService 演示 |
 | GET | `/demo/fixed-audio` | 固定语音试听 |
+| GET | `/api/ops/rules` | 错误码 + 重试/降级规则 |
 
 ## 产品硬规则
 
 1. ASR `empty=true` → **禁止**进 DeepSeek，提示重说  
 2. TTS 失败 → **仍显示文字**  
-3. 前端 **零密钥**
+3. 前端 **零密钥**  
+4. `retryable=true` 才提示重试；否则不要死循环

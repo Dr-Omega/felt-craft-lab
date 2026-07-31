@@ -10,6 +10,7 @@
 第 7 步：AnimationService（lottie-web）演示页由后端托管
 第 8 步：SXY Mock / 对接文档（见 docs/ai-services/SXY对接指南.md）
 第 9 步：固定文案 TTS 批量工具 + 音频快照索引
+第 10 步：.env.example + 错误码 + 重试/降级规则
 """
 
 from __future__ import annotations
@@ -29,6 +30,7 @@ from services.qa_service import QaService
 from services.qa_types import QA_ERROR_CODES
 from services.tts_service import TtsService
 from services.tts_types import TTS_ERROR_CODES
+from services.ops_rules import ops_rules_doc
 from providers.tts.minimax_provider import CACHE_DIR
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -69,7 +71,7 @@ def health():
         {
             "ok": True,
             "service": "felt-craft-lab-ai-proxy",
-            "version": "step9",
+            "version": "step10",
             "env": os.getenv("APP_ENV", "development"),
             "keys": {
                 "qwen_asr": _mask(_asr_key()),
@@ -91,15 +93,22 @@ def ready():
     return jsonify(
         {
             "ready": True,
-            "step": 9,
+            "step": 10,
             "asr": True,
             "qa": True,
             "tts": True,
             "audioService": True,
             "animationService": True,
             "fixedTtsBatch": True,
+            "opsRules": True,
         }
     )
+
+
+@app.get("/api/ops/rules")
+def ops_rules():
+    """第 10 步：错误码 + 重试/降级规则（给 SXY / 验收用）。"""
+    return jsonify({"ok": True, "rules": ops_rules_doc()})
 
 
 @app.get("/api/asr/contract")

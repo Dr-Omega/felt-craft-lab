@@ -7,11 +7,11 @@
 - 组织仓库：`Dr-Omega/felt-craft-lab`
 - 组长工作分支：`feature/material-ai-services`
 
-## 第 9 步：固定文案 TTS 批量工具（进行中）
+## 第 10 步：错误码与重试/降级（进行中）
 
-- 说明：`docs/ai-services/固定TTS批量工具.md`
-- 双击：`backend\批量固定语音第9步.bat`
-- 试听：http://127.0.0.1:8788/demo/fixed-audio
+- 文档：`docs/ai-services/错误码与重试降级.md`
+- 环境模板：`backend/.env.example`（复制为 `.env`，勿提交密钥）
+- 在线规则：http://127.0.0.1:8788/api/ops/rules
 
 ## 本地启动（验收）
 

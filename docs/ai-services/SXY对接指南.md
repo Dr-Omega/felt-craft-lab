@@ -267,7 +267,19 @@ anim.stop('loading');
 
 ---
 
-## 10. 固定介绍语音（第 9 步快照）
+## 10. 错误码与降级（第 10 步，必读）
+
+完整说明：`docs/ai-services/错误码与重试降级.md`  
+在线：`GET /api/ops/rules`
+
+三句话：
+1. `error.retryable === true` → 可「再试一次」；否则不要狂点重试  
+2. ASR `empty=true` → **不要**调 QA  
+3. TTS 失败 → **只显示文字**，不算整页失败  
+
+---
+
+## 11. 固定介绍语音（第 9 步快照）
 
 贴纸「听介绍」等**固定文案**，不要每次调 `/api/tts/synthesize`。  
 批量生成后的索引：
@@ -286,7 +298,7 @@ await audio.play('/fixed-audio/rabbit_intro.mp3', 'primary');
 
 ---
 
-## 11. 有问题找谁
+## 12. 有问题找谁
 
 | 现象 | 找谁 |
 |------|------|
