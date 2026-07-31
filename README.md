@@ -7,11 +7,9 @@
 - 组织仓库：`Dr-Omega/felt-craft-lab`
 - 组长工作分支：`feature/material-ai-services`
 
-## 第 5 步：MiniMax TTS（进行中）
+## 第 6 步：AudioService（进行中）
 
-- 冒烟测试：http://127.0.0.1:8788/api/tts/smoke-test
-- 成功后把返回的 audioUrl 接到地址栏播放，例如：http://127.0.0.1:8788/api/tts/audio/xxxx.mp3
-- Mock：http://127.0.0.1:8788/api/tts/mock
+浏览器演示：http://127.0.0.1:8788/demo/audio
 
 ## 本地启动（验收）
 

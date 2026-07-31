@@ -6,6 +6,7 @@
 第 3 步：统一输出格式 + 错误码 + P50/P95 统计
 第 4 步：DeepSeek 儿童适龄问答
 第 5 步：MiniMax 动态 TTS + 哈希缓存
+第 6 步：AudioService（Howler）演示页由后端托管
 """
 
 from __future__ import annotations
@@ -14,7 +15,7 @@ import os
 from pathlib import Path
 
 from dotenv import load_dotenv
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 
 from providers.asr.qwen_cloud_http import SAMPLE_AUDIO_URL
 from services.asr_errors import list_error_codes
@@ -28,6 +29,7 @@ from services.tts_types import TTS_ERROR_CODES
 from providers.tts.minimax_provider import CACHE_DIR
 
 BASE_DIR = Path(__file__).resolve().parent
+ROOT_DIR = BASE_DIR.parent
 load_dotenv(BASE_DIR / ".env")
 
 app = Flask(__name__)
@@ -64,7 +66,7 @@ def health():
         {
             "ok": True,
             "service": "felt-craft-lab-ai-proxy",
-            "version": "step5",
+            "version": "step6",
             "env": os.getenv("APP_ENV", "development"),
             "keys": {
                 "qwen_asr": _mask(_asr_key()),
@@ -83,7 +85,16 @@ def health():
 
 @app.get("/api/ready")
 def ready():
-    return jsonify({"ready": True, "step": 5, "asr": True, "qa": True, "tts": True})
+    return jsonify(
+        {
+            "ready": True,
+            "step": 6,
+            "asr": True,
+            "qa": True,
+            "tts": True,
+            "audioService": True,
+        }
+    )
 
 
 @app.get("/api/asr/contract")
@@ -341,6 +352,18 @@ def tts_contract():
             "errorCodes": TTS_ERROR_CODES,
         }
     )
+
+
+@app.get("/demo/audio")
+def demo_audio_page():
+    """第 6 步：AudioService 浏览器演示页。"""
+    return send_from_directory(ROOT_DIR / "frontend" / "demos", "audio-demo.html")
+
+
+@app.get("/frontend/<path:filename>")
+def frontend_static(filename: str):
+    """提供 frontend 下的 JS/CSS，供 demo 引用。"""
+    return send_from_directory(ROOT_DIR / "frontend", filename)
 
 
 if __name__ == "__main__":

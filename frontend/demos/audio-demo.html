@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AudioService 演示 · 第 6 步</title>
+  <style>
+    :root {
+      --bg: #2e1a47;
+      --card: #fdfdfd;
+      --gold: #f7d046;
+      --ink: #1a1231;
+      --lilac: #7b4b94;
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+    .card {
+      width: min(520px, 100%);
+      background: var(--card);
+      border-radius: 24px;
+      padding: 28px 24px;
+      box-shadow: 0 18px 40px rgba(0,0,0,.28);
+      border: 3px solid var(--gold);
+    }
+    h1 { margin: 0 0 8px; font-size: 1.35rem; color: var(--lilac); }
+    p { margin: 0 0 18px; color: #6e5a82; line-height: 1.5; font-size: 0.95rem; }
+    .row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 12px 16px;
+      font-weight: 800;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .primary { background: var(--gold); color: var(--ink); }
+    .ghost { background: #f3ebf8; color: var(--ink); }
+    .danger { background: #c56c86; color: #fff; }
+    #log {
+      margin-top: 16px;
+      background: #1a1231;
+      color: #fdfdfd;
+      border-radius: 12px;
+      padding: 12px;
+      min-height: 88px;
+      font-size: 0.85rem;
+      white-space: pre-wrap;
+    }
+    label { display: flex; align-items: center; gap: 8px; font-weight: 700; margin: 10px 0; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>第 6 步 · AudioService</h1>
+    <p>用 Howler 封装播放：主朗读会互相打断；音效走另一通道。失败不挡住文字。</p>
+
+    <div class="row">
+      <button class="primary" id="btnPrimary1">播放主语音 A</button>
+      <button class="primary" id="btnPrimary2">播放主语音 B（应停掉 A）</button>
+    </div>
+    <div class="row">
+      <button class="ghost" id="btnEffect">播放音效（不打断主语音）</button>
+      <button class="danger" id="btnStop">全部停止</button>
+    </div>
+    <label>
+      <input type="checkbox" id="fxToggle" checked />
+      允许操作音效
+    </label>
+    <div id="log">准备就绪。请先确保后端已启动（8788）。</div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js"></script>
+  <script src="/frontend/services/audio.service.js"></script>
+  <script>
+    const logEl = document.getElementById("log");
+    function log(msg) {
+      logEl.textContent = new Date().toLocaleTimeString() + "  " + msg + "\n" + logEl.textContent;
+    }
+
+    // 用 TTS smoke-test 生成真实语音；失败则用短在线提示音
+    async function ensurePrimaryUrl(tag) {
+      try {
+        const res = await fetch("/api/tts/smoke-test");
+        const data = await res.json();
+        if (data.ok && data.result && data.result.audioUrl) {
+          log("拿到 TTS 音频 (" + tag + ") cacheHit=" + data.result.cacheHit);
+          return data.result.audioUrl;
+        }
+        log("TTS 不可用，改用备用短音：" + (data.error && data.error.message));
+      } catch (e) {
+        log("TTS 请求失败，改用备用短音");
+      }
+      // 很短的公开提示音（仅 demo）
+      return "https://actions.google.com/sounds/v1/cartoon/pop.ogg";
+    }
+
+    const effectUrl = "https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg";
+
+    document.getElementById("btnPrimary1").onclick = async () => {
+      const url = await ensurePrimaryUrl("A");
+      log("播放 primary A");
+      await audioService.play(url, "primary");
+    };
+    document.getElementById("btnPrimary2").onclick = async () => {
+      const url = await ensurePrimaryUrl("B");
+      log("播放 primary B（应先停 A）");
+      await audioService.play(url, "primary");
+    };
+    document.getElementById("btnEffect").onclick = async () => {
+      log("播放 effect");
+      await audioService.play(effectUrl, "effect");
+    };
+    document.getElementById("btnStop").onclick = () => {
+      audioService.stop();
+      log("已 stop 全部");
+    };
+    document.getElementById("fxToggle").onchange = (e) => {
+      audioService.setEffectsEnabled(e.target.checked);
+      log("音效开关 = " + e.target.checked);
+    };
+  </script>
+</body>
+</html>
