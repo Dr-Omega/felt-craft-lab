@@ -55,6 +55,14 @@
           "**/*",
           "!.gitkeep"
         ]
+      },
+      {
+        "from": "assets/generated",
+        "to": "assets/generated",
+        "filter": [
+          "**/*",
+          "!.gitkeep"
+        ]
       }
     ],
     "asar": true,

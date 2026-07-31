@@ -4,6 +4,14 @@ import { pathToFileURL } from 'node:url'
 import { APP_DISPLAY_NAME, IPC_CHANNELS } from '@shared/constants/app'
 import { isAllowedExternalUrl } from './external-url'
 import { resolveRuntimeAssetPath } from './paths'
+import {
+  attachFeltResourceProtocol,
+  createResourceRoots,
+  registerFeltResourceScheme,
+  registerResourceIpc
+} from './resource'
+
+registerFeltResourceScheme()
 
 let mainWindow: BrowserWindow | null = null
 
@@ -42,7 +50,7 @@ function createWindow(): void {
   }
 }
 
-function registerIpc(): void {
+function registerBootstrapIpc(): void {
   ipcMain.handle(IPC_CHANNELS.PING, async () => {
     const markerPath = resolveRuntimeAssetPath('bootstrap-marker.txt')
     return {
@@ -60,7 +68,10 @@ function registerIpc(): void {
 }
 
 app.whenReady().then(() => {
-  registerIpc()
+  const resourceRoots = createResourceRoots()
+  attachFeltResourceProtocol(resourceRoots)
+  registerResourceIpc(resourceRoots)
+  registerBootstrapIpc()
   createWindow()
 
   app.on('activate', () => {
