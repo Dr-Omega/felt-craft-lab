@@ -4,7 +4,7 @@ import type { ResourceInspectResult } from '@shared/resource'
  * Renderer-facing resource helper. Boundary rules:
  * - Only pass ResourceRef strings
  * - Never construct absolute filesystem paths
- * - Prefer using the ResourceRef directly as img/audio src when protocol is registered
+ * - Prefer fetch(ref)→blob for Fabric canvas to avoid tainting
  */
 export async function inspectResource(ref: string): Promise<ResourceInspectResult> {
   if (!window.electronAPI?.inspectResource) {
@@ -18,4 +18,14 @@ export async function inspectResource(ref: string): Promise<ResourceInspectResul
     }
   }
   return window.electronAPI.inspectResource(ref)
+}
+
+/** Load a felt-resource image as a same-origin blob URL safe for canvas export. */
+export async function loadResourceObjectUrl(ref: string): Promise<string> {
+  const response = await fetch(ref)
+  if (!response.ok) {
+    throw new Error(`资源加载失败（${response.status}）`)
+  }
+  const blob = await response.blob()
+  return URL.createObjectURL(blob)
 }

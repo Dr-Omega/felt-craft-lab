@@ -1,4 +1,4 @@
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, symlinkSync } from 'node:fs'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { afterEach, describe, expect, it } from 'vitest'
@@ -9,6 +9,7 @@ import {
   parseFeltResourceRef
 } from '../../src/shared/resource'
 import { resolveFeltResourcePath } from '../../src/shared/resource/resolve-path'
+import { isAllowedRendererUrl } from '../../src/main/security/renderer-origin'
 
 const tempDirs: string[] = []
 
@@ -69,7 +70,10 @@ describe('felt-resource path resolve', () => {
     expect(material.ok).toBe(true)
     expect(audio.ok).toBe(true)
     expect(preview.ok).toBe(true)
-    if (material.ok) expect(material.absolutePath.endsWith('mock-sticker.png')).toBe(true)
+    if (material.ok) {
+      expect(material.exists).toBe(true)
+      expect(material.absolutePath.endsWith('mock-sticker.png')).toBe(true)
+    }
   })
 
   it('returns ASSET_NOT_FOUND when missing', () => {
@@ -79,10 +83,57 @@ describe('felt-resource path resolve', () => {
     if (!missing.ok) expect(missing.error.code).toBe('ASSET_NOT_FOUND')
   })
 
+  it('reports exists=false without throwing for absent inspect targets', () => {
+    const { roots } = makeRoots()
+    const missing = resolveFeltResourcePath('felt-resource://preview/new-project.png', roots, {
+      requireExists: false
+    })
+    expect(missing.ok).toBe(true)
+    if (missing.ok) expect(missing.exists).toBe(false)
+  })
+
   it('blocks path escape outside kind root', () => {
     const { roots } = makeRoots()
     const escaped = resolveFeltResourcePath('felt-resource://material/..%2F..%2Fsecret.txt', roots)
     expect(escaped.ok).toBe(false)
     if (!escaped.ok) expect(escaped.error.code).toBe('INVALID_ARGUMENT')
+  })
+
+  it('blocks symlink or Windows junction escape via realpath', () => {
+    const { dir, roots } = makeRoots()
+    const outsideDir = join(dir, 'outside')
+    mkdirSync(outsideDir, { recursive: true })
+    writeFileSync(join(outsideDir, 'secret.txt'), 'leak')
+
+    const linkPath = join(roots.materialRoot, 'escape')
+    let linked = false
+    try {
+      symlinkSync(outsideDir, linkPath, process.platform === 'win32' ? 'junction' : 'dir')
+      linked = true
+    } catch {
+      linked = false
+    }
+
+    if (!linked) {
+      expect(true).toBe(true)
+      return
+    }
+
+    const escaped = resolveFeltResourcePath('felt-resource://material/escape/secret.txt', roots)
+    expect(escaped.ok).toBe(false)
+    if (!escaped.ok) {
+      expect(escaped.error.code).toBe('INVALID_ARGUMENT')
+      expect(JSON.stringify(escaped.error)).not.toMatch(/[A-Za-z]:\\/)
+    }
+  })
+})
+
+describe('renderer origin allow-list', () => {
+  it('allows localhost vite and packaged renderer file urls', () => {
+    expect(isAllowedRendererUrl('http://localhost:5173/')).toBe(true)
+    expect(isAllowedRendererUrl('http://127.0.0.1:5173/index.html')).toBe(true)
+    expect(isAllowedRendererUrl('file:///C:/app/out/renderer/index.html')).toBe(true)
+    expect(isAllowedRendererUrl('https://evil.example/')).toBe(false)
+    expect(isAllowedRendererUrl('file:///C:/Windows/System32/drivers/etc/hosts')).toBe(false)
   })
 })

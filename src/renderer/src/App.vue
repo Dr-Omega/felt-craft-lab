@@ -61,9 +61,9 @@ onMounted(async () => {
           <dt>平台</dt>
           <dd>{{ ping.platform }} / {{ ping.arch }}</dd>
         </div>
-        <div class="wide">
-          <dt>Windows 静态资源路径</dt>
-          <dd><code>{{ ping.markerPath }}</code></dd>
+        <div>
+          <dt>运行时 marker</dt>
+          <dd>{{ ping.markerFound ? 'found' : 'missing' }}</dd>
         </div>
         <div class="wide">
           <dt>时间戳</dt>
@@ -93,7 +93,13 @@ onMounted(async () => {
           </div>
         </dl>
         <p v-if="resource.exists" class="preview-row">
-          <img :src="MOCK_MATERIAL_REF" alt="mock sticker via felt-resource protocol" width="64" height="64" />
+          <img
+            :src="MOCK_MATERIAL_REF"
+            crossorigin="anonymous"
+            alt="mock sticker via felt-resource protocol"
+            width="64"
+            height="64"
+          />
         </p>
       </template>
       <p v-else-if="resource && !resource.ok" class="error">

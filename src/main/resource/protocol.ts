@@ -1,23 +1,8 @@
-import { protocol } from 'electron'
-import { readFileSync } from 'node:fs'
-import { extname } from 'node:path'
+import { net, protocol } from 'electron'
+import { pathToFileURL } from 'node:url'
 import { FELT_RESOURCE_SCHEME } from '@shared/resource'
 import { resolveFeltResourcePath } from '@shared/resource/resolve-path'
 import type { ResourceRoots } from '@shared/resource'
-
-const MIME_BY_EXT: Record<string, string> = {
-  '.png': 'image/png',
-  '.jpg': 'image/jpeg',
-  '.jpeg': 'image/jpeg',
-  '.webp': 'image/webp',
-  '.gif': 'image/gif',
-  '.svg': 'image/svg+xml',
-  '.mp3': 'audio/mpeg',
-  '.wav': 'audio/wav',
-  '.ogg': 'audio/ogg',
-  '.m4a': 'audio/mp4',
-  '.json': 'application/json'
-}
 
 /** Must run before app ready. */
 export function registerFeltResourceScheme(): void {
@@ -30,36 +15,69 @@ export function registerFeltResourceScheme(): void {
         supportFetchAPI: true,
         stream: true,
         bypassCSP: false,
-        corsEnabled: false
+        // Required so Renderer can draw felt-resource images onto canvas without tainting.
+        corsEnabled: true
       }
     }
   ])
 }
 
+async function toCorsResponse(upstream: Response): Promise<Response> {
+  const headers = new Headers(upstream.headers)
+  headers.set('Access-Control-Allow-Origin', '*')
+  headers.set('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS')
+  headers.set('Access-Control-Allow-Headers', 'Range, Content-Type')
+  headers.set('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Accept-Ranges')
+
+  return new Response(upstream.body, {
+    status: upstream.status,
+    statusText: upstream.statusText,
+    headers
+  })
+}
+
+/**
+ * Serve local files through Electron's streaming fetch path so audio seek /
+ * range requests work without buffering the whole file in Main.
+ */
 export function attachFeltResourceProtocol(roots: ResourceRoots): void {
-  protocol.handle(FELT_RESOURCE_SCHEME, (request) => {
+  protocol.handle(FELT_RESOURCE_SCHEME, async (request) => {
+    if (request.method === 'OPTIONS') {
+      return new Response(null, {
+        status: 204,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+          'Access-Control-Allow-Headers': 'Range, Content-Type',
+          'Access-Control-Max-Age': '86400'
+        }
+      })
+    }
+
     const resolved = resolveFeltResourcePath(request.url, roots, { requireExists: true })
     if (!resolved.ok) {
       return new Response(resolved.error.message, {
         status: resolved.error.code === 'ASSET_NOT_FOUND' ? 404 : 400,
-        headers: { 'content-type': 'text/plain; charset=utf-8' }
+        headers: {
+          'content-type': 'text/plain; charset=utf-8',
+          'Access-Control-Allow-Origin': '*'
+        }
       })
     }
 
     try {
-      const body = readFileSync(resolved.absolutePath)
-      const mime = MIME_BY_EXT[extname(resolved.absolutePath).toLowerCase()] ?? 'application/octet-stream'
-      return new Response(body, {
-        status: 200,
-        headers: {
-          'content-type': mime,
-          'cache-control': 'no-cache'
-        }
+      const upstream = await net.fetch(pathToFileURL(resolved.absolutePath).href, {
+        headers: request.headers,
+        method: request.method
       })
+      return await toCorsResponse(upstream)
     } catch {
       return new Response('资源读取失败。', {
         status: 500,
-        headers: { 'content-type': 'text/plain; charset=utf-8' }
+        headers: {
+          'content-type': 'text/plain; charset=utf-8',
+          'Access-Control-Allow-Origin': '*'
+        }
       })
     }
   })

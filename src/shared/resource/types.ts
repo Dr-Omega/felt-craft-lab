@@ -19,7 +19,9 @@ export type FeltResourceResolveSuccess = {
   ref: string
   kind: FeltResourceKind
   relativePath: string
+  /** Main-process only. Never send absolute paths across Preload/Renderer. */
   absolutePath: string
+  exists: boolean
 }
 
 export type FeltResourceResolveFailure = {

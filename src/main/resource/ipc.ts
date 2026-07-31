@@ -1,54 +1,49 @@
 import { ipcMain } from 'electron'
-import { existsSync, statSync } from 'node:fs'
 import { IPC_CHANNELS } from '@shared/constants/app'
-import { parseFeltResourceRef } from '@shared/resource'
-import { resolveFeltResourcePath } from '@shared/resource/resolve-path'
 import { toSharedError } from '@shared/contracts/error'
+import { resolveFeltResourcePath } from '@shared/resource/resolve-path'
 import type { ResourceInspectResult, ResourceRoots } from '@shared/resource'
+import { isTrustedIpcEvent } from '../security/ipc-guard'
+
+function deny(message: string, code: 'INVALID_ARGUMENT' | 'UNKNOWN' = 'INVALID_ARGUMENT'): ResourceInspectResult {
+  return {
+    ok: false,
+    error: toSharedError(
+      {
+        code,
+        message,
+        retryable: code === 'UNKNOWN'
+      },
+      code
+    )
+  }
+}
 
 export function registerResourceIpc(roots: ResourceRoots): void {
-  ipcMain.handle(IPC_CHANNELS.RESOURCE_INSPECT, async (_event, rawRef: unknown): Promise<ResourceInspectResult> => {
-    if (typeof rawRef !== 'string') {
-      return {
-        ok: false,
-        error: toSharedError(
-          {
-            code: 'INVALID_ARGUMENT',
-            message: '资源引用必须是字符串。',
-            retryable: false
-          },
-          'INVALID_ARGUMENT'
-        )
+  ipcMain.handle(IPC_CHANNELS.RESOURCE_INSPECT, async (event, rawRef: unknown): Promise<ResourceInspectResult> => {
+    try {
+      if (!isTrustedIpcEvent(event)) {
+        return deny('不受信任的页面不得检查应用资源。')
       }
-    }
 
-    const parsed = parseFeltResourceRef(rawRef)
-    if (!parsed) {
-      return {
-        ok: false,
-        error: toSharedError(
-          {
-            code: 'INVALID_ARGUMENT',
-            message: '资源引用无效：仅支持 felt-resource://material|audio|preview/... 格式。',
-            retryable: false
-          },
-          'INVALID_ARGUMENT'
-        )
+      if (typeof rawRef !== 'string') {
+        return deny('资源引用必须是字符串。')
       }
-    }
 
-    const resolved = resolveFeltResourcePath(parsed.ref, roots, { requireExists: false })
-    if (!resolved.ok) {
-      return { ok: false, error: resolved.error }
-    }
+      const resolved = resolveFeltResourcePath(rawRef, roots, { requireExists: false })
+      if (!resolved.ok) {
+        return { ok: false, error: resolved.error }
+      }
 
-    const exists = existsSync(resolved.absolutePath) && statSync(resolved.absolutePath).isFile()
-    return {
-      ok: true,
-      ref: resolved.ref,
-      kind: resolved.kind,
-      relativePath: resolved.relativePath,
-      exists
+      return {
+        ok: true,
+        ref: resolved.ref,
+        kind: resolved.kind,
+        relativePath: resolved.relativePath,
+        exists: resolved.exists
+      }
+    } catch {
+      return deny('资源检查暂时无法完成，请稍后重试。', 'UNKNOWN')
     }
   })
 }

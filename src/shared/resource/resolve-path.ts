@@ -1,5 +1,5 @@
 import { isAbsolute, join, normalize, relative, resolve, sep } from 'node:path'
-import { existsSync, statSync } from 'node:fs'
+import { existsSync, realpathSync, statSync } from 'node:fs'
 import { toSharedError } from '../contracts/error'
 import { parseFeltResourceRef } from './parse'
 import type { FeltResourceResolveResult, ResourceRoots } from './types'
@@ -17,9 +17,49 @@ function isInsideRoot(root: string, candidate: string): boolean {
   return rel !== '' && !rel.startsWith(`..${sep}`) && rel !== '..' && !isAbsolute(rel)
 }
 
+function invalidRef(message: string): FeltResourceResolveResult {
+  return {
+    ok: false,
+    error: toSharedError(
+      {
+        code: 'INVALID_ARGUMENT',
+        message,
+        retryable: false
+      },
+      'INVALID_ARGUMENT'
+    )
+  }
+}
+
+function notFound(kind: string, relativePath: string): FeltResourceResolveResult {
+  return {
+    ok: false,
+    error: toSharedError(
+      {
+        code: 'ASSET_NOT_FOUND',
+        message: '资源文件不存在或不可用。',
+        retryable: false,
+        details: { kind, relativePath }
+      },
+      'ASSET_NOT_FOUND'
+    )
+  }
+}
+
+function safeRealpath(target: string): string | undefined {
+  try {
+    return realpathSync(target)
+  } catch {
+    return undefined
+  }
+}
+
 /**
  * Pure path resolver used by Main and unit tests. Renderer must not call this
  * with filesystem roots; it only consumes ResourceRef / inspect results.
+ *
+ * Existing targets are re-checked with realpath so symlinks / Windows junctions
+ * cannot escape the kind root. Native fs errors never propagate to callers.
  */
 export function resolveFeltResourcePath(
   ref: string,
@@ -27,60 +67,71 @@ export function resolveFeltResourcePath(
   options: { requireExists?: boolean } = {}
 ): FeltResourceResolveResult {
   const requireExists = options.requireExists ?? true
-  const parsed = parseFeltResourceRef(ref)
-  if (!parsed) {
-    return {
-      ok: false,
-      error: toSharedError(
-        {
-          code: 'INVALID_ARGUMENT',
-          message: '资源引用无效：仅支持 felt-resource://material|audio|preview/... 格式。',
-          retryable: false
-        },
-        'INVALID_ARGUMENT'
-      )
+
+  try {
+    const parsed = parseFeltResourceRef(ref)
+    if (!parsed) {
+      return invalidRef('资源引用无效：仅支持 felt-resource://material|audio|preview/... 格式。')
     }
-  }
 
-  const root = rootForKind(roots, parsed.kind)
-  const absolutePath = normalize(join(root, ...parsed.relativePath.split('/')))
+    const segments = parsed.relativePath.split('/')
+    const root = rootForKind(roots, parsed.kind)
+    const absolutePath = normalize(join(root, ...segments))
 
-  if (!isInsideRoot(root, absolutePath)) {
-    return {
-      ok: false,
-      error: toSharedError(
-        {
-          code: 'INVALID_ARGUMENT',
-          message: '资源引用无效：检测到路径穿越或不安全路径。',
-          retryable: false
-        },
-        'INVALID_ARGUMENT'
-      )
+    if (!isInsideRoot(root, absolutePath)) {
+      return invalidRef('资源引用无效：检测到路径穿越或不安全路径。')
     }
-  }
 
-  if (requireExists) {
-    if (!existsSync(absolutePath) || !statSync(absolutePath).isFile()) {
+    const realRoot = safeRealpath(root) ?? resolve(root)
+    const lexicalUnderRealRoot = normalize(join(realRoot, ...segments))
+    if (!isInsideRoot(realRoot, lexicalUnderRealRoot)) {
+      return invalidRef('资源引用无效：检测到路径穿越或不安全路径。')
+    }
+
+    if (!existsSync(absolutePath)) {
+      if (requireExists) return notFound(parsed.kind, parsed.relativePath)
       return {
-        ok: false,
-        error: toSharedError(
-          {
-            code: 'ASSET_NOT_FOUND',
-            message: '资源文件不存在或不可用。',
-            retryable: false,
-            details: { kind: parsed.kind, relativePath: parsed.relativePath }
-          },
-          'ASSET_NOT_FOUND'
-        )
+        ok: true,
+        ref: parsed.ref,
+        kind: parsed.kind,
+        relativePath: parsed.relativePath,
+        absolutePath: lexicalUnderRealRoot,
+        exists: false
       }
     }
-  }
 
-  return {
-    ok: true,
-    ref: parsed.ref,
-    kind: parsed.kind,
-    relativePath: parsed.relativePath,
-    absolutePath
+    const realCandidate = safeRealpath(absolutePath)
+    if (!realCandidate || !isInsideRoot(realRoot, realCandidate)) {
+      return invalidRef('资源引用无效：检测到路径穿越或不安全路径。')
+    }
+
+    try {
+      if (!statSync(realCandidate).isFile()) {
+        return notFound(parsed.kind, parsed.relativePath)
+      }
+    } catch {
+      return notFound(parsed.kind, parsed.relativePath)
+    }
+
+    return {
+      ok: true,
+      ref: parsed.ref,
+      kind: parsed.kind,
+      relativePath: parsed.relativePath,
+      absolutePath: realCandidate,
+      exists: true
+    }
+  } catch {
+    return {
+      ok: false,
+      error: toSharedError(
+        {
+          code: 'UNKNOWN',
+          message: '资源解析暂时无法完成，请稍后重试。',
+          retryable: true
+        },
+        'UNKNOWN'
+      )
+    }
   }
 }

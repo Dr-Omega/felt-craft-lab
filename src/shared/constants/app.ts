@@ -13,7 +13,7 @@ export interface BootstrapPingResult {
   electronVersion: string
   platform: string
   arch: string
-  markerPath: string
-  markerUrl: string
+  /** Whether the bootstrap runtime marker exists. Never an OS path. */
+  markerFound: boolean
   timestamp: string
 }

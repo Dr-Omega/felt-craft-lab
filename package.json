@@ -19,6 +19,7 @@
     "typecheck:web": "vue-tsc --noEmit -p tsconfig.web.json",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:electron-resource": "electron scripts/electron-resource-smoke.cjs",
     "dist:win": "npm run build && electron-builder --win --x64 --config.electronDist=node_modules/electron/dist",
     "dist:win:dir": "npm run build && electron-builder --win --x64 --dir --config.electronDist=node_modules/electron/dist",
     "postinstall": "electron-builder install-app-deps"

@@ -1,6 +1,6 @@
 import { app, BrowserWindow, ipcMain, shell } from 'electron'
+import { existsSync } from 'node:fs'
 import { join } from 'node:path'
-import { pathToFileURL } from 'node:url'
 import { APP_DISPLAY_NAME, IPC_CHANNELS } from '@shared/constants/app'
 import { isAllowedExternalUrl } from './external-url'
 import { resolveRuntimeAssetPath } from './paths'
@@ -10,10 +10,33 @@ import {
   registerFeltResourceScheme,
   registerResourceIpc
 } from './resource'
+import { isTrustedIpcEvent } from './security/ipc-guard'
+import { isAllowedRendererUrl } from './security/renderer-origin'
 
 registerFeltResourceScheme()
 
 let mainWindow: BrowserWindow | null = null
+
+function attachNavigationGuards(window: BrowserWindow): void {
+  window.webContents.on('will-navigate', (event, url) => {
+    if (!isAllowedRendererUrl(url)) {
+      event.preventDefault()
+    }
+  })
+
+  window.webContents.on('will-redirect', (event, url) => {
+    if (!isAllowedRendererUrl(url)) {
+      event.preventDefault()
+    }
+  })
+
+  window.webContents.setWindowOpenHandler((details) => {
+    if (isAllowedExternalUrl(details.url)) {
+      void shell.openExternal(details.url)
+    }
+    return { action: 'deny' }
+  })
+}
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
@@ -32,15 +55,10 @@ function createWindow(): void {
     }
   })
 
+  attachNavigationGuards(mainWindow)
+
   mainWindow.on('ready-to-show', () => {
     mainWindow?.show()
-  })
-
-  mainWindow.webContents.setWindowOpenHandler((details) => {
-    if (isAllowedExternalUrl(details.url)) {
-      void shell.openExternal(details.url)
-    }
-    return { action: 'deny' }
   })
 
   if (process.env.ELECTRON_RENDERER_URL) {
@@ -51,7 +69,20 @@ function createWindow(): void {
 }
 
 function registerBootstrapIpc(): void {
-  ipcMain.handle(IPC_CHANNELS.PING, async () => {
+  ipcMain.handle(IPC_CHANNELS.PING, async (event) => {
+    if (!isTrustedIpcEvent(event)) {
+      return {
+        ok: false,
+        appName: APP_DISPLAY_NAME,
+        appVersion: app.getVersion(),
+        electronVersion: process.versions.electron,
+        platform: process.platform,
+        arch: process.arch,
+        markerFound: false,
+        timestamp: new Date().toISOString()
+      }
+    }
+
     const markerPath = resolveRuntimeAssetPath('bootstrap-marker.txt')
     return {
       ok: true,
@@ -60,8 +91,7 @@ function registerBootstrapIpc(): void {
       electronVersion: process.versions.electron,
       platform: process.platform,
       arch: process.arch,
-      markerPath,
-      markerUrl: pathToFileURL(markerPath).href,
+      markerFound: existsSync(markerPath),
       timestamp: new Date().toISOString()
     }
   })
