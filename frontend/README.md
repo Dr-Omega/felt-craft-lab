@@ -1,5 +1,15 @@
 # 前端技术封装（组长）
 
+完整对接说明请看：`docs/ai-services/SXY对接指南.md`
+
+## FeltAiClient（第 8 步，可选）
+
+路径：
+- `frontend/services/felt-ai.client.ts`
+- `frontend/services/felt-ai.client.js`
+
+封装 ASR / QA / TTS 的 `fetch` 调用，避免手写 URL。
+
 ## AudioService（第 6 步）
 
 路径：

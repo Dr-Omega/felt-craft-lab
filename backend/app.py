@@ -8,6 +8,7 @@
 第 5 步：MiniMax 动态 TTS + 哈希缓存
 第 6 步：AudioService（Howler）演示页由后端托管
 第 7 步：AnimationService（lottie-web）演示页由后端托管
+第 8 步：SXY Mock / 对接文档（见 docs/ai-services/SXY对接指南.md）
 """
 
 from __future__ import annotations
@@ -67,7 +68,7 @@ def health():
         {
             "ok": True,
             "service": "felt-craft-lab-ai-proxy",
-            "version": "step7",
+            "version": "step8",
             "env": os.getenv("APP_ENV", "development"),
             "keys": {
                 "qwen_asr": _mask(_asr_key()),
@@ -89,7 +90,7 @@ def ready():
     return jsonify(
         {
             "ready": True,
-            "step": 7,
+            "step": 8,
             "asr": True,
             "qa": True,
             "tts": True,
