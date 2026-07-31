@@ -1,9 +1,7 @@
 import { app, BrowserWindow } from 'electron'
 import { copyFileSync, existsSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { attachFeltResourceProtocol, createResourceRoots, registerFeltResourceScheme } from './resource'
-
-registerFeltResourceScheme()
+import { attachFeltResourceProtocol, createResourceRoots } from './resource'
 
 function fail(message: string): never {
   console.error(`[felt-resource-smoke] FAIL: ${message}`)
@@ -16,8 +14,9 @@ function ok(message: string): void {
 }
 
 /**
- * Production-path smoke: reuses registerFeltResourceScheme, createResourceRoots,
- * and attachFeltResourceProtocol from the same Main modules as the real app.
+ * Production-path smoke: reuses createResourceRoots and
+ * attachFeltResourceProtocol from the same Main modules as the real app.
+ * Privileged scheme registration stays only in src/main/index.ts.
  */
 export async function runResourceSmoke(): Promise<void> {
   const roots = createResourceRoots()

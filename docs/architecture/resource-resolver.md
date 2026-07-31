@@ -52,7 +52,7 @@ felt-resource://preview/project-demo.png
 4. 协议层使用 `handleFeltResourceRequest` + `net.fetch(pathToFileURL(...))` 流式响应；仅允许 `GET/HEAD/OPTIONS`。
 5. Bootstrap ping 仅返回 `markerFound`，不再返回 `markerPath` / `markerUrl`。
 6. Fabric / Canvas：推荐 `fetch(ref) → blob → ObjectURL/ImageBitmap`。
-7. Electron 冒烟通过 `FELT_RESOURCE_SMOKE=1` 启动同一 Main 入口，复用生产注册/resolver/roots。
+7. Electron 冒烟通过 `FELT_RESOURCE_SMOKE=1` 启动同一 Main 入口，复用生产 roots/protocol handler；`registerFeltResourceScheme()` 仅允许在 `src/main/index.ts` 注册一次。
 
 ## 异常
 
