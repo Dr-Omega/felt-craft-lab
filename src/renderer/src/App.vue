@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { APP_DISPLAY_NAME, type BootstrapPingResult } from '@shared/constants/app'
+import type { ResourceInspectResult } from '@shared/resource'
+import { inspectResource } from './services/resource.service'
+
+const MOCK_MATERIAL_REF = 'felt-resource://material/mock-sticker.png'
 
 const status = ref<'idle' | 'loading' | 'ok' | 'error'>('idle')
 const ping = ref<BootstrapPingResult | null>(null)
+const resource = ref<ResourceInspectResult | null>(null)
 const errorMessage = ref('')
 
 onMounted(async () => {
@@ -13,6 +18,7 @@ onMounted(async () => {
       throw new Error('electronAPI.ping is unavailable. Open this page inside Electron.')
     }
     ping.value = await window.electronAPI.ping()
+    resource.value = await inspectResource(MOCK_MATERIAL_REF)
     status.value = ping.value.ok ? 'ok' : 'error'
   } catch (error) {
     status.value = 'error'
@@ -24,11 +30,11 @@ onMounted(async () => {
 <template>
   <main class="page">
     <header class="hero">
-      <p class="eyebrow">工程基线 · Bootstrap</p>
+      <p class="eyebrow">工程基线 · Resource Resolver</p>
       <h1>{{ APP_DISPLAY_NAME }}</h1>
       <p class="lead">
-        Electron 主进程、Preload 安全桥与 Vue3 Renderer 最小连通页。素材库、Dexie、Manifest
-        等业务不在本阶段实现。
+        Electron 主进程、Preload 与 Renderer 最小连通页，并验证
+        <code>felt-resource:</code> 资源引用。素材库、Dexie、Manifest 等业务不在本阶段实现。
       </p>
     </header>
 
@@ -55,19 +61,50 @@ onMounted(async () => {
           <dt>平台</dt>
           <dd>{{ ping.platform }} / {{ ping.arch }}</dd>
         </div>
-        <div class="wide">
-          <dt>Windows 静态资源路径</dt>
-          <dd><code>{{ ping.markerPath }}</code></dd>
-        </div>
-        <div class="wide">
-          <dt>资源 file URL</dt>
-          <dd><code>{{ ping.markerUrl }}</code></dd>
+        <div>
+          <dt>运行时 marker</dt>
+          <dd>{{ ping.markerFound ? 'found' : 'missing' }}</dd>
         </div>
         <div class="wide">
           <dt>时间戳</dt>
           <dd>{{ ping.timestamp }}</dd>
         </div>
       </dl>
+    </section>
+
+    <section class="panel" aria-live="polite">
+      <h2>felt-resource 检查</h2>
+      <p>
+        Mock 引用：<code>{{ MOCK_MATERIAL_REF }}</code>
+      </p>
+      <template v-if="resource?.ok">
+        <dl class="grid">
+          <div>
+            <dt>kind</dt>
+            <dd>{{ resource.kind }}</dd>
+          </div>
+          <div>
+            <dt>exists</dt>
+            <dd>{{ resource.exists ? 'yes' : 'no' }}</dd>
+          </div>
+          <div class="wide">
+            <dt>relativePath</dt>
+            <dd><code>{{ resource.relativePath }}</code></dd>
+          </div>
+        </dl>
+        <p v-if="resource.exists" class="preview-row">
+          <img
+            :src="MOCK_MATERIAL_REF"
+            crossorigin="anonymous"
+            alt="mock sticker via felt-resource protocol"
+            width="64"
+            height="64"
+          />
+        </p>
+      </template>
+      <p v-else-if="resource && !resource.ok" class="error">
+        资源检查失败：{{ resource.error.code }} — {{ resource.error.message }}
+      </p>
     </section>
   </main>
 </template>
@@ -166,6 +203,16 @@ code {
 
 .error {
   color: var(--danger);
+}
+
+.preview-row {
+  margin: 16px 0 0;
+}
+
+.preview-row img {
+  display: block;
+  border: 1px solid var(--line);
+  background: #fff;
 }
 
 @media (max-width: 720px) {

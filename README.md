@@ -24,13 +24,15 @@
 src/main/          Electron 主进程与静态资源路径解析（SXY）
 src/preload/       contextBridge 安全入口（SXY）
 src/renderer/      Vue3 Renderer 最小首页（SXY）
-src/shared/        跨模块常量/契约/错误形态占位（契约由 ZXR 维护）
+src/shared/        跨模块常量、资源解析纯逻辑、共享契约（契约由 ZXR 维护）
 server/            AI 网关安全入口占位（TSH）
 scripts/           导入与校验脚本占位（SXY / TSH）
-assets/            generated + runtime 资源目录
+assets/            generated（material/audio mock）+ runtime 资源目录
 docs/              工作流与架构文档
-tests/             冒烟测试
+tests/             冒烟与契约/资源解析测试
 ```
+
+资源引用验证协议为 `felt-resource:`，边界说明见 `docs/architecture/resource-resolver.md`。
 
 ## 常用命令
 

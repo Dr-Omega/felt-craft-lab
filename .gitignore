@@ -46,3 +46,6 @@ temp/
 # Electron builder
 *.asar.unpacked/
 electron-builder.yaml.lock
+
+tmp-pr-*.md
+
