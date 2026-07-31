@@ -3,6 +3,7 @@
   "private": true,
   "description": "组长交付的前端技术封装（Audio/Animation），供 SXY 页面调用",
   "dependencies": {
-    "howler": "^2.2.4"
+    "howler": "^2.2.4",
+    "lottie-web": "^5.12.2"
   }
 }

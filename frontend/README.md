@@ -19,7 +19,18 @@ setEffectsEnabled(enabled: boolean): void
 - `effect` 不打断 `primary`
 - 播放失败只打日志，不抛错（文字仍可显示）
 
-## 本地演示
+## AnimationService（第 7 步）
 
-1. 启动后端：`backend/启动第1步.bat`
-2. 浏览器打开：http://127.0.0.1:8788/demo/audio
+路径：
+- `frontend/services/animation.service.ts`
+- `frontend/services/animation.service.js`
+
+接口：
+
+```ts
+play(eventKey: string, target?: HTMLElement): Promise<void>
+stop(eventKey?: string): void
+```
+
+预置 eventKey：`collect` / `save` / `loading`  
+演示：http://127.0.0.1:8788/demo/animation

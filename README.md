@@ -7,9 +7,9 @@
 - 组织仓库：`Dr-Omega/felt-craft-lab`
 - 组长工作分支：`feature/material-ai-services`
 
-## 第 6 步：AudioService（进行中）
+## 第 7 步：AnimationService（进行中）
 
-浏览器演示：http://127.0.0.1:8788/demo/audio
+浏览器演示：http://127.0.0.1:8788/demo/animation
 
 ## 本地启动（验收）
 

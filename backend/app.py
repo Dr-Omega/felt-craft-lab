@@ -7,6 +7,7 @@
 第 4 步：DeepSeek 儿童适龄问答
 第 5 步：MiniMax 动态 TTS + 哈希缓存
 第 6 步：AudioService（Howler）演示页由后端托管
+第 7 步：AnimationService（lottie-web）演示页由后端托管
 """
 
 from __future__ import annotations
@@ -66,7 +67,7 @@ def health():
         {
             "ok": True,
             "service": "felt-craft-lab-ai-proxy",
-            "version": "step6",
+            "version": "step7",
             "env": os.getenv("APP_ENV", "development"),
             "keys": {
                 "qwen_asr": _mask(_asr_key()),
@@ -88,11 +89,12 @@ def ready():
     return jsonify(
         {
             "ready": True,
-            "step": 6,
+            "step": 7,
             "asr": True,
             "qa": True,
             "tts": True,
             "audioService": True,
+            "animationService": True,
         }
     )
 
@@ -358,6 +360,12 @@ def tts_contract():
 def demo_audio_page():
     """第 6 步：AudioService 浏览器演示页。"""
     return send_from_directory(ROOT_DIR / "frontend" / "demos", "audio-demo.html")
+
+
+@app.get("/demo/animation")
+def demo_animation_page():
+    """第 7 步：AnimationService 浏览器演示页。"""
+    return send_from_directory(ROOT_DIR / "frontend" / "demos", "animation-demo.html")
 
 
 @app.get("/frontend/<path:filename>")
