@@ -36,8 +36,14 @@ from providers.tts.minimax_provider import CACHE_DIR  # noqa: E402
 from services.tts_service import TtsService  # noqa: E402
 
 DEFAULT_INPUT = Path(__file__).resolve().parent / "scripts.example.csv"
-DEFAULT_OUT = ROOT_DIR / "frontend" / "assets" / "fixed-audio"
+# Electron 正式资源根：assets/generated/audio → felt-resource://audio/...
+DEFAULT_OUT = ROOT_DIR / "assets" / "generated" / "audio"
 SAFE_ID = re.compile(r"^[A-Za-z0-9_\-]+$")
+
+
+def felt_audio_url(item_id: str) -> str:
+    """Electron 正式对接地址（ResourceRef）。"""
+    return f"felt-resource://audio/{item_id}.mp3"
 
 
 def load_items(path: Path) -> list[dict]:
@@ -98,7 +104,7 @@ def run_batch(*, input_path: Path, out_dir: Path, dry_run: bool, sleep_s: float)
                     "assetId": item["assetId"],
                     "text": text,
                     "file": f"{item_id}.mp3",
-                    "url": f"/fixed-audio/{item_id}.mp3",
+                    "url": felt_audio_url(item_id),
                     "status": "dry_run",
                 }
             )
@@ -115,7 +121,7 @@ def run_batch(*, input_path: Path, out_dir: Path, dry_run: bool, sleep_s: float)
                     "assetId": item["assetId"],
                     "text": text,
                     "file": f"{item_id}.mp3",
-                    "url": f"/fixed-audio/{item_id}.mp3",
+                    "url": felt_audio_url(item_id),
                     "status": "error",
                     "error": err,
                 }
@@ -136,7 +142,7 @@ def run_batch(*, input_path: Path, out_dir: Path, dry_run: bool, sleep_s: float)
                     "assetId": item["assetId"],
                     "text": text,
                     "file": f"{item_id}.mp3",
-                    "url": f"/fixed-audio/{item_id}.mp3",
+                    "url": felt_audio_url(item_id),
                     "status": "error",
                     "error": {"code": "TTS_CACHE_MISSING", "message": str(src)},
                 }
@@ -146,14 +152,14 @@ def run_batch(*, input_path: Path, out_dir: Path, dry_run: bool, sleep_s: float)
 
         shutil.copyfile(src, dest)
         cache_hit = bool((result.get("result") or {}).get("cacheHit"))
-        print(f"  OK → {dest.name}  cacheHit={cache_hit}")
+        print(f"  OK → {dest.name}  cacheHit={cache_hit}  ref={felt_audio_url(item_id)}")
         index_items.append(
             {
                 "id": item_id,
                 "assetId": item["assetId"],
                 "text": text,
                 "file": f"{item_id}.mp3",
-                "url": f"/fixed-audio/{item_id}.mp3",
+                "url": felt_audio_url(item_id),
                 "status": "ok",
                 "cacheHit": cache_hit,
             }
@@ -168,6 +174,10 @@ def run_batch(*, input_path: Path, out_dir: Path, dry_run: bool, sleep_s: float)
         "source": str(input_path.name),
         "generatedAt": time.strftime("%Y-%m-%dT%H:%M:%S"),
         "summary": {"ok": ok_n, "failed": fail_n, "total": len(items)},
+        "note": (
+            "Electron 正式 url 为 felt-resource://audio/...；"
+            "浏览器 demo 由 AudioService 映射到 /generated-audio/..."
+        ),
         "items": index_items,
     }
     index_name = "audio-index.dry-run.json" if dry_run else "audio-index.json"

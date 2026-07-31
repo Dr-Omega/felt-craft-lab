@@ -279,22 +279,32 @@ anim.stop('loading');
 
 ---
 
-## 11. 固定介绍语音（第 9 步快照）
+## 11. 固定介绍语音（快照）
 
-贴纸「听介绍」等**固定文案**，不要每次调 `/api/tts/synthesize`。  
-批量生成后的索引：
+贴纸「听介绍」等**固定文案**，不要每次调 `/api/tts/synthesize`。
+
+**Electron 正式 ResourceRef：**
 
 ```text
-GET /fixed-audio/audio-index.json
-GET /fixed-audio/{id}.mp3
+felt-resource://audio/{id}.mp3
 ```
 
-试听页：`/demo/fixed-audio`  
-说明：`docs/ai-services/固定TTS批量工具.md`
+索引文件（仓库内）：
+
+```text
+assets/generated/audio/audio-index.json
+```
 
 ```js
-await audio.play('/fixed-audio/rabbit_intro.mp3', 'primary');
+await audio.play('felt-resource://audio/rabbit_intro.mp3', 'primary');
 ```
+
+- AudioService 已兼容 `felt-resource://audio/...`（Electron 内直接播放）
+- `/fixed-audio/...` **不是**正式对接地址（仅历史兼容）
+- 浏览器辅助试听：`/demo/fixed-audio`（会映射到 `/generated-audio/...`）
+
+说明：`docs/ai-services/固定TTS批量工具.md`  
+资源协议：`docs/architecture/resource-resolver.md`
 
 ---
 

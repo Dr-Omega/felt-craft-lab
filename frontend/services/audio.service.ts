@@ -2,10 +2,16 @@
  * AudioService — 组长交付，SXY 在页面里调用
  *
  * 规则（规范 9.4）：
- * - primary：主要朗读（名称/介绍/问答语音）；新播放前先停旧的
+ * - primary：主要朗读；新播放前先停旧的
  * - effect：操作音效；可与 primary 并行；可被总开关关闭
- * - 播放失败不抛到页面业务层，避免挡住文字展示
+ * - 播放失败不抛到页面业务层
+ *
+ * Electron 正式音频地址使用 ResourceRef：
+ *   felt-resource://audio/...
+ * （由 PR#10 资源解析层协议加载；不再以 /fixed-audio/... 作为正式对接）
  */
+
+import { toPlayableAudioUrl } from "./audio-url";
 
 export type AudioChannel = "primary" | "effect";
 
@@ -41,21 +47,21 @@ export class HowlerAudioService implements AudioService {
     if (!url) return;
     if (channel === "effect" && !this.effectsEnabled) return;
 
+    const playable = toPlayableAudioUrl(url);
+
     try {
       if (channel === "primary") {
         this.stop("primary");
-        this.primary = this.createHowl(url);
+        this.primary = this.createHowl(playable);
         await this.playHowl(this.primary);
         return;
       }
 
-      // effect：不打断 primary
       this.stop("effect");
-      this.effect = this.createHowl(url);
+      this.effect = this.createHowl(playable);
       await this.playHowl(this.effect);
     } catch {
-      // 音频失败不得阻塞文字展示
-      console.warn("[AudioService] play failed:", url);
+      console.warn("[AudioService] play failed:", url, "→", playable);
     }
   }
 
@@ -79,8 +85,9 @@ export class HowlerAudioService implements AudioService {
     const Howl = getHowl();
     return new Howl({
       src: [url],
-      html5: true, // 远程 mp3 / 较长语音更稳
+      html5: true,
       preload: true,
+      format: url.includes(".mp3") ? ["mp3"] : undefined,
     });
   }
 
@@ -117,5 +124,4 @@ export class HowlerAudioService implements AudioService {
   }
 }
 
-/** 默认单例，页面直接用 */
 export const audioService: AudioService = new HowlerAudioService();

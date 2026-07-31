@@ -3,71 +3,34 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>固定语音快照 · 第 9 步</title>
+  <title>固定语音快照 · felt-resource</title>
   <script src="https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js"></script>
+  <script src="/frontend/services/audio-url.js"></script>
   <script src="/frontend/services/audio.service.js"></script>
   <style>
-    :root {
-      --ink: #2b1b4a;
-      --panel: #efe8f8;
-      --btn: #f0c84a;
-      --muted: #6b5a86;
-    }
-    body {
-      margin: 0;
-      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-      color: var(--ink);
-      background: linear-gradient(160deg, #f7f1ff, #efe6f8 45%, #f8f3e8);
-      min-height: 100vh;
-      padding: 28px 20px 48px;
-    }
-    h1 { margin: 0 0 8px; font-size: 1.5rem; }
-    p { color: var(--muted); line-height: 1.5; }
-    .card {
-      max-width: 640px;
-      margin: 20px auto;
-      background: #fff;
-      border-radius: 18px;
-      padding: 20px;
-      box-shadow: 0 10px 30px rgba(60, 30, 90, 0.08);
-    }
-    button {
-      border: 0;
-      border-radius: 999px;
-      padding: 10px 16px;
-      margin: 6px 8px 6px 0;
-      background: var(--btn);
-      color: var(--ink);
-      font-weight: 600;
-      cursor: pointer;
-    }
-    button.secondary { background: var(--panel); }
-    ul { list-style: none; padding: 0; margin: 12px 0 0; }
-    li {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: center;
-      padding: 12px 0;
-      border-top: 1px solid #eee6f6;
-    }
-    .meta { font-size: 0.9rem; color: var(--muted); }
-    #log {
-      margin-top: 16px;
-      background: #1f1633;
-      color: #d9d0ef;
-      border-radius: 12px;
-      padding: 12px;
-      font-size: 0.85rem;
-      min-height: 80px;
-      white-space: pre-wrap;
-    }
+    :root { --ink:#2b1b4a; --panel:#efe8f8; --btn:#f0c84a; --muted:#6b5a86; }
+    body { margin:0; font-family:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; color:var(--ink);
+      background:linear-gradient(160deg,#f7f1ff,#efe6f8 45%,#f8f3e8); min-height:100vh; padding:28px 20px 48px; }
+    h1 { margin:0 0 8px; font-size:1.5rem; }
+    p { color:var(--muted); line-height:1.5; }
+    .card { max-width:640px; margin:20px auto; background:#fff; border-radius:18px; padding:20px;
+      box-shadow:0 10px 30px rgba(60,30,90,.08); }
+    button { border:0; border-radius:999px; padding:10px 16px; margin:6px 8px 6px 0; background:var(--btn);
+      color:var(--ink); font-weight:600; cursor:pointer; }
+    button.secondary { background:var(--panel); }
+    ul { list-style:none; padding:0; margin:12px 0 0; }
+    li { display:flex; justify-content:space-between; gap:12px; align-items:center; padding:12px 0;
+      border-top:1px solid #eee6f6; }
+    .meta { font-size:.9rem; color:var(--muted); }
+    #log { margin-top:16px; background:#1f1633; color:#d9d0ef; border-radius:12px; padding:12px;
+      font-size:.85rem; min-height:80px; white-space:pre-wrap; }
   </style>
 </head>
 <body>
   <div class="card">
-    <h1>第 9 步 · 固定语音快照</h1>
-    <p>读取 <code>/fixed-audio/audio-index.json</code>，用 AudioService 试听。先跑批量工具生成 mp3。</p>
+    <h1>固定语音 · felt-resource://audio</h1>
+    <p>正式索引：<code>assets/generated/audio/audio-index.json</code>。<br/>
+      Electron 直接播放 <code>felt-resource://audio/...</code>；本页为浏览器辅助，会映射到 <code>/generated-audio/...</code>。</p>
     <button id="reload" class="secondary">刷新索引</button>
     <button id="stop" class="secondary">停止播放</button>
     <ul id="list"></ul>
@@ -77,46 +40,40 @@
     const audio = new HowlerAudioService();
     const listEl = document.getElementById('list');
     const logEl = document.getElementById('log');
-
     function log(msg) {
-      const t = new Date().toLocaleTimeString();
-      logEl.textContent = `${t}  ${msg}\n` + logEl.textContent;
+      logEl.textContent = new Date().toLocaleTimeString() + '  ' + msg + '\n' + logEl.textContent;
     }
-
     async function loadIndex() {
       listEl.innerHTML = '';
       try {
-        const res = await fetch('/fixed-audio/audio-index.json?_=' + Date.now());
+        const res = await fetch('/generated-audio/audio-index.json?_=' + Date.now());
         if (!res.ok) throw new Error('还没有 audio-index.json，请先运行批量工具');
         const data = await res.json();
         const items = data.items || [];
-        log(`索引加载成功：${items.length} 条`);
+        log('索引加载成功：' + items.length + ' 条');
         items.forEach((item) => {
           const li = document.createElement('li');
           const left = document.createElement('div');
-          left.innerHTML = `<strong>${item.id}</strong><div class="meta">${item.text || ''}</div><div class="meta">status=${item.status}</div>`;
+          left.innerHTML = '<strong>' + item.id + '</strong>'
+            + '<div class="meta">' + (item.text || '') + '</div>'
+            + '<div class="meta">' + (item.url || '') + ' · status=' + item.status + '</div>';
           const btn = document.createElement('button');
           btn.textContent = '播放';
           btn.disabled = item.status !== 'ok';
           btn.onclick = async () => {
-            log('play ' + item.id);
+            log('play ' + item.url);
             await audio.play(item.url, 'primary');
           };
           li.appendChild(left);
           li.appendChild(btn);
           listEl.appendChild(li);
         });
-        if (!items.length) log('索引为空');
       } catch (e) {
         log(String(e.message || e));
       }
     }
-
     document.getElementById('reload').onclick = loadIndex;
-    document.getElementById('stop').onclick = () => {
-      audio.stop();
-      log('stop');
-    };
+    document.getElementById('stop').onclick = () => { audio.stop(); log('stop'); };
     loadIndex();
   </script>
 </body>

@@ -2,12 +2,14 @@
 
 完整对接说明请看：`docs/ai-services/SXY对接指南.md`
 
-## 固定语音快照（第 9 步）
+## 固定语音快照
 
-- 输出目录：`frontend/assets/fixed-audio/`
-- 索引：`audio-index.json`
-- 试听：http://127.0.0.1:8788/demo/fixed-audio
+- 正式 ResourceRef：`felt-resource://audio/...`
+- 输出目录：`assets/generated/audio/`
+- 索引：`assets/generated/audio/audio-index.json`
+- 浏览器辅助试听：http://127.0.0.1:8788/demo/fixed-audio
 - 工具说明：`docs/ai-services/固定TTS批量工具.md`
+- 播放地址转换：`frontend/services/audio-url.ts`（与 ResourceRef / felt-resource 兼容）
 
 ## FeltAiClient（第 8 步，可选）
 

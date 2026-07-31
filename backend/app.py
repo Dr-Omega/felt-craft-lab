@@ -384,14 +384,27 @@ def demo_animation_page():
 
 @app.get("/demo/fixed-audio")
 def demo_fixed_audio_page():
-    """第 9 步：固定语音快照试听页。"""
+    """固定语音快照试听页（浏览器辅助；Electron 正式用 felt-resource）。"""
     return send_from_directory(ROOT_DIR / "frontend" / "demos", "fixed-audio-demo.html")
 
 
+@app.get("/generated-audio/<path:filename>")
+def generated_audio_static(filename: str):
+    """浏览器 demo 读取 assets/generated/audio（对应 felt-resource://audio/...）。"""
+    folder = ROOT_DIR / "assets" / "generated" / "audio"
+    folder.mkdir(parents=True, exist_ok=True)
+    rel = filename.replace("\\", "/")
+    if ".." in rel.split("/"):
+        return jsonify(
+            {"ok": False, "error": {"code": "INVALID_ARGUMENT", "message": "非法路径"}}
+        ), 400
+    return send_from_directory(folder, rel)
+
+
 @app.get("/fixed-audio/<path:filename>")
-def fixed_audio_static(filename: str):
-    """提供批量工具生成的固定 mp3 / 索引。"""
-    folder = ROOT_DIR / "frontend" / "assets" / "fixed-audio"
+def fixed_audio_deprecated(filename: str):
+    """已弃用：兼容旧链接，改为从 generated/audio 提供。"""
+    folder = ROOT_DIR / "assets" / "generated" / "audio"
     folder.mkdir(parents=True, exist_ok=True)
     safe = Path(filename).name
     return send_from_directory(folder, safe)

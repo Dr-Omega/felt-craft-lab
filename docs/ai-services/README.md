@@ -52,10 +52,11 @@
 | POST | `/api/tts/synthesize` | 文字转语音（动态） |
 | GET | `/api/tts/mock` | TTS Mock |
 | GET | `/api/tts/contract` | TTS 契约 |
-| GET | `/fixed-audio/<file>` | 固定语音快照文件 |
+| GET | `/generated-audio/<file>` | 浏览器读取 generated/audio（对应 felt-resource） |
+| GET | `/fixed-audio/<file>` | 已弃用，兼容旧链接 |
 | GET | `/demo/audio` | AudioService 演示 |
 | GET | `/demo/animation` | AnimationService 演示 |
-| GET | `/demo/fixed-audio` | 固定语音试听 |
+| GET | `/demo/fixed-audio` | 固定语音试听（浏览器辅助） |
 | GET | `/api/ops/rules` | 错误码 + 重试/降级规则 |
 
 ## 产品硬规则

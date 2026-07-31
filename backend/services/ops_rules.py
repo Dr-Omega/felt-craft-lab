@@ -36,7 +36,7 @@ def ops_rules_doc() -> dict:
             },
             {
                 "id": "fixed_audio_prefer_snapshot",
-                "rule": "固定介绍优先 /fixed-audio 快照，不用每次 synthesize",
+                "rule": "固定介绍优先 felt-resource://audio/... 快照，不用每次 synthesize",
             },
             {
                 "id": "provider_switch_backend_only",

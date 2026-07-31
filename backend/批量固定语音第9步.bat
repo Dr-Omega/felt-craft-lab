@@ -13,7 +13,8 @@ if not exist ".venv\Scripts\python.exe" (
 echo.
 echo === 第 9 步：固定文案 TTS 批量生成 ===
 echo 默认读取：tools\fixed_tts\scripts.example.csv
-echo 输出目录：..\frontend\assets\fixed-audio\
+echo 输出目录：..\assets\generated\audio\
+echo 正式 URL：felt-resource://audio/<id>.mp3
 echo 日志文件：tools\fixed_tts\last_run.log
 echo.
 echo 接下来会调用 MiniMax（会用一点额度）。
@@ -30,8 +31,9 @@ echo --------------------------------
 echo.
 if %ERR%==0 (
   echo 完成。请打开：
-  echo   frontend\assets\fixed-audio\
-  echo 再刷新浏览器：http://127.0.0.1:8788/demo/fixed-audio
+  echo   assets\generated\audio\
+  echo Electron 正式播放 felt-resource://audio/...
+  echo 浏览器辅助：http://127.0.0.1:8788/demo/fixed-audio
 ) else (
   echo 失败了。请把上面文字截图发给组长助手。
   echo 也可打开日志：tools\fixed_tts\last_run.log

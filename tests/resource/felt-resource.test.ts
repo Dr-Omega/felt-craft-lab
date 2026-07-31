@@ -54,6 +54,16 @@ describe('felt-resource parse', () => {
     expect(buildFeltResourceRef('audio', 'fixed/a.wav')).toBe('felt-resource://audio/fixed/a.wav')
   })
 
+  it('accepts fixed intro snapshot refs used by AI batch tool', () => {
+    expect(parseFeltResourceRef('felt-resource://audio/rabbit_intro.mp3')).toEqual({
+      ref: 'felt-resource://audio/rabbit_intro.mp3',
+      kind: 'audio',
+      relativePath: 'rabbit_intro.mp3'
+    })
+    expect(isSafeResourceRef('felt-resource://audio/rabbit_intro.mp3', FELT_RESOURCE_REF_POLICY)).toBe(true)
+    expect(isSafeResourceRef('/fixed-audio/rabbit_intro.mp3', FELT_RESOURCE_REF_POLICY)).toBe(false)
+  })
+
   it('rejects illegal protocols and traversal', () => {
     expect(parseFeltResourceRef('https://example.com/a.png')).toBeUndefined()
     expect(parseFeltResourceRef('file:///C:/secret.png')).toBeUndefined()

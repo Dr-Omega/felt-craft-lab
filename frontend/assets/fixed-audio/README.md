@@ -1,8 +1,9 @@
-# 固定语音快照输出目录
+# 旧路径已弃用
 
-运行 `backend/批量固定语音第9步.bat` 后，这里会出现：
+固定语音请使用：
 
-- `*.mp3`：按文案 `id` 命名
-- `audio-index.json`：给 SXY 的播放索引
+- 文件：`assets/generated/audio/`
+- ResourceRef：`felt-resource://audio/<file>.mp3`
+- 索引：`assets/generated/audio/audio-index.json`
 
-示例文案在：`backend/tools/fixed_tts/scripts.example.csv`
+`/fixed-audio/...` 不是 Electron 正式对接地址。
