@@ -4,22 +4,23 @@
 
 ## 仓库说明
 
-- 组织仓库：`Dr-Omega/felt-craft-lab`
+- 工作仓库：`Dr-Omega/felt-craft-lab`
 - 组长工作分支：`feature/material-ai-services`
+- 规范仓库名（文档）：`SXY-xinyun/felt-craft-lab`（以组内最终集成为准）
 
-## 第 10 步：错误码与重试/降级（进行中）
+## 第 11 步：验收与合规文档（进行中）
 
-- 文档：`docs/ai-services/错误码与重试降级.md`
-- 环境模板：`backend/.env.example`（复制为 `.env`，勿提交密钥）
-- 在线规则：http://127.0.0.1:8788/api/ops/rules
+- 产品验收清单：`docs/ai-services/产品验收清单.md`
+- 开源许可与云服务：`docs/ai-services/开源许可与云服务记录.md`
+- 冒烟记录模板：`docs/ai-services/API冒烟测试记录.md`
 
-## 本地启动（验收）
+## 本地启动
 
 ```bat
 cd backend
 双击 启动第1步.bat
 ```
 
-浏览器打开：http://127.0.0.1:8788/api/health  
+http://127.0.0.1:8788/api/health  
 
-看到 `"ok": true` 即表示后端可用。
+看到 `"ok": true` 即后端可用。

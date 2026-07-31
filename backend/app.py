@@ -11,6 +11,7 @@
 第 8 步：SXY Mock / 对接文档（见 docs/ai-services/SXY对接指南.md）
 第 9 步：固定文案 TTS 批量工具 + 音频快照索引
 第 10 步：.env.example + 错误码 + 重试/降级规则
+第 11 步：产品验收清单 + 开源许可 + 云服务记录
 """
 
 from __future__ import annotations
@@ -71,7 +72,7 @@ def health():
         {
             "ok": True,
             "service": "felt-craft-lab-ai-proxy",
-            "version": "step10",
+            "version": "step11",
             "env": os.getenv("APP_ENV", "development"),
             "keys": {
                 "qwen_asr": _mask(_asr_key()),
@@ -93,7 +94,7 @@ def ready():
     return jsonify(
         {
             "ready": True,
-            "step": 10,
+            "step": 11,
             "asr": True,
             "qa": True,
             "tts": True,
@@ -101,6 +102,7 @@ def ready():
             "animationService": True,
             "fixedTtsBatch": True,
             "opsRules": True,
+            "acceptanceDocs": True,
         }
     )
 
