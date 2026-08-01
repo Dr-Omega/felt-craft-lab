@@ -6,7 +6,18 @@ import {
   type FabricEditorRuntime,
   type FabricObjectPort
 } from '../../src/renderer/src/editor/fabric-editor-adapter'
-import { cloneFixture, validAccess, validAsset, validScene } from '../shared/contracts.fixtures'
+import { cloneFixture, validAccess, validAsset, validScene, validSnapshotContext } from '../shared/contracts.fixtures'
+
+function deferred<T>(): { promise: Promise<T>; resolve(value: T): void } {
+  let resolvePromise: ((value: T) => void) | undefined
+  const promise = new Promise<T>((resolve) => { resolvePromise = resolve })
+  return {
+    promise,
+    resolve(value) {
+      resolvePromise?.(value)
+    }
+  }
+}
 
 class FakeObject implements FabricObjectPort {
   objectId?: string
@@ -175,9 +186,11 @@ function createHarness(scene = cloneFixture(validScene), unavailableRefs = new S
   const released: string[] = []
   const runtime: FabricEditorRuntime = {
     createCanvas: () => canvas,
-    createImage: async (_sourceUrl, options) => new FakeObject(options)
+    createImage: async (_sourceUrl, options) => new FakeObject(options),
+    createPlaceholder: (options) => new FakeObject(options)
   }
   const adapter = new FabricEditorAdapter({
+    snapshotContext: validSnapshotContext,
     allowTestAssets: true,
     runtime,
     now: () => new Date('2026-08-01T08:00:00.000Z'),
@@ -279,6 +292,123 @@ describe('FabricEditorAdapter', () => {
     await adapter.importScene(cloneFixture(validScene), resolver())
     const access = { ...validAccess, assetId: unavailable.assetId }
     await expect(adapter.addSticker(unavailable, access)).rejects.toMatchObject({ code: 'ASSET_NOT_FOUND' })
+    expect(adapter.exportScene().objects).toHaveLength(1)
+  })
+
+  it('rejects newly added assets that are absent from the immutable scene snapshot before loading', async () => {
+    const { adapter, loadedRefs } = createHarness()
+    await adapter.importScene(cloneFixture(validScene), resolver())
+    const outsideSnapshot = materialAsset('sticker')
+    outsideSnapshot.assetId = 'sticker_not_in_snapshot'
+    const access = { ...validAccess, assetId: outsideSnapshot.assetId }
+
+    await expect(adapter.addSticker(outsideSnapshot, access)).rejects.toMatchObject({ code: 'ASSET_SNAPSHOT_MISMATCH' })
+    const outsideBackground = materialAsset('background')
+    outsideBackground.assetId = 'background_not_in_snapshot'
+    await expect(adapter.setBackground(outsideBackground, { ...validAccess, assetId: outsideBackground.assetId }))
+      .rejects.toMatchObject({ code: 'ASSET_SNAPSHOT_MISMATCH' })
+    expect(loadedRefs).toHaveLength(2)
+  })
+
+  it('reports a missing snapshot even when a restored Scene has no asset references', async () => {
+    const emptyScene: SceneDocument = {
+      ...cloneFixture(validScene),
+      assetSnapshotId: 'missing_snapshot',
+      backgroundAssetId: null,
+      objects: []
+    }
+    const { adapter } = createHarness(emptyScene)
+    const result = await adapter.importScene(emptyScene, resolver())
+
+    expect(result.issues).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'ASSET_SNAPSHOT_MISMATCH' })
+    ]))
+    expect(() => adapter.exportScene()).toThrow(expect.objectContaining({ code: 'SCENE_VALIDATION_FAILED' }))
+  })
+
+  it('restores missing historical resources as locked placeholders and blocks formal export', async () => {
+    const unavailableSticker = materialAsset('sticker')
+    unavailableSticker.imageUrl = 'felt-resource://material/missing.png'
+    const { adapter, canvas } = createHarness(cloneFixture(validScene), new Set([unavailableSticker.imageUrl]))
+    const importResult = await adapter.importScene(cloneFixture(validScene), {
+      async resolveAsset(assetId): Promise<AssetRecord> {
+        if (assetId === 'background_moon_001') return materialAsset('background')
+        if (assetId === validAsset.assetId) return unavailableSticker
+        throw new Error('not found')
+      }
+    })
+
+    expect(importResult.issues).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'ASSET_NOT_FOUND', assetId: validAsset.assetId, assetType: 'sticker' })
+    ]))
+    expect(canvas.getObjects()[0]).toMatchObject({ objectId: validScene.objects[0].objectId, assetId: validAsset.assetId, selectable: false })
+    expect(() => adapter.exportScene()).toThrow(expect.objectContaining({ code: 'SCENE_VALIDATION_FAILED' }))
+  })
+
+  it('rejects invalid dimensions and colors before mutating the canvas', async () => {
+    const { adapter, canvas } = createHarness()
+    await adapter.importScene(cloneFixture(validScene), resolver())
+
+    expect(() => adapter.resizeCanvas(320.5, 240)).toThrow(expect.objectContaining({ code: 'INVALID_ARGUMENT' }))
+    expect(canvas.getWidth()).toBe(validScene.canvas.width)
+    expect(() => adapter.setSolidBackground('url(https://example.invalid/background.png)')).toThrow(expect.objectContaining({ code: 'INVALID_ARGUMENT' }))
+    expect(canvas.backgroundColor).toBe(validScene.canvas.backgroundColor)
+  })
+
+  it('cancels stale imports and releases a loaded resource after dispose', async () => {
+    const scene = cloneFixture(validScene)
+    const canvas = new FakeCanvas(scene.canvas.width, scene.canvas.height)
+    const pending = deferred<{ sourceUrl: string; dispose(): void }>()
+    const released: string[] = []
+    const adapter = new FabricEditorAdapter({
+      snapshotContext: validSnapshotContext,
+      allowTestAssets: true,
+      runtime: {
+        createCanvas: () => canvas,
+        createImage: async (_sourceUrl, options) => new FakeObject(options),
+        createPlaceholder: (options) => new FakeObject(options)
+      },
+      loadResource: () => pending.promise
+    })
+    adapter.initialize({} as HTMLCanvasElement, scene)
+    const importing = adapter.importScene(scene, resolver())
+    adapter.dispose()
+    pending.resolve({ sourceUrl: 'blob:stale', dispose: () => released.push('blob:stale') })
+
+    await expect(importing).rejects.toMatchObject({ code: 'REQUEST_CANCELLED' })
+    expect(released).toEqual(['blob:stale'])
+    expect(canvas.getObjects()).toHaveLength(0)
+  })
+
+  it('keeps the newest import when a previous import resolves later', async () => {
+    const scene = cloneFixture(validScene)
+    const canvas = new FakeCanvas(scene.canvas.width, scene.canvas.height)
+    const firstResource = deferred<{ sourceUrl: string; dispose(): void }>()
+    const released: string[] = []
+    let loadCount = 0
+    const adapter = new FabricEditorAdapter({
+      snapshotContext: validSnapshotContext,
+      allowTestAssets: true,
+      runtime: {
+        createCanvas: () => canvas,
+        createImage: async (_sourceUrl, options) => new FakeObject(options),
+        createPlaceholder: (options) => new FakeObject(options)
+      },
+      loadResource: async () => {
+        loadCount += 1
+        if (loadCount === 1) return firstResource.promise
+        return { sourceUrl: `blob:current/${loadCount}`, dispose: () => released.push(`current/${loadCount}`) }
+      }
+    })
+    adapter.initialize({} as HTMLCanvasElement, scene)
+    const firstImport = adapter.importScene(scene, resolver())
+    await Promise.resolve()
+
+    await expect(adapter.importScene(scene, resolver())).resolves.toMatchObject({ issues: [] })
+    firstResource.resolve({ sourceUrl: 'blob:stale', dispose: () => released.push('stale') })
+
+    await expect(firstImport).rejects.toMatchObject({ code: 'REQUEST_CANCELLED' })
+    expect(released).toContain('stale')
     expect(adapter.exportScene().objects).toHaveLength(1)
   })
 })
