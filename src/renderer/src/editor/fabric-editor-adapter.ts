@@ -443,10 +443,13 @@ export class FabricEditorAdapter {
       throw editorError('INVALID_ARGUMENT', 'Sticker cannot be deleted.')
     }
     const recoveryAssetId = this.recoveryPlaceholders.has(object) ? object.assetId : undefined
+    const recoveryObjectId = this.recoveryPlaceholders.has(object) ? object.objectId : undefined
     this.releaseObject(object)
     canvas.remove(object)
     canvas.discardActiveObject()
-    if (recoveryAssetId) this.clearRecoveryIssueIfResolved(recoveryAssetId, 'sticker')
+    if (recoveryAssetId && recoveryObjectId) {
+      this.clearRecoveryIssueIfResolved(recoveryAssetId, 'sticker', recoveryObjectId)
+    }
     canvas.requestRenderAll()
     this.captureHistory()
   }
@@ -716,13 +719,21 @@ export class FabricEditorAdapter {
     this.recoveryIssues = this.recoveryIssues.filter((issue) => issue.assetType !== assetType)
   }
 
-  private clearRecoveryIssueIfResolved(assetId: string, assetType: 'background' | 'sticker'): void {
-    const background = this.canvas?.backgroundImage
-    const stillPresent = assetType === 'background'
-      ? background?.assetId === assetId && this.recoveryPlaceholders.has(background)
-      : this.requireCanvas().getObjects().some((object) =>
-          object.assetId === assetId && this.recoveryPlaceholders.has(object)
+  private clearRecoveryIssueIfResolved(assetId: string, assetType: 'background' | 'sticker', objectId?: string): void {
+    if (assetType === 'sticker') {
+      if (!objectId) return
+      const stillPresent = this.requireCanvas().getObjects().some((object) =>
+        object.objectId === objectId && object.assetId === assetId && this.recoveryPlaceholders.has(object)
+      )
+      if (!stillPresent) {
+        this.recoveryIssues = this.recoveryIssues.filter((issue) =>
+          !(issue.assetType === 'sticker' && issue.objectId === objectId)
         )
+      }
+      return
+    }
+    const background = this.canvas?.backgroundImage
+    const stillPresent = background?.assetId === assetId && this.recoveryPlaceholders.has(background)
     if (!stillPresent) {
       this.recoveryIssues = this.recoveryIssues.filter((issue) => !(issue.assetId === assetId && issue.assetType === assetType))
     }

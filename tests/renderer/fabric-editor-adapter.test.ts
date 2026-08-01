@@ -379,6 +379,42 @@ describe('FabricEditorAdapter', () => {
     expect(adapter.exportScene().objects).toEqual([])
   })
 
+  it('clears recovery issues by objectId when duplicate missing sticker instances share an assetId', async () => {
+    const unavailableSticker = materialAsset('sticker')
+    unavailableSticker.imageUrl = 'felt-resource://material/missing-duplicate.png'
+    const scene = cloneFixture(validScene)
+    scene.objects.push({
+      ...scene.objects[0],
+      objectId: '72d775d8-e6f8-439a-9d04-0934cb03f81f',
+      left: 620,
+      top: 360,
+      zIndex: 2
+    })
+    const { adapter } = createHarness(scene, new Set([unavailableSticker.imageUrl]))
+    await adapter.importScene(scene, {
+      async resolveAsset(assetId): Promise<AssetRecord> {
+        if (assetId === 'background_moon_001') return materialAsset('background')
+        if (assetId === validAsset.assetId) return unavailableSticker
+        throw new Error('not found')
+      }
+    })
+
+    expect(adapter.getRecoveryIssues()).toHaveLength(2)
+    expect(adapter.getRecoveryIssues().map((issue) => issue.objectId)).toEqual([
+      scene.objects[0].objectId,
+      scene.objects[1].objectId
+    ])
+
+    adapter.deleteObject(scene.objects[0].objectId)
+    expect(adapter.getRecoveryIssues()).toHaveLength(1)
+    expect(adapter.getRecoveryIssues()[0].objectId).toBe(scene.objects[1].objectId)
+    expect(() => adapter.exportScene()).toThrow(expect.objectContaining({ code: 'SCENE_VALIDATION_FAILED' }))
+
+    adapter.deleteObject(scene.objects[1].objectId)
+    expect(adapter.getRecoveryIssues()).toEqual([])
+    expect(adapter.exportScene().objects).toEqual([])
+  })
+
   it('allows explicit background recovery by replacement or clearing and preserves it through undo/redo', async () => {
     const unavailableBackground = materialAsset('background')
     unavailableBackground.imageUrl = 'felt-resource://material/missing-background.png'

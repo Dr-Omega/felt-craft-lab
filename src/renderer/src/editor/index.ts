@@ -5,5 +5,7 @@ export type {
   FabricEditorAssetResolver,
   FabricEditorRuntime,
   FabricObjectPort,
-  LoadedResource
+  LoadedResource,
+  SceneImportResult,
+  SceneRecoveryIssue
 } from './fabric-editor-adapter'
