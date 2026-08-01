@@ -345,6 +345,86 @@ describe('FabricEditorAdapter', () => {
     expect(() => adapter.exportScene()).toThrow(expect.objectContaining({ code: 'SCENE_VALIDATION_FAILED' }))
   })
 
+  it('allows explicit removal of a missing sticker and restores the recovery issue through undo/redo', async () => {
+    const unavailableSticker = materialAsset('sticker')
+    unavailableSticker.imageUrl = 'felt-resource://material/missing-sticker.png'
+    const scene = cloneFixture(validScene)
+    const { adapter, canvas } = createHarness(scene, new Set([unavailableSticker.imageUrl]))
+    await adapter.importScene(scene, {
+      async resolveAsset(assetId): Promise<AssetRecord> {
+        if (assetId === 'background_moon_001') return materialAsset('background')
+        if (assetId === validAsset.assetId) return unavailableSticker
+        throw new Error('not found')
+      }
+    })
+
+    expect(adapter.getRecoveryIssues()).toEqual(expect.arrayContaining([
+      expect.objectContaining({ assetId: validAsset.assetId, assetType: 'sticker' })
+    ]))
+    const placeholder = canvas.getObjects()[0]
+    expect(placeholder.selectable).toBe(false)
+
+    adapter.deleteObject(validScene.objects[0].objectId)
+    expect(adapter.getRecoveryIssues()).toEqual([])
+    expect(adapter.exportScene().objects).toEqual([])
+
+    await expect(adapter.undo()).resolves.toBe(true)
+    expect(adapter.getRecoveryIssues()).toEqual(expect.arrayContaining([
+      expect.objectContaining({ assetId: validAsset.assetId, assetType: 'sticker' })
+    ]))
+    expect(() => adapter.exportScene()).toThrow(expect.objectContaining({ code: 'SCENE_VALIDATION_FAILED' }))
+
+    await expect(adapter.redo()).resolves.toBe(true)
+    expect(adapter.getRecoveryIssues()).toEqual([])
+    expect(adapter.exportScene().objects).toEqual([])
+  })
+
+  it('allows explicit background recovery by replacement or clearing and preserves it through undo/redo', async () => {
+    const unavailableBackground = materialAsset('background')
+    unavailableBackground.imageUrl = 'felt-resource://material/missing-background.png'
+    const scene = cloneFixture(validScene)
+    const { adapter } = createHarness(scene, new Set([unavailableBackground.imageUrl]))
+    await adapter.importScene(scene, {
+      async resolveAsset(assetId): Promise<AssetRecord> {
+        if (assetId === 'background_moon_001') return unavailableBackground
+        if (assetId === validAsset.assetId) return materialAsset('sticker')
+        throw new Error('not found')
+      }
+    })
+
+    expect(adapter.getRecoveryIssues()).toEqual(expect.arrayContaining([
+      expect.objectContaining({ assetId: 'background_moon_001', assetType: 'background' })
+    ]))
+    await adapter.setBackground(materialAsset('background'), {
+      ...validAccess,
+      assetId: 'background_moon_001'
+    })
+    expect(adapter.getRecoveryIssues()).toEqual([])
+    expect(() => adapter.exportScene()).not.toThrow()
+
+    const secondImport = cloneFixture(validScene)
+    await adapter.importScene(secondImport, {
+      async resolveAsset(assetId): Promise<AssetRecord> {
+        if (assetId === 'background_moon_001') return unavailableBackground
+        if (assetId === validAsset.assetId) return materialAsset('sticker')
+        throw new Error('not found')
+      }
+    })
+    await adapter.setBackground(null)
+    expect(adapter.getRecoveryIssues()).toEqual([])
+    expect(adapter.exportScene().backgroundAssetId).toBeNull()
+
+    await expect(adapter.undo()).resolves.toBe(true)
+    expect(adapter.getRecoveryIssues()).toEqual(expect.arrayContaining([
+      expect.objectContaining({ assetId: 'background_moon_001', assetType: 'background' })
+    ]))
+    expect(() => adapter.exportScene()).toThrow(expect.objectContaining({ code: 'SCENE_VALIDATION_FAILED' }))
+
+    await expect(adapter.redo()).resolves.toBe(true)
+    expect(adapter.getRecoveryIssues()).toEqual([])
+    expect(adapter.exportScene().backgroundAssetId).toBeNull()
+  })
+
   it('rejects invalid dimensions and colors before mutating the canvas', async () => {
     const { adapter, canvas } = createHarness()
     await adapter.importScene(cloneFixture(validScene), resolver())

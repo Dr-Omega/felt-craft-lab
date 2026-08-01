@@ -102,6 +102,7 @@ export interface SceneRecoveryIssue {
   message: string
   assetId?: string
   assetType?: 'background' | 'sticker'
+  objectId?: string
 }
 
 export interface SceneImportResult {
@@ -231,6 +232,7 @@ export class FabricEditorAdapter {
   private readonly snapshotContext: SceneSnapshotValidationContext
   private readonly snapshotAssetsById: Map<string, ReadonlyMap<string, { assetId: string; type: 'background' | 'sticker' }>>
   private readonly objectResources = new WeakMap<FabricObjectPort, () => void>()
+  private readonly recoveryPlaceholders = new WeakSet<FabricObjectPort>()
   private readonly assetCache = new Map<string, AssetRecord>()
   private readonly listeners: Array<[string, (event: { target?: FabricObjectPort }) => void]> = []
   private canvas: FabricCanvasPort | undefined
@@ -318,9 +320,11 @@ export class FabricEditorAdapter {
     const metadata = this.requireMetadata()
     const operation = this.beginOperation(canvas)
     if (asset === null) {
+      const previousBackgroundAssetId = this.backgroundAssetId
       this.releaseBackground(canvas)
       canvas.setBackgroundImage(null, () => undefined)
       this.backgroundAssetId = null
+      if (previousBackgroundAssetId) this.clearRecoveryIssueIfResolved(previousBackgroundAssetId, 'background')
       canvas.requestRenderAll()
       this.captureHistory()
       return
@@ -338,6 +342,7 @@ export class FabricEditorAdapter {
     canvas.setBackgroundImage(loaded.object, () => undefined)
     this.objectResources.set(loaded.object, loaded.release)
     this.backgroundAssetId = asset.assetId
+    this.clearRecoveryIssues('background')
     canvas.requestRenderAll()
     this.captureHistory()
   }
@@ -357,11 +362,13 @@ export class FabricEditorAdapter {
     const canvas = this.requireCanvas()
     this.beginOperation(canvas)
     this.assertProspectiveScene({ backgroundColor: color, backgroundAssetId: null })
+    const previousBackgroundAssetId = this.backgroundAssetId
     this.releaseBackground(canvas)
     canvas.setBackgroundImage(null, () => undefined)
     canvas.backgroundColor = color
     this.backgroundColor = color
     this.backgroundAssetId = null
+    if (previousBackgroundAssetId) this.clearRecoveryIssueIfResolved(previousBackgroundAssetId, 'background')
     canvas.requestRenderAll()
     this.captureHistory()
   }
@@ -370,11 +377,13 @@ export class FabricEditorAdapter {
     const canvas = this.requireCanvas()
     this.beginOperation(canvas)
     this.assertProspectiveScene({ clearBackgroundColor: true, backgroundAssetId: null })
+    const previousBackgroundAssetId = this.backgroundAssetId
     this.releaseBackground(canvas)
     canvas.setBackgroundImage(null, () => undefined)
     canvas.backgroundColor = undefined
     this.backgroundColor = undefined
     this.backgroundAssetId = null
+    if (previousBackgroundAssetId) this.clearRecoveryIssueIfResolved(previousBackgroundAssetId, 'background')
     canvas.requestRenderAll()
     this.captureHistory()
   }
@@ -430,10 +439,14 @@ export class FabricEditorAdapter {
   deleteObject(objectId: string): void {
     const canvas = this.requireCanvas()
     const object = this.findObject(objectId)
-    if (!object || object.selectable === false) throw editorError('INVALID_ARGUMENT', 'Sticker cannot be deleted.')
+    if (!object || (object.selectable === false && !this.recoveryPlaceholders.has(object))) {
+      throw editorError('INVALID_ARGUMENT', 'Sticker cannot be deleted.')
+    }
+    const recoveryAssetId = this.recoveryPlaceholders.has(object) ? object.assetId : undefined
     this.releaseObject(object)
     canvas.remove(object)
     canvas.discardActiveObject()
+    if (recoveryAssetId) this.clearRecoveryIssueIfResolved(recoveryAssetId, 'sticker')
     canvas.requestRenderAll()
     this.captureHistory()
   }
@@ -483,6 +496,11 @@ export class FabricEditorAdapter {
       throw editorError('SCENE_VALIDATION_FAILED', 'Scene has unresolved asset snapshot or resource recovery issues.')
     }
     return snapshotValidation.value
+  }
+
+  /** Returns the currently outstanding, explicitly actionable recovery issues. */
+  getRecoveryIssues(): readonly SceneRecoveryIssue[] {
+    return this.recoveryIssues.map((issue) => ({ ...issue }))
   }
 
   exportPngDataUrl(): string {
@@ -610,7 +628,8 @@ export class FabricEditorAdapter {
         code: 'ASSET_SNAPSHOT_MISMATCH',
         message: 'Scene asset does not match its immutable snapshot.',
         assetId,
-        assetType: expectedType
+        assetType: expectedType,
+        ...(typeof options.objectId === 'string' ? { objectId: options.objectId } : {})
       })
       return this.createPlaceholder(assetId, expectedType, options)
     }
@@ -622,7 +641,8 @@ export class FabricEditorAdapter {
         code: isSharedError(error) && error.code === 'ASSET_SNAPSHOT_MISMATCH' ? 'ASSET_SNAPSHOT_MISMATCH' : 'ASSET_NOT_FOUND',
         message: 'Scene asset could not be loaded and was restored as a locked placeholder.',
         assetId,
-        assetType: expectedType
+        assetType: expectedType,
+        ...(typeof options.objectId === 'string' ? { objectId: options.objectId } : {})
       })
       return this.createPlaceholder(assetId, expectedType, options)
     }
@@ -688,7 +708,24 @@ export class FabricEditorAdapter {
       lockScalingY: true,
       lockRotation: true
     })
+    this.recoveryPlaceholders.add(object)
     return { object, release: () => undefined }
+  }
+
+  private clearRecoveryIssues(assetType: 'background' | 'sticker'): void {
+    this.recoveryIssues = this.recoveryIssues.filter((issue) => issue.assetType !== assetType)
+  }
+
+  private clearRecoveryIssueIfResolved(assetId: string, assetType: 'background' | 'sticker'): void {
+    const background = this.canvas?.backgroundImage
+    const stillPresent = assetType === 'background'
+      ? background?.assetId === assetId && this.recoveryPlaceholders.has(background)
+      : this.requireCanvas().getObjects().some((object) =>
+          object.assetId === assetId && this.recoveryPlaceholders.has(object)
+        )
+    if (!stillPresent) {
+      this.recoveryIssues = this.recoveryIssues.filter((issue) => !(issue.assetId === assetId && issue.assetType === assetType))
+    }
   }
 
   private assertAssetInCurrentSnapshot(asset: AssetRecord): void {
