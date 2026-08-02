@@ -1,112 +1,81 @@
-"""统一 ASR 返回结构（对应规范 AsrResult + SharedError）。"""
+"""ASR 成功结果对齐共享 Contracts AsrResult。"""
 
 from __future__ import annotations
 
-from typing import Any, Literal, Optional, TypedDict
+from typing import Any, Literal, Optional
 
-AsrProviderName = Literal["qwen_cloud_http", "qwen_cloud_realtime", "qwen_local", "mock"]
+from services.shared_error_map import fail, ok
 
-
-class AsrResult(TypedDict, total=False):
-    transcript: str
-    provider: AsrProviderName
-    durationMs: int
-    confidence: float
-    requestId: str
-    latencyMs: int
-    empty: bool
+# Contracts ASR_PROVIDERS（mock 仅网关内部，成功结果对外映射为 qwen_cloud_http）
+AsrProviderName = Literal["qwen_cloud_http", "qwen_cloud_realtime", "qwen_local"]
 
 
-class SharedError(TypedDict, total=False):
-    code: str
-    message: str
-    retryable: bool
-    details: dict[str, Any]
-
-
-# SXY 可依赖的成功态固定字段（缺一不可）
-ASR_RESULT_REQUIRED_FIELDS = (
-    "transcript",
-    "provider",
-    "durationMs",
-    "latencyMs",
-    "empty",
-)
-
-
-def ok_result(
+def ok_asr(
     *,
     transcript: str,
-    provider: AsrProviderName,
-    duration_ms: int = 0,
-    latency_ms: int = 0,
-    request_id: str = "",
+    provider: str,
+    duration_ms: int,
+    audio_duration_ms: Optional[int] = None,
+    request_id: Optional[str] = None,
     confidence: Optional[float] = None,
 ) -> dict[str, Any]:
+    """
+    duration_ms: 端到端请求耗时（Contracts AsrResult.durationMs）
+    audio_duration_ms: 录音时长（可选 audioDurationMs）
+    """
     text = (transcript or "").strip()
+    # mock 对外契约仍使用冻结 Provider 名
+    prov = provider if provider in {"qwen_cloud_http", "qwen_cloud_realtime", "qwen_local"} else "qwen_cloud_http"
     result: dict[str, Any] = {
         "transcript": text,
-        "provider": provider,
+        "provider": prov,
         "durationMs": int(duration_ms or 0),
-        "latencyMs": int(latency_ms or 0),
-        "empty": text == "",
-        "requestId": request_id or "",
     }
+    if audio_duration_ms is not None:
+        result["audioDurationMs"] = int(audio_duration_ms)
     if confidence is not None:
-        result["confidence"] = confidence
-    return {"ok": True, "result": result}
+        result["confidence"] = float(confidence)
+    rid = (request_id or "").strip()
+    if rid:
+        result["requestId"] = rid
+
+    if text == "":
+        return fail(code="ASR_EMPTY_TRANSCRIPT")
+    return ok(result)
 
 
-def err_result(
+def err_asr(
     *,
     code: str,
-    message: str,
-    retryable: bool = True,
-    provider: AsrProviderName | str = "qwen_cloud_http",
+    message: Optional[str] = None,
+    retryable: Optional[bool] = None,
+    request_id: Optional[str] = None,
     details: Optional[dict[str, Any]] = None,
-    latency_ms: int = 0,
+    **_ignored: Any,
 ) -> dict[str, Any]:
-    error: SharedError = {
-        "code": code,
-        "message": message,
-        "retryable": retryable,
-    }
-    if details:
-        error["details"] = details
-    return {
-        "ok": False,
-        "provider": provider,
-        "error": error,
-        # 失败时也尽量带回耗时，方便统计
-        "latencyMs": int(latency_ms or 0),
-    }
+    return fail(
+        code=code,
+        message=message,
+        retryable=retryable,
+        request_id=request_id,
+        details=details,
+    )
+
+
+# 兼容旧 import 名
+err_result = err_asr
+ok_result = ok_asr
 
 
 def contract_doc() -> dict[str, Any]:
     return {
-        "version": "step3",
-        "successShape": {
-            "ok": True,
-            "result": {
-                "transcript": "string 识别文本",
-                "provider": "qwen_cloud_http | mock | ...",
-                "durationMs": "number 音频时长（毫秒，能取到则填）",
-                "latencyMs": "number 请求耗时（毫秒）",
-                "empty": "boolean 是否空文本（SXY 不得把 empty=true 交给 DeepSeek）",
-                "requestId": "string 可选",
-                "confidence": "number 可选",
-            },
-        },
-        "errorShape": {
-            "ok": False,
-            "provider": "string",
-            "error": {
-                "code": "string",
-                "message": "string",
-                "retryable": "boolean",
-                "details": "object 可选",
-            },
-            "latencyMs": "number",
-        },
-        "requiredResultFields": list(ASR_RESULT_REQUIRED_FIELDS),
+        "version": "contracts-aligned",
+        "resultContract": "src/shared/contracts/ai.ts AsrResult",
+        "errorContract": "src/shared/contracts/error.ts SharedError",
+        "envelope": {"ok": "boolean", "result|error": "AsrResult | SharedError"},
+        "notes": [
+            "durationMs = 端到端请求耗时；audioDurationMs = 录音时长（可选）",
+            "空文本返回 SharedError ASR_EMPTY_TRANSCRIPT，不再输出 empty 字段",
+            "requestId 仅在非空时出现",
+        ],
     }

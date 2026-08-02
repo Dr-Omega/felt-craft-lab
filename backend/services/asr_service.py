@@ -1,4 +1,4 @@
-"""AsrService：按配置选择 Provider，对外只暴露统一结果。"""
+"""AsrService：按白名单选择 Provider；未知 provider 拒绝，不回退付费通道。"""
 
 from __future__ import annotations
 
@@ -12,11 +12,18 @@ from providers.asr.qwen_cloud_http import QwenCloudHttpProvider
 from providers.asr.realtime_stub import QwenCloudRealtimeProvider
 from services.asr_metrics import record_asr_event
 from services.asr_types import err_result
+from services.guards import asr_provider_allowed
+
+
+class UnknownAsrProvider(ValueError):
+    pass
 
 
 class AsrService:
     def __init__(self, provider_name: Optional[str] = None) -> None:
         name = (provider_name or os.getenv("QWEN_ASR_PROVIDER") or "qwen_cloud_http").strip()
+        if not asr_provider_allowed(name):
+            raise UnknownAsrProvider(name)
         self.provider = self._build_provider(name)
 
     def _build_provider(self, name: str) -> AsrProvider:
@@ -28,8 +35,7 @@ class AsrService:
         }
         cls = mapping.get(name)
         if not cls:
-            # 未知配置时回退 HTTP，避免页面绑死
-            return QwenCloudHttpProvider()
+            raise UnknownAsrProvider(name)
         return cls()
 
     def transcribe(
@@ -48,27 +54,19 @@ class AsrService:
                 mime_type=mime_type,
                 language=language,
             )
-        except Exception as exc:  # noqa: BLE001 - 统一成 SharedError
-            result = err_result(
-                code="ASR_INTERNAL_ERROR",
-                message=str(exc),
-                retryable=True,
-                provider=getattr(self.provider, "name", "unknown"),
-            )
+        except Exception:  # noqa: BLE001
+            result = err_result(code="ASR_INTERNAL_ERROR")
 
-        # 记录延迟 / 空文本 / 失败，供验收
         ok = bool(result.get("ok"))
         body = result.get("result") or {}
         error = result.get("error") or {}
-        latency = body.get("latencyMs")
-        if latency is None:
-            latency = result.get("latencyMs")
+        latency = body.get("durationMs")
         record_asr_event(
             {
                 "ok": ok,
-                "provider": body.get("provider") or result.get("provider"),
+                "provider": body.get("provider") or getattr(self.provider, "name", None),
                 "latencyMs": latency,
-                "empty": body.get("empty"),
+                "empty": (not ok and error.get("code") == "ASR_EMPTY_TRANSCRIPT"),
                 "errorCode": error.get("code"),
                 "sessionId": session_id,
             }

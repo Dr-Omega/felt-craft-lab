@@ -1,17 +1,12 @@
-"""统一问答返回结构（对应规范 QaResult + SharedError）。"""
+"""QA 成功结果对齐共享 Contracts QaResult。"""
 
 from __future__ import annotations
 
-from typing import Any, Literal, Optional, TypedDict
+from typing import Any, Literal, Optional
+
+from services.shared_error_map import fail, ok
 
 SafetyAction = Literal["allow", "redirect", "reject"]
-
-
-class QaResult(TypedDict, total=False):
-    answer: str
-    requestId: str
-    safetyAction: SafetyAction
-    latencyMs: int
 
 
 def ok_qa(
@@ -19,43 +14,39 @@ def ok_qa(
     answer: str,
     safety_action: SafetyAction = "allow",
     request_id: str = "",
-    latency_ms: int = 0,
+    **_ignored: Any,
 ) -> dict[str, Any]:
-    return {
-        "ok": True,
-        "result": {
-            "answer": (answer or "").strip(),
-            "safetyAction": safety_action,
-            "requestId": request_id or "",
-            "latencyMs": int(latency_ms or 0),
-        },
+    result: dict[str, Any] = {
+        "answer": (answer or "").strip(),
+        "safetyAction": safety_action,
     }
+    rid = (request_id or "").strip()
+    if rid:
+        result["requestId"] = rid
+    return ok(result)
 
 
 def err_qa(
     *,
     code: str,
-    message: str,
-    retryable: bool = True,
+    message: Optional[str] = None,
+    retryable: Optional[bool] = None,
+    request_id: Optional[str] = None,
     details: Optional[dict[str, Any]] = None,
-    latency_ms: int = 0,
+    **_ignored: Any,
 ) -> dict[str, Any]:
-    error: dict[str, Any] = {
-        "code": code,
-        "message": message,
-        "retryable": retryable,
-    }
-    if details:
-        error["details"] = details
-    return {"ok": False, "error": error, "latencyMs": int(latency_ms or 0)}
+    return fail(
+        code=code,
+        message=message,
+        retryable=retryable,
+        request_id=request_id,
+        details=details,
+    )
 
 
 QA_ERROR_CODES = [
-    {"code": "QA_MISSING_API_KEY", "message": "未配置 DeepSeek 密钥", "retryable": False},
-    {"code": "QA_MISSING_QUESTION", "message": "问题不能为空", "retryable": False},
-    {"code": "QA_MISSING_ASSET", "message": "缺少当前素材信息", "retryable": False},
-    {"code": "QA_TIMEOUT", "message": "回答超时，请重试", "retryable": True},
-    {"code": "QA_NETWORK_ERROR", "message": "网络异常，请稍后重试", "retryable": True},
-    {"code": "QA_UPSTREAM_ERROR", "message": "问答服务暂时不可用", "retryable": True},
-    {"code": "QA_REJECTED", "message": "这个问题我们换个聊聊贴纸吧", "retryable": False},
+    {"code": "INVALID_ARGUMENT", "message": "参数无效", "retryable": False},
+    {"code": "QA_TIMEOUT", "message": "回答超时", "retryable": True},
+    {"code": "QA_BLOCKED", "message": "内容被安全策略拦截", "retryable": False},
+    {"code": "UNKNOWN", "message": "服务暂时不可用", "retryable": True},
 ]

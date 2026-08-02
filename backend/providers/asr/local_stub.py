@@ -1,4 +1,4 @@
-"""本地 / 私有化 Provider 占位（弱网或离线时再评估）。"""
+"""本地 / 私有化 Provider 占位。"""
 
 from __future__ import annotations
 
@@ -20,9 +20,4 @@ class QwenLocalProvider(AsrProvider):
         mime_type: str = "audio/wav",
         language: Optional[str] = None,
     ) -> dict[str, Any]:
-        return err_result(
-            code="ASR_PROVIDER_NOT_READY",
-            message="qwen_local 尚未接入，当前请使用 qwen_cloud_http",
-            retryable=False,
-            provider=self.name,
-        )
+        return err_result(code="ASR_PROVIDER_NOT_READY")

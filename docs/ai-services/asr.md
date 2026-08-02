@@ -50,4 +50,4 @@
 
 ## 延迟日志
 
-写入 `backend/data/logs/asr_metrics.jsonl`（不上传仓库）。
+写入 `backend/data/asr_metrics.jsonl`（已在 `.gitignore`，不上传仓库）。

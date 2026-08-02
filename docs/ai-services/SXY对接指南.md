@@ -7,13 +7,16 @@
 
 ## 0. 先确认后端活着
 
-浏览器打开：
+> **联调门禁：** 等 PR#11 审查通过（Contracts + Electron 调用链）后再正式接入。  
+> Electron Renderer 如何访问 Flask（精确 CORS 允许列表 vs Main/Preload 代理）**尚未定案**，请勿假设可直接 `fetch('http://127.0.0.1:8788')`。
+
+本机浏览器 demo 可打开：
 
 ```text
 http://127.0.0.1:8788/api/health
 ```
 
-看到 `"ok": true` 即可联调。
+看到 `"ok": true` 且 `keysConfigured` 为布尔即可。
 
 准备度：
 

@@ -25,7 +25,8 @@ src/preload/       contextBridge
 src/renderer/      Vue3 Renderer
 src/shared/        共享契约与 ResourceRef 解析（Contracts 由 XR 维护）
 backend/           AI 安全代理：ASR / QA / TTS（组长）
-frontend/services/ AudioService / AnimationService（组长交付，供 SXY 调用）
+src/renderer/src/services/  正式 AudioService / AnimationService（Electron renderer）
+frontend/                  Flask 浏览器 demo 与参考脚本（非正式打包入口）
 assets/generated/  material / audio 等本地资源（固定语音 → audio/）
 docs/              架构与 AI 对接文档
 tests/             契约与资源解析测试

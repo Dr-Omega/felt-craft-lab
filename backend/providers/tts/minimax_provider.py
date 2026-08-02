@@ -1,4 +1,4 @@
-"""MiniMax 动态 TTS + 本地文件哈希缓存。"""
+"""MiniMax 动态 TTS + 本地文件哈希缓存（错误信息不泄露凭据）。"""
 
 from __future__ import annotations
 
@@ -18,7 +18,6 @@ CACHE_DIR = Path(__file__).resolve().parents[2] / "cache" / "tts"
 DEFAULT_MODEL = "speech-02-hd"
 DEFAULT_VOICE = "female-shaonv"
 
-# 国内常见两个域名；国际版另算
 CN_BASES = [
     "https://api.minimaxi.chat/v1/t2a_v2",
     "https://api.minimax.chat/v1/t2a_v2",
@@ -38,25 +37,13 @@ class MiniMaxTtsProvider(TtsProvider):
         api_key = _clean_env("MINIMAX_API_KEY")
         group_id = _clean_env("MINIMAX_GROUP_ID")
         if not api_key:
-            return err_tts(
-                code="TTS_MISSING_API_KEY",
-                message="未配置 MINIMAX_API_KEY",
-                retryable=False,
-            )
+            return err_tts(code="TTS_MISSING_API_KEY")
         if not group_id:
-            return err_tts(
-                code="TTS_MISSING_GROUP_ID",
-                message="未配置 MINIMAX_GROUP_ID",
-                retryable=False,
-            )
+            return err_tts(code="TTS_MISSING_GROUP_ID")
 
         content = (text or "").strip()
         if not content:
-            return err_tts(
-                code="TTS_MISSING_TEXT",
-                message="合成文本不能为空",
-                retryable=False,
-            )
+            return err_tts(code="TTS_MISSING_TEXT")
 
         model = _clean_env("MINIMAX_TTS_MODEL") or DEFAULT_MODEL
         voice_id = _clean_env("MINIMAX_VOICE_ID") or DEFAULT_VOICE
@@ -64,11 +51,11 @@ class MiniMaxTtsProvider(TtsProvider):
         cache_path = CACHE_DIR / f"{cache_key}.mp3"
 
         if cache_path.exists() and cache_path.stat().st_size > 0:
+            # NOTE: HTTP 路径待 ResourceRef 方案确认后迁移；当前保留联调可用性
             return ok_tts(
                 audio_url=f"/api/tts/audio/{cache_key}.mp3",
                 cache_hit=True,
                 request_id=cache_key,
-                latency_ms=0,
             )
 
         bases = _candidate_bases()
@@ -101,94 +88,44 @@ class MiniMaxTtsProvider(TtsProvider):
             try:
                 resp = requests.post(url, headers=headers, json=payload, timeout=60)
             except requests.Timeout:
-                return err_tts(code="TTS_TIMEOUT", message="语音生成超时", retryable=True)
-            except requests.RequestException as exc:
-                last_err = err_tts(
-                    code="TTS_NETWORK_ERROR",
-                    message=f"网络异常：{exc}",
-                    retryable=True,
-                    details={"exception": type(exc).__name__, "base": base},
-                )
+                return err_tts(code="TTS_TIMEOUT")
+            except requests.RequestException:
+                last_err = err_tts(code="TTS_NETWORK_ERROR")
                 continue
 
-            latency_ms = int((time.perf_counter() - started) * 1000)
+            _ = int((time.perf_counter() - started) * 1000)
             try:
                 data = resp.json()
             except ValueError:
-                last_err = err_tts(
-                    code="TTS_UPSTREAM_ERROR",
-                    message="语音服务返回无法解析",
-                    retryable=True,
-                    latency_ms=latency_ms,
-                    details={"status": resp.status_code, "base": base},
-                )
+                last_err = err_tts(code="TTS_UPSTREAM_ERROR")
                 continue
 
             base_resp = data.get("base_resp") or {}
             status_code = base_resp.get("status_code")
             status_msg = str(base_resp.get("status_msg") or "")
 
-            # 密钥无效：换下一个域名再试
             if status_code == 2049 or "invalid api key" in status_msg.lower():
-                last_err = err_tts(
-                    code="TTS_UPSTREAM_ERROR",
-                    message="invalid api key",
-                    retryable=True,
-                    latency_ms=latency_ms,
-                    details={
-                        "httpStatus": resp.status_code,
-                        "baseResp": base_resp,
-                        "triedBase": base,
-                        "keyPrefix": api_key[:4] + "***",
-                        "keyLength": len(api_key),
-                        "groupIdLength": len(group_id),
-                        "hint": "请确认用的是「接口密钥/API Key」，不是 Token Plan；且与 GroupId 同一账号",
-                    },
-                )
+                last_err = err_tts(code="TTS_UPSTREAM_ERROR")
                 continue
 
             if resp.status_code >= 400 or (status_code not in (None, 0)):
-                msg = status_msg or data.get("message") or "语音合成失败"
-                return err_tts(
-                    code="TTS_UPSTREAM_ERROR",
-                    message=str(msg),
-                    retryable=True,
-                    latency_ms=latency_ms,
-                    details={"httpStatus": resp.status_code, "baseResp": base_resp, "base": base},
-                )
+                return err_tts(code="TTS_UPSTREAM_ERROR")
 
             audio_bytes = _extract_audio_bytes(data)
             if not audio_bytes:
-                audio_url = _extract_audio_url(data)
-                if audio_url:
-                    return ok_tts(
-                        audio_url=audio_url,
-                        cache_hit=False,
-                        request_id=str(data.get("trace_id") or cache_key),
-                        latency_ms=latency_ms,
-                    )
-                return err_tts(
-                    code="TTS_UPSTREAM_ERROR",
-                    message="未获得音频数据",
-                    retryable=True,
-                    latency_ms=latency_ms,
-                    details={"keys": list(data.keys()), "base": base},
-                )
+                # 不返回上游 http(s) 外链；动态 TTS→ResourceRef 方案确认前仅接受本地缓存字节
+                return err_tts(code="TTS_UPSTREAM_ERROR")
 
             CACHE_DIR.mkdir(parents=True, exist_ok=True)
             cache_path.write_bytes(audio_bytes)
+            # 临时联调地址；正式 audioUrl 须为 felt-resource://audio/...（方案待确认，见 PR 审查线程）
             return ok_tts(
                 audio_url=f"/api/tts/audio/{cache_key}.mp3",
                 cache_hit=False,
-                request_id=str(data.get("trace_id") or cache_key),
-                latency_ms=latency_ms,
+                request_id=cache_key,
             )
 
-        return last_err or err_tts(
-            code="TTS_UPSTREAM_ERROR",
-            message="invalid api key",
-            retryable=True,
-        )
+        return last_err or err_tts(code="TTS_UPSTREAM_ERROR")
 
 
 def _candidate_bases() -> list[str]:
@@ -200,7 +137,6 @@ def _candidate_bases() -> list[str]:
     if region in {"intl", "io", "global"}:
         ordered.append(INTL_BASE)
     ordered.extend(CN_BASES)
-    # 去重并保持顺序
     seen: set[str] = set()
     out: list[str] = []
     for b in ordered:

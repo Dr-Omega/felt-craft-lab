@@ -5,29 +5,29 @@
  * 浏览器 Flask demo：可降级为 /generated-audio/...（非正式对接地址）
  */
 
-const FELT_AUDIO_PREFIX = "felt-resource://audio/";
+const FELT_AUDIO_PREFIX = 'felt-resource://audio/'
 
 export function isFeltResourceAudioRef(url: string): boolean {
-  return typeof url === "string" && url.startsWith(FELT_AUDIO_PREFIX);
+  return typeof url === 'string' && url.startsWith(FELT_AUDIO_PREFIX)
 }
 
 /** felt-resource://audio/a/b.mp3 → a/b.mp3 */
 export function feltAudioRelativePath(url: string): string | null {
-  if (!isFeltResourceAudioRef(url)) return null;
-  const rel = url.slice(FELT_AUDIO_PREFIX.length).replace(/^\/+/, "");
-  if (!rel || rel.includes("..") || rel.includes("\\")) return null;
-  return rel;
+  if (!isFeltResourceAudioRef(url)) return null
+  const rel = url.slice(FELT_AUDIO_PREFIX.length).replace(/^\/+/, '')
+  if (!rel || rel.includes('..') || rel.includes('\\')) return null
+  return rel
 }
 
 export function isElectronRenderer(): boolean {
   try {
     const g = globalThis as unknown as {
-      window?: { electronAPI?: unknown };
-      electronAPI?: unknown;
-    };
-    return Boolean(g.window?.electronAPI || g.electronAPI);
+      window?: { electronAPI?: unknown }
+      electronAPI?: unknown
+    }
+    return Boolean(g.window?.electronAPI || g.electronAPI)
   } catch {
-    return false;
+    return false
   }
 }
 
@@ -39,14 +39,13 @@ export function toPlayableAudioUrl(
   url: string,
   options: { httpFallbackBase?: string; forceHttpFallback?: boolean } = {}
 ): string {
-  if (!url) return "";
-  const rel = feltAudioRelativePath(url);
+  if (!url) return ''
+  const rel = feltAudioRelativePath(url)
   if (rel) {
-    const useHttp =
-      options.forceHttpFallback === true || !isElectronRenderer();
-    if (!useHttp) return url;
-    const base = (options.httpFallbackBase || "").replace(/\/$/, "");
-    return `${base}/generated-audio/${rel}`;
+    const useHttp = options.forceHttpFallback === true || !isElectronRenderer()
+    if (!useHttp) return url
+    const base = (options.httpFallbackBase || '').replace(/\/$/, '')
+    return `${base}/generated-audio/${rel}`
   }
-  return url;
+  return url
 }

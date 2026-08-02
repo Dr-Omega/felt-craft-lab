@@ -25,9 +25,12 @@
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
+    "howler": "^2.2.4",
+    "lottie-web": "^5.12.2",
     "vue": "^3.5.40"
   },
   "devDependencies": {
+    "@types/howler": "^2.2.13",
     "@types/node": "^22.19.0",
     "@vitejs/plugin-vue": "^6.0.1",
     "electron": "^43.2.0",

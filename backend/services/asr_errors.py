@@ -1,23 +1,17 @@
-"""ASR 错误码约定（组长维护，SXY 按 code 做提示/重试）。"""
+"""ASR 对外错误码说明（映射后的 SharedError，供 ops/文档展示）。"""
 
 from __future__ import annotations
 
-# code → (默认中文说明, 是否可重试)
-ASR_ERROR_CODES: dict[str, tuple[str, bool]] = {
-    "ASR_MISSING_API_KEY": ("未配置语音识别密钥", False),
-    "ASR_MISSING_AUDIO": ("缺少音频文件或 audioUrl", False),
-    "ASR_TIMEOUT": ("识别超时，请重试", True),
-    "ASR_NETWORK_ERROR": ("网络异常，请检查网络后重试", True),
-    "ASR_BAD_RESPONSE": ("云端返回异常，请重试", True),
-    "ASR_UPSTREAM_ERROR": ("云端识别失败", True),
-    "ASR_PROVIDER_NOT_READY": ("该识别通道尚未开通", False),
-    "ASR_INTERNAL_ERROR": ("服务内部错误", True),
-    "ASR_EMPTY_TRANSCRIPT": ("没有听清内容，请再说一次", True),
-}
+# 客户端实际收到的是冻结 SharedErrorCode（见 shared_error_map）
+ASR_CLIENT_ERROR_CODES: list[dict] = [
+    {"code": "ASR_TIMEOUT", "message": "识别超时，请重试。", "retryable": True},
+    {"code": "ASR_EMPTY_TRANSCRIPT", "message": "没有听清内容，请再说一次。", "retryable": True},
+    {"code": "RECORDING_EMPTY", "message": "缺少有效录音，请重新录制。", "retryable": False},
+    {"code": "INVALID_ARGUMENT", "message": "参数无效或不支持的识别通道。", "retryable": False},
+    {"code": "REQUEST_CANCELLED", "message": "请求已取消。", "retryable": False},
+    {"code": "UNKNOWN", "message": "识别服务暂时不可用，请稍后重试。", "retryable": True},
+]
 
 
 def list_error_codes() -> list[dict]:
-    return [
-        {"code": code, "message": msg, "retryable": retryable}
-        for code, (msg, retryable) in ASR_ERROR_CODES.items()
-    ]
+    return list(ASR_CLIENT_ERROR_CODES)

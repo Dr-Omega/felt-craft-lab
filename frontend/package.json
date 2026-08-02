@@ -1,9 +1,8 @@
+# 浏览器 Demo 依赖说明（非正式）
+# 正式 Audio/Animation 在仓库根 package.json + src/renderer/src/services
 {
-  "name": "felt-craft-lab-frontend-services",
+  "name": "felt-craft-lab-frontend-demos",
   "private": true,
-  "description": "组长交付的前端技术封装（Audio/Animation），供 SXY 页面调用",
-  "dependencies": {
-    "howler": "^2.2.4",
-    "lottie-web": "^5.12.2"
-  }
+  "description": "Flask 浏览器 demo 脚本依赖占位；请以仓库根 npm 依赖为准",
+  "dependencies": {}
 }

@@ -1,42 +1,34 @@
-"""QaService：儿童适龄问答入口。"""
+"""QaService。"""
 
 from __future__ import annotations
 
 import os
-from typing import Any, Optional
+from typing import Optional
 
 from providers.qa.deepseek_provider import DeepSeekQaProvider
 from providers.qa.mock_provider import MockQaProvider
+from services.guards import qa_provider_allowed
 from services.qa_types import err_qa
+
+
+class UnknownQaProvider(ValueError):
+    pass
 
 
 class QaService:
     def __init__(self, provider_name: Optional[str] = None) -> None:
         name = (provider_name or os.getenv("QA_PROVIDER") or "deepseek").strip()
+        if not qa_provider_allowed(name):
+            raise UnknownQaProvider(name)
         if name == "mock":
             self.provider = MockQaProvider()
         else:
             self.provider = DeepSeekQaProvider()
 
-    def ask(
-        self,
-        *,
-        question: str,
-        asset: Optional[dict[str, Any]] = None,
-    ) -> dict[str, Any]:
-        asset = asset or {}
-        if not asset.get("nameZh") and not asset.get("assetId"):
-            return err_qa(
-                code="QA_MISSING_ASSET",
-                message="缺少当前素材信息（至少提供 nameZh 或 assetId）",
-                retryable=False,
-            )
+    def ask(self, *, question: str, asset: dict) -> dict:
+        if not asset or not (asset.get("assetId") or asset.get("nameZh")):
+            return err_qa(code="QA_MISSING_ASSET")
         try:
             return self.provider.ask(question=question, asset=asset)
-        except Exception as exc:  # noqa: BLE001
-            return err_qa(
-                code="QA_UPSTREAM_ERROR",
-                message=str(exc),
-                retryable=True,
-                details={"exception": type(exc).__name__},
-            )
+        except Exception:  # noqa: BLE001
+            return err_qa(code="QA_UPSTREAM_ERROR")

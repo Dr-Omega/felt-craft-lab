@@ -1,4 +1,7 @@
-# 前端技术封装（组长）
+# 前端 Demo（Flask 浏览器联调）
+
+> **正式 AudioService / AnimationService** 在 Electron renderer：`src/renderer/src/services/`  
+> 本目录下的 `.js` 与 HTML demo 仅供 Flask 浏览器联调，不参与 Electron 打包。
 
 完整对接说明请看：`docs/ai-services/SXY对接指南.md`
 
@@ -9,47 +12,28 @@
 - 索引：`assets/generated/audio/audio-index.json`
 - 浏览器辅助试听：http://127.0.0.1:8788/demo/fixed-audio
 - 工具说明：`docs/ai-services/固定TTS批量工具.md`
-- 播放地址转换：`frontend/services/audio-url.ts`（与 ResourceRef / felt-resource 兼容）
+- 播放地址转换（正式）：`src/renderer/src/services/audio-url.ts`
 
-## FeltAiClient（第 8 步，可选）
+## FeltAiClient（浏览器 demo 可选）
 
-路径：
-- `frontend/services/felt-ai.client.ts`
-- `frontend/services/felt-ai.client.js`
+- `frontend/services/felt-ai.client.js`（仅 demo / 无打包）
 
-封装 ASR / QA / TTS 的 `fetch` 调用，避免手写 URL。
+正式客户端封装若需要，应放在 `src/renderer/src/services/` 并由根工程构建。
 
-## AudioService（第 6 步）
+## AudioService demo（第 6 步）
 
-路径：
-- `frontend/services/audio.service.ts`（给正式工程引用）
-- `frontend/services/audio.service.js`（demo / 无打包环境）
+正式实现：`src/renderer/src/services/audio.service.ts`
 
-接口：
+Demo 脚本（浏览器无打包）：
+- `frontend/services/audio.service.js`
 
-```ts
-play(url: string, channel?: 'primary' | 'effect'): Promise<void>
-stop(channel?: 'primary' | 'effect'): void
-setEffectsEnabled(enabled: boolean): void
-```
+演示：http://127.0.0.1:8788/demo/audio
 
-规则：
-- 新的 `primary` 会先停旧的 `primary`
-- `effect` 不打断 `primary`
-- 播放失败只打日志，不抛错（文字仍可显示）
+## AnimationService demo（第 7 步）
 
-## AnimationService（第 7 步）
+正式实现：`src/renderer/src/services/animation.service.ts`（空映射，YWN 注入）
 
-路径：
-- `frontend/services/animation.service.ts`
+Demo 脚本（含 CDN 示例 Lottie，仅 demo）：
 - `frontend/services/animation.service.js`
 
-接口：
-
-```ts
-play(eventKey: string, target?: HTMLElement): Promise<void>
-stop(eventKey?: string): void
-```
-
-预置 eventKey：`collect` / `save` / `loading`  
 演示：http://127.0.0.1:8788/demo/animation

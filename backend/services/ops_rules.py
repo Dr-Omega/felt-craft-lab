@@ -24,7 +24,7 @@ def ops_rules_doc() -> dict:
         "productDowngrades": [
             {
                 "id": "asr_empty_block_qa",
-                "rule": "ASR result.empty=true 时禁止调用 QA，提示重说，保留文字输入",
+                "rule": "ASR 返回 SharedError ASR_EMPTY_TRANSCRIPT 时禁止调用 QA，提示重说，保留文字输入",
             },
             {
                 "id": "mic_denied_text_input",

@@ -1,5 +1,6 @@
 /**
- * 浏览器可直接用的 AnimationService（与 .ts 行为一致）
+ * 浏览器 demo 专用 AnimationService（含 CDN 示例 Lottie，仅 demo）
+ * 正式实现：src/renderer/src/services/animation.service.ts
  */
 (function (global) {
   var DEFAULT_LOTTIE_MAP = {

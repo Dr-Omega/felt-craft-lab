@@ -1,4 +1,4 @@
-"""Mock TTS：返回占位说明，不消耗额度。"""
+"""Mock TTS：返回仓库内合法 ResourceRef 固件。"""
 
 from __future__ import annotations
 
@@ -14,8 +14,7 @@ class MockTtsProvider(TtsProvider):
 
     def synthesize(self, *, text: str, voice_purpose: str = "qa_answer") -> dict[str, Any]:
         return ok_tts(
-            audio_url="/api/tts/mock-audio",
+            audio_url="felt-resource://audio/mock-name-zh.wav",
             cache_hit=False,
             request_id="mock-tts",
-            latency_ms=10,
         )

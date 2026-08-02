@@ -1,17 +1,6 @@
 """
 统一 AI 服务后端（安全代理）
-
-第 1 步：健康检查
-第 2 步：Qwen3-ASR-Flash 云端 HTTP
-第 3 步：统一输出格式 + 错误码 + P50/P95 统计
-第 4 步：DeepSeek 儿童适龄问答
-第 5 步：MiniMax 动态 TTS + 哈希缓存
-第 6 步：AudioService（Howler）演示页由后端托管
-第 7 步：AnimationService（lottie-web）演示页由后端托管
-第 8 步：SXY Mock / 对接文档（见 docs/ai-services/SXY对接指南.md）
-第 9 步：固定文案 TTS 批量工具 + 音频快照索引
-第 10 步：.env.example + 错误码 + 重试/降级规则
-第 11 步：产品验收清单 + 开源许可 + 云服务记录
+成功/错误载荷对齐 src/shared/contracts（AsrResult / QaResult / TtsResult / SharedError）。
 """
 
 from __future__ import annotations
@@ -23,25 +12,36 @@ from dotenv import load_dotenv
 from flask import Flask, jsonify, request, send_from_directory
 
 from providers.asr.qwen_cloud_http import SAMPLE_AUDIO_URL
-from services.asr_errors import list_error_codes
-from services.asr_metrics import summarize_asr_metrics
-from services.asr_service import AsrService
-from services.asr_types import contract_doc
-from services.qa_service import QaService
-from services.qa_types import QA_ERROR_CODES
-from services.tts_service import TtsService
-from services.tts_types import TTS_ERROR_CODES
-from services.ops_rules import ops_rules_doc
 from providers.tts.minimax_provider import CACHE_DIR
+from services.asr_metrics import summarize_asr_metrics
+from services.asr_service import AsrService, UnknownAsrProvider
+from services.asr_types import contract_doc
+from services.guards import (
+    InflightGuard,
+    MAX_AUDIO_BYTES,
+    asr_provider_allowed,
+    check_audio_mime,
+    check_audio_size,
+    check_qa_text,
+    check_tts_text,
+    is_dev_mode,
+    qa_provider_allowed,
+    rate_limit_ok,
+    smoke_allowed,
+    tts_provider_allowed,
+)
+from services.ops_rules import ops_rules_doc
+from services.qa_service import QaService, UnknownQaProvider
+from services.qa_types import QA_ERROR_CODES
+from services.shared_error_map import fail
+from services.tts_service import TtsService, UnknownTtsProvider
+from services.tts_types import TTS_ERROR_CODES
 
 BASE_DIR = Path(__file__).resolve().parent
 ROOT_DIR = BASE_DIR.parent
 load_dotenv(BASE_DIR / ".env")
 
 app = Flask(__name__)
-asr_service = AsrService()
-qa_service = QaService()
-tts_service = TtsService()
 
 SAMPLE_ASSET = {
     "assetId": "sticker_rabbit_demo",
@@ -51,12 +51,8 @@ SAMPLE_ASSET = {
 }
 
 
-def _mask(value: str | None) -> str:
-    if not value:
-        return "missing"
-    if len(value) <= 8:
-        return "set"
-    return f"set({value[:2]}***{value[-2:]})"
+def _configured(value: str | None) -> bool:
+    return bool((value or "").strip())
 
 
 def _asr_key() -> str:
@@ -66,24 +62,44 @@ def _asr_key() -> str:
     )
 
 
+def _client_bucket() -> str:
+    return request.headers.get("X-Forwarded-For", request.remote_addr or "local").split(",")[0].strip()
+
+
+def _json_fail(code: str, http_status: int = 400):
+    body = fail(code=code)
+    return jsonify(body), http_status
+
+
+def _resolve_asr(provider: str | None) -> AsrService | tuple:
+    name = (provider or os.getenv("QWEN_ASR_PROVIDER") or "qwen_cloud_http").strip()
+    if not asr_provider_allowed(name):
+        return _json_fail("INVALID_PROVIDER")
+    try:
+        return AsrService(name)
+    except UnknownAsrProvider:
+        return _json_fail("INVALID_PROVIDER")
+
+
 @app.get("/api/health")
 def health():
     return jsonify(
         {
             "ok": True,
             "service": "felt-craft-lab-ai-proxy",
-            "version": "step11",
+            "version": "review-fix-1",
             "env": os.getenv("APP_ENV", "development"),
-            "keys": {
-                "qwen_asr": _mask(_asr_key()),
-                "deepseek": _mask(os.getenv("DEEPSEEK_API_KEY")),
-                "minimax": _mask(os.getenv("MINIMAX_API_KEY")),
+            "keysConfigured": {
+                "qwen_asr": _configured(_asr_key()),
+                "deepseek": _configured(os.getenv("DEEPSEEK_API_KEY")),
+                "minimax": _configured(os.getenv("MINIMAX_API_KEY"))
+                and _configured(os.getenv("MINIMAX_GROUP_ID")),
             },
-            "providers_ready": {
-                "asr": ["qwen_cloud_http", "mock"],
-                "asr_reserved": ["qwen_cloud_realtime", "qwen_local"],
-                "qa": ["deepseek", "mock"],
-                "tts": ["minimax", "mock"],
+            "providers": {
+                "asr": ["qwen_cloud_http", "qwen_cloud_realtime", "qwen_local"]
+                + (["mock"] if is_dev_mode() else []),
+                "qa": ["deepseek"] + (["mock"] if is_dev_mode() else []),
+                "tts": ["minimax"] + (["mock"] if is_dev_mode() else []),
             },
         }
     )
@@ -94,34 +110,24 @@ def ready():
     return jsonify(
         {
             "ready": True,
-            "step": 11,
             "asr": True,
             "qa": True,
             "tts": True,
             "audioService": True,
             "animationService": True,
-            "fixedTtsBatch": True,
-            "opsRules": True,
-            "acceptanceDocs": True,
+            "contractsAligned": True,
         }
     )
 
 
 @app.get("/api/ops/rules")
 def ops_rules():
-    """第 10 步：错误码 + 重试/降级规则（给 SXY / 验收用）。"""
     return jsonify({"ok": True, "rules": ops_rules_doc()})
 
 
 @app.get("/api/asr/contract")
 def asr_contract():
-    return jsonify(
-        {
-            "ok": True,
-            "contract": contract_doc(),
-            "errorCodes": list_error_codes(),
-        }
-    )
+    return jsonify({"ok": True, "contract": contract_doc()})
 
 
 @app.get("/api/asr/metrics")
@@ -131,132 +137,134 @@ def asr_metrics():
 
 @app.post("/api/asr/transcribe")
 def asr_transcribe():
+    if not rate_limit_ok(f"asr:{_client_bucket()}"):
+        return _json_fail("RATE_LIMITED", 429)
+
     language = None
     session_id = None
     provider_override = None
 
-    if request.content_type and "multipart/form-data" in request.content_type:
-        language = request.form.get("language") or None
-        session_id = request.form.get("sessionId") or None
-        provider_override = request.form.get("provider") or None
-        f = request.files.get("file") or request.files.get("audio")
-        if not f:
-            return jsonify(
-                {
-                    "ok": False,
-                    "provider": "qwen_cloud_http",
-                    "error": {
-                        "code": "ASR_MISSING_AUDIO",
-                        "message": "请用 multipart 字段 file 上传音频",
-                        "retryable": False,
-                    },
-                    "latencyMs": 0,
-                }
-            ), 400
-        audio_bytes = f.read()
-        mime_type = f.mimetype or "audio/wav"
-        service = AsrService(provider_override) if provider_override else asr_service
-        result = service.transcribe(
-            audio_bytes=audio_bytes,
-            mime_type=mime_type,
-            language=language,
-            session_id=session_id,
-        )
-        status = 200 if result.get("ok") else 502
-        return jsonify(result), status
+    try:
+        with InflightGuard():
+            if request.content_type and "multipart/form-data" in request.content_type:
+                language = request.form.get("language") or None
+                session_id = request.form.get("sessionId") or None
+                provider_override = request.form.get("provider") or None
+                f = request.files.get("file") or request.files.get("audio")
+                if not f:
+                    return _json_fail("ASR_MISSING_AUDIO")
+                mime_type = f.mimetype or "audio/wav"
+                bad_mime = check_audio_mime(mime_type)
+                if bad_mime:
+                    return _json_fail(bad_mime)
+                audio_bytes = f.read(MAX_AUDIO_BYTES + 1)
+                size_err = check_audio_size(len(audio_bytes))
+                if size_err:
+                    return _json_fail(size_err)
+                resolved = _resolve_asr(provider_override)
+                if not isinstance(resolved, AsrService):
+                    return resolved
+                result = resolved.transcribe(
+                    audio_bytes=audio_bytes,
+                    mime_type=mime_type,
+                    language=language,
+                    session_id=session_id,
+                )
+                status = 200 if result.get("ok") else 502
+                return jsonify(result), status
 
-    data = request.get_json(silent=True) or {}
-    language = data.get("language")
-    session_id = data.get("sessionId")
-    provider_override = data.get("provider")
-    audio_url = data.get("audioUrl") or data.get("audio_url")
-    if not audio_url:
-        return jsonify(
-            {
-                "ok": False,
-                "provider": "qwen_cloud_http",
-                "error": {
-                    "code": "ASR_MISSING_AUDIO",
-                    "message": "请提供 audioUrl，或改用 multipart 上传 file",
-                    "retryable": False,
-                },
-                "latencyMs": 0,
-            }
-        ), 400
-
-    service = AsrService(provider_override) if provider_override else asr_service
-    result = service.transcribe(
-        audio_url=audio_url,
-        language=language,
-        session_id=session_id,
-    )
-    status = 200 if result.get("ok") else 502
-    return jsonify(result), status
+            data = request.get_json(silent=True) or {}
+            language = data.get("language")
+            session_id = data.get("sessionId")
+            provider_override = data.get("provider")
+            audio_url = data.get("audioUrl") or data.get("audio_url")
+            if not audio_url:
+                return _json_fail("ASR_MISSING_AUDIO")
+            resolved = _resolve_asr(provider_override)
+            if not isinstance(resolved, AsrService):
+                return resolved
+            result = resolved.transcribe(
+                audio_url=audio_url,
+                language=language,
+                session_id=session_id,
+            )
+            status = 200 if result.get("ok") else 502
+            return jsonify(result), status
+    except TimeoutError:
+        return _json_fail("RATE_LIMITED", 429)
 
 
-@app.get("/api/asr/smoke-test")
+@app.post("/api/asr/smoke-test")
 def asr_smoke_test():
-    result = asr_service.transcribe(audio_url=SAMPLE_AUDIO_URL, session_id="smoke-test")
-    status = 200 if result.get("ok") else 502
-    return jsonify(
-        {
-            "smokeTest": True,
-            "sampleAudioUrl": SAMPLE_AUDIO_URL,
-            **result,
-        }
-    ), status
+    if not smoke_allowed():
+        return _json_fail("SMOKE_DISABLED", 403)
+    if not rate_limit_ok(f"smoke:{_client_bucket()}"):
+        return _json_fail("RATE_LIMITED", 429)
+    try:
+        with InflightGuard():
+            service = AsrService("qwen_cloud_http")
+            result = service.transcribe(audio_url=SAMPLE_AUDIO_URL, session_id="smoke-test")
+            status = 200 if result.get("ok") else 502
+            return jsonify({"smokeTest": True, **result}), status
+    except (UnknownAsrProvider, TimeoutError):
+        return _json_fail("SMOKE_DISABLED", 403)
 
 
 @app.get("/api/asr/mock")
 def asr_mock():
+    if not is_dev_mode():
+        return _json_fail("SMOKE_DISABLED", 403)
     result = AsrService("mock").transcribe(audio_url="mock://local")
     return jsonify(result)
 
 
 @app.post("/api/qa/ask")
 def qa_ask():
-    """
-    SXY 调用：
-    {
-      "question": "小兔子喜欢吃什么？",
-      "asset": { "assetId": "...", "nameZh": "...", "introZh": "...", "themeId": "..." },
-      "provider": "deepseek" | "mock"  // 可选
-    }
-    """
+    if not rate_limit_ok(f"qa:{_client_bucket()}"):
+        return _json_fail("RATE_LIMITED", 429)
     data = request.get_json(silent=True) or {}
     question = data.get("question") or ""
     asset = data.get("asset") or {}
     provider = data.get("provider")
-    service = QaService(provider) if provider else qa_service
-    result = service.ask(question=question, asset=asset)
-    status = 200 if result.get("ok") else 502
-    return jsonify(result), status
+    text_err = check_qa_text(question)
+    if text_err:
+        return _json_fail(text_err)
+    resolved_name = (provider or os.getenv("QA_PROVIDER") or "deepseek").strip()
+    if not qa_provider_allowed(resolved_name):
+        return _json_fail("INVALID_PROVIDER")
+    try:
+        with InflightGuard():
+            service = QaService(resolved_name)
+            result = service.ask(question=question, asset=asset)
+            status = 200 if result.get("ok") else 502
+            return jsonify(result), status
+    except UnknownQaProvider:
+        return _json_fail("INVALID_PROVIDER")
+    except TimeoutError:
+        return _json_fail("RATE_LIMITED", 429)
 
 
-@app.get("/api/qa/smoke-test")
+@app.post("/api/qa/smoke-test")
 def qa_smoke_test():
-    """浏览器一键测试 DeepSeek 问答。"""
-    result = qa_service.ask(
-        question="小兔子贴纸可以怎么用在不织布手工里？",
-        asset=SAMPLE_ASSET,
-    )
-    status = 200 if result.get("ok") else 502
-    return jsonify(
-        {
-            "smokeTest": True,
-            "sampleAsset": SAMPLE_ASSET,
-            "sampleQuestion": "小兔子贴纸可以怎么用在不织布手工里？",
-            **result,
-        }
-    ), status
+    if not smoke_allowed():
+        return _json_fail("SMOKE_DISABLED", 403)
+    try:
+        with InflightGuard():
+            result = QaService("deepseek").ask(
+                question="小兔子贴纸可以怎么用在不织布手工里？",
+                asset=SAMPLE_ASSET,
+            )
+            status = 200 if result.get("ok") else 502
+            return jsonify({"smokeTest": True, **result}), status
+    except UnknownQaProvider:
+        return _json_fail("INVALID_PROVIDER")
 
 
 @app.get("/api/qa/mock")
 def qa_mock():
-    result = QaService("mock").ask(
-        question="这是什么？",
-        asset=SAMPLE_ASSET,
-    )
+    if not is_dev_mode():
+        return _json_fail("SMOKE_DISABLED", 403)
+    result = QaService("mock").ask(question="这是什么？", asset=SAMPLE_ASSET)
     return jsonify(result)
 
 
@@ -266,20 +274,8 @@ def qa_contract():
         {
             "ok": True,
             "contract": {
-                "successShape": {
-                    "ok": True,
-                    "result": {
-                        "answer": "string",
-                        "safetyAction": "allow | redirect | reject",
-                        "requestId": "string",
-                        "latencyMs": "number",
-                    },
-                },
-                "errorShape": {
-                    "ok": False,
-                    "error": {"code": "string", "message": "string", "retryable": "boolean"},
-                    "latencyMs": "number",
-                },
+                "resultContract": "src/shared/contracts/ai.ts QaResult",
+                "errorContract": "src/shared/contracts/error.ts SharedError",
             },
             "errorCodes": QA_ERROR_CODES,
         }
@@ -288,64 +284,62 @@ def qa_contract():
 
 @app.post("/api/tts/synthesize")
 def tts_synthesize():
-    """
-    SXY 调用：
-    { "text": "要朗读的文字", "voicePurpose": "qa_answer", "provider": "minimax|mock" }
-    """
+    if not rate_limit_ok(f"tts:{_client_bucket()}"):
+        return _json_fail("RATE_LIMITED", 429)
     data = request.get_json(silent=True) or {}
     text = data.get("text") or ""
     purpose = data.get("voicePurpose") or data.get("voice_purpose") or "qa_answer"
     provider = data.get("provider")
-    service = TtsService(provider) if provider else tts_service
-    result = service.synthesize(text=text, voice_purpose=purpose)
-    status = 200 if result.get("ok") else 502
-    return jsonify(result), status
+    text_err = check_tts_text(text)
+    if text_err:
+        return _json_fail(text_err)
+    resolved_name = (provider or os.getenv("TTS_PROVIDER") or "minimax").strip()
+    if not tts_provider_allowed(resolved_name):
+        return _json_fail("INVALID_PROVIDER")
+    try:
+        with InflightGuard():
+            service = TtsService(resolved_name)
+            result = service.synthesize(text=text, voice_purpose=purpose)
+            status = 200 if result.get("ok") else 502
+            return jsonify(result), status
+    except UnknownTtsProvider:
+        return _json_fail("INVALID_PROVIDER")
+    except TimeoutError:
+        return _json_fail("RATE_LIMITED", 429)
 
 
-@app.get("/api/tts/smoke-test")
+@app.post("/api/tts/smoke-test")
 def tts_smoke_test():
-    """浏览器一键测试 MiniMax TTS；成功后可用 audioUrl 播放。"""
+    if not smoke_allowed():
+        return _json_fail("SMOKE_DISABLED", 403)
     sample = "小兔子贴纸很适合春天的不织布手工，我们一起贴一贴吧。"
-    result = tts_service.synthesize(text=sample, voice_purpose="qa_answer")
-    status = 200 if result.get("ok") else 502
-    return jsonify(
-        {
-            "smokeTest": True,
-            "sampleText": sample,
-            **result,
-        }
-    ), status
+    try:
+        with InflightGuard():
+            result = TtsService("minimax").synthesize(text=sample, voice_purpose="qa_answer")
+            status = 200 if result.get("ok") else 502
+            return jsonify({"smokeTest": True, **result}), status
+    except UnknownTtsProvider:
+        return _json_fail("INVALID_PROVIDER")
 
 
 @app.get("/api/tts/mock")
 def tts_mock():
+    if not is_dev_mode():
+        return _json_fail("SMOKE_DISABLED", 403)
     result = TtsService("mock").synthesize(text="mock", voice_purpose="qa_answer")
     return jsonify(result)
 
 
 @app.get("/api/tts/audio/<path:filename>")
 def tts_audio(filename: str):
-    """提供缓存音频文件。"""
-    from flask import send_from_directory
-
     safe = Path(filename).name
     if not safe.endswith(".mp3"):
-        return jsonify({"ok": False, "error": {"code": "TTS_BAD_FILE", "message": "仅支持 mp3"}}), 400
+        return _json_fail("TTS_BAD_FILE")
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     path = CACHE_DIR / safe
     if not path.exists():
-        return jsonify({"ok": False, "error": {"code": "TTS_NOT_FOUND", "message": "音频不存在"}}), 404
+        return _json_fail("TTS_NOT_FOUND", 404)
     return send_from_directory(CACHE_DIR, safe, mimetype="audio/mpeg")
-
-
-@app.get("/api/tts/mock-audio")
-def tts_mock_audio():
-    return jsonify(
-        {
-            "ok": True,
-            "message": "这是 Mock 音频占位，不产生真实声音。正式环境请用 /api/tts/smoke-test",
-        }
-    )
 
 
 @app.get("/api/tts/contract")
@@ -354,16 +348,10 @@ def tts_contract():
         {
             "ok": True,
             "contract": {
-                "successShape": {
-                    "ok": True,
-                    "result": {
-                        "audioUrl": "string 可播放地址",
-                        "cacheHit": "boolean",
-                        "requestId": "string",
-                        "latencyMs": "number",
-                    },
-                },
-                "onFailure": "keep_text_only（TTS 失败时页面仍显示文字回答）",
+                "resultContract": "src/shared/contracts/ai.ts TtsResult",
+                "errorContract": "src/shared/contracts/error.ts SharedError",
+                "note": "audioUrl 须为 ResourceRef；动态 TTS→felt-resource 映射方案待确认",
+                "onFailure": "keep_text_only",
             },
             "errorCodes": TTS_ERROR_CODES,
         }
@@ -372,47 +360,38 @@ def tts_contract():
 
 @app.get("/demo/audio")
 def demo_audio_page():
-    """第 6 步：AudioService 浏览器演示页。"""
     return send_from_directory(ROOT_DIR / "frontend" / "demos", "audio-demo.html")
 
 
 @app.get("/demo/animation")
 def demo_animation_page():
-    """第 7 步：AnimationService 浏览器演示页。"""
     return send_from_directory(ROOT_DIR / "frontend" / "demos", "animation-demo.html")
 
 
 @app.get("/demo/fixed-audio")
 def demo_fixed_audio_page():
-    """固定语音快照试听页（浏览器辅助；Electron 正式用 felt-resource）。"""
     return send_from_directory(ROOT_DIR / "frontend" / "demos", "fixed-audio-demo.html")
 
 
 @app.get("/generated-audio/<path:filename>")
 def generated_audio_static(filename: str):
-    """浏览器 demo 读取 assets/generated/audio（对应 felt-resource://audio/...）。"""
     folder = ROOT_DIR / "assets" / "generated" / "audio"
     folder.mkdir(parents=True, exist_ok=True)
     rel = filename.replace("\\", "/")
     if ".." in rel.split("/"):
-        return jsonify(
-            {"ok": False, "error": {"code": "INVALID_ARGUMENT", "message": "非法路径"}}
-        ), 400
+        return _json_fail("INVALID_ARGUMENT")
     return send_from_directory(folder, rel)
 
 
 @app.get("/fixed-audio/<path:filename>")
 def fixed_audio_deprecated(filename: str):
-    """已弃用：兼容旧链接，改为从 generated/audio 提供。"""
     folder = ROOT_DIR / "assets" / "generated" / "audio"
     folder.mkdir(parents=True, exist_ok=True)
-    safe = Path(filename).name
-    return send_from_directory(folder, safe)
+    return send_from_directory(folder, Path(filename).name)
 
 
 @app.get("/frontend/<path:filename>")
 def frontend_static(filename: str):
-    """提供 frontend 下的 JS/CSS，供 demo 引用。"""
     return send_from_directory(ROOT_DIR / "frontend", filename)
 
 

@@ -1,4 +1,4 @@
-"""Realtime WebSocket Provider 占位（延迟不达标时再启用）。"""
+"""Realtime WebSocket Provider 占位。"""
 
 from __future__ import annotations
 
@@ -20,9 +20,4 @@ class QwenCloudRealtimeProvider(AsrProvider):
         mime_type: str = "audio/wav",
         language: Optional[str] = None,
     ) -> dict[str, Any]:
-        return err_result(
-            code="ASR_PROVIDER_NOT_READY",
-            message="qwen_cloud_realtime 尚未接入，当前请使用 qwen_cloud_http",
-            retryable=False,
-            provider=self.name,
-        )
+        return err_result(code="ASR_PROVIDER_NOT_READY")
