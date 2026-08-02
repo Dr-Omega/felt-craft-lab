@@ -5,6 +5,7 @@ import { pathToFileURL } from 'node:url'
 import { APP_DISPLAY_NAME, IPC_CHANNELS } from '@shared/constants/app'
 import { isAllowedExternalUrl } from './external-url'
 import { resolveRuntimeAssetPath } from './paths'
+import { registerAiIpc } from './ai/ipc'
 import {
   attachFeltResourceProtocol,
   createResourceRoots,
@@ -123,6 +124,7 @@ app.whenReady().then(() => {
   attachFeltResourceProtocol(resourceRoots)
   registerResourceIpc(resourceRoots)
   registerBootstrapIpc()
+  registerAiIpc()
   createWindow(packagedRendererPath)
 
   app.on('activate', () => {

@@ -13,6 +13,7 @@ function firstExisting(...candidates: string[]): string {
 /**
  * Resolve filesystem roots for felt-resource kinds.
  * - material/audio: packaged under process.resourcesPath/assets/generated; dev under cwd
+ * - audio dynamic: always under Electron userData/audio (writable; not install tree)
  * - preview: always under Electron userData (writable across installers)
  */
 export function createResourceRoots(): ResourceRoots {
@@ -31,8 +32,11 @@ export function createResourceRoots(): ResourceRoots {
     join(cwdGenerated, 'audio')
   )
 
+  const audioDynamicRoot = join(app.getPath('userData'), 'audio')
+  mkdirSync(join(audioDynamicRoot, 'dynamic'), { recursive: true })
+
   const previewRoot = join(app.getPath('userData'), 'previews')
   mkdirSync(previewRoot, { recursive: true })
 
-  return { materialRoot, audioRoot, previewRoot }
+  return { materialRoot, audioRoot, audioDynamicRoot, previewRoot }
 }

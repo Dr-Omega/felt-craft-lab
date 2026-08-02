@@ -1,4 +1,4 @@
-"""MiniMax 动态 TTS + 本地文件哈希缓存（错误信息不泄露凭据）。"""
+"""MiniMax 动态 TTS + 服务端哈希缓存；向 Electron 返回 audioBase64（不伪造 ResourceRef）。"""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from typing import Any
 
 import requests
 
-from services.tts_types import err_tts, ok_tts
+from services.tts_types import err_tts, ok_tts_bytes
 
 from .base import TtsProvider
 
@@ -51,9 +51,8 @@ class MiniMaxTtsProvider(TtsProvider):
         cache_path = CACHE_DIR / f"{cache_key}.mp3"
 
         if cache_path.exists() and cache_path.stat().st_size > 0:
-            # NOTE: HTTP 路径待 ResourceRef 方案确认后迁移；当前保留联调可用性
-            return ok_tts(
-                audio_url=f"/api/tts/audio/{cache_key}.mp3",
+            return ok_tts_bytes(
+                audio_bytes=cache_path.read_bytes(),
                 cache_hit=True,
                 request_id=cache_key,
             )
@@ -113,14 +112,12 @@ class MiniMaxTtsProvider(TtsProvider):
 
             audio_bytes = _extract_audio_bytes(data)
             if not audio_bytes:
-                # 不返回上游 http(s) 外链；动态 TTS→ResourceRef 方案确认前仅接受本地缓存字节
                 return err_tts(code="TTS_UPSTREAM_ERROR")
 
             CACHE_DIR.mkdir(parents=True, exist_ok=True)
             cache_path.write_bytes(audio_bytes)
-            # 临时联调地址；正式 audioUrl 须为 felt-resource://audio/...（方案待确认，见 PR 审查线程）
-            return ok_tts(
-                audio_url=f"/api/tts/audio/{cache_key}.mp3",
+            return ok_tts_bytes(
+                audio_bytes=audio_bytes,
                 cache_hit=False,
                 request_id=cache_key,
             )
@@ -168,16 +165,3 @@ def _extract_audio_bytes(data: dict[str, Any]) -> bytes | None:
             return base64.b64decode(audio)
         except Exception:  # noqa: BLE001
             return None
-
-
-def _extract_audio_url(data: dict[str, Any]) -> str | None:
-    if isinstance(data.get("data"), dict):
-        for key in ("audio_url", "audioUrl", "url"):
-            val = data["data"].get(key)
-            if isinstance(val, str) and val.startswith("http"):
-                return val
-    for key in ("audio_url", "audioUrl"):
-        val = data.get(key)
-        if isinstance(val, str) and val.startswith("http"):
-            return val
-    return None

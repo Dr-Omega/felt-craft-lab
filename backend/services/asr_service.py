@@ -10,7 +10,7 @@ from providers.asr.local_stub import QwenLocalProvider
 from providers.asr.mock_provider import MockAsrProvider
 from providers.asr.qwen_cloud_http import QwenCloudHttpProvider
 from providers.asr.realtime_stub import QwenCloudRealtimeProvider
-from services.asr_metrics import record_asr_event
+from services.asr_metrics import record_asr_event, session_bucket
 from services.asr_types import err_result
 from services.guards import asr_provider_allowed
 
@@ -61,6 +61,7 @@ class AsrService:
         body = result.get("result") or {}
         error = result.get("error") or {}
         latency = body.get("durationMs")
+        bucket = session_bucket(session_id)
         record_asr_event(
             {
                 "ok": ok,
@@ -68,7 +69,7 @@ class AsrService:
                 "latencyMs": latency,
                 "empty": (not ok and error.get("code") == "ASR_EMPTY_TRANSCRIPT"),
                 "errorCode": error.get("code"),
-                "sessionId": session_id,
+                **({"sessionBucket": bucket} if bucket else {}),
             }
         )
         return result

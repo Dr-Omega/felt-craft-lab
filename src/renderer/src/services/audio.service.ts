@@ -5,7 +5,8 @@
  * - primary：主要朗读；新播放前先停旧的
  * - effect：操作音效；可与 primary 并行；可被总开关关闭
  * - 播放失败不抛到页面业务层
- * - play() 在成功开始播放时 resolve；stop/unload/替换时 settle 未完成的 Promise
+ * - play() 仅在 Howler `play` 事件（成功开始播放）时 resolve 为成功开始
+ * - load 不算成功；loaderror/playerror/stop/替换时可靠 settle（不提前宣告 start）
  *
  * Electron 正式音频地址使用 ResourceRef：felt-resource://audio/...
  */
@@ -91,8 +92,8 @@ export class HowlerAudioService implements AudioService {
 
       this.pendingPlay.set(channel, done)
 
+      // Only `play` means playback started. `load` must not settle as success.
       sound.on('play', done)
-      sound.on('load', done)
       sound.on('loaderror', done)
       sound.on('playerror', done)
       sound.on('stop', done)

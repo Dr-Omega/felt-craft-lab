@@ -1,30 +1,13 @@
 {
   "version": 1,
   "purpose": "fixed_snapshot",
-  "source": "scripts.example.csv",
-  "generatedAt": "2026-07-31T15:20:00",
+  "source": "ywn-approved-only",
+  "generatedAt": "2026-08-02T00:00:00",
   "summary": {
-    "ok": 2,
+    "ok": 0,
     "failed": 0,
-    "total": 2
+    "total": 0
   },
-  "note": "Electron 正式 url 为 felt-resource://audio/...；浏览器 demo 由 AudioService 映射到 /generated-audio/...",
-  "items": [
-    {
-      "id": "rabbit_intro",
-      "assetId": "sticker_rabbit_demo",
-      "text": "小兔子有圆圆的耳朵和短尾巴，很适合春天的不织布贴画。你可以把它贴在草地上，再加点小花。",
-      "file": "rabbit_intro.mp3",
-      "url": "felt-resource://audio/rabbit_intro.mp3",
-      "status": "ok"
-    },
-    {
-      "id": "flower_intro",
-      "assetId": "sticker_flower_demo",
-      "text": "这朵小花颜色明亮，可以装饰在帽子上、衣服上，也可以点缀在背景角落。",
-      "file": "flower_intro.mp3",
-      "url": "felt-resource://audio/flower_intro.mp3",
-      "status": "ok"
-    }
-  ]
+  "note": "Production index must only list YWN-approved fixed intros under assets/generated/audio. Team demo snapshots live in assets/demo/audio/ and are excluded from electron-builder extraResources.",
+  "items": []
 }

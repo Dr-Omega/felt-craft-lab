@@ -1,6 +1,9 @@
 """
-统一 AI 服务后端（安全代理）
-成功/错误载荷对齐 src/shared/contracts（AsrResult / QaResult / TtsResult / SharedError）。
+统一 AI 服务后端（安全代理 / 远端 AI Gateway）
+
+Electron 正式链路：Renderer → Preload/Main → 本 Gateway（开发 localhost / 正式远端）。
+动态 TTS 返回 audioBase64；Main 写入 userData 并转成 felt-resource://audio/dynamic/...。
+不承载 Electron 安装包内 Python sidecar；密钥仅留在本服务端。
 """
 
 from __future__ import annotations
@@ -10,6 +13,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request, send_from_directory
+from werkzeug.exceptions import RequestEntityTooLarge
 
 from providers.asr.qwen_cloud_http import SAMPLE_AUDIO_URL
 from providers.tts.minimax_provider import CACHE_DIR
@@ -41,7 +45,14 @@ BASE_DIR = Path(__file__).resolve().parent
 ROOT_DIR = BASE_DIR.parent
 load_dotenv(BASE_DIR / ".env")
 
+# Hard request-body cap (multipart parse included). Slightly above MAX_AUDIO_BYTES.
+_MAX_CONTENT_LENGTH = int(os.getenv("AI_MAX_CONTENT_LENGTH", str(MAX_AUDIO_BYTES + 512 * 1024)))
+
 app = Flask(__name__)
+app.config["MAX_CONTENT_LENGTH"] = _MAX_CONTENT_LENGTH
+
+# JSON audioUrl is not a general client feature — only allowlisted smoke sample.
+_ALLOWED_ASR_AUDIO_URLS = frozenset({SAMPLE_AUDIO_URL})
 
 SAMPLE_ASSET = {
     "assetId": "sticker_rabbit_demo",
@@ -63,12 +74,18 @@ def _asr_key() -> str:
 
 
 def _client_bucket() -> str:
-    return request.headers.get("X-Forwarded-For", request.remote_addr or "local").split(",")[0].strip()
+    # Do not trust X-Forwarded-For unless a trusted proxy layer is explicitly configured later.
+    return (request.remote_addr or "local").strip()
 
 
 def _json_fail(code: str, http_status: int = 400):
     body = fail(code=code)
     return jsonify(body), http_status
+
+
+@app.errorhandler(RequestEntityTooLarge)
+def _payload_too_large(_err):
+    return _json_fail("PAYLOAD_TOO_LARGE", 413)
 
 
 def _resolve_asr(provider: str | None) -> AsrService | tuple:
@@ -180,6 +197,9 @@ def asr_transcribe():
             audio_url = data.get("audioUrl") or data.get("audio_url")
             if not audio_url:
                 return _json_fail("ASR_MISSING_AUDIO")
+            # Reject arbitrary client URLs to paid ASR; multipart upload is the real path.
+            if not smoke_allowed() or str(audio_url).strip() not in _ALLOWED_ASR_AUDIO_URLS:
+                return _json_fail("INVALID_ARGUMENT")
             resolved = _resolve_asr(provider_override)
             if not isinstance(resolved, AsrService):
                 return resolved
@@ -348,9 +368,9 @@ def tts_contract():
         {
             "ok": True,
             "contract": {
-                "resultContract": "src/shared/contracts/ai.ts TtsResult",
+                "gatewayWire": "dynamic TTS returns audioBase64; Electron Main materializes felt-resource://audio/dynamic/<hash>.mp3",
+                "rendererContract": "src/shared/contracts/ai.ts TtsResult (ResourceRef audioUrl)",
                 "errorContract": "src/shared/contracts/error.ts SharedError",
-                "note": "audioUrl 须为 ResourceRef；动态 TTS→felt-resource 映射方案待确认",
                 "onFailure": "keep_text_only",
             },
             "errorCodes": TTS_ERROR_CODES,

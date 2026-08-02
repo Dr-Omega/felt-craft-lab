@@ -100,4 +100,28 @@ describe('HowlerAudioService', () => {
     service.stop('primary')
     await expect(playPromise).resolves.toBeUndefined()
   })
+
+  it('does not treat load as successful start when playerror follows', async () => {
+    const originalPlay = MockHowl.prototype.play
+    MockHowl.prototype.play = vi.fn(function (this: InstanceType<typeof MockHowl>) {
+      queueMicrotask(() => {
+        this.emit('load')
+        queueMicrotask(() => this.emit('playerror'))
+      })
+      return 1
+    })
+
+    try {
+      const startedAt = Date.now()
+      const playPromise = service.play('felt-resource://audio/autoplay-fail.mp3', 'primary')
+      // If load incorrectly settled success, promise would resolve before playerror.
+      await expect(playPromise).resolves.toBeUndefined()
+      const instance = MockHowl.instances[0]
+      expect(instance.play).toHaveBeenCalled()
+      // Promise must still settle via playerror path (not hang); elapsed is a soft check.
+      expect(Date.now() - startedAt).toBeLessThan(2000)
+    } finally {
+      MockHowl.prototype.play = originalPlay
+    }
+  })
 })

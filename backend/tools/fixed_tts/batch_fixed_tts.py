@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import csv
 import json
 import re
@@ -129,29 +130,49 @@ def run_batch(*, input_path: Path, out_dir: Path, dry_run: bool, sleep_s: float)
             fail_n += 1
             continue
 
-        audio_url = (result.get("result") or {}).get("audioUrl") or ""
-        src_name = Path(str(audio_url)).name
-        src = CACHE_DIR / src_name
+        body = result.get("result") or {}
         dest = out_dir / f"{item_id}.mp3"
+        audio_b64 = body.get("audioBase64") or ""
+        request_id = str(body.get("requestId") or "").strip()
 
-        if not src.exists() or src.stat().st_size <= 0:
-            print(f"  FAIL 缓存文件不存在：{src}")
-            index_items.append(
-                {
-                    "id": item_id,
-                    "assetId": item["assetId"],
-                    "text": text,
-                    "file": f"{item_id}.mp3",
-                    "url": felt_audio_url(item_id),
-                    "status": "error",
-                    "error": {"code": "TTS_CACHE_MISSING", "message": str(src)},
-                }
-            )
-            fail_n += 1
-            continue
+        if audio_b64:
+            try:
+                dest.write_bytes(base64.b64decode(audio_b64))
+            except Exception as exc:  # noqa: BLE001
+                print(f"  FAIL 解码 audioBase64：{exc}")
+                index_items.append(
+                    {
+                        "id": item_id,
+                        "assetId": item["assetId"],
+                        "text": text,
+                        "file": f"{item_id}.mp3",
+                        "url": felt_audio_url(item_id),
+                        "status": "error",
+                        "error": {"code": "TTS_BAD_FILE", "message": "audioBase64 decode failed"},
+                    }
+                )
+                fail_n += 1
+                continue
+        else:
+            src = CACHE_DIR / f"{request_id}.mp3" if request_id else None
+            if not src or not src.exists() or src.stat().st_size <= 0:
+                print(f"  FAIL 缓存文件不存在：{src}")
+                index_items.append(
+                    {
+                        "id": item_id,
+                        "assetId": item["assetId"],
+                        "text": text,
+                        "file": f"{item_id}.mp3",
+                        "url": felt_audio_url(item_id),
+                        "status": "error",
+                        "error": {"code": "TTS_CACHE_MISSING", "message": str(src)},
+                    }
+                )
+                fail_n += 1
+                continue
+            shutil.copyfile(src, dest)
 
-        shutil.copyfile(src, dest)
-        cache_hit = bool((result.get("result") or {}).get("cacheHit"))
+        cache_hit = bool(body.get("cacheHit"))
         print(f"  OK → {dest.name}  cacheHit={cache_hit}  ref={felt_audio_url(item_id)}")
         index_items.append(
             {

@@ -10,7 +10,13 @@ export interface ParsedFeltResourceRef {
 
 export interface ResourceRoots {
   materialRoot: string
+  /** Packaged / repo fixed audio under assets/generated/audio */
   audioRoot: string
+  /**
+   * Dynamic TTS cache under Electron userData/audio.
+   * Paths like felt-resource://audio/dynamic/<hash>.mp3 resolve here.
+   */
+  audioDynamicRoot: string
   previewRoot: string
 }
 

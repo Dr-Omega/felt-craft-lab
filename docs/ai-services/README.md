@@ -18,50 +18,32 @@
 → **[开源许可与云服务记录.md](./开源许可与云服务记录.md)**  
 → **[API冒烟测试记录.md](./API冒烟测试记录.md)**
 
-## 进度
+## 正式边界（ZXR 已确认）
 
-- 第 1 步：安全代理 + 健康检查
-- 第 2 步：Qwen3-ASR-Flash HTTP + Provider + Mock
-- 第 3 步：统一输出字段 + 错误码 + P50/P95
-- 第 4 步：DeepSeek 儿童问答
-- 第 5 步：MiniMax TTS + 哈希缓存
-- 第 6 步：AudioService（Howler）
-- 第 7 步：AnimationService（lottie）
-- 第 8 步：SXY Mock / 对接文档 + 轻量 HTTP 客户端
-- 第 9 步：固定文案 TTS 批量工具 + 音频快照索引
-- 第 10 步：`.env.example` + 错误码 + 重试/降级规则
-- 第 11 步：产品验收清单 + 开源许可 + 云服务记录
+| 项 | 约定 |
+|----|------|
+| Electron 调用 | Renderer → Preload/`electronAPI.ai.*` → Main → Gateway |
+| 开发 Gateway | Main → `http://127.0.0.1:8788` |
+| 正式 Gateway | Main → `AI_GATEWAY_BASE_URL`（远端）；**无**本地 Python sidecar |
+| 密钥 | 仅 Gateway 服务端 |
+| 动态 TTS | Gateway `audioBase64` → Main `userData/audio/dynamic/<hash>.mp3` → `felt-resource://audio/dynamic/<hash>.mp3` |
+| animation kind | 本阶段不新增 |
 
-## 基址
-
-本地：`http://127.0.0.1:8788`
-
-## 接口速查
+## 接口速查（Gateway HTTP；仅 Main 调用）
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
 | GET | `/api/health` | 健康检查 |
 | GET | `/api/ready` | 能力就绪 |
-| POST | `/api/asr/transcribe` | 语音识别 |
-| GET | `/api/asr/mock` | ASR Mock |
-| GET | `/api/asr/contract` | ASR 契约 |
-| GET | `/api/asr/metrics` | ASR 延迟统计 |
+| POST | `/api/asr/transcribe` | 语音识别（multipart） |
 | POST | `/api/qa/ask` | 儿童问答 |
-| GET | `/api/qa/mock` | QA Mock |
-| GET | `/api/qa/contract` | QA 契约 |
-| POST | `/api/tts/synthesize` | 文字转语音（动态） |
-| GET | `/api/tts/mock` | TTS Mock |
-| GET | `/api/tts/contract` | TTS 契约 |
-| GET | `/generated-audio/<file>` | 浏览器读取 generated/audio（对应 felt-resource） |
-| GET | `/fixed-audio/<file>` | 已弃用，兼容旧链接 |
-| GET | `/demo/audio` | AudioService 演示 |
-| GET | `/demo/animation` | AnimationService 演示 |
-| GET | `/demo/fixed-audio` | 固定语音试听（浏览器辅助） |
-| GET | `/api/ops/rules` | 错误码 + 重试/降级规则 |
+| POST | `/api/tts/synthesize` | 动态 TTS（`audioBase64`） |
+| GET | `/api/*/mock` | 开发 Mock |
+| GET | `/api/ops/rules` | 错误码 + 重试/降级 |
 
 ## 产品硬规则
 
-1. ASR `empty=true` → **禁止**进 DeepSeek，提示重说  
+1. ASR 空识别（`ASR_EMPTY_TRANSCRIPT`）→ **禁止**进 DeepSeek，提示重说  
 2. TTS 失败 → **仍显示文字**  
-3. 前端 **零密钥**  
+3. 前端 **零密钥**；Renderer **零直连** Flask  
 4. `retryable=true` 才提示重试；否则不要死循环

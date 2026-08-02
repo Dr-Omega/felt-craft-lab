@@ -1,24 +1,72 @@
-"""ASR 延迟/失败日志，并汇总 P50/P95、失败率、空文本率。"""
+"""ASR 延迟/失败聚合：无原始 session 标识，可写运行目录 + 有界轮转。"""
 
 from __future__ import annotations
 
+import hashlib
 import json
 import math
+import os
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
-LOG_PATH = Path(__file__).resolve().parent.parent / "data" / "asr_metrics.jsonl"
+_MAX_LOG_BYTES = int(os.getenv("AI_METRICS_MAX_BYTES", str(2 * 1024 * 1024)))
+_MAX_LINES_KEEP = int(os.getenv("AI_METRICS_KEEP_LINES", "2000"))
+
+
+def metrics_log_path() -> Path:
+    env = (os.getenv("AI_METRICS_DIR") or "").strip()
+    if env:
+        base = Path(env)
+    else:
+        base = Path(tempfile.gettempdir()) / "felt-craft-lab" / "metrics"
+    return base / "asr_metrics.jsonl"
+
+
+def session_bucket(session_id: Optional[str]) -> Optional[str]:
+    """Irreversible short bucket; never persist raw session identifiers."""
+    raw = (session_id or "").strip()
+    if not raw:
+        return None
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
+
+
+def _rotate_if_needed(path: Path) -> None:
+    if not path.exists():
+        return
+    try:
+        if path.stat().st_size <= _MAX_LOG_BYTES:
+            return
+    except OSError:
+        return
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+        kept = lines[-_MAX_LINES_KEEP:]
+        path.write_text("\n".join(kept) + ("\n" if kept else ""), encoding="utf-8")
+    except OSError:
+        try:
+            path.unlink(missing_ok=True)
+        except OSError:
+            pass
 
 
 def record_asr_event(event: dict[str, Any]) -> None:
-    LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
-    payload = {
-        "ts": datetime.now(timezone.utc).isoformat(),
-        **event,
-    }
-    with LOG_PATH.open("a", encoding="utf-8") as f:
-        f.write(json.dumps(payload, ensure_ascii=False) + "\n")
+    path = metrics_log_path()
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        _rotate_if_needed(path)
+        payload = {
+            "ts": datetime.now(timezone.utc).isoformat(),
+            **event,
+        }
+        # Hard ban raw session identifiers if a caller slips them in
+        payload.pop("sessionId", None)
+        with path.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(payload, ensure_ascii=False) + "\n")
+    except OSError:
+        # Metrics must never break the request path
+        return
 
 
 def _percentile(sorted_vals: list[float], p: float) -> float | None:
@@ -38,23 +86,32 @@ def _percentile(sorted_vals: list[float], p: float) -> float | None:
 
 def summarize_asr_metrics(limit: int = 500) -> dict[str, Any]:
     """读取最近 limit 条日志，计算验收指标。"""
-    if not LOG_PATH.exists():
+    path = metrics_log_path()
+    if not path.exists():
         return {
             "sampleSize": 0,
-            "message": "尚无日志。先调用 /api/asr/smoke-test 产生数据。",
+            "message": "尚无日志。先调用受保护的 smoke-test 产生数据。",
+            "logDirConfigured": bool((os.getenv("AI_METRICS_DIR") or "").strip()),
             "targets": {"latencyP50Ms": 1500, "latencyP95Ms": 3000, "failureRateMax": 0.05},
         }
 
     rows: list[dict[str, Any]] = []
-    with LOG_PATH.open("r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                rows.append(json.loads(line))
-            except json.JSONDecodeError:
-                continue
+    try:
+        with path.open("r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    rows.append(json.loads(line))
+                except json.JSONDecodeError:
+                    continue
+    except OSError:
+        return {
+            "sampleSize": 0,
+            "message": "指标日志暂时不可读。",
+            "targets": {"latencyP50Ms": 1500, "latencyP95Ms": 3000, "failureRateMax": 0.05},
+        }
 
     rows = rows[-limit:]
     total = len(rows)

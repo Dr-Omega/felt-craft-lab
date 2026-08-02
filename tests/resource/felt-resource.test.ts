@@ -21,19 +21,30 @@ import {
 
 const tempDirs: string[] = []
 
-function makeRoots(): { roots: { materialRoot: string; audioRoot: string; previewRoot: string }; dir: string } {
+function makeRoots(): {
+  roots: {
+    materialRoot: string
+    audioRoot: string
+    audioDynamicRoot: string
+    previewRoot: string
+  }
+  dir: string
+} {
   const dir = mkdtempSync(join(tmpdir(), 'felt-resource-'))
   tempDirs.push(dir)
   const materialRoot = join(dir, 'material')
   const audioRoot = join(dir, 'audio')
+  const audioDynamicRoot = join(dir, 'audio-dynamic')
   const previewRoot = join(dir, 'preview')
   mkdirSync(materialRoot, { recursive: true })
   mkdirSync(audioRoot, { recursive: true })
+  mkdirSync(join(audioDynamicRoot, 'dynamic'), { recursive: true })
   mkdirSync(previewRoot, { recursive: true })
   writeFileSync(join(materialRoot, 'mock-sticker.png'), 'png-mock')
   writeFileSync(join(audioRoot, 'mock-name-zh.wav'), 'wav-mock')
+  writeFileSync(join(audioDynamicRoot, 'dynamic', 'abc123.mp3'), 'mp3-dynamic')
   writeFileSync(join(previewRoot, 'project-demo.png'), 'preview-mock')
-  return { dir, roots: { materialRoot, audioRoot, previewRoot } }
+  return { dir, roots: { materialRoot, audioRoot, audioDynamicRoot, previewRoot } }
 }
 
 afterEach(() => {
@@ -92,6 +103,17 @@ describe('felt-resource path resolve', () => {
     if (material.ok) {
       expect(material.exists).toBe(true)
       expect(material.absolutePath.endsWith('mock-sticker.png')).toBe(true)
+    }
+  })
+
+  it('resolves dynamic TTS audio under audioDynamicRoot (userData), not packaged audioRoot', () => {
+    const { roots } = makeRoots()
+    const dynamic = resolveFeltResourcePath('felt-resource://audio/dynamic/abc123.mp3', roots)
+    expect(dynamic.ok).toBe(true)
+    if (dynamic.ok) {
+      expect(dynamic.exists).toBe(true)
+      expect(dynamic.absolutePath.includes('audio-dynamic')).toBe(true)
+      expect(dynamic.absolutePath.replace(/\\/g, '/').endsWith('dynamic/abc123.mp3')).toBe(true)
     }
   })
 
