@@ -66,7 +66,14 @@ export interface FabricObjectPort {
   lockScalingX?: boolean
   lockScalingY?: boolean
   lockUniScaling?: boolean
+  lockScalingFlip?: boolean
+  lockSkewingX?: boolean
+  lockSkewingY?: boolean
   lockRotation?: boolean
+  flipX?: boolean
+  flipY?: boolean
+  skewX?: number
+  skewY?: number
   set(options: Record<string, unknown>): unknown
   setCoords(): unknown
 }
@@ -116,6 +123,15 @@ interface HistoryEntry {
   scene: SceneDocument
 }
 
+type AsyncOperationKind = 'import' | 'background' | 'sticker'
+
+interface AsyncOperation {
+  canvas: FabricCanvasPort
+  sceneGeneration: number
+  requestGeneration: number
+  kind: AsyncOperationKind
+}
+
 interface PreparedCanvasObject {
   object: FabricObjectPort
   release: () => void
@@ -125,9 +141,11 @@ interface PreparedScene {
   background: PreparedCanvasObject | undefined
   objects: PreparedCanvasObject[]
   issues: SceneRecoveryIssue[]
+  assets: Map<string, AssetRecord>
 }
 
 const DEFAULT_STICKER_SCALE = 1
+export const FABRIC_EDITOR_HISTORY_LIMIT = 100
 
 const defaultRuntime: FabricEditorRuntime = {
   createCanvas(element, width, height) {
@@ -244,7 +262,12 @@ export class FabricEditorAdapter {
   private restoring = false
   private resolver: FabricEditorAssetResolver | undefined
   private recoveryIssues: SceneRecoveryIssue[] = []
-  private operationGeneration = 0
+  private sceneGeneration = 0
+  private importRequestGeneration = 0
+  private backgroundRequestGeneration = 0
+  private stickerRequestGeneration = 0
+  private sceneReady = false
+  private committedSceneReady = false
 
   constructor(options: FabricEditorAdapterOptions) {
     const snapshotContext = validateSceneSnapshotValidationContext(options.snapshotContext)
@@ -275,6 +298,8 @@ export class FabricEditorAdapter {
     this.recoveryIssues = this.snapshotAssetsById.has(scene.assetSnapshotId)
       ? []
       : [{ code: 'ASSET_SNAPSHOT_MISMATCH', message: 'Scene asset snapshot is unavailable.' }]
+    this.sceneReady = false
+    this.committedSceneReady = false
     this.attachCanvasListeners(this.canvas)
   }
 
@@ -282,44 +307,52 @@ export class FabricEditorAdapter {
     const validation = validateSceneDocument(scene)
     if (!validation.ok) throw editorError('SCENE_IMPORT_FAILED', 'Scene document failed validation.')
     const canvas = this.requireCanvas()
-    const operation = this.beginOperation(canvas)
-    this.resolver = resolver
-
-    const prepared = await this.prepareScene(scene, resolver, operation, canvas)
-    if (!this.isCurrentOperation(operation, canvas)) {
-      this.releasePreparedScene(prepared)
-      throw editorError('REQUEST_CANCELLED', 'Scene import was superseded.')
-    }
-    this.restoring = true
+    const operation = this.beginSceneTransition(canvas)
     try {
-      this.releaseCanvasResources(canvas)
-      for (const object of canvas.getObjects()) canvas.remove(object)
-      canvas.setWidth(scene.canvas.width)
-      canvas.setHeight(scene.canvas.height)
-      canvas.backgroundColor = scene.canvas.backgroundColor
-      if (prepared.background) this.fitBackground(prepared.background.object, canvas)
-      canvas.setBackgroundImage(prepared.background?.object ?? null, () => undefined)
-      for (const object of prepared.objects) canvas.add(object.object)
-      for (const object of prepared.objects) this.objectResources.set(object.object, object.release)
-      if (prepared.background) this.objectResources.set(prepared.background.object, prepared.background.release)
-      this.metadata = metadataFromScene(scene)
-      this.backgroundAssetId = scene.backgroundAssetId
-      this.backgroundColor = scene.canvas.backgroundColor
-      this.recoveryIssues = prepared.issues
-      canvas.discardActiveObject()
-      canvas.requestRenderAll()
-      this.resetHistory()
-      return { issues: [...prepared.issues] }
-    } finally {
-      this.restoring = false
+      const prepared = await this.prepareScene(scene, resolver, operation, canvas)
+      if (!this.isCurrentOperation(operation)) {
+        this.releasePreparedScene(prepared)
+        throw editorError('REQUEST_CANCELLED', 'Scene import was superseded.')
+      }
+      this.restoring = true
+      try {
+        this.releaseCanvasResources(canvas)
+        for (const object of canvas.getObjects()) canvas.remove(object)
+        canvas.setWidth(scene.canvas.width)
+        canvas.setHeight(scene.canvas.height)
+        canvas.backgroundColor = scene.canvas.backgroundColor
+        if (prepared.background) this.fitBackground(prepared.background.object, canvas)
+        canvas.setBackgroundImage(prepared.background?.object ?? null, () => undefined)
+        for (const object of prepared.objects) canvas.add(object.object)
+        for (const object of prepared.objects) this.objectResources.set(object.object, object.release)
+        if (prepared.background) this.objectResources.set(prepared.background.object, prepared.background.release)
+        this.metadata = metadataFromScene(scene)
+        this.backgroundAssetId = scene.backgroundAssetId
+        this.backgroundColor = scene.canvas.backgroundColor
+        this.recoveryIssues = prepared.issues
+        this.resolver = resolver
+        this.assetCache.clear()
+        for (const [assetId, asset] of prepared.assets) this.assetCache.set(assetId, asset)
+        this.sceneReady = true
+        this.committedSceneReady = true
+        canvas.discardActiveObject()
+        canvas.requestRenderAll()
+        this.resetHistory()
+        return { issues: [...prepared.issues] }
+      } finally {
+        this.restoring = false
+      }
+    } catch (error) {
+      if (this.isCurrentOperation(operation)) this.sceneReady = this.committedSceneReady
+      throw error
     }
   }
 
   async setBackground(asset: AssetRecord | null, access?: AssetAccessState): Promise<void> {
-    const canvas = this.requireCanvas()
+    const canvas = this.requireReadyCanvas()
     const metadata = this.requireMetadata()
-    const operation = this.beginOperation(canvas)
     if (asset === null) {
+      this.backgroundRequestGeneration += 1
       const previousBackgroundAssetId = this.backgroundAssetId
       this.releaseBackground(canvas)
       canvas.setBackgroundImage(null, () => undefined)
@@ -334,6 +367,7 @@ export class FabricEditorAdapter {
     if (asset.type !== 'background') throw editorError('ASSET_TYPE_INVALID', 'Only background assets can be used as a background.')
     throwIfInvalidAccess(asset, access, metadata.userId)
     this.assertAssetInCurrentSnapshot(asset)
+    const operation = this.beginAsyncOperation('background', canvas)
     this.assetCache.set(asset.assetId, asset)
 
     const loaded = await this.loadEditorImage(asset, this.backgroundOptions(canvas), operation, canvas)
@@ -348,8 +382,7 @@ export class FabricEditorAdapter {
   }
 
   resizeCanvas(width: number, height: number): void {
-    const canvas = this.requireCanvas()
-    this.beginOperation(canvas)
+    const canvas = this.requireReadyCanvas()
     this.assertProspectiveScene({ width, height })
     canvas.setWidth(width)
     canvas.setHeight(height)
@@ -359,9 +392,9 @@ export class FabricEditorAdapter {
   }
 
   setSolidBackground(color: string): void {
-    const canvas = this.requireCanvas()
-    this.beginOperation(canvas)
+    const canvas = this.requireReadyCanvas()
     this.assertProspectiveScene({ backgroundColor: color, backgroundAssetId: null })
+    this.backgroundRequestGeneration += 1
     const previousBackgroundAssetId = this.backgroundAssetId
     this.releaseBackground(canvas)
     canvas.setBackgroundImage(null, () => undefined)
@@ -374,9 +407,9 @@ export class FabricEditorAdapter {
   }
 
   setTransparentBackground(): void {
-    const canvas = this.requireCanvas()
-    this.beginOperation(canvas)
+    const canvas = this.requireReadyCanvas()
     this.assertProspectiveScene({ clearBackgroundColor: true, backgroundAssetId: null })
+    this.backgroundRequestGeneration += 1
     const previousBackgroundAssetId = this.backgroundAssetId
     this.releaseBackground(canvas)
     canvas.setBackgroundImage(null, () => undefined)
@@ -389,13 +422,13 @@ export class FabricEditorAdapter {
   }
 
   async addSticker(asset: AssetRecord, access: AssetAccessState, position?: { left: number; top: number }): Promise<string> {
-    const canvas = this.requireCanvas()
+    const canvas = this.requireReadyCanvas()
     const metadata = this.requireMetadata()
-    const operation = this.beginOperation(canvas)
     throwIfInvalidAsset(asset, this.allowTestAssets)
     if (asset.type !== 'sticker') throw editorError('ASSET_TYPE_INVALID', 'Only sticker assets can be added as stickers.')
     throwIfInvalidAccess(asset, access, metadata.userId)
     this.assertAssetInCurrentSnapshot(asset)
+    const operation = this.beginAsyncOperation('sticker', canvas)
     this.assetCache.set(asset.assetId, asset)
 
     const objectId = this.createObjectId()
@@ -416,6 +449,9 @@ export class FabricEditorAdapter {
       lockUniScaling: true,
       lockScalingX: false,
       lockScalingY: false,
+      lockScalingFlip: true,
+      lockSkewingX: true,
+      lockSkewingY: true,
       lockRotation: false,
       lockMovementX: false,
       lockMovementY: false
@@ -429,6 +465,7 @@ export class FabricEditorAdapter {
   }
 
   selectObject(objectId: string): void {
+    this.requireReadyCanvas()
     const object = this.findObject(objectId)
     if (!object || object.selectable === false) throw editorError('INVALID_ARGUMENT', 'Sticker is not selectable.')
     const canvas = this.requireCanvas()
@@ -437,7 +474,7 @@ export class FabricEditorAdapter {
   }
 
   deleteObject(objectId: string): void {
-    const canvas = this.requireCanvas()
+    const canvas = this.requireReadyCanvas()
     const object = this.findObject(objectId)
     if (!object || (object.selectable === false && !this.recoveryPlaceholders.has(object))) {
       throw editorError('INVALID_ARGUMENT', 'Sticker cannot be deleted.')
@@ -455,7 +492,7 @@ export class FabricEditorAdapter {
   }
 
   deleteSelected(): void {
-    const active = this.requireCanvas().getActiveObject()
+    const active = this.requireReadyCanvas().getActiveObject()
     if (!active?.objectId) return
     this.deleteObject(active.objectId)
   }
@@ -477,20 +514,27 @@ export class FabricEditorAdapter {
   }
 
   async undo(): Promise<boolean> {
+    this.requireReadyCanvas()
     if (this.historyIndex <= 0) return false
-    this.historyIndex -= 1
-    await this.restoreHistory(this.history[this.historyIndex])
+    const previousIndex = this.historyIndex
+    const target = this.history[previousIndex - 1]
+    await this.restoreHistory(target)
+    this.historyIndex = previousIndex - 1
     return true
   }
 
   async redo(): Promise<boolean> {
+    this.requireReadyCanvas()
     if (this.historyIndex >= this.history.length - 1) return false
-    this.historyIndex += 1
-    await this.restoreHistory(this.history[this.historyIndex])
+    const previousIndex = this.historyIndex
+    const target = this.history[previousIndex + 1]
+    await this.restoreHistory(target)
+    this.historyIndex = previousIndex + 1
     return true
   }
 
   exportScene(): SceneDocument {
+    this.requireReadyCanvas()
     const scene = this.serializeScene()
     const validation = validateSceneDocument(scene)
     if (!validation.ok) throw editorError('SCENE_VALIDATION_FAILED', 'Editor state cannot be serialized as SceneDocument.')
@@ -508,7 +552,7 @@ export class FabricEditorAdapter {
 
   exportPngDataUrl(): string {
     try {
-      const value = this.requireCanvas().toDataURL({ format: 'png', multiplier: 1 })
+      const value = this.requireReadyCanvas().toDataURL({ format: 'png', multiplier: 1 })
       if (!value.startsWith('data:image/png')) throw new Error('Canvas did not return a PNG data URL.')
       return value
     } catch {
@@ -523,7 +567,9 @@ export class FabricEditorAdapter {
   }
 
   dispose(): void {
-    this.operationGeneration += 1
+    this.sceneGeneration += 1
+    this.sceneReady = false
+    this.committedSceneReady = false
     const canvas = this.canvas
     if (!canvas) {
       this.recoveryIssues = []
@@ -570,10 +616,11 @@ export class FabricEditorAdapter {
   private async prepareScene(
     scene: SceneDocument,
     resolver: FabricEditorAssetResolver,
-    operation: number,
+    operation: AsyncOperation,
     canvas: FabricCanvasPort
   ): Promise<PreparedScene> {
     const issues: SceneRecoveryIssue[] = []
+    const assets = new Map<string, AssetRecord>()
     const snapshotAssets = this.snapshotAssetsById.get(scene.assetSnapshotId)
     if (!snapshotAssets) {
       issues.push({ code: 'ASSET_SNAPSHOT_MISMATCH', message: 'Scene asset snapshot is unavailable.' })
@@ -589,7 +636,8 @@ export class FabricEditorAdapter {
         snapshotAssets,
         issues,
         operation,
-        canvas
+        canvas,
+        assets
       )
     const objects: PreparedCanvasObject[] = []
     try {
@@ -603,10 +651,11 @@ export class FabricEditorAdapter {
           snapshotAssets,
           issues,
           operation,
-          canvas
+          canvas,
+          assets
         ))
       }
-      return { background, objects, issues }
+      return { background, objects, issues, assets }
     } catch (error) {
       if (background) background.release()
       for (const object of objects) object.release()
@@ -622,8 +671,9 @@ export class FabricEditorAdapter {
     options: Record<string, unknown>,
     snapshotAssets: ReadonlyMap<string, { assetId: string; type: 'background' | 'sticker' }> | undefined,
     issues: SceneRecoveryIssue[],
-    operation: number,
-    canvas: FabricCanvasPort
+    operation: AsyncOperation,
+    canvas: FabricCanvasPort,
+    assets: Map<string, AssetRecord>
   ): Promise<PreparedCanvasObject> {
     const snapshotAsset = snapshotAssets?.get(assetId)
     if (!snapshotAsset || snapshotAsset.type !== expectedType) {
@@ -637,7 +687,7 @@ export class FabricEditorAdapter {
       return this.createPlaceholder(assetId, expectedType, options)
     }
     try {
-      return await this.loadResolvedAsset(assetId, snapshotId, expectedType, resolver, options, operation, canvas)
+      return await this.loadResolvedAsset(assetId, snapshotId, expectedType, resolver, options, operation, canvas, assets)
     } catch (error) {
       if (isRequestCancelled(error)) throw error
       issues.push({
@@ -657,8 +707,9 @@ export class FabricEditorAdapter {
     expectedType: AssetRecord['type'],
     resolver: FabricEditorAssetResolver,
     options: Record<string, unknown>,
-    operation: number,
-    canvas: FabricCanvasPort
+    operation: AsyncOperation,
+    canvas: FabricCanvasPort,
+    assets: Map<string, AssetRecord>
   ): Promise<{ object: FabricObjectPort; release: () => void }> {
     let asset: AssetRecord
     try {
@@ -670,22 +721,22 @@ export class FabricEditorAdapter {
     if (asset.assetId !== assetId || asset.type !== expectedType) {
       throw editorError('ASSET_SNAPSHOT_MISMATCH', 'Scene material does not match the requested snapshot item.')
     }
-    this.assetCache.set(asset.assetId, asset)
+    assets.set(asset.assetId, asset)
     return this.loadEditorImage(asset, { ...options, assetId: asset.assetId }, operation, canvas)
   }
 
   private async loadEditorImage(
     asset: AssetRecord,
     options: Record<string, unknown>,
-    operation: number,
+    operation: AsyncOperation,
     canvas: FabricCanvasPort
   ): Promise<PreparedCanvasObject> {
     let resource: LoadedResource | undefined
     try {
       resource = await this.loadResource(asset.imageUrl)
-      this.ensureCurrentOperation(operation, canvas)
+      this.ensureCurrentOperation(operation)
       const object = await this.runtime.createImage(resource.sourceUrl, options)
-      this.ensureCurrentOperation(operation, canvas)
+      this.ensureCurrentOperation(operation)
       return { object, release: resource.dispose }
     } catch (error) {
       resource?.dispose()
@@ -709,6 +760,9 @@ export class FabricEditorAdapter {
       lockMovementY: true,
       lockScalingX: true,
       lockScalingY: true,
+      lockScalingFlip: true,
+      lockSkewingX: true,
+      lockSkewingY: true,
       lockRotation: true
     })
     this.recoveryPlaceholders.add(object)
@@ -773,17 +827,30 @@ export class FabricEditorAdapter {
     if (!validation.ok) throw editorError('INVALID_ARGUMENT', 'Canvas state change violates SceneDocument constraints.')
   }
 
-  private beginOperation(canvas: FabricCanvasPort): number {
-    this.operationGeneration += 1
-    return this.operationGeneration
+  private beginSceneTransition(canvas: FabricCanvasPort): AsyncOperation {
+    this.sceneGeneration += 1
+    this.sceneReady = false
+    return this.beginAsyncOperation('import', canvas)
   }
 
-  private isCurrentOperation(operation: number, canvas: FabricCanvasPort): boolean {
-    return this.operationGeneration === operation && this.canvas === canvas
+  private beginAsyncOperation(kind: AsyncOperationKind, canvas: FabricCanvasPort): AsyncOperation {
+    const requestGeneration = kind === 'import'
+      ? ++this.importRequestGeneration
+      : kind === 'background'
+        ? ++this.backgroundRequestGeneration
+        : ++this.stickerRequestGeneration
+    return { canvas, sceneGeneration: this.sceneGeneration, requestGeneration, kind }
   }
 
-  private ensureCurrentOperation(operation: number, canvas: FabricCanvasPort): void {
-    if (!this.isCurrentOperation(operation, canvas)) {
+  private isCurrentOperation(operation: AsyncOperation): boolean {
+    if (this.sceneGeneration !== operation.sceneGeneration || this.canvas !== operation.canvas) return false
+    if (operation.kind === 'import') return this.importRequestGeneration === operation.requestGeneration
+    if (operation.kind === 'background') return this.backgroundRequestGeneration === operation.requestGeneration
+    return true
+  }
+
+  private ensureCurrentOperation(operation: AsyncOperation): void {
+    if (!this.isCurrentOperation(operation)) {
       throw editorError('REQUEST_CANCELLED', 'Editor operation was superseded.')
     }
   }
@@ -800,6 +867,9 @@ export class FabricEditorAdapter {
       lockMovementY: true,
       lockScalingX: true,
       lockScalingY: true,
+      lockScalingFlip: true,
+      lockSkewingX: true,
+      lockSkewingY: true,
       lockRotation: true
     }
   }
@@ -816,12 +886,15 @@ export class FabricEditorAdapter {
       lockMovementY: true,
       lockScalingX: true,
       lockScalingY: true,
+      lockScalingFlip: true,
+      lockSkewingX: true,
+      lockSkewingY: true,
       lockRotation: true
     }
   }
 
   private moveLayer(objectId: string, action: (canvas: FabricCanvasPort, object: FabricObjectPort) => unknown): void {
-    const canvas = this.requireCanvas()
+    const canvas = this.requireReadyCanvas()
     const object = this.findObject(objectId)
     if (!object || object.selectable === false) throw editorError('INVALID_ARGUMENT', 'Sticker layer cannot be changed.')
     action(canvas, object)
@@ -853,10 +926,13 @@ export class FabricEditorAdapter {
   }
 
   private captureHistory(): void {
-    if (this.restoring || !this.metadata || !this.canvas) return
+    if (this.restoring || !this.sceneReady || !this.metadata || !this.canvas) return
     const entry = { scene: this.serializeScene() }
     this.history = this.history.slice(0, this.historyIndex + 1)
     this.history.push(entry)
+    if (this.history.length > FABRIC_EDITOR_HISTORY_LIMIT) {
+      this.history.splice(0, this.history.length - FABRIC_EDITOR_HISTORY_LIMIT)
+    }
     this.historyIndex = this.history.length - 1
   }
 
@@ -866,6 +942,7 @@ export class FabricEditorAdapter {
   }
 
   private async restoreHistory(entry: HistoryEntry): Promise<void> {
+    this.requireReadyCanvas()
     const resolver = this.resolver ?? {
       resolveAsset: async (assetId: string): Promise<AssetRecord> => {
         const asset = this.assetCache.get(assetId)
@@ -875,7 +952,13 @@ export class FabricEditorAdapter {
     }
     const history = this.history
     const historyIndex = this.historyIndex
-    await this.importScene(entry.scene, resolver)
+    try {
+      await this.importScene(entry.scene, resolver)
+    } catch (error) {
+      this.history = history
+      this.historyIndex = historyIndex
+      throw error
+    }
     this.history = history
     this.historyIndex = historyIndex
   }
@@ -905,6 +988,12 @@ export class FabricEditorAdapter {
   private requireCanvas(): FabricCanvasPort {
     if (!this.canvas) throw editorError('INVALID_ARGUMENT', 'Editor canvas has not been initialized.')
     return this.canvas
+  }
+
+  private requireReadyCanvas(): FabricCanvasPort {
+    const canvas = this.requireCanvas()
+    if (!this.sceneReady) throw editorError('INVALID_ARGUMENT', 'Scene import has not completed.')
+    return canvas
   }
 
   private requireMetadata(): EditorSceneMetadata {
@@ -962,6 +1051,9 @@ function sceneObjectOptions(sceneObject: SceneObject): Record<string, unknown> {
     lockScalingX: sceneObject.locked,
     lockScalingY: sceneObject.locked,
     lockUniScaling: true,
+    lockScalingFlip: true,
+    lockSkewingX: true,
+    lockSkewingY: true,
     lockRotation: sceneObject.locked
   }
 }
@@ -969,6 +1061,9 @@ function sceneObjectOptions(sceneObject: SceneObject): Record<string, unknown> {
 function fabricObjectToSceneObject(object: FabricObjectPort, zIndex: number): SceneObject {
   if (!object.objectId || !object.assetId || object.assetType !== 'sticker') {
     throw editorError('SCENE_VALIDATION_FAILED', 'Canvas contains a non-sticker object.')
+  }
+  if (hasUnsupportedFabricTransform(object)) {
+    throw editorError('SCENE_VALIDATION_FAILED', 'Fabric flip/skew transforms are not representable in V1 SceneDocument.')
   }
   const scale = object.scaleX ?? object.scaleY
   if (!Number.isFinite(scale) || !scale || scale <= 0) {
@@ -987,6 +1082,14 @@ function fabricObjectToSceneObject(object: FabricObjectPort, zIndex: number): Sc
     visible: object.visible !== false,
     locked: object.selectable === false
   }
+}
+
+function hasUnsupportedFabricTransform(object: FabricObjectPort): boolean {
+  if ((object.flipX !== undefined && object.flipX !== false) || (object.flipY !== undefined && object.flipY !== false)) return true
+  for (const value of [object.skewX, object.skewY]) {
+    if (value !== undefined && (typeof value !== 'number' || !Number.isFinite(value) || value !== 0)) return true
+  }
+  return false
 }
 
 function finiteOrThrow(value: number | undefined, message: string): number {

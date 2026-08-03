@@ -4,7 +4,7 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "target": "ESNext",
-    "lib": ["ESNext", "DOM"],
+    "lib": ["ESNext"],
     "types": ["node"],
     "strict": true,
     "skipLibCheck": true,
@@ -21,10 +21,8 @@
     "electron.vite.config.ts",
     "src/main/**/*",
     "src/preload/**/*",
-    "src/renderer/src/editor/**/*",
     "src/shared/**/*",
     "server/**/*",
-    "scripts/**/*",
-    "tests/**/*"
+    "scripts/**/*"
   ]
 }
