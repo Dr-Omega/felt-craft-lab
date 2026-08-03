@@ -1,5 +1,13 @@
 import { createHash } from 'node:crypto'
-import { mkdirSync, writeFileSync } from 'node:fs'
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  renameSync,
+  statSync,
+  unlinkSync,
+  writeFileSync
+} from 'node:fs'
 import { join } from 'node:path'
 import type { SharedError, TtsResult } from '@shared/contracts'
 import { toSharedError } from '@shared/contracts/error'
@@ -10,6 +18,12 @@ export type MaterializedTts =
   | { ok: false; error: SharedError }
 
 const SAFE_HASH = /^[a-f0-9]{16,64}$/i
+
+/** Single dynamic TTS payload cap (bytes). */
+export const MAX_DYNAMIC_TTS_BYTES = 2 * 1024 * 1024
+const MAX_DYNAMIC_FILES = 100
+const MAX_DYNAMIC_TOTAL_BYTES = 80 * 1024 * 1024
+const DYNAMIC_TTL_MS = 7 * 24 * 3600 * 1000
 
 function fail(code: SharedError['code'], message: string, retryable = false): MaterializedTts {
   return {
@@ -33,6 +47,45 @@ function hashForBytes(bytes: Buffer, requestId: unknown): string {
     return requestId.trim().toLowerCase()
   }
   return createHash('sha256').update(bytes).digest('hex').slice(0, 32)
+}
+
+export function pruneDynamicAudioCache(dynamicDir: string): void {
+  if (!existsSync(dynamicDir)) return
+  const now = Date.now()
+  type Entry = { path: string; mtimeMs: number; size: number }
+  const entries: Entry[] = []
+  for (const name of readdirSync(dynamicDir)) {
+    if (!name.endsWith('.mp3')) continue
+    const path = join(dynamicDir, name)
+    try {
+      const st = statSync(path)
+      if (now - st.mtimeMs > DYNAMIC_TTL_MS) {
+        unlinkSync(path)
+        continue
+      }
+      entries.push({ path, mtimeMs: st.mtimeMs, size: st.size })
+    } catch {
+      // ignore
+    }
+  }
+  entries.sort((a, b) => a.mtimeMs - b.mtimeMs)
+  let total = entries.reduce((sum, e) => sum + e.size, 0)
+  while (entries.length > MAX_DYNAMIC_FILES || total > MAX_DYNAMIC_TOTAL_BYTES) {
+    const oldest = entries.shift()
+    if (!oldest) break
+    total -= oldest.size
+    try {
+      unlinkSync(oldest.path)
+    } catch {
+      // ignore
+    }
+  }
+}
+
+function atomicWriteFile(path: string, bytes: Buffer): void {
+  const tmp = `${path}.tmp`
+  writeFileSync(tmp, bytes)
+  renameSync(tmp, path)
 }
 
 /**
@@ -85,6 +138,9 @@ export function materializeGatewayTts(body: unknown, dynamicAudioRoot: string): 
   if (!bytes) {
     return fail('UNKNOWN', '语音合成暂时不可用，请稍后重试。', true)
   }
+  if (bytes.length > MAX_DYNAMIC_TTS_BYTES) {
+    return fail('INVALID_ARGUMENT', '语音数据过大。')
+  }
 
   const hash = hashForBytes(bytes, requestId)
   const relativePath = `dynamic/${hash}.mp3`
@@ -96,7 +152,8 @@ export function materializeGatewayTts(body: unknown, dynamicAudioRoot: string): 
   try {
     const dir = join(dynamicAudioRoot, 'dynamic')
     mkdirSync(dir, { recursive: true })
-    writeFileSync(join(dir, `${hash}.mp3`), bytes)
+    atomicWriteFile(join(dir, `${hash}.mp3`), bytes)
+    pruneDynamicAudioCache(dir)
   } catch {
     return fail('UNKNOWN', '语音缓存写入失败，请稍后重试。', true)
   }

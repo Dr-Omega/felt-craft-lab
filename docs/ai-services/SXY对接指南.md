@@ -7,15 +7,16 @@
 ## 0. 正式调用边界（已确认）
 
 1. **Renderer 不直连 Flask**；统一通过 `window.electronAPI.ai.*`（Preload → Main 转发）。
-2. 开发：Main → `http://127.0.0.1:8788`；正式：Main → 远端 `AI_GATEWAY_BASE_URL`。Renderer API 一致。
-3. 真实 API Key 只在 Gateway 服务端；不进 Electron 安装包。
-4. 动态 TTS：Gateway 返回音频字节（`audioBase64`）→ Main 写入 `userData/audio/dynamic/<hash>.mp3` → Renderer 收到 `felt-resource://audio/dynamic/<hash>.mp3`。
-5. **不要** `fetch('http://127.0.0.1:8788')`，也**不要**依赖 CORS。保持 `webSecurity: true`。
-6. 本 PR **不**新增 `felt-resource://animation` kind。
+2. 开发：Main → `http://127.0.0.1:8788`；正式：Main → 远端 `FELT_AI_GATEWAY_BASE_URL` / `AI_GATEWAY_BASE_URL`（HTTPS）。Renderer API 一致。
+3. 真实 API Key 只在 Gateway 服务端；不进 Electron 安装包。**也不**在 Electron 硬编码永久 Gateway secret。
+4. 防滥用：Main 自动用本机 `installationId` 申请短期 Session Token，缓存并在过期前刷新；ASR/QA/TTS 统一携带 `Authorization: Bearer …` + `X-Felt-Installation-Id`。
+5. 动态 TTS：Gateway 返回音频字节（`audioBase64`）→ Main 写入 `userData/audio/dynamic/<hash>.mp3` → Renderer 收到 `felt-resource://audio/dynamic/<hash>.mp3`。
+6. **不要** `fetch('http://127.0.0.1:8788')`，也**不要**依赖 CORS。保持 `webSecurity: true`。
+7. 本 PR **不**新增 `felt-resource://animation` kind。
 
 推荐 Renderer 封装：`src/renderer/src/services/ai.client.ts`。
 
-浏览器 Flask demo（`/demo/*`）仅联调辅助，非正式 Electron 接入路径。
+浏览器 Flask demo（`/demo/*`）仅联调辅助，非正式 Electron 接入路径；demo 客户端也会自动申请 Session Token。
 
 ---
 

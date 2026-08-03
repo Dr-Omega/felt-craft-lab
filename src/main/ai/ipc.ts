@@ -8,13 +8,28 @@ import {
   gatewayAsrMultipart,
   gatewayJson,
   gatewayQaAsk,
-  gatewayTtsSynthesize
+  gatewayTtsSynthesize,
+  type GatewayAuth,
+  type GatewayJsonResult
 } from './gateway-client'
 import { materializeGatewayTts } from './materialize-tts'
+import {
+  normalizeAsrEnvelope,
+  normalizeGatewayFailure,
+  normalizeQaEnvelope,
+  normalizeTtsResult
+} from './normalize-envelope'
+import { getValidSessionToken } from './session-token'
 
 function dynamicAudioRoot(): string {
   const root = join(app.getPath('userData'), 'audio')
   mkdirSync(join(root, 'dynamic'), { recursive: true })
+  return root
+}
+
+function aiStateDir(): string {
+  const root = join(app.getPath('userData'), 'ai')
+  mkdirSync(root, { recursive: true })
   return root
 }
 
@@ -32,16 +47,66 @@ function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === 'object' ? (value as Record<string, unknown>) : {}
 }
 
+function needsAuthRefresh(result: GatewayJsonResult): boolean {
+  if (!result.ok) return false
+  if (result.status === 401) return true
+  const body = result.body as { ok?: unknown; error?: { code?: unknown } } | null
+  if (body && body.ok === false && body.error?.code === 'INVALID_ARGUMENT') {
+    // Session missing/invalid maps to INVALID_ARGUMENT; refresh once on 401 primarily.
+    return result.status === 401
+  }
+  return false
+}
+
+async function resolveAuth(
+  packaged: boolean,
+  forceRefresh = false
+): Promise<{ ok: true; auth: GatewayAuth } | { ok: false; error: ReturnType<typeof toSharedError> }> {
+  const session = await getValidSessionToken({
+    aiDir: aiStateDir(),
+    isPackaged: packaged,
+    forceRefresh
+  })
+  if (!session.ok) return { ok: false, error: session.error }
+  return {
+    ok: true,
+    auth: {
+      token: session.session.token,
+      installationId: session.session.installationId
+    }
+  }
+}
+
+async function withPaidAuth<T>(
+  packaged: boolean,
+  call: (auth: GatewayAuth) => Promise<GatewayJsonResult>,
+  mapOk: (body: unknown) => T
+): Promise<T | { ok: false; error: ReturnType<typeof toSharedError> }> {
+  let authResult = await resolveAuth(packaged, false)
+  if (!authResult.ok) return authResult
+
+  let result = await call(authResult.auth)
+  if (needsAuthRefresh(result)) {
+    authResult = await resolveAuth(packaged, true)
+    if (!authResult.ok) return authResult
+    result = await call(authResult.auth)
+  }
+
+  if (!result.ok) return normalizeGatewayFailure(result.error)
+  return mapOk(result.body)
+}
+
 /**
  * Main/Preload AI proxy. Renderer must call electronAPI.ai.*; never fetch Flask directly.
+ * Main owns Session Token 申请/缓存/刷新；ASR/QA/TTS 统一携带 Token。
  */
 export function registerAiIpc(): void {
   const packaged = app.isPackaged
 
   ipcMain.handle(IPC_CHANNELS.AI_HEALTH, async (event) => {
     if (!isTrustedIpcEvent(event)) return deny()
-    const result = await gatewayJson('/api/health', { isPackaged: packaged })
-    if (!result.ok) return { ok: false, error: result.error }
+    const result = await gatewayJson('/api/health', { isPackaged: packaged, skipAuth: true })
+    if (!result.ok) return normalizeGatewayFailure(result.error)
     return result.body
   })
 
@@ -59,16 +124,20 @@ export function registerAiIpc(): void {
         )
       }
     }
-    const result = await gatewayAsrMultipart({
-      audioBase64,
-      mimeType,
-      language: typeof input.language === 'string' ? input.language : undefined,
-      sessionId: typeof input.sessionId === 'string' ? input.sessionId : undefined,
-      provider: typeof input.provider === 'string' ? input.provider : undefined,
-      isPackaged: packaged
-    })
-    if (!result.ok) return { ok: false, error: result.error }
-    return result.body
+    return withPaidAuth(
+      packaged,
+      (auth) =>
+        gatewayAsrMultipart({
+          audioBase64,
+          mimeType,
+          language: typeof input.language === 'string' ? input.language : undefined,
+          sessionId: typeof input.sessionId === 'string' ? input.sessionId : undefined,
+          provider: typeof input.provider === 'string' ? input.provider : undefined,
+          isPackaged: packaged,
+          auth
+        }),
+      (body) => normalizeAsrEnvelope(body)
+    )
   })
 
   ipcMain.handle(IPC_CHANNELS.AI_QA_ASK, async (event, raw: unknown) => {
@@ -84,14 +153,18 @@ export function registerAiIpc(): void {
         )
       }
     }
-    const result = await gatewayQaAsk({
-      question,
-      asset: asRecord(input.asset),
-      provider: typeof input.provider === 'string' ? input.provider : undefined,
-      isPackaged: packaged
-    })
-    if (!result.ok) return { ok: false, error: result.error }
-    return result.body
+    return withPaidAuth(
+      packaged,
+      (auth) =>
+        gatewayQaAsk({
+          question,
+          asset: asRecord(input.asset),
+          provider: typeof input.provider === 'string' ? input.provider : undefined,
+          isPackaged: packaged,
+          auth
+        }),
+      (body) => normalizeQaEnvelope(body)
+    )
   })
 
   ipcMain.handle(IPC_CHANNELS.AI_TTS_SYNTHESIZE, async (event, raw: unknown) => {
@@ -107,13 +180,21 @@ export function registerAiIpc(): void {
         )
       }
     }
-    const result = await gatewayTtsSynthesize({
-      text,
-      voicePurpose: typeof input.voicePurpose === 'string' ? input.voicePurpose : undefined,
-      provider: typeof input.provider === 'string' ? input.provider : undefined,
-      isPackaged: packaged
-    })
-    if (!result.ok) return { ok: false, error: result.error }
-    return materializeGatewayTts(result.body, dynamicAudioRoot())
+    return withPaidAuth(
+      packaged,
+      (auth) =>
+        gatewayTtsSynthesize({
+          text,
+          voicePurpose: typeof input.voicePurpose === 'string' ? input.voicePurpose : undefined,
+          provider: typeof input.provider === 'string' ? input.provider : undefined,
+          isPackaged: packaged,
+          auth
+        }),
+      (body) => {
+        const materialized = materializeGatewayTts(body, dynamicAudioRoot())
+        if (!materialized.ok) return materialized
+        return normalizeTtsResult(materialized.result)
+      }
+    )
   })
 }

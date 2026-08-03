@@ -10,6 +10,11 @@ from typing import Any
 
 import requests
 
+from services.tts_cache import (
+    atomic_write_bytes,
+    enforce_tts_audio_size,
+    prune_tts_cache,
+)
 from services.tts_types import err_tts, ok_tts_bytes
 
 from .base import TtsProvider
@@ -50,12 +55,15 @@ class MiniMaxTtsProvider(TtsProvider):
         cache_key = _hash_key(content, model, voice_id, voice_purpose)
         cache_path = CACHE_DIR / f"{cache_key}.mp3"
 
+        prune_tts_cache(CACHE_DIR)
         if cache_path.exists() and cache_path.stat().st_size > 0:
-            return ok_tts_bytes(
-                audio_bytes=cache_path.read_bytes(),
-                cache_hit=True,
-                request_id=cache_key,
-            )
+            cached = cache_path.read_bytes()
+            if enforce_tts_audio_size(cached):
+                return ok_tts_bytes(
+                    audio_bytes=cached,
+                    cache_hit=True,
+                    request_id=cache_key,
+                )
 
         bases = _candidate_bases()
         payload = {
@@ -113,9 +121,14 @@ class MiniMaxTtsProvider(TtsProvider):
             audio_bytes = _extract_audio_bytes(data)
             if not audio_bytes:
                 return err_tts(code="TTS_UPSTREAM_ERROR")
+            if not enforce_tts_audio_size(audio_bytes):
+                return err_tts(code="TTS_UPSTREAM_ERROR")
 
-            CACHE_DIR.mkdir(parents=True, exist_ok=True)
-            cache_path.write_bytes(audio_bytes)
+            try:
+                atomic_write_bytes(cache_path, audio_bytes)
+                prune_tts_cache(CACHE_DIR)
+            except OSError:
+                pass
             return ok_tts_bytes(
                 audio_bytes=audio_bytes,
                 cache_hit=False,

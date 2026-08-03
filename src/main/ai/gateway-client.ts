@@ -1,23 +1,57 @@
 import { toSharedError, type SharedError } from '@shared/contracts/error'
+import { resolveAiGatewayBaseUrlResult } from './gateway-config'
 
-const DEFAULT_DEV_GATEWAY = 'http://127.0.0.1:8788'
 const DEFAULT_TIMEOUT_MS = 60_000
 
-/**
- * Resolve Flask AI Gateway base URL for Main-process forwarding only.
- * - Dev: default localhost:8788 unless AI_GATEWAY_BASE_URL is set
- * - Packaged: AI_GATEWAY_BASE_URL is required (remote Gateway; no local Python sidecar)
- */
-export function resolveAiGatewayBaseUrl(options: { isPackaged?: boolean } = {}): string {
-  const fromEnv = (process.env.AI_GATEWAY_BASE_URL || '').trim().replace(/\/+$/, '')
-  if (fromEnv) return fromEnv
-  if (options.isPackaged) return ''
-  return DEFAULT_DEV_GATEWAY
+export { resolveAiGatewayBaseUrl } from './gateway-config'
+
+export type GatewayAuth = {
+  token: string
+  installationId: string
 }
 
 export type GatewayJsonResult =
   | { ok: true; status: number; body: unknown }
   | { ok: false; error: SharedError }
+
+function authHeaders(auth?: GatewayAuth): Record<string, string> {
+  if (!auth?.token || !auth.installationId) return {}
+  return {
+    Authorization: `Bearer ${auth.token}`,
+    'X-Felt-Installation-Id': auth.installationId
+  }
+}
+
+function unconfiguredError(reason: string): SharedError {
+  if (reason === 'remote_http') {
+    return toSharedError(
+      {
+        code: 'UNKNOWN',
+        message: '正式 AI 网关必须使用 HTTPS。',
+        retryable: false
+      },
+      'UNKNOWN'
+    )
+  }
+  if (reason === 'invalid_scheme') {
+    return toSharedError(
+      {
+        code: 'UNKNOWN',
+        message: 'AI 网关地址无效。',
+        retryable: false
+      },
+      'UNKNOWN'
+    )
+  }
+  return toSharedError(
+    {
+      code: 'UNKNOWN',
+      message: 'AI 网关未配置。请在构建时设置 FELT_AI_GATEWAY_BASE_URL 或运行时 AI_GATEWAY_BASE_URL。',
+      retryable: false
+    },
+    'UNKNOWN'
+  )
+}
 
 export async function gatewayJson(
   path: string,
@@ -29,24 +63,16 @@ export async function gatewayJson(
     timeoutMs?: number
     signal?: AbortSignal
     isPackaged?: boolean
+    auth?: GatewayAuth
+    skipAuth?: boolean
   } = {}
 ): Promise<GatewayJsonResult> {
-  const base = resolveAiGatewayBaseUrl({ isPackaged: init.isPackaged })
-  if (!base) {
-    return {
-      ok: false,
-      error: toSharedError(
-        {
-          code: 'UNKNOWN',
-          message: 'AI 网关未配置。正式环境请设置 AI_GATEWAY_BASE_URL。',
-          retryable: false
-        },
-        'UNKNOWN'
-      )
-    }
+  const resolved = resolveAiGatewayBaseUrlResult({ isPackaged: init.isPackaged })
+  if (!resolved.ok) {
+    return { ok: false, error: unconfiguredError(resolved.reason) }
   }
 
-  const url = `${base}${path.startsWith('/') ? path : `/${path}`}`
+  const url = `${resolved.baseUrl}${path.startsWith('/') ? path : `/${path}`}`
   const timeoutMs = init.timeoutMs ?? DEFAULT_TIMEOUT_MS
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), timeoutMs)
@@ -58,9 +84,13 @@ export async function gatewayJson(
   }
 
   try {
+    const headers: Record<string, string> = {
+      ...(init.headers || {}),
+      ...(init.skipAuth ? {} : authHeaders(init.auth))
+    }
     const response = await fetch(url, {
       method: init.method || 'GET',
-      headers: init.headers,
+      headers,
       body: init.body,
       signal: controller.signal
     })
@@ -111,6 +141,7 @@ export async function gatewayAsrMultipart(input: {
   provider?: string
   signal?: AbortSignal
   isPackaged?: boolean
+  auth?: GatewayAuth
 }): Promise<GatewayJsonResult> {
   let bytes: Buffer
   try {
@@ -145,7 +176,8 @@ export async function gatewayAsrMultipart(input: {
     method: 'POST',
     body: form,
     signal: input.signal,
-    isPackaged: input.isPackaged
+    isPackaged: input.isPackaged,
+    auth: input.auth
   })
 }
 
@@ -155,6 +187,7 @@ export async function gatewayQaAsk(input: {
   provider?: string
   signal?: AbortSignal
   isPackaged?: boolean
+  auth?: GatewayAuth
 }): Promise<GatewayJsonResult> {
   return gatewayJson('/api/qa/ask', {
     method: 'POST',
@@ -165,7 +198,8 @@ export async function gatewayQaAsk(input: {
       ...(input.provider ? { provider: input.provider } : {})
     }),
     signal: input.signal,
-    isPackaged: input.isPackaged
+    isPackaged: input.isPackaged,
+    auth: input.auth
   })
 }
 
@@ -175,6 +209,7 @@ export async function gatewayTtsSynthesize(input: {
   provider?: string
   signal?: AbortSignal
   isPackaged?: boolean
+  auth?: GatewayAuth
 }): Promise<GatewayJsonResult> {
   return gatewayJson('/api/tts/synthesize', {
     method: 'POST',
@@ -185,6 +220,7 @@ export async function gatewayTtsSynthesize(input: {
       ...(input.provider ? { provider: input.provider } : {})
     }),
     signal: input.signal,
-    isPackaged: input.isPackaged
+    isPackaged: input.isPackaged,
+    auth: input.auth
   })
 }

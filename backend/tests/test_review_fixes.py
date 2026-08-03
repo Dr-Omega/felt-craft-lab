@@ -133,15 +133,26 @@ class FlaskGuardIntegrationTests(unittest.TestCase):
     def setUpClass(cls):
         os.environ.setdefault("APP_ENV", "development")
         os.environ["AI_SMOKE_ENABLED"] = "false"
+        os.environ.setdefault("AI_SESSION_HMAC_SECRET", "test-session-hmac-secret-not-for-prod")
         from app import app  # noqa: WPS433
 
         cls.client = app.test_client()
+
+    def _auth_headers(self) -> dict:
+        import uuid
+
+        iid = str(uuid.uuid4())
+        r = self.client.post("/api/session/token", json={"installationId": iid})
+        self.assertEqual(r.status_code, 200)
+        token = r.get_json()["result"]["token"]
+        return {"Authorization": f"Bearer {token}", "X-Felt-Installation-Id": iid}
 
     def test_client_xff_does_not_change_bucket_identity(self):
         # remote_addr for test client is typically 127.0.0.1; forging XFF must not open a new bucket alone.
         # We only assert the header is ignored by observing consistent 429 behavior after flooding one addr.
         from services import guards
 
+        headers = self._auth_headers()
         with mock.patch.object(guards, "_RATE_MAX", 3):
             # reset hits
             with guards._lock:
@@ -150,20 +161,22 @@ class FlaskGuardIntegrationTests(unittest.TestCase):
                 r = self.client.post(
                     "/api/qa/ask",
                     json={"question": "hi", "provider": "mock"},
-                    headers={"X-Forwarded-For": "9.9.9.9"},
+                    headers={**headers, "X-Forwarded-For": "9.9.9.9"},
                 )
-                self.assertIn(r.status_code, (200, 502, 400))
+                self.assertIn(r.status_code, (200, 502, 400, 429))
             blocked = self.client.post(
                 "/api/qa/ask",
                 json={"question": "hi", "provider": "mock"},
-                headers={"X-Forwarded-For": "8.8.8.8"},
+                headers={**headers, "X-Forwarded-For": "8.8.8.8"},
             )
             self.assertEqual(blocked.status_code, 429)
 
     def test_json_audio_url_rejected_when_smoke_disabled(self):
+        headers = self._auth_headers()
         r = self.client.post(
             "/api/asr/transcribe",
             json={"audioUrl": "https://evil.example/a.mp3", "provider": "mock"},
+            headers=headers,
         )
         self.assertEqual(r.status_code, 400)
         body = r.get_json()

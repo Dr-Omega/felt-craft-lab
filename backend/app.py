@@ -17,6 +17,7 @@ from werkzeug.exceptions import RequestEntityTooLarge
 
 from providers.asr.qwen_cloud_http import SAMPLE_AUDIO_URL
 from providers.tts.minimax_provider import CACHE_DIR
+from services.abuse_limits import check_paid_call_allowed, token_issue_ok
 from services.asr_metrics import summarize_asr_metrics
 from services.asr_service import AsrService, UnknownAsrProvider
 from services.asr_types import contract_doc
@@ -37,9 +38,16 @@ from services.guards import (
 from services.ops_rules import ops_rules_doc
 from services.qa_service import QaService, UnknownQaProvider
 from services.qa_types import QA_ERROR_CODES
+from services.session_auth import (
+    is_valid_installation_id,
+    issue_session_token,
+    parse_bearer_token,
+    verify_session_token,
+)
 from services.shared_error_map import fail
 from services.tts_service import TtsService, UnknownTtsProvider
 from services.tts_types import TTS_ERROR_CODES
+from services.tts_cache import prune_tts_cache
 
 BASE_DIR = Path(__file__).resolve().parent
 ROOT_DIR = BASE_DIR.parent
@@ -83,9 +91,54 @@ def _json_fail(code: str, http_status: int = 400):
     return jsonify(body), http_status
 
 
+def _require_session(*, count_paid: bool = True):
+    """
+    校验短期 Session Token（防滥用，非正式账号体系）。
+    HMAC 密钥仅留 Gateway；Electron 不持有永久 secret。
+    """
+    token = parse_bearer_token(request.headers.get("Authorization"))
+    if not token:
+        return None, _json_fail("SESSION_MISSING", 401)
+    install_hdr = (request.headers.get("X-Felt-Installation-Id") or "").strip()
+    if not is_valid_installation_id(install_hdr):
+        return None, _json_fail("SESSION_INVALID", 401)
+    claims = verify_session_token(
+        token,
+        expected_installation_id=install_hdr,
+    )
+    if not claims:
+        return None, _json_fail("SESSION_INVALID", 401)
+    if count_paid:
+        abuse = check_paid_call_allowed(claims.installation_id)
+        if abuse:
+            return None, _json_fail(abuse, 429)
+    return claims, None
+
+
 @app.errorhandler(RequestEntityTooLarge)
 def _payload_too_large(_err):
     return _json_fail("PAYLOAD_TOO_LARGE", 413)
+
+
+@app.post("/api/session/token")
+def session_token():
+    """客户端自动申请短期 Session Token（installationId 标识安装实例）。"""
+    if not token_issue_ok(f"token:{_client_bucket()}"):
+        return _json_fail("RATE_LIMITED", 429)
+    data = request.get_json(silent=True) or {}
+    installation_id = str(data.get("installationId") or "").strip()
+    if not is_valid_installation_id(installation_id):
+        return _json_fail("INVALID_ARGUMENT")
+    # 额外按 installation 防刷签发
+    if not token_issue_ok(f"token-install:{installation_id.lower()}"):
+        return _json_fail("RATE_LIMITED", 429)
+    try:
+        issued = issue_session_token(installation_id)
+    except ValueError:
+        return _json_fail("INVALID_ARGUMENT")
+    except RuntimeError:
+        return _json_fail("UNKNOWN", 503)
+    return jsonify({"ok": True, "result": issued})
 
 
 def _resolve_asr(provider: str | None) -> AsrService | tuple:
@@ -139,6 +192,10 @@ def ready():
 
 @app.get("/api/ops/rules")
 def ops_rules():
+    claims, err = _require_session(count_paid=False)
+    if err:
+        return err
+    _ = claims
     return jsonify({"ok": True, "rules": ops_rules_doc()})
 
 
@@ -149,11 +206,19 @@ def asr_contract():
 
 @app.get("/api/asr/metrics")
 def asr_metrics():
+    claims, err = _require_session(count_paid=False)
+    if err:
+        return err
+    _ = claims
     return jsonify({"ok": True, "metrics": summarize_asr_metrics()})
 
 
 @app.post("/api/asr/transcribe")
 def asr_transcribe():
+    claims, err = _require_session(count_paid=True)
+    if err:
+        return err
+    _ = claims
     if not rate_limit_ok(f"asr:{_client_bucket()}"):
         return _json_fail("RATE_LIMITED", 429)
 
@@ -218,6 +283,10 @@ def asr_transcribe():
 def asr_smoke_test():
     if not smoke_allowed():
         return _json_fail("SMOKE_DISABLED", 403)
+    claims, err = _require_session(count_paid=True)
+    if err:
+        return err
+    _ = claims
     if not rate_limit_ok(f"smoke:{_client_bucket()}"):
         return _json_fail("RATE_LIMITED", 429)
     try:
@@ -240,6 +309,10 @@ def asr_mock():
 
 @app.post("/api/qa/ask")
 def qa_ask():
+    claims, err = _require_session(count_paid=True)
+    if err:
+        return err
+    _ = claims
     if not rate_limit_ok(f"qa:{_client_bucket()}"):
         return _json_fail("RATE_LIMITED", 429)
     data = request.get_json(silent=True) or {}
@@ -268,6 +341,10 @@ def qa_ask():
 def qa_smoke_test():
     if not smoke_allowed():
         return _json_fail("SMOKE_DISABLED", 403)
+    claims, err = _require_session(count_paid=True)
+    if err:
+        return err
+    _ = claims
     try:
         with InflightGuard():
             result = QaService("deepseek").ask(
@@ -304,6 +381,10 @@ def qa_contract():
 
 @app.post("/api/tts/synthesize")
 def tts_synthesize():
+    claims, err = _require_session(count_paid=True)
+    if err:
+        return err
+    _ = claims
     if not rate_limit_ok(f"tts:{_client_bucket()}"):
         return _json_fail("RATE_LIMITED", 429)
     data = request.get_json(silent=True) or {}
@@ -332,6 +413,10 @@ def tts_synthesize():
 def tts_smoke_test():
     if not smoke_allowed():
         return _json_fail("SMOKE_DISABLED", 403)
+    claims, err = _require_session(count_paid=True)
+    if err:
+        return err
+    _ = claims
     sample = "小兔子贴纸很适合春天的不织布手工，我们一起贴一贴吧。"
     try:
         with InflightGuard():
@@ -352,10 +437,15 @@ def tts_mock():
 
 @app.get("/api/tts/audio/<path:filename>")
 def tts_audio(filename: str):
+    claims, err = _require_session(count_paid=False)
+    if err:
+        return err
+    _ = claims
     safe = Path(filename).name
     if not safe.endswith(".mp3"):
         return _json_fail("TTS_BAD_FILE")
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    prune_tts_cache(CACHE_DIR)
     path = CACHE_DIR / safe
     if not path.exists():
         return _json_fail("TTS_NOT_FOUND", 404)
