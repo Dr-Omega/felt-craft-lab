@@ -792,4 +792,76 @@ describe('FabricEditorAdapter', () => {
     await expect(failingAdapter.undo()).resolves.toBe(true)
     expect(failingAdapter.exportScene().objects).toHaveLength(1)
   })
+
+  it('does not let a superseded deferred undo/redo overwrite the new Scene history', async () => {
+    const scene = cloneFixture(validScene)
+    const canvas = new FakeCanvas(scene.canvas.width, scene.canvas.height)
+    let deferNextLoad = false
+    let pendingLoad: ReturnType<typeof deferred<{ sourceUrl: string; dispose(): void }>> | undefined
+    let objectIdIndex = 0
+    const objectIds = [
+      'a5d775d8-e6f8-439a-9d04-0934cb03f81f',
+      'b5d775d8-e6f8-439a-9d04-0934cb03f81f',
+      'c5d775d8-e6f8-439a-9d04-0934cb03f81f'
+    ]
+    const adapter = new FabricEditorAdapter({
+      snapshotContext: validSnapshotContext,
+      allowTestAssets: true,
+      runtime: {
+        createCanvas: () => canvas,
+        createImage: async (_sourceUrl, options) => new FakeObject(options),
+        createPlaceholder: (options) => new FakeObject(options)
+      },
+      createObjectId: () => objectIds[objectIdIndex++],
+      loadResource: async (ref) => {
+        if (deferNextLoad) {
+          deferNextLoad = false
+          pendingLoad = deferred<{ sourceUrl: string; dispose(): void }>()
+          return pendingLoad.promise
+        }
+        return { sourceUrl: `blob:${ref}`, dispose: () => undefined }
+      }
+    })
+    const sceneB = cloneFixture(validScene)
+    sceneB.sceneId = '8a3435d2-2c2f-4df1-a38c-5b7e32ce91a8'
+    const sceneC = cloneFixture(validScene)
+    sceneC.sceneId = '9a3435d2-2c2f-4df1-a38c-5b7e32ce91a8'
+
+    adapter.initialize({} as HTMLCanvasElement, scene)
+    await adapter.importScene(scene, resolver())
+    await adapter.addSticker(materialAsset('sticker'), validAccess)
+
+    deferNextLoad = true
+    const oldUndo = adapter.undo()
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(pendingLoad).toBeDefined()
+
+    await expect(adapter.importScene(sceneB, resolver())).resolves.toMatchObject({ issues: [] })
+    expect(adapter.exportScene().sceneId).toBe(sceneB.sceneId)
+    pendingLoad?.resolve({ sourceUrl: 'blob:stale-undo', dispose: () => undefined })
+    await expect(oldUndo).rejects.toMatchObject({ code: 'REQUEST_CANCELLED' })
+    expect(adapter.exportScene().sceneId).toBe(sceneB.sceneId)
+
+    await adapter.addSticker(materialAsset('sticker'), validAccess)
+    await expect(adapter.undo()).resolves.toBe(true)
+
+    deferNextLoad = true
+    const oldRedo = adapter.redo()
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(pendingLoad).toBeDefined()
+
+    await expect(adapter.importScene(sceneC, resolver())).resolves.toMatchObject({ issues: [] })
+    expect(adapter.exportScene().sceneId).toBe(sceneC.sceneId)
+    pendingLoad?.resolve({ sourceUrl: 'blob:stale-redo', dispose: () => undefined })
+    await expect(oldRedo).rejects.toMatchObject({ code: 'REQUEST_CANCELLED' })
+    expect(adapter.exportScene().sceneId).toBe(sceneC.sceneId)
+
+    await adapter.addSticker(materialAsset('sticker'), validAccess)
+    await expect(adapter.undo()).resolves.toBe(true)
+    expect(adapter.exportScene().sceneId).toBe(sceneC.sceneId)
+    await expect(adapter.redo()).resolves.toBe(true)
+    expect(adapter.exportScene().sceneId).toBe(sceneC.sceneId)
+  })
 })

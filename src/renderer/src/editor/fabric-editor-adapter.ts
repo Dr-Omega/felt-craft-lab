@@ -268,6 +268,8 @@ export class FabricEditorAdapter {
   private stickerRequestGeneration = 0
   private sceneReady = false
   private committedSceneReady = false
+  private historyRestoreGeneration = 0
+  private activeHistoryRestoreGeneration: number | undefined
 
   constructor(options: FabricEditorAdapterOptions) {
     const snapshotContext = validateSceneSnapshotValidationContext(options.snapshotContext)
@@ -304,10 +306,18 @@ export class FabricEditorAdapter {
   }
 
   async importScene(scene: SceneDocument, resolver: FabricEditorAssetResolver): Promise<SceneImportResult> {
+    return this.importSceneInternal(scene, resolver)
+  }
+
+  private async importSceneInternal(
+    scene: SceneDocument,
+    resolver: FabricEditorAssetResolver,
+    historyRestoreGeneration?: number
+  ): Promise<SceneImportResult> {
     const validation = validateSceneDocument(scene)
     if (!validation.ok) throw editorError('SCENE_IMPORT_FAILED', 'Scene document failed validation.')
     const canvas = this.requireCanvas()
-    const operation = this.beginSceneTransition(canvas)
+    const operation = this.beginSceneTransition(canvas, historyRestoreGeneration)
     try {
       const prepared = await this.prepareScene(scene, resolver, operation, canvas)
       if (!this.isCurrentOperation(operation)) {
@@ -570,6 +580,7 @@ export class FabricEditorAdapter {
     this.sceneGeneration += 1
     this.sceneReady = false
     this.committedSceneReady = false
+    this.activeHistoryRestoreGeneration = undefined
     const canvas = this.canvas
     if (!canvas) {
       this.recoveryIssues = []
@@ -827,7 +838,8 @@ export class FabricEditorAdapter {
     if (!validation.ok) throw editorError('INVALID_ARGUMENT', 'Canvas state change violates SceneDocument constraints.')
   }
 
-  private beginSceneTransition(canvas: FabricCanvasPort): AsyncOperation {
+  private beginSceneTransition(canvas: FabricCanvasPort, historyRestoreGeneration?: number): AsyncOperation {
+    if (historyRestoreGeneration === undefined) this.activeHistoryRestoreGeneration = undefined
     this.sceneGeneration += 1
     this.sceneReady = false
     return this.beginAsyncOperation('import', canvas)
@@ -942,7 +954,7 @@ export class FabricEditorAdapter {
   }
 
   private async restoreHistory(entry: HistoryEntry): Promise<void> {
-    this.requireReadyCanvas()
+    const canvas = this.requireReadyCanvas()
     const resolver = this.resolver ?? {
       resolveAsset: async (assetId: string): Promise<AssetRecord> => {
         const asset = this.assetCache.get(assetId)
@@ -950,17 +962,34 @@ export class FabricEditorAdapter {
         return asset
       }
     }
-    const history = this.history
-    const historyIndex = this.historyIndex
-    try {
-      await this.importScene(entry.scene, resolver)
-    } catch (error) {
-      this.history = history
-      this.historyIndex = historyIndex
-      throw error
+    const transaction = {
+      generation: ++this.historyRestoreGeneration,
+      sceneGeneration: this.sceneGeneration,
+      history: this.history,
+      historyIndex: this.historyIndex,
+      canvas
     }
-    this.history = history
-    this.historyIndex = historyIndex
+    this.activeHistoryRestoreGeneration = transaction.generation
+    const ownsTransaction = (): boolean =>
+      this.activeHistoryRestoreGeneration === transaction.generation &&
+      this.canvas === transaction.canvas &&
+      this.sceneGeneration === transaction.sceneGeneration + 1
+    try {
+      await this.importSceneInternal(entry.scene, resolver, transaction.generation)
+      if (!ownsTransaction()) throw editorError('REQUEST_CANCELLED', 'History restore was superseded.')
+      this.history = transaction.history
+      this.historyIndex = transaction.historyIndex
+    } catch (error) {
+      if (ownsTransaction()) {
+        this.history = transaction.history
+        this.historyIndex = transaction.historyIndex
+      }
+      throw error
+    } finally {
+      if (this.activeHistoryRestoreGeneration === transaction.generation) {
+        this.activeHistoryRestoreGeneration = undefined
+      }
+    }
   }
 
   private releaseBackground(canvas: FabricCanvasPort): void {
