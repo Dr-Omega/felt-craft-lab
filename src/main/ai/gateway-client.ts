@@ -24,7 +24,8 @@ export async function gatewayJson(
   init: {
     method?: string
     headers?: Record<string, string>
-    body?: BodyInit | null
+    // Avoid DOM `BodyInit` — Main tsconfig is Node-only (`lib: ESNext` + `@types/node`).
+    body?: string | FormData | null
     timeoutMs?: number
     signal?: AbortSignal
     isPackaged?: boolean

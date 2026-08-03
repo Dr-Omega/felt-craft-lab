@@ -4,29 +4,32 @@
 
 > **状态：Draft（请审查；请勿合并、勿转 Ready）**  
 > 已同步 `integration/material-library`（含 PR#10）。  
-> 首轮 Request changes 已按线程修复（Contracts 对齐、守卫、安全后处理、Electron 正式服务接入）。  
-> **SXY 暂勿正式接入**；等 Contracts 与 Electron 调用链审查通过后再做端到端联调。
+> ZXR 已确认正式 AI 调用边界；按 Review 线程 + 确认边界完成修复与回归测试。  
+> **SXY 暂勿正式接入**；等本轮审查通过后再做端到端联调。
 
 ---
 
 ## Summary
 
-组长 AI 网关 + 正式 Audio/Animation（`src/renderer/src/services`）。
+组长 AI 网关 + Main/Preload 代理 + 正式 Audio/Animation（`src/renderer/src/services`）。
 
-### 已处理
+### 已确认边界（已实现）
 
-- 成功/错误载荷对齐冻结 Contracts：`AsrResult` / `QaResult` / `TtsResult` / `SharedError`
-- Provider 白名单：未知 provider **拒绝**；`mock` 仅开发态
-- 上传大小 / MIME / 文本长度 / 限流 / 并发；smoke 改为受保护 POST + `AI_SMOKE_ENABLED`
-- 健康检查仅 `keysConfigured` 布尔；错误无密钥派生/上游原文
-- QA 安全后处理：非 JSON / 危险输出不得 `allow`
-- AudioService Promise 在 stop/替换时可靠 settle；无远程 Lottie 默认地址
-- 删除 `frontend/assets/fixed-audio` 旧 mp3/索引；正式音频仅 `assets/generated/audio`
+1. Renderer **不**直连 Flask；统一 `electronAPI.ai.*` → Main → Gateway（无 CORS 方案）
+2. 开发：Main → `localhost:8788`；正式：Main → 远端 `AI_GATEWAY_BASE_URL`（**无**本地 Python sidecar）
+3. 真实 API Key 仅 Gateway 服务端
+4. 动态 TTS：Gateway `audioBase64` → Main `userData/audio/dynamic/<hash>.mp3` → `felt-resource://audio/dynamic/<hash>.mp3`
+5. Main 只做 IPC/转发/超时/落盘/契约边界；不承载 Prompt/Provider/安全后处理
+6. 本 PR **不**新增 `felt-resource://animation` kind
 
-### 待确认（已在对应 Inline 线程回复方案，未自行定案）
+### 其它 Review 修复
 
-1. Electron↔Flask：精确 CORS 允许列表 vs Main/Preload 代理  
-2. 动态 TTS → 合法 `felt-resource://audio/...` 落盘与返回方案  
+- Contracts 对齐：`AsrResult` / `QaResult` / `TtsResult` / `SharedError`
+- 守卫：`remote_addr` 限流、`MAX_CONTENT_LENGTH`、拒绝任意 JSON `audioUrl`、provider 白名单
+- 指标：session 桶化、可写目录、有界轮转
+- AudioService：`play` 成功开始才 settle；stop/替换可靠结束；不把 `load` 当成功
+- 未验收 demo 语音移至 `assets/demo/audio/`（不进 extraResources）
+- 根 README 保持 branch-agnostic
 
 ### 本地命令
 
