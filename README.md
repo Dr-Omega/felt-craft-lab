@@ -1,82 +1,65 @@
 # felt-craft-lab
 
-不织布儿童美育创作工具的全项目工程基线（Electron + Vue3 + TypeScript）。
-
-本阶段只提供可安装、可启动、可类型检查、可测试、可构建和可 Windows 打包的最小桌面应用骨架。  
-**不包含**素材库页面、Dexie、Manifest、Fabric 业务或真实 AI 接口。
+不织布儿童美育创作工具（Electron + Vue3 + TypeScript 基线，含组长 AI 服务线）。
 
 ## 技术栈
 
-- Electron + electron-vite
-- Vue 3 + TypeScript
-- Vitest
-- electron-builder（Windows NSIS）
+- Electron + electron-vite + Vue 3 + TypeScript
+- Vitest + electron-builder
+- AI Gateway：Flask（`backend/`，开发本机 / 正式远端；不打进 Electron 安装包）
 
 ## 包管理器
 
-唯一包管理器：**npm**（Node.js >= 22.12.0）。
-
-请只使用 `package-lock.json`，不要引入 `pnpm-lock.yaml` 或 `yarn.lock`。
+唯一包管理器：**npm**（Node.js >= 22.12.0）。请只使用 `package-lock.json`。
 
 ## 目录映射
 
 ```text
-src/main/          Electron 主进程与静态资源路径解析（SXY）
-src/preload/       contextBridge 安全入口（SXY）
-src/renderer/      Vue3 Renderer 最小首页（SXY）
-src/shared/        跨模块常量、资源解析纯逻辑、共享契约（契约由 ZXR 维护）
-server/            AI 网关安全入口占位（TSH）
-scripts/           导入与校验脚本占位（SXY / TSH）
-assets/            generated（material/audio mock）+ runtime 资源目录
-docs/              工作流与架构文档
-tests/             冒烟与契约/资源解析测试
+src/main/          Electron 主进程、felt-resource、AI Gateway 代理
+src/preload/       contextBridge（含 electronAPI.ai.*）
+src/renderer/      Vue3 Renderer（经 Preload 调 AI，不直连 Flask）
+src/shared/        共享契约与 ResourceRef 解析（Contracts 由 XR 维护）
+backend/           AI 安全代理：ASR / QA / TTS（远端 Gateway / 本地开发）
+src/renderer/src/services/  正式 AudioService / AnimationService / ai.client
+frontend/                  Flask 浏览器 demo（非正式打包入口）
+assets/generated/  正式打包资源（material / audio 固件）
+assets/demo/       联调示例（不进入 electron-builder extraResources）
+docs/              架构与 AI 对接文档
+tests/             契约与资源解析测试
 ```
 
-资源引用验证协议为 `felt-resource:`，边界说明见 `docs/architecture/resource-resolver.md`。
+资源引用协议：`felt-resource:`（见 `docs/architecture/resource-resolver.md`）。  
+固定介绍语音：`felt-resource://audio/<file>.mp3`  
+动态 TTS（Main 落盘）：`felt-resource://audio/dynamic/<hash>.mp3`
 
-## 常用命令
+SXY 对接说明：**`docs/ai-services/SXY对接指南.md`**  
+分支 / PR 状态请看对应 Pull Request 或 `docs/ai-services/`，勿在本 README 写死当前分支。
+
+## 常用命令（完整工程）
 
 ```bash
-# 安装依赖
 npm install
-
-# 若 Electron 二进制缺失（常见于受限网络）
-node node_modules/electron/install.js
-
-# 开发启动（Electron + Vite）
-npm run dev
-
-# 类型检查
 npm run typecheck
-
-# 单元测试
 npm test
-
-# 生产构建（输出到 out/）
 npm run build
-
-# Windows 安装包（NSIS）
-npm run dist:win
-
-# Windows 免安装目录包（更快验证打包链路）
-npm run dist:win:dir
+npm run dev
 ```
 
-> Windows 打包说明：若仓库路径含非 ASCII 字符导致 `electron-builder` 卡住，请复制到纯英文路径后再执行打包命令。国内网络可设置环境变量 `ELECTRON_MIRROR` 与 `ELECTRON_BUILDER_BINARIES_MIRROR`（例如 npmmirror）。
+## AI Gateway（开发）
 
-## 本地环境
+```bat
+cd backend
+双击 启动第1步.bat
+```
 
-1. 复制 `.env.example` 为 `.env`（可选，当前基线不依赖真实密钥）。
-2. 运行 `npm install`。
-3. 运行 `npm run dev`，确认首页能显示主进程 `ping` 结果和 Windows 静态资源路径。
+- 健康检查：http://127.0.0.1:8788/api/health  
+- Electron Main 默认转发到上述地址；正式环境设置 `AI_GATEWAY_BASE_URL` 指向远端 Gateway  
+- Renderer 只调用 `window.electronAPI.ai.*`（保持 `webSecurity: true`，无 CORS 直连）  
+- 密钥：复制 `backend/.env.example` → `backend/.env`（勿提交 `.env`）  
+- 本仓库 **不** 把 Python/Flask 打进 Windows 安装包；正式验收验证 Main 可连接配置的远端 Gateway
 
-## 模块接入说明
+## 固定语音
 
-- 共享 Contracts 已合入 `integration/material-library`；本 PR 合入 `develop` 后，由 ZXR 发起 `develop` → `integration/material-library` 同步。
-- 业务功能请从对应 `integration/<module>` 拉出 `feature/<module>/<task>`，不要在本基线分支实现素材库/编辑器/AI。
-- 根级依赖与目录变更前先说明影响范围，并由 ZXR 审核。
-
-## 分支
-
-- 工作分支：`chore/project-bootstrap`
-- 合并目标：`develop`（不直接进 `main`）
+- 批量工具：`backend/批量固定语音第9步.bat`
+- 验收后输出：`assets/generated/audio/` + `audio-index.json`
+- 未验收示例：`assets/demo/audio/`（不打包）

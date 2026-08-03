@@ -21,16 +21,20 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:electron-resource": "npm run build -- --mode test && node scripts/run-electron-resource-smoke.cjs",
+    "test:electron-ai": "npm run build && node scripts/run-electron-ai-smoke.cjs",
     "dist:win": "npm run build && electron-builder --win --x64 --config.electronDist=node_modules/electron/dist",
     "dist:win:dir": "npm run build && electron-builder --win --x64 --dir --config.electronDist=node_modules/electron/dist",
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
     "fabric": "5.3.0",
+    "howler": "^2.2.4",
+    "lottie-web": "^5.12.2",
     "vue": "^3.5.40"
   },
   "devDependencies": {
     "@types/fabric": "5.3.10",
+    "@types/howler": "^2.2.13",
     "@types/node": "^22.19.0",
     "@vitejs/plugin-vue": "^6.0.1",
     "electron": "^43.2.0",

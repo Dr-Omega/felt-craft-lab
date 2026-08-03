@@ -3,7 +3,11 @@ export const APP_ID = 'com.feltcraft.lab'
 
 export const IPC_CHANNELS = {
   PING: 'felt:bootstrap:ping',
-  RESOURCE_INSPECT: 'felt:resource:inspect'
+  RESOURCE_INSPECT: 'felt:resource:inspect',
+  AI_HEALTH: 'felt:ai:health',
+  AI_ASR_TRANSCRIBE: 'felt:ai:asr:transcribe',
+  AI_QA_ASK: 'felt:ai:qa:ask',
+  AI_TTS_SYNTHESIZE: 'felt:ai:tts:synthesize'
 } as const
 
 export interface BootstrapPingResult {

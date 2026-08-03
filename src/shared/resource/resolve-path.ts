@@ -4,9 +4,17 @@ import { toSharedError } from '../contracts/error'
 import { parseFeltResourceRef } from './parse'
 import type { FeltResourceResolveResult, ResourceRoots } from './types'
 
-function rootForKind(roots: ResourceRoots, kind: 'material' | 'audio' | 'preview'): string {
+function rootForKind(
+  roots: ResourceRoots,
+  kind: 'material' | 'audio' | 'preview',
+  relativePath: string
+): string {
   if (kind === 'material') return roots.materialRoot
-  if (kind === 'audio') return roots.audioRoot
+  if (kind === 'audio') {
+    // dynamic/* is written by Main into userData; never into the install tree
+    if (relativePath.startsWith('dynamic/')) return roots.audioDynamicRoot
+    return roots.audioRoot
+  }
   return roots.previewRoot
 }
 
@@ -108,7 +116,7 @@ export function resolveFeltResourcePath(
     }
 
     const segments = parsed.relativePath.split('/')
-    const root = rootForKind(roots, parsed.kind)
+    const root = rootForKind(roots, parsed.kind, parsed.relativePath)
     const absolutePath = normalize(join(root, ...segments))
 
     if (!isInsideRoot(root, absolutePath)) {

@@ -5,6 +5,7 @@ import { pathToFileURL } from 'node:url'
 import { APP_DISPLAY_NAME, IPC_CHANNELS } from '@shared/constants/app'
 import { isAllowedExternalUrl } from './external-url'
 import { resolveRuntimeAssetPath } from './paths'
+import { registerAiIpc } from './ai/ipc'
 import {
   attachFeltResourceProtocol,
   createResourceRoots,
@@ -12,6 +13,7 @@ import {
   registerResourceIpc
 } from './resource'
 import { runResourceSmoke } from './resource-smoke'
+import { runAiSmoke } from './ai-smoke'
 import { isTrustedIpcEvent } from './security/ipc-guard'
 import { configureTrustedRendererTargets, isAllowedRendererUrl } from './security/renderer-origin'
 
@@ -118,11 +120,17 @@ app.whenReady().then(() => {
     return
   }
 
+  if (process.env.FELT_AI_SMOKE === '1') {
+    void runAiSmoke()
+    return
+  }
+
   const packagedRendererPath = bindTrustedRendererTargets()
   const resourceRoots = createResourceRoots()
   attachFeltResourceProtocol(resourceRoots)
   registerResourceIpc(resourceRoots)
   registerBootstrapIpc()
+  registerAiIpc()
   createWindow(packagedRendererPath)
 
   app.on('activate', () => {
@@ -134,6 +142,7 @@ app.whenReady().then(() => {
 
 app.on('window-all-closed', () => {
   if (process.env.FELT_RESOURCE_SMOKE === '1') return
+  if (process.env.FELT_AI_SMOKE === '1') return
   if (process.platform !== 'darwin') {
     app.quit()
   }

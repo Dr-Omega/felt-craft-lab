@@ -5,6 +5,7 @@ node_modules/
 out/
 dist/
 release/
+release-ci/
 *.exe
 *.blockmap
 *.dmg
@@ -42,6 +43,13 @@ Desktop.ini
 tmp/
 temp/
 *.tmp
+tmp_*
+tmp-review/
+docs/ai-services/_pr11*
+docs/_pr11*
+docs/_extract_pr_comments.py
+docs/_pr11_comments_raw.txt
+docs/_pr11_threads.md
 
 # Electron builder
 *.asar.unpacked/
@@ -49,3 +57,13 @@ electron-builder.yaml.lock
 
 tmp-pr-*.md
 
+# Python AI gateway (组长)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+backend/cache/
+backend/data/generated/
+backend/data/logs/
+backend/data/*.jsonl

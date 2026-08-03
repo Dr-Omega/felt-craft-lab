@@ -8,6 +8,7 @@ describe('project bootstrap smoke', () => {
     expect(APP_DISPLAY_NAME).toBe('Felt Craft Lab')
     expect(APP_ID).toBe('com.feltcraft.lab')
     expect(IPC_CHANNELS.PING).toBe('felt:bootstrap:ping')
+    expect(IPC_CHANNELS.AI_TTS_SYNTHESIZE).toBe('felt:ai:tts:synthesize')
   })
 
   it('keeps server as a non-ready shell', () => {
