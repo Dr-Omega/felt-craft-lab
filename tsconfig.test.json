@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.node.json",
+  "compilerOptions": {
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "types": ["node"],
+    "composite": true
+  },
+  "include": [
+    "tests/**/*.ts",
+    "src/renderer/src/editor/**/*",
+    "src/shared/**/*",
+    "src/main/**/*",
+    "server/**/*"
+  ]
+}

@@ -13,6 +13,14 @@ export default defineConfig(({ mode }) => {
     .trim()
     .replace(/\/+$/, '')
 
+  const rendererInput: Record<string, string> = {
+    index: resolve('src/renderer/index.html')
+  }
+  // fabric-smoke is test-only; production builds must not include it.
+  if (mode === 'test') {
+    rendererInput['fabric-smoke'] = resolve('src/renderer/fabric-smoke.html')
+  }
+
   return {
     main: {
       plugins: [externalizeDepsPlugin()],
@@ -34,6 +42,11 @@ export default defineConfig(({ mode }) => {
       }
     },
     renderer: {
+      build: {
+        rollupOptions: {
+          input: rendererInput
+        }
+      },
       resolve: {
         alias: {
           '@renderer': resolve('src/renderer/src'),

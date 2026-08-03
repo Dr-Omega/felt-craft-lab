@@ -133,10 +133,12 @@ export async function runResourceSmoke(): Promise<void> {
     if (title === 'SMOKE_OK') {
       ok('production protocol + resolver + roots')
       ok('image canvas toDataURL + audio seeked/currentTime + method 405 + preview userData')
+      window.destroy()
+      await runFabricEditorAdapterSmoke()
+      ok('FabricEditorAdapter + fabric@5.3.0 + felt-resource PNG export')
       ok(
         `material=${existsSync(materialFile)} audio=${existsSync(audioFile)} preview=${existsSync(previewFile)}`
       )
-      window.destroy()
       app.exit(0)
       return
     }
@@ -147,4 +149,36 @@ export async function runResourceSmoke(): Promise<void> {
   }
 
   fail('timed out waiting for renderer smoke')
+}
+
+/** Runs the built renderer smoke entry through the real FabricEditorAdapter. */
+async function runFabricEditorAdapterSmoke(): Promise<void> {
+  const smokePath = join(__dirname, '../renderer/fabric-smoke.html')
+  if (!existsSync(smokePath)) fail('built Fabric adapter smoke entry is missing')
+
+  const window = new BrowserWindow({
+    show: false,
+    webPreferences: {
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true,
+      webSecurity: true
+    }
+  })
+  await window.loadFile(smokePath)
+
+  const deadline = Date.now() + 20000
+  while (Date.now() < deadline) {
+    const title = await window.webContents.executeJavaScript('document.title', true)
+    if (title === 'FABRIC_ADAPTER_SMOKE_OK') {
+      window.destroy()
+      return
+    }
+    if (typeof title === 'string' && title.startsWith('FABRIC_ADAPTER_SMOKE_FAIL:')) {
+      fail(title.slice('FABRIC_ADAPTER_SMOKE_FAIL:'.length))
+    }
+    await new Promise((resolve) => setTimeout(resolve, 100))
+  }
+
+  fail('timed out waiting for Fabric adapter renderer smoke')
 }

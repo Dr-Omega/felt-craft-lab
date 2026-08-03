@@ -23,11 +23,6 @@
     "src/preload/**/*",
     "src/shared/**/*",
     "server/**/*",
-    "scripts/**/*",
-    "tests/shared/**/*",
-    "tests/resource/**/*",
-    "tests/ai/**/*",
-    "tests/smoke.test.ts"
-  ],
-  "exclude": ["tests/renderer/**"]
+    "scripts/**/*"
+  ]
 }
