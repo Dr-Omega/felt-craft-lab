@@ -12,7 +12,7 @@ import {
   type GatewayAuth,
   type GatewayJsonResult
 } from './gateway-client'
-import { validateAsrIpcInput, validateQaIpcInput, validateTtsIpcInput } from './input-guards'
+import { validateAsrIpcInput, validateQaIpcInput, validateTtsIpcInput, withValidatedIpcInput } from './input-guards'
 import { materializeGatewayTts } from './materialize-tts'
 import {
   normalizeAsrEnvelope,
@@ -116,20 +116,21 @@ export function registerAiIpc(): void {
     const audioBase64 = typeof input.audioBase64 === 'string' ? input.audioBase64 : ''
     const mimeType = typeof input.mimeType === 'string' ? input.mimeType : 'audio/wav'
     const guarded = validateAsrIpcInput({ audioBase64, mimeType })
-    if (!guarded.ok) return { ok: false, error: guarded.error }
-    return withPaidAuth(
-      packaged,
-      (auth) =>
-        gatewayAsrMultipart({
-          audioBase64,
-          mimeType,
-          language: typeof input.language === 'string' ? input.language : undefined,
-          sessionId: typeof input.sessionId === 'string' ? input.sessionId : undefined,
-          provider: typeof input.provider === 'string' ? input.provider : undefined,
-          isPackaged: packaged,
-          auth
-        }),
-      (body) => normalizeAsrEnvelope(body)
+    return withValidatedIpcInput(guarded, () =>
+      withPaidAuth(
+        packaged,
+        (auth) =>
+          gatewayAsrMultipart({
+            audioBase64,
+            mimeType,
+            language: typeof input.language === 'string' ? input.language : undefined,
+            sessionId: typeof input.sessionId === 'string' ? input.sessionId : undefined,
+            provider: typeof input.provider === 'string' ? input.provider : undefined,
+            isPackaged: packaged,
+            auth
+          }),
+        (body) => normalizeAsrEnvelope(body)
+      )
     )
   })
 
@@ -138,18 +139,19 @@ export function registerAiIpc(): void {
     const input = asRecord(raw)
     const question = typeof input.question === 'string' ? input.question : ''
     const guarded = validateQaIpcInput(question)
-    if (!guarded.ok) return { ok: false, error: guarded.error }
-    return withPaidAuth(
-      packaged,
-      (auth) =>
-        gatewayQaAsk({
-          question,
-          asset: asRecord(input.asset),
-          provider: typeof input.provider === 'string' ? input.provider : undefined,
-          isPackaged: packaged,
-          auth
-        }),
-      (body) => normalizeQaEnvelope(body)
+    return withValidatedIpcInput(guarded, () =>
+      withPaidAuth(
+        packaged,
+        (auth) =>
+          gatewayQaAsk({
+            question,
+            asset: asRecord(input.asset),
+            provider: typeof input.provider === 'string' ? input.provider : undefined,
+            isPackaged: packaged,
+            auth
+          }),
+        (body) => normalizeQaEnvelope(body)
+      )
     )
   })
 
@@ -158,22 +160,23 @@ export function registerAiIpc(): void {
     const input = asRecord(raw)
     const text = typeof input.text === 'string' ? input.text : ''
     const guarded = validateTtsIpcInput(text)
-    if (!guarded.ok) return { ok: false, error: guarded.error }
-    return withPaidAuth(
-      packaged,
-      (auth) =>
-        gatewayTtsSynthesize({
-          text,
-          voicePurpose: typeof input.voicePurpose === 'string' ? input.voicePurpose : undefined,
-          provider: typeof input.provider === 'string' ? input.provider : undefined,
-          isPackaged: packaged,
-          auth
-        }),
-      (body) => {
-        const materialized = materializeGatewayTts(body, dynamicAudioRoot())
-        if (!materialized.ok) return materialized
-        return normalizeTtsResult(materialized.result)
-      }
+    return withValidatedIpcInput(guarded, () =>
+      withPaidAuth(
+        packaged,
+        (auth) =>
+          gatewayTtsSynthesize({
+            text,
+            voicePurpose: typeof input.voicePurpose === 'string' ? input.voicePurpose : undefined,
+            provider: typeof input.provider === 'string' ? input.provider : undefined,
+            isPackaged: packaged,
+            auth
+          }),
+        (body) => {
+          const materialized = materializeGatewayTts(body, dynamicAudioRoot())
+          if (!materialized.ok) return materialized
+          return normalizeTtsResult(materialized.result)
+        }
+      )
     )
   })
 }

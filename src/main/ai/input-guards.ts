@@ -73,3 +73,15 @@ export function validateTtsIpcInput(text: string): IpcGuardResult {
   if (value.length > MAX_TTS_CHARS) return invalid('文本过长。')
   return { ok: true }
 }
+
+/**
+ * Run a Gateway network call only after IPC input validation succeeds.
+ * Used by Main handlers and tests to prove invalid input never touches the network.
+ */
+export async function withValidatedIpcInput<T>(
+  guard: IpcGuardResult,
+  networkCall: () => Promise<T>
+): Promise<T | { ok: false; error: SharedError }> {
+  if (!guard.ok) return { ok: false, error: guard.error }
+  return networkCall()
+}

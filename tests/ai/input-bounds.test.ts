@@ -6,7 +6,8 @@ import {
   MAX_TTS_CHARS,
   validateAsrIpcInput,
   validateQaIpcInput,
-  validateTtsIpcInput
+  validateTtsIpcInput,
+  withValidatedIpcInput
 } from '../../src/main/ai/input-guards'
 
 function chunkedResponse(totalBytes: number, chunkSize: number, withContentLength = false): Response {
@@ -53,9 +54,11 @@ describe('readResponseTextBounded', () => {
     const maxBytes = 8 * 1024
     const response = chunkedResponse(maxBytes * 4, 1024, false)
     let pulls = 0
-    const originalGetReader = response.body!.getReader.bind(response.body)
-    response.body!.getReader = () => {
-      const reader = originalGetReader()
+    const body = response.body
+    expect(body).toBeTruthy()
+    const originalGetReader = body!.getReader.bind(body)
+    ;(body as { getReader: () => ReadableStreamDefaultReader<Uint8Array> }).getReader = () => {
+      const reader = originalGetReader() as ReadableStreamDefaultReader<Uint8Array>
       const originalRead = reader.read.bind(reader)
       reader.read = async () => {
         pulls += 1
@@ -109,5 +112,30 @@ describe('Main IPC input guards', () => {
     expect(validateQaIpcInput('你好').ok).toBe(true)
     expect(validateTtsIpcInput('y'.repeat(MAX_TTS_CHARS + 1)).ok).toBe(false)
     expect(validateTtsIpcInput('朗读').ok).toBe(true)
+  })
+
+  it('does not invoke network callback when IPC input is invalid', async () => {
+    const network = vi.fn(async () => ({ ok: true as const, result: 'never' }))
+
+    const asr = await withValidatedIpcInput(
+      validateAsrIpcInput({
+        audioBase64: 'A'.repeat(MAX_ASR_AUDIO_BASE64_CHARS + 1),
+        mimeType: 'audio/wav'
+      }),
+      network
+    )
+    expect(asr.ok).toBe(false)
+    expect(network).not.toHaveBeenCalled()
+
+    const qa = await withValidatedIpcInput(validateQaIpcInput('x'.repeat(MAX_QA_CHARS + 1)), network)
+    expect(qa.ok).toBe(false)
+    expect(network).not.toHaveBeenCalled()
+
+    const tts = await withValidatedIpcInput(
+      validateTtsIpcInput('y'.repeat(MAX_TTS_CHARS + 1)),
+      network
+    )
+    expect(tts.ok).toBe(false)
+    expect(network).not.toHaveBeenCalled()
   })
 })

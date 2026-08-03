@@ -179,6 +179,15 @@ export async function gatewayAsrMultipart(input: {
   isPackaged?: boolean
   auth?: GatewayAuth
 }): Promise<GatewayJsonResult> {
+  if (!input.audioBase64 || input.audioBase64.length > Math.ceil((5 * 1024 * 1024 * 4) / 3) + 8) {
+    return {
+      ok: false,
+      error: toSharedError(
+        { code: 'INVALID_ARGUMENT', message: '录音数据过大。', retryable: false },
+        'INVALID_ARGUMENT'
+      )
+    }
+  }
   let bytes: Buffer
   try {
     bytes = Buffer.from(input.audioBase64, 'base64')

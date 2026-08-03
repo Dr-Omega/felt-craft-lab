@@ -24,14 +24,13 @@ export async function readResponseTextBounded(
   }
 
   if (!response.body || typeof response.body.getReader !== 'function') {
-    // Extremely defensive fallback — still enforce after read.
+    // No stream API — refuse rather than buffering the full body first.
     try {
-      const text = await response.text()
-      if (Buffer.byteLength(text, 'utf8') > maxBytes) return { ok: false, reason: 'too_large' }
-      return { ok: true, text }
+      await response.body?.cancel()
     } catch {
-      return { ok: false, reason: 'invalid' }
+      // ignore
     }
+    return { ok: false, reason: 'invalid' }
   }
 
   const reader = response.body.getReader()
