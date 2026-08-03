@@ -1,0 +1,53 @@
+import type { AssetAccessState, AssetRecord, SceneDocument } from '@shared/contracts'
+import type { FabricEditorAssetResolver, SceneImportResult, SceneRecoveryIssue } from './fabric-editor-adapter'
+
+export type EditorSessionStatus = 'idle' | 'loading' | 'ready' | 'recovery' | 'disposed'
+
+export interface EditorSessionState {
+  status: EditorSessionStatus
+  sceneId?: string
+  pendingOperations: number
+  recoveryIssues: readonly SceneRecoveryIssue[]
+  canEdit: boolean
+  canPrepareDraft: boolean
+  canPrepareProject: boolean
+}
+
+export type EditorSessionListener = (state: EditorSessionState) => void
+
+/**
+ * The deliberately small adapter surface used by the session layer. Keeping
+ * this interface here prevents Vue/application code from retaining Fabric
+ * objects or depending on adapter implementation details.
+ */
+export interface EditorSessionAdapter {
+  initialize(element: HTMLCanvasElement, scene: SceneDocument): void
+  importScene(scene: SceneDocument, resolver: FabricEditorAssetResolver): Promise<SceneImportResult>
+  setBackground(asset: AssetRecord | null, access?: AssetAccessState): Promise<void>
+  setSolidBackground(color: string): void
+  setTransparentBackground(): void
+  resizeCanvas(width: number, height: number): void
+  addSticker(asset: AssetRecord, access: AssetAccessState, position?: { left: number; top: number }): Promise<string>
+  deleteObject(objectId: string): void
+  bringForward(objectId: string): void
+  sendBackward(objectId: string): void
+  bringToFront(objectId: string): void
+  sendToBack(objectId: string): void
+  undo(): Promise<boolean>
+  redo(): Promise<boolean>
+  exportScene(): SceneDocument
+  exportPng(): Promise<Blob>
+  getRecoveryIssues(): readonly SceneRecoveryIssue[]
+  dispose(): void
+}
+
+export type EditorSessionAdapterFactory = () => EditorSessionAdapter
+
+export interface EditorSessionServiceOptions {
+  createAdapter: EditorSessionAdapterFactory
+}
+
+export interface PreparedProjectSave {
+  scene: SceneDocument
+  previewPng: Blob
+}
