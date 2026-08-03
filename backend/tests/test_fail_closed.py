@@ -71,12 +71,64 @@ class ReadyEndpointTests(unittest.TestCase):
         cls.client = app.test_client()
 
     def test_ready_dev_usable_without_provider_keys(self):
-        r = self.client.get("/api/ready")
-        self.assertEqual(r.status_code, 200)
-        body = r.get_json()
-        self.assertTrue(body.get("sessionAuth"))
-        self.assertNotIn("secret", str(body).lower())
-        self.assertEqual(body.get("ready"), body.get("sessionAuth"))
+        with mock.patch.dict(
+            os.environ,
+            {
+                "APP_ENV": "development",
+                "AI_SESSION_HMAC_SECRET": "test-session-hmac-secret-not-for-prod",
+            },
+        ):
+            r = self.client.get("/api/ready")
+            self.assertEqual(r.status_code, 200)
+            body = r.get_json()
+            self.assertTrue(body.get("sessionAuth"))
+            self.assertTrue(body.get("ready"))
+            self.assertNotIn("secret", str(body).lower())
+
+    def test_ready_production_missing_hmac_is_503(self):
+        with mock.patch.dict(
+            os.environ,
+            {
+                "APP_ENV": "production",
+                "AI_SESSION_HMAC_SECRET": "",
+                "QWEN_ASR_API_KEY": "k",
+                "DEEPSEEK_API_KEY": "k",
+                "MINIMAX_API_KEY": "k",
+                "MINIMAX_GROUP_ID": "g",
+            },
+            clear=False,
+        ):
+            r = self.client.get("/api/ready")
+            self.assertEqual(r.status_code, 503)
+            body = r.get_json()
+            self.assertFalse(body.get("ready"))
+            self.assertFalse(body.get("sessionAuth"))
+            self.assertNotIn("secret", str(body).lower())
+
+    def test_ready_production_missing_provider_keys_is_503(self):
+        strong = "prod-hmac-secret-value-at-least-32-chars-ok"
+        with mock.patch.dict(
+            os.environ,
+            {
+                "APP_ENV": "production",
+                "AI_SESSION_HMAC_SECRET": strong,
+                "QWEN_ASR_API_KEY": "",
+                "DASHSCOPE_API_KEY": "",
+                "DEEPSEEK_API_KEY": "",
+                "MINIMAX_API_KEY": "",
+                "MINIMAX_GROUP_ID": "",
+            },
+            clear=False,
+        ):
+            r = self.client.get("/api/ready")
+            self.assertEqual(r.status_code, 503)
+            body = r.get_json()
+            self.assertFalse(body.get("ready"))
+            self.assertTrue(body.get("sessionAuth"))
+            self.assertFalse(body.get("asr"))
+            self.assertFalse(body.get("qa"))
+            self.assertFalse(body.get("tts"))
+            self.assertNotIn("secret", str(body).lower())
 
 
 if __name__ == "__main__":

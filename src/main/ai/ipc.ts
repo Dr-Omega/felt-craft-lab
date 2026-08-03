@@ -12,6 +12,7 @@ import {
   type GatewayAuth,
   type GatewayJsonResult
 } from './gateway-client'
+import { validateAsrIpcInput, validateQaIpcInput, validateTtsIpcInput } from './input-guards'
 import { materializeGatewayTts } from './materialize-tts'
 import {
   normalizeAsrEnvelope,
@@ -52,7 +53,6 @@ function needsAuthRefresh(result: GatewayJsonResult): boolean {
   if (result.status === 401) return true
   const body = result.body as { ok?: unknown; error?: { code?: unknown } } | null
   if (body && body.ok === false && body.error?.code === 'INVALID_ARGUMENT') {
-    // Session missing/invalid maps to INVALID_ARGUMENT; refresh once on 401 primarily.
     return result.status === 401
   }
   return false
@@ -115,15 +115,8 @@ export function registerAiIpc(): void {
     const input = asRecord(raw)
     const audioBase64 = typeof input.audioBase64 === 'string' ? input.audioBase64 : ''
     const mimeType = typeof input.mimeType === 'string' ? input.mimeType : 'audio/wav'
-    if (!audioBase64) {
-      return {
-        ok: false,
-        error: toSharedError(
-          { code: 'INVALID_ARGUMENT', message: '录音数据无效。', retryable: false },
-          'INVALID_ARGUMENT'
-        )
-      }
-    }
+    const guarded = validateAsrIpcInput({ audioBase64, mimeType })
+    if (!guarded.ok) return { ok: false, error: guarded.error }
     return withPaidAuth(
       packaged,
       (auth) =>
@@ -144,15 +137,8 @@ export function registerAiIpc(): void {
     if (!isTrustedIpcEvent(event)) return deny()
     const input = asRecord(raw)
     const question = typeof input.question === 'string' ? input.question : ''
-    if (!question.trim()) {
-      return {
-        ok: false,
-        error: toSharedError(
-          { code: 'INVALID_ARGUMENT', message: '问题不能为空。', retryable: false },
-          'INVALID_ARGUMENT'
-        )
-      }
-    }
+    const guarded = validateQaIpcInput(question)
+    if (!guarded.ok) return { ok: false, error: guarded.error }
     return withPaidAuth(
       packaged,
       (auth) =>
@@ -171,15 +157,8 @@ export function registerAiIpc(): void {
     if (!isTrustedIpcEvent(event)) return deny()
     const input = asRecord(raw)
     const text = typeof input.text === 'string' ? input.text : ''
-    if (!text.trim()) {
-      return {
-        ok: false,
-        error: toSharedError(
-          { code: 'INVALID_ARGUMENT', message: '合成文本不能为空。', retryable: false },
-          'INVALID_ARGUMENT'
-        )
-      }
-    }
+    const guarded = validateTtsIpcInput(text)
+    if (!guarded.ok) return { ok: false, error: guarded.error }
     return withPaidAuth(
       packaged,
       (auth) =>

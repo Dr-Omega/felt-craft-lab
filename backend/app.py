@@ -206,20 +206,25 @@ def ready():
     # Explicit dev may run mock without provider keys; production needs session + keys.
     if is_dev_mode():
         overall = bool(session["usable"])
+        asr_flag = True
+        qa_flag = True
+        tts_flag = True
     else:
         overall = bool(session["usable"] and asr_ok and qa_ok and tts_ok)
-    return jsonify(
-        {
-            "ready": overall,
-            "sessionAuth": bool(session["usable"]),
-            "asr": asr_ok if not is_dev_mode() else True,
-            "qa": qa_ok if not is_dev_mode() else True,
-            "tts": tts_ok if not is_dev_mode() else True,
-            "audioService": True,
-            "animationService": True,
-            "contractsAligned": True,
-        }
-    )
+        asr_flag = asr_ok
+        qa_flag = qa_ok
+        tts_flag = tts_ok
+    body = {
+        "ready": overall,
+        "sessionAuth": bool(session["usable"]),
+        "asr": asr_flag,
+        "qa": qa_flag,
+        "tts": tts_flag,
+        "audioService": True,
+        "animationService": True,
+        "contractsAligned": True,
+    }
+    return jsonify(body), (200 if overall else 503)
 
 
 @app.get("/api/ops/rules")

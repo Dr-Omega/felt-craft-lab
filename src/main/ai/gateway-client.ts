@@ -1,11 +1,13 @@
 import { toSharedError, type SharedError } from '@shared/contracts/error'
 import { resolveAiGatewayBaseUrlResult } from './gateway-config'
+import { readResponseTextBounded } from './read-response-bounded'
 
 const DEFAULT_TIMEOUT_MS = 60_000
-/** Cap Gateway response body before JSON.parse (covers oversized TTS audioBase64 envelopes). */
+/** Cap Gateway response body while streaming (covers oversized TTS audioBase64 envelopes). */
 export const MAX_GATEWAY_RESPONSE_CHARS = Math.ceil((2 * 1024 * 1024 * 4) / 3) + 64 * 1024
 
 export { resolveAiGatewayBaseUrl } from './gateway-config'
+export { readResponseTextBounded } from './read-response-bounded'
 
 export type GatewayAuth = {
   token: string
@@ -99,10 +101,13 @@ export async function gatewayJson(
 
     let body: unknown
     try {
-      const contentLength = response.headers.get('content-length')
-      if (contentLength) {
-        const n = Number(contentLength)
-        if (Number.isFinite(n) && n > MAX_GATEWAY_RESPONSE_CHARS) {
+      const bounded = await readResponseTextBounded(
+        response,
+        MAX_GATEWAY_RESPONSE_CHARS,
+        controller.signal
+      )
+      if (!bounded.ok) {
+        if (bounded.reason === 'too_large') {
           return {
             ok: false,
             error: toSharedError(
@@ -111,18 +116,24 @@ export async function gatewayJson(
             )
           }
         }
-      }
-      const text = await response.text()
-      if (text.length > MAX_GATEWAY_RESPONSE_CHARS) {
+        if (bounded.reason === 'aborted') {
+          return {
+            ok: false,
+            error: toSharedError(
+              { code: 'REQUEST_CANCELLED', message: '请求已取消。', retryable: false },
+              'REQUEST_CANCELLED'
+            )
+          }
+        }
         return {
           ok: false,
           error: toSharedError(
-            { code: 'INVALID_ARGUMENT', message: 'AI 网关响应过大。', retryable: false },
-            'INVALID_ARGUMENT'
+            { code: 'UNKNOWN', message: 'AI 网关响应无效。', retryable: true },
+            'UNKNOWN'
           )
         }
       }
-      body = text ? JSON.parse(text) : null
+      body = bounded.text ? JSON.parse(bounded.text) : null
     } catch {
       return {
         ok: false,
