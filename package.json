@@ -14,20 +14,23 @@
     "dev": "electron-vite dev",
     "build": "electron-vite build",
     "preview": "electron-vite preview",
-    "typecheck": "npm run typecheck:node && npm run typecheck:web",
+    "typecheck": "npm run typecheck:node && npm run typecheck:web && npm run typecheck:test",
     "typecheck:node": "tsc --noEmit -p tsconfig.node.json",
     "typecheck:web": "vue-tsc --noEmit -p tsconfig.web.json",
+    "typecheck:test": "tsc --noEmit -p tsconfig.test.json",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:electron-resource": "npm run build && node scripts/run-electron-resource-smoke.cjs",
+    "test:electron-resource": "npm run build -- --mode test && node scripts/run-electron-resource-smoke.cjs",
     "dist:win": "npm run build && electron-builder --win --x64 --config.electronDist=node_modules/electron/dist",
     "dist:win:dir": "npm run build && electron-builder --win --x64 --dir --config.electronDist=node_modules/electron/dist",
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
+    "fabric": "5.3.0",
     "vue": "^3.5.40"
   },
   "devDependencies": {
+    "@types/fabric": "5.3.10",
     "@types/node": "^22.19.0",
     "@vitejs/plugin-vue": "^6.0.1",
     "electron": "^43.2.0",

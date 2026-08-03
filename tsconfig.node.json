@@ -23,7 +23,6 @@
     "src/preload/**/*",
     "src/shared/**/*",
     "server/**/*",
-    "scripts/**/*",
-    "tests/**/*"
+    "scripts/**/*"
   ]
 }
