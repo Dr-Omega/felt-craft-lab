@@ -1,4 +1,9 @@
-"""单 installationId 宽松限流 + Gateway 全局调用保险丝（进程内计数）。"""
+"""单 installationId 宽松防刷限流 + Gateway 全局付费调用保险丝（进程内）。
+
+说明（正式部署前）：
+- 计数为 process-local；进程重启清零；多 worker 不共享。
+- 本 PR 不引入 Redis/数据库；跨进程 fuse 留待部署阶段。
+"""
 
 from __future__ import annotations
 
@@ -8,12 +13,12 @@ import time
 from collections import defaultdict, deque
 from typing import Optional
 
-# 单实例：宽松，主要拦异常刷量
+# 单实例：宽松，主要拦异常刷量（鉴权后即可计；与付费 fuse 分离）
 _INSTALL_WINDOW_SEC = float(os.getenv("AI_INSTALL_RATE_WINDOW_SEC", "60"))
 _INSTALL_RATE_MAX = int(os.getenv("AI_INSTALL_RATE_MAX", "120"))
 _INSTALL_DAY_MAX = int(os.getenv("AI_INSTALL_DAY_MAX", "3000"))
 
-# 全局保险丝（调用次数近似费用）
+# 全局付费保险丝（仅真实 Provider 调用记账；调用次数近似费用）
 _GLOBAL_HOUR_MAX = int(os.getenv("AI_GLOBAL_MAX_CALLS_PER_HOUR", "5000"))
 _GLOBAL_DAY_MAX = int(os.getenv("AI_GLOBAL_MAX_CALLS_PER_DAY", "20000"))
 
@@ -46,6 +51,15 @@ def reset_abuse_limits_for_tests() -> None:
         _token_hits.clear()
 
 
+def global_fuse_counts_for_tests() -> tuple[int, int]:
+    """Test helper: (hour_count, day_count)."""
+    now = time.monotonic()
+    with _lock:
+        _prune(_global_hour, now, _HOUR_SEC)
+        _prune(_global_day, now, _DAY_SEC)
+        return len(_global_hour), len(_global_day)
+
+
 def token_issue_ok(bucket: str) -> bool:
     now = time.monotonic()
     with _lock:
@@ -57,10 +71,33 @@ def token_issue_ok(bucket: str) -> bool:
         return True
 
 
-def check_paid_call_allowed(installation_id: str) -> Optional[str]:
+def check_install_rate_limit(installation_id: str) -> Optional[str]:
     """
-    付费接口调用前检查并记账。
-    返回内部错误码 RATE_LIMITED / GLOBAL_FUSE；None 表示允许。
+    鉴权后的普通防刷限流（可覆盖非法参数 / mock）。
+    不消费全局付费保险丝。
+    """
+    key = (installation_id or "").strip().lower()
+    if not key:
+        return "SESSION_INVALID"
+
+    now = time.monotonic()
+    with _lock:
+        win = _install_hits[key]
+        day = _install_day[key]
+        _prune(win, now, _INSTALL_WINDOW_SEC)
+        _prune(day, now, _DAY_SEC)
+        if len(win) >= _INSTALL_RATE_MAX or len(day) >= _INSTALL_DAY_MAX:
+            return "RATE_LIMITED"
+        win.append(now)
+        day.append(now)
+        return None
+
+
+def consume_paid_provider_call(installation_id: str) -> Optional[str]:
+    """
+    仅在参数/MIME/provider 校验通过，且即将调用真实付费 Provider 时记账。
+    mock / 非法请求不得调用本函数。
+    返回 GLOBAL_FUSE 或 None。
     """
     key = (installation_id or "").strip().lower()
     if not key:
@@ -72,16 +109,15 @@ def check_paid_call_allowed(installation_id: str) -> Optional[str]:
         _prune(_global_day, now, _DAY_SEC)
         if len(_global_hour) >= _GLOBAL_HOUR_MAX or len(_global_day) >= _GLOBAL_DAY_MAX:
             return "GLOBAL_FUSE"
-
-        win = _install_hits[key]
-        day = _install_day[key]
-        _prune(win, now, _INSTALL_WINDOW_SEC)
-        _prune(day, now, _DAY_SEC)
-        if len(win) >= _INSTALL_RATE_MAX or len(day) >= _INSTALL_DAY_MAX:
-            return "RATE_LIMITED"
-
-        win.append(now)
-        day.append(now)
         _global_hour.append(now)
         _global_day.append(now)
         return None
+
+
+# Back-compat alias used by older call sites during transition
+def check_paid_call_allowed(installation_id: str) -> Optional[str]:
+    """Deprecated combined check — prefer split helpers."""
+    limited = check_install_rate_limit(installation_id)
+    if limited:
+        return limited
+    return consume_paid_provider_call(installation_id)

@@ -19,8 +19,10 @@ export type MaterializedTts =
 
 const SAFE_HASH = /^[a-f0-9]{16,64}$/i
 
-/** Single dynamic TTS payload cap (bytes). */
+/** Single dynamic TTS payload cap (decoded bytes). */
 export const MAX_DYNAMIC_TTS_BYTES = 2 * 1024 * 1024
+/** Reject oversized base64 before Buffer.from allocates decoded memory (~4/3 + padding). */
+export const MAX_DYNAMIC_TTS_BASE64_CHARS = Math.ceil((MAX_DYNAMIC_TTS_BYTES * 4) / 3) + 8
 const MAX_DYNAMIC_FILES = 100
 const MAX_DYNAMIC_TOTAL_BYTES = 80 * 1024 * 1024
 const DYNAMIC_TTL_MS = 7 * 24 * 3600 * 1000
@@ -32,11 +34,15 @@ function fail(code: SharedError['code'], message: string, retryable = false): Ma
   }
 }
 
-function decodeAudioBase64(value: unknown): Buffer | undefined {
+function decodeAudioBase64(value: unknown): Buffer | 'too_large' | undefined {
   if (typeof value !== 'string' || !value.trim()) return undefined
+  // Hard cap on encoded length before decoding.
+  if (value.length > MAX_DYNAMIC_TTS_BASE64_CHARS) return 'too_large'
   try {
     const buf = Buffer.from(value, 'base64')
-    return buf.length > 0 ? buf : undefined
+    if (buf.length === 0) return undefined
+    if (buf.length > MAX_DYNAMIC_TTS_BYTES) return 'too_large'
+    return buf
   } catch {
     return undefined
   }
@@ -50,6 +56,7 @@ function hashForBytes(bytes: Buffer, requestId: unknown): string {
 }
 
 export function pruneDynamicAudioCache(dynamicDir: string): void {
+  // Eviction is oldest-mtime + TTL (not a true LRU: cache hits do not touch mtime).
   if (!existsSync(dynamicDir)) return
   const now = Date.now()
   type Entry = { path: string; mtimeMs: number; size: number }
@@ -135,11 +142,11 @@ export function materializeGatewayTts(body: unknown, dynamicAudioRoot: string): 
   }
 
   const bytes = decodeAudioBase64(result.audioBase64)
+  if (bytes === 'too_large') {
+    return fail('INVALID_ARGUMENT', '语音数据过大。')
+  }
   if (!bytes) {
     return fail('UNKNOWN', '语音合成暂时不可用，请稍后重试。', true)
-  }
-  if (bytes.length > MAX_DYNAMIC_TTS_BYTES) {
-    return fail('INVALID_ARGUMENT', '语音数据过大。')
   }
 
   const hash = hashForBytes(bytes, requestId)

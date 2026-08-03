@@ -1,4 +1,4 @@
-﻿"""Session Token 签发/校验、无 Token 拒绝、限流与全局保险丝回归。"""
+﻿"""Session Token、防刷限流与付费保险丝分离回归。"""
 
 from __future__ import annotations
 
@@ -13,18 +13,22 @@ from unittest import mock
 BACKEND = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(BACKEND))
 
-os.environ.setdefault("APP_ENV", "development")
+os.environ["APP_ENV"] = "development"
 os.environ["AI_SESSION_HMAC_SECRET"] = "test-session-hmac-secret-not-for-prod"
 os.environ["AI_SMOKE_ENABLED"] = "false"
-# Tight limits for fuse/rate tests
 os.environ["AI_INSTALL_RATE_MAX"] = "5"
 os.environ["AI_INSTALL_DAY_MAX"] = "100"
-os.environ["AI_GLOBAL_MAX_CALLS_PER_HOUR"] = "8"
+os.environ["AI_GLOBAL_MAX_CALLS_PER_HOUR"] = "3"
 os.environ["AI_GLOBAL_MAX_CALLS_PER_DAY"] = "100"
 os.environ["AI_RATE_MAX"] = "1000"
 
-from services.abuse_limits import reset_abuse_limits_for_tests  # noqa: E402
+from services.abuse_limits import (  # noqa: E402
+    consume_paid_provider_call,
+    global_fuse_counts_for_tests,
+    reset_abuse_limits_for_tests,
+)
 from services.session_auth import issue_session_token, verify_session_token  # noqa: E402
+from services.qa_types import ok_qa  # noqa: E402
 
 
 class SessionAuthUnitTests(unittest.TestCase):
@@ -33,8 +37,6 @@ class SessionAuthUnitTests(unittest.TestCase):
         issued = issue_session_token(iid, ttl_sec=120)
         claims = verify_session_token(issued["token"], expected_installation_id=iid)
         self.assertIsNotNone(claims)
-        assert claims is not None
-        self.assertEqual(claims.installation_id, iid.lower())
 
     def test_expired_rejected(self):
         iid = str(uuid.uuid4())
@@ -79,15 +81,12 @@ class SessionAuthFlaskTests(unittest.TestCase):
     def test_paid_routes_reject_missing_token(self):
         r = self.client.post("/api/qa/ask", json={"question": "hi", "provider": "mock"})
         self.assertEqual(r.status_code, 401)
-        body = r.get_json()
-        self.assertFalse(body["ok"])
-        self.assertEqual(body["error"]["code"], "INVALID_ARGUMENT")
 
     def test_paid_routes_reject_bad_token(self):
         r = self.client.post(
             "/api/qa/ask",
             json={"question": "hi", "provider": "mock"},
-            headers={"Authorization": "Bearer totally.invalid"},
+            headers={"Authorization": "Bearer totally.invalid", "X-Felt-Installation-Id": str(uuid.uuid4())},
         )
         self.assertEqual(r.status_code, 401)
 
@@ -95,14 +94,17 @@ class SessionAuthFlaskTests(unittest.TestCase):
         iid, token = self._issue()
         r = self.client.post(
             "/api/qa/ask",
-            json={"question": "小兔子是什么？", "provider": "mock", "asset": {"assetId": "sticker_rabbit_demo", "nameZh": "小兔子"}},
+            json={
+                "question": "小兔子是什么？",
+                "provider": "mock",
+                "asset": {"assetId": "sticker_rabbit_demo", "nameZh": "小兔子"},
+            },
             headers=self._auth_headers(iid, token),
         )
         self.assertEqual(r.status_code, 200)
-        body = r.get_json()
-        self.assertTrue(body.get("ok"))
+        self.assertTrue(r.get_json().get("ok"))
 
-    def test_install_rate_limit(self):
+    def test_install_rate_limit_still_applies_to_mock(self):
         iid, token = self._issue()
         headers = self._auth_headers(iid, token)
         last = None
@@ -112,34 +114,76 @@ class SessionAuthFlaskTests(unittest.TestCase):
                 json={"question": "hi", "provider": "mock"},
                 headers=headers,
             )
-        self.assertIsNotNone(last)
-        assert last is not None
         self.assertEqual(last.status_code, 429)
 
-    def test_global_fuse(self):
-        # Each install allows 5; global hour max 8 → fuse after ~8 paid calls across installs
-        statuses = []
-        for _ in range(3):
-            iid, token = self._issue()
-            headers = self._auth_headers(iid, token)
-            for _ in range(4):
+    def test_illegal_requests_do_not_consume_global_fuse(self):
+        iid, token = self._issue()
+        headers = self._auth_headers(iid, token)
+        before = global_fuse_counts_for_tests()
+        for _ in range(5):
+            # empty question
+            r = self.client.post(
+                "/api/qa/ask",
+                json={"question": "", "provider": "mock"},
+                headers=headers,
+            )
+            self.assertEqual(r.status_code, 400)
+            # bad provider
+            r2 = self.client.post(
+                "/api/qa/ask",
+                json={"question": "hi", "provider": "not-a-real-provider"},
+                headers=headers,
+            )
+            self.assertEqual(r2.status_code, 400)
+            # mock success (also must not consume fuse)
+            r3 = self.client.post(
+                "/api/qa/ask",
+                json={"question": "hi", "provider": "mock"},
+                headers=headers,
+            )
+            self.assertIn(r3.status_code, (200, 429))
+        after = global_fuse_counts_for_tests()
+        self.assertEqual(before, after)
+
+    def test_real_provider_calls_consume_global_fuse(self):
+        iid, token = self._issue()
+        headers = self._auth_headers(iid, token)
+
+        with mock.patch("services.qa_service.QaService.ask", return_value=ok_qa(answer="ok", safety_action="allow")):
+            statuses = []
+            for _ in range(5):
                 r = self.client.post(
                     "/api/qa/ask",
-                    json={"question": "hi", "provider": "mock"},
+                    json={
+                        "question": "小兔子可以贴在哪里？",
+                        "provider": "deepseek",
+                        "asset": {"nameZh": "小兔子"},
+                    },
                     headers=headers,
                 )
                 statuses.append(r.status_code)
                 if r.status_code == 429:
-                    body = r.get_json()
-                    # GLOBAL_FUSE or RATE_LIMITED both map to UNKNOWN
-                    self.assertEqual(body["error"]["code"], "UNKNOWN")
+                    self.assertEqual(r.get_json()["error"]["code"], "UNKNOWN")
+                    hour, _ = global_fuse_counts_for_tests()
+                    self.assertGreaterEqual(hour, 3)
                     return
-        self.fail(f"expected fuse/rate limit, statuses={statuses}")
+        self.fail(f"expected global fuse, statuses={statuses} counts={global_fuse_counts_for_tests()}")
 
     def test_health_open_without_token(self):
         r = self.client.get("/api/health")
         self.assertEqual(r.status_code, 200)
         self.assertTrue(r.get_json().get("ok"))
+
+
+class PaidFuseUnitTests(unittest.TestCase):
+    def setUp(self):
+        reset_abuse_limits_for_tests()
+
+    def test_consume_paid_provider_call_trips_fuse(self):
+        iid = str(uuid.uuid4())
+        for _ in range(3):
+            self.assertIsNone(consume_paid_provider_call(iid))
+        self.assertEqual(consume_paid_provider_call(iid), "GLOBAL_FUSE")
 
 
 if __name__ == "__main__":

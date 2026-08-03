@@ -17,7 +17,11 @@ from werkzeug.exceptions import RequestEntityTooLarge
 
 from providers.asr.qwen_cloud_http import SAMPLE_AUDIO_URL
 from providers.tts.minimax_provider import CACHE_DIR
-from services.abuse_limits import check_paid_call_allowed, token_issue_ok
+from services.abuse_limits import (
+    check_install_rate_limit,
+    consume_paid_provider_call,
+    token_issue_ok,
+)
 from services.asr_metrics import summarize_asr_metrics
 from services.asr_service import AsrService, UnknownAsrProvider
 from services.asr_types import contract_doc
@@ -42,12 +46,13 @@ from services.session_auth import (
     is_valid_installation_id,
     issue_session_token,
     parse_bearer_token,
+    session_secret_status,
     verify_session_token,
 )
 from services.shared_error_map import fail
+from services.tts_cache import prune_tts_cache
 from services.tts_service import TtsService, UnknownTtsProvider
 from services.tts_types import TTS_ERROR_CODES
-from services.tts_cache import prune_tts_cache
 
 BASE_DIR = Path(__file__).resolve().parent
 ROOT_DIR = BASE_DIR.parent
@@ -91,10 +96,10 @@ def _json_fail(code: str, http_status: int = 400):
     return jsonify(body), http_status
 
 
-def _require_session(*, count_paid: bool = True):
+def _require_session(*, apply_install_rate: bool = True):
     """
     校验短期 Session Token（防滥用，非正式账号体系）。
-    HMAC 密钥仅留 Gateway；Electron 不持有永久 secret。
+    鉴权通过后可选记入单实例防刷限流；不在此消费全局付费保险丝。
     """
     token = parse_bearer_token(request.headers.get("Authorization"))
     if not token:
@@ -108,11 +113,23 @@ def _require_session(*, count_paid: bool = True):
     )
     if not claims:
         return None, _json_fail("SESSION_INVALID", 401)
-    if count_paid:
-        abuse = check_paid_call_allowed(claims.installation_id)
-        if abuse:
-            return None, _json_fail(abuse, 429)
+    if apply_install_rate:
+        limited = check_install_rate_limit(claims.installation_id)
+        if limited:
+            return None, _json_fail(limited, 429)
     return claims, None
+
+
+def _consume_paid_fuse(installation_id: str):
+    """即将调用真实付费 Provider 前消费全局保险丝。"""
+    fuse = consume_paid_provider_call(installation_id)
+    if fuse:
+        return _json_fail(fuse, 429)
+    return None
+
+
+def _is_mock_provider(name: str) -> bool:
+    return (name or "").strip().lower() == "mock"
 
 
 @app.errorhandler(RequestEntityTooLarge)
@@ -153,17 +170,20 @@ def _resolve_asr(provider: str | None) -> AsrService | tuple:
 
 @app.get("/api/health")
 def health():
+    env = (os.getenv("APP_ENV") or "").strip() or "unset"
     return jsonify(
         {
             "ok": True,
             "service": "felt-craft-lab-ai-proxy",
-            "version": "review-fix-1",
-            "env": os.getenv("APP_ENV", "development"),
+            "version": "review-fix-2",
+            "env": env,
+            "devMode": is_dev_mode(),
             "keysConfigured": {
                 "qwen_asr": _configured(_asr_key()),
                 "deepseek": _configured(os.getenv("DEEPSEEK_API_KEY")),
                 "minimax": _configured(os.getenv("MINIMAX_API_KEY"))
                 and _configured(os.getenv("MINIMAX_GROUP_ID")),
+                "sessionHmac": session_secret_status()["configured"],
             },
             "providers": {
                 "asr": ["qwen_cloud_http", "qwen_cloud_realtime", "qwen_local"]
@@ -177,12 +197,24 @@ def health():
 
 @app.get("/api/ready")
 def ready():
+    session = session_secret_status()
+    asr_ok = _configured(_asr_key())
+    qa_ok = _configured(os.getenv("DEEPSEEK_API_KEY"))
+    tts_ok = _configured(os.getenv("MINIMAX_API_KEY")) and _configured(
+        os.getenv("MINIMAX_GROUP_ID")
+    )
+    # Explicit dev may run mock without provider keys; production needs session + keys.
+    if is_dev_mode():
+        overall = bool(session["usable"])
+    else:
+        overall = bool(session["usable"] and asr_ok and qa_ok and tts_ok)
     return jsonify(
         {
-            "ready": True,
-            "asr": True,
-            "qa": True,
-            "tts": True,
+            "ready": overall,
+            "sessionAuth": bool(session["usable"]),
+            "asr": asr_ok if not is_dev_mode() else True,
+            "qa": qa_ok if not is_dev_mode() else True,
+            "tts": tts_ok if not is_dev_mode() else True,
             "audioService": True,
             "animationService": True,
             "contractsAligned": True,
@@ -192,7 +224,7 @@ def ready():
 
 @app.get("/api/ops/rules")
 def ops_rules():
-    claims, err = _require_session(count_paid=False)
+    claims, err = _require_session(apply_install_rate=False)
     if err:
         return err
     _ = claims
@@ -206,7 +238,7 @@ def asr_contract():
 
 @app.get("/api/asr/metrics")
 def asr_metrics():
-    claims, err = _require_session(count_paid=False)
+    claims, err = _require_session(apply_install_rate=False)
     if err:
         return err
     _ = claims
@@ -215,16 +247,9 @@ def asr_metrics():
 
 @app.post("/api/asr/transcribe")
 def asr_transcribe():
-    claims, err = _require_session(count_paid=True)
+    claims, err = _require_session(apply_install_rate=False)
     if err:
         return err
-    _ = claims
-    if not rate_limit_ok(f"asr:{_client_bucket()}"):
-        return _json_fail("RATE_LIMITED", 429)
-
-    language = None
-    session_id = None
-    provider_override = None
 
     try:
         with InflightGuard():
@@ -246,6 +271,18 @@ def asr_transcribe():
                 resolved = _resolve_asr(provider_override)
                 if not isinstance(resolved, AsrService):
                     return resolved
+                limited = check_install_rate_limit(claims.installation_id)
+                if limited:
+                    return _json_fail(limited, 429)
+                if not rate_limit_ok(f"asr:{_client_bucket()}"):
+                    return _json_fail("RATE_LIMITED", 429)
+                provider_name = getattr(resolved.provider, "name", "") or (
+                    provider_override or os.getenv("QWEN_ASR_PROVIDER") or "qwen_cloud_http"
+                )
+                if not _is_mock_provider(str(provider_name)):
+                    fuse_err = _consume_paid_fuse(claims.installation_id)
+                    if fuse_err:
+                        return fuse_err
                 result = resolved.transcribe(
                     audio_bytes=audio_bytes,
                     mime_type=mime_type,
@@ -268,6 +305,18 @@ def asr_transcribe():
             resolved = _resolve_asr(provider_override)
             if not isinstance(resolved, AsrService):
                 return resolved
+            limited = check_install_rate_limit(claims.installation_id)
+            if limited:
+                return _json_fail(limited, 429)
+            if not rate_limit_ok(f"asr:{_client_bucket()}"):
+                return _json_fail("RATE_LIMITED", 429)
+            provider_name = getattr(resolved.provider, "name", "") or (
+                provider_override or os.getenv("QWEN_ASR_PROVIDER") or "qwen_cloud_http"
+            )
+            if not _is_mock_provider(str(provider_name)):
+                fuse_err = _consume_paid_fuse(claims.installation_id)
+                if fuse_err:
+                    return fuse_err
             result = resolved.transcribe(
                 audio_url=audio_url,
                 language=language,
@@ -283,14 +332,16 @@ def asr_transcribe():
 def asr_smoke_test():
     if not smoke_allowed():
         return _json_fail("SMOKE_DISABLED", 403)
-    claims, err = _require_session(count_paid=True)
+    claims, err = _require_session(apply_install_rate=True)
     if err:
         return err
-    _ = claims
     if not rate_limit_ok(f"smoke:{_client_bucket()}"):
         return _json_fail("RATE_LIMITED", 429)
     try:
         with InflightGuard():
+            fuse_err = _consume_paid_fuse(claims.installation_id)
+            if fuse_err:
+                return fuse_err
             service = AsrService("qwen_cloud_http")
             result = service.transcribe(audio_url=SAMPLE_AUDIO_URL, session_id="smoke-test")
             status = 200 if result.get("ok") else 502
@@ -309,12 +360,9 @@ def asr_mock():
 
 @app.post("/api/qa/ask")
 def qa_ask():
-    claims, err = _require_session(count_paid=True)
+    claims, err = _require_session(apply_install_rate=False)
     if err:
         return err
-    _ = claims
-    if not rate_limit_ok(f"qa:{_client_bucket()}"):
-        return _json_fail("RATE_LIMITED", 429)
     data = request.get_json(silent=True) or {}
     question = data.get("question") or ""
     asset = data.get("asset") or {}
@@ -325,8 +373,17 @@ def qa_ask():
     resolved_name = (provider or os.getenv("QA_PROVIDER") or "deepseek").strip()
     if not qa_provider_allowed(resolved_name):
         return _json_fail("INVALID_PROVIDER")
+    limited = check_install_rate_limit(claims.installation_id)
+    if limited:
+        return _json_fail(limited, 429)
+    if not rate_limit_ok(f"qa:{_client_bucket()}"):
+        return _json_fail("RATE_LIMITED", 429)
     try:
         with InflightGuard():
+            if not _is_mock_provider(resolved_name):
+                fuse_err = _consume_paid_fuse(claims.installation_id)
+                if fuse_err:
+                    return fuse_err
             service = QaService(resolved_name)
             result = service.ask(question=question, asset=asset)
             status = 200 if result.get("ok") else 502
@@ -341,12 +398,14 @@ def qa_ask():
 def qa_smoke_test():
     if not smoke_allowed():
         return _json_fail("SMOKE_DISABLED", 403)
-    claims, err = _require_session(count_paid=True)
+    claims, err = _require_session(apply_install_rate=True)
     if err:
         return err
-    _ = claims
     try:
         with InflightGuard():
+            fuse_err = _consume_paid_fuse(claims.installation_id)
+            if fuse_err:
+                return fuse_err
             result = QaService("deepseek").ask(
                 question="小兔子贴纸可以怎么用在不织布手工里？",
                 asset=SAMPLE_ASSET,
@@ -381,12 +440,9 @@ def qa_contract():
 
 @app.post("/api/tts/synthesize")
 def tts_synthesize():
-    claims, err = _require_session(count_paid=True)
+    claims, err = _require_session(apply_install_rate=False)
     if err:
         return err
-    _ = claims
-    if not rate_limit_ok(f"tts:{_client_bucket()}"):
-        return _json_fail("RATE_LIMITED", 429)
     data = request.get_json(silent=True) or {}
     text = data.get("text") or ""
     purpose = data.get("voicePurpose") or data.get("voice_purpose") or "qa_answer"
@@ -397,8 +453,17 @@ def tts_synthesize():
     resolved_name = (provider or os.getenv("TTS_PROVIDER") or "minimax").strip()
     if not tts_provider_allowed(resolved_name):
         return _json_fail("INVALID_PROVIDER")
+    limited = check_install_rate_limit(claims.installation_id)
+    if limited:
+        return _json_fail(limited, 429)
+    if not rate_limit_ok(f"tts:{_client_bucket()}"):
+        return _json_fail("RATE_LIMITED", 429)
     try:
         with InflightGuard():
+            if not _is_mock_provider(resolved_name):
+                fuse_err = _consume_paid_fuse(claims.installation_id)
+                if fuse_err:
+                    return fuse_err
             service = TtsService(resolved_name)
             result = service.synthesize(text=text, voice_purpose=purpose)
             status = 200 if result.get("ok") else 502
@@ -413,13 +478,15 @@ def tts_synthesize():
 def tts_smoke_test():
     if not smoke_allowed():
         return _json_fail("SMOKE_DISABLED", 403)
-    claims, err = _require_session(count_paid=True)
+    claims, err = _require_session(apply_install_rate=True)
     if err:
         return err
-    _ = claims
     sample = "小兔子贴纸很适合春天的不织布手工，我们一起贴一贴吧。"
     try:
         with InflightGuard():
+            fuse_err = _consume_paid_fuse(claims.installation_id)
+            if fuse_err:
+                return fuse_err
             result = TtsService("minimax").synthesize(text=sample, voice_purpose="qa_answer")
             status = 200 if result.get("ok") else 502
             return jsonify({"smokeTest": True, **result}), status
@@ -437,7 +504,7 @@ def tts_mock():
 
 @app.get("/api/tts/audio/<path:filename>")
 def tts_audio(filename: str):
-    claims, err = _require_session(count_paid=False)
+    claims, err = _require_session(apply_install_rate=False)
     if err:
         return err
     _ = claims
@@ -507,4 +574,5 @@ def frontend_static(filename: str):
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", "8788"))
-    app.run(host="127.0.0.1", port=port, debug=True)
+    # Fail-closed: debug only when APP_ENV is an explicit development value.
+    app.run(host="127.0.0.1", port=port, debug=is_dev_mode())

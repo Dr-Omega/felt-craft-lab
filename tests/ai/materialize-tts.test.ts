@@ -3,7 +3,7 @@ import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { afterEach, describe, expect, it } from 'vitest'
 import {
-  MAX_DYNAMIC_TTS_BYTES,
+  MAX_DYNAMIC_TTS_BASE64_CHARS,
   materializeGatewayTts,
   pruneDynamicAudioCache
 } from '../../src/main/ai/materialize-tts'
@@ -52,21 +52,22 @@ describe('materializeGatewayTts', () => {
     expect(validateTtsResult(out.result, FELT_RESOURCE_REF_POLICY).ok).toBe(true)
   })
 
-  it('rejects oversized audioBase64 payloads', () => {
+  it('rejects oversized audioBase64 payloads before decode', () => {
     const root = mkdtempSync(join(tmpdir(), 'felt-tts-'))
     tempDirs.push(root)
-    const bytes = Buffer.alloc(MAX_DYNAMIC_TTS_BYTES + 1, 1)
+    // Encoded length over hard cap (do not allocate MAX_DYNAMIC_TTS_BYTES+ decoded buffer).
+    const tooLong = 'A'.repeat(MAX_DYNAMIC_TTS_BASE64_CHARS + 1)
     const out = materializeGatewayTts(
       {
         ok: true,
-        result: { audioBase64: bytes.toString('base64'), cacheHit: false }
+        result: { audioBase64: tooLong, cacheHit: false }
       },
       root
     )
     expect(out.ok).toBe(false)
   })
 
-  it('prunes dynamic cache by file count (LRU)', () => {
+  it('prunes dynamic cache by oldest mtime + TTL (not true LRU)', () => {
     const root = mkdtempSync(join(tmpdir(), 'felt-tts-'))
     tempDirs.push(root)
     const dir = join(root, 'dynamic')

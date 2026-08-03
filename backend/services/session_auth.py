@@ -23,6 +23,17 @@ _UUID_RE = re.compile(
 )
 
 _DEFAULT_TTL_SEC = int(os.getenv("AI_SESSION_TTL_SEC", "3600"))
+_MIN_HMAC_SECRET_LEN = int(os.getenv("AI_SESSION_HMAC_MIN_LEN", "32"))
+_WEAK_HMAC_SECRETS = frozenset(
+    {
+        "change-me",
+        "change-me-to-a-long-random-string",
+        "secret",
+        "password",
+        "test",
+        "test-session-hmac-secret-not-for-prod",  # allowed only when APP_ENV is explicit test/dev
+    }
+)
 _ephemeral_secret: Optional[bytes] = None
 
 
@@ -39,21 +50,61 @@ def _b64url_decode(value: str) -> bytes:
     return base64.urlsafe_b64decode((value + pad).encode("ascii"))
 
 
+def _is_explicit_dev_env() -> bool:
+    env = (os.getenv("APP_ENV") or "").strip().lower()
+    return env in {"development", "dev", "test"}
+
+
+def is_weak_hmac_secret(value: str) -> bool:
+    raw = (value or "").strip()
+    if len(raw) < _MIN_HMAC_SECRET_LEN:
+        return True
+    lower = raw.lower()
+    if lower in _WEAK_HMAC_SECRETS:
+        # Explicit test/dev may use the documented test secret.
+        if _is_explicit_dev_env() and lower == "test-session-hmac-secret-not-for-prod":
+            return False
+        return True
+    if lower.startswith("change-me"):
+        return True
+    return False
+
+
+def session_secret_status() -> dict[str, bool]:
+    """Safe readiness flags — never returns the secret itself."""
+    configured = (os.getenv("AI_SESSION_HMAC_SECRET") or "").strip()
+    if _is_explicit_dev_env():
+        if configured and is_weak_hmac_secret(configured):
+            return {"configured": False, "usable": False}
+        return {"configured": bool(configured), "usable": True}
+    if not configured or is_weak_hmac_secret(configured):
+        return {"configured": bool(configured), "usable": False}
+    return {"configured": True, "usable": True}
+
+
 def session_hmac_secret() -> bytes:
-    """Gateway-only secret. Never ship to Electron."""
+    """Gateway-only secret. Never ship to Electron. Production is fail-closed."""
     global _ephemeral_secret
     configured = (os.getenv("AI_SESSION_HMAC_SECRET") or "").strip()
-    if configured:
-        return configured.encode("utf-8")
-    env = (os.getenv("APP_ENV") or "development").strip().lower()
-    if env in {"development", "dev", "test"}:
+
+    if _is_explicit_dev_env():
+        if configured:
+            if is_weak_hmac_secret(configured):
+                raise RuntimeError("AI_SESSION_HMAC_SECRET is too weak even for development")
+            return configured.encode("utf-8")
         if _ephemeral_secret is None:
             _ephemeral_secret = secrets.token_bytes(32)
             _log.warning(
-                "AI_SESSION_HMAC_SECRET unset; using ephemeral in-process secret (dev/test only)."
+                "AI_SESSION_HMAC_SECRET unset; using ephemeral in-process secret (explicit dev/test only)."
             )
         return _ephemeral_secret
-    raise RuntimeError("AI_SESSION_HMAC_SECRET is required outside development")
+
+    # Missing APP_ENV or production/staging/unknown → require a strong configured secret.
+    if not configured:
+        raise RuntimeError("AI_SESSION_HMAC_SECRET is required outside explicit development")
+    if is_weak_hmac_secret(configured):
+        raise RuntimeError("AI_SESSION_HMAC_SECRET is weak or a placeholder; refusing to start auth")
+    return configured.encode("utf-8")
 
 
 @dataclass(frozen=True)

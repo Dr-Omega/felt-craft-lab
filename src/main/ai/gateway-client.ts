@@ -2,6 +2,8 @@ import { toSharedError, type SharedError } from '@shared/contracts/error'
 import { resolveAiGatewayBaseUrlResult } from './gateway-config'
 
 const DEFAULT_TIMEOUT_MS = 60_000
+/** Cap Gateway response body before JSON.parse (covers oversized TTS audioBase64 envelopes). */
+export const MAX_GATEWAY_RESPONSE_CHARS = Math.ceil((2 * 1024 * 1024 * 4) / 3) + 64 * 1024
 
 export { resolveAiGatewayBaseUrl } from './gateway-config'
 
@@ -97,7 +99,30 @@ export async function gatewayJson(
 
     let body: unknown
     try {
-      body = await response.json()
+      const contentLength = response.headers.get('content-length')
+      if (contentLength) {
+        const n = Number(contentLength)
+        if (Number.isFinite(n) && n > MAX_GATEWAY_RESPONSE_CHARS) {
+          return {
+            ok: false,
+            error: toSharedError(
+              { code: 'INVALID_ARGUMENT', message: 'AI 网关响应过大。', retryable: false },
+              'INVALID_ARGUMENT'
+            )
+          }
+        }
+      }
+      const text = await response.text()
+      if (text.length > MAX_GATEWAY_RESPONSE_CHARS) {
+        return {
+          ok: false,
+          error: toSharedError(
+            { code: 'INVALID_ARGUMENT', message: 'AI 网关响应过大。', retryable: false },
+            'INVALID_ARGUMENT'
+          )
+        }
+      }
+      body = text ? JSON.parse(text) : null
     } catch {
       return {
         ok: false,

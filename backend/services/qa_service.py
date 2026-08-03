@@ -26,8 +26,10 @@ class QaService:
             self.provider = DeepSeekQaProvider()
 
     def ask(self, *, question: str, asset: dict) -> dict:
-        if not asset or not (asset.get("assetId") or asset.get("nameZh")):
-            return err_qa(code="QA_MISSING_ASSET")
+        asset = asset or {}
+        if getattr(self.provider, "name", "") != "mock":
+            if not (asset.get("assetId") or asset.get("nameZh")):
+                return err_qa(code="QA_MISSING_ASSET")
         try:
             return self.provider.ask(question=question, asset=asset)
         except Exception:  # noqa: BLE001

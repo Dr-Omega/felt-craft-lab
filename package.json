@@ -20,6 +20,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:electron-resource": "npm run build && node scripts/run-electron-resource-smoke.cjs",
+    "test:electron-ai": "npm run build && node scripts/run-electron-ai-smoke.cjs",
     "dist:win": "npm run build && electron-builder --win --x64 --config.electronDist=node_modules/electron/dist",
     "dist:win:dir": "npm run build && electron-builder --win --x64 --dir --config.electronDist=node_modules/electron/dist",
     "postinstall": "electron-builder install-app-deps"

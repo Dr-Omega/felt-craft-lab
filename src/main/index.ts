@@ -13,6 +13,7 @@ import {
   registerResourceIpc
 } from './resource'
 import { runResourceSmoke } from './resource-smoke'
+import { runAiSmoke } from './ai-smoke'
 import { isTrustedIpcEvent } from './security/ipc-guard'
 import { configureTrustedRendererTargets, isAllowedRendererUrl } from './security/renderer-origin'
 
@@ -119,6 +120,11 @@ app.whenReady().then(() => {
     return
   }
 
+  if (process.env.FELT_AI_SMOKE === '1') {
+    void runAiSmoke()
+    return
+  }
+
   const packagedRendererPath = bindTrustedRendererTargets()
   const resourceRoots = createResourceRoots()
   attachFeltResourceProtocol(resourceRoots)
@@ -136,6 +142,7 @@ app.whenReady().then(() => {
 
 app.on('window-all-closed', () => {
   if (process.env.FELT_RESOURCE_SMOKE === '1') return
+  if (process.env.FELT_AI_SMOKE === '1') return
   if (process.platform !== 'darwin') {
     app.quit()
   }

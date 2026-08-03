@@ -48,7 +48,8 @@ _inflight_cond = threading.Condition(_lock)
 
 
 def is_dev_mode() -> bool:
-    env = (os.getenv("APP_ENV") or "development").strip().lower()
+    """Fail-closed: only explicit development/dev/test count as dev. Missing/unknown → production."""
+    env = (os.getenv("APP_ENV") or "").strip().lower()
     return env in {"development", "dev", "test"}
 
 

@@ -26,8 +26,10 @@
 | 开发 Gateway | Main → `http://127.0.0.1:8788` |
 | 正式 Gateway | 构建期 `FELT_AI_GATEWAY_BASE_URL` 或运行时 `AI_GATEWAY_BASE_URL`（远端 **HTTPS**）；**无**本地 Python sidecar |
 | 密钥 | Provider Key 与 Session HMAC 仅 Gateway 服务端；Electron **无**永久 secret |
-| 防滥用 | 短期 Session Token + `installationId`；单实例宽松限流 + 全局调用保险丝 |
+| 防滥用 | 短期 Session Token + `installationId`；鉴权后防刷限流与**付费保险丝分离**（仅真实 Provider 记账） |
+| Fuse 说明 | 进程内计数；重启清零；多 worker 不共享（本 PR 不引入 Redis/DB） |
 | 动态 TTS | Gateway `audioBase64` → Main `userData/audio/dynamic/<hash>.mp3` → `felt-resource://audio/dynamic/<hash>.mp3` |
+| 动态缓存淘汰 | oldest-mtime + TTL（非真正 LRU；cache hit 不 touch mtime） |
 | animation kind | 本阶段不新增 |
 
 ## 接口速查（Gateway HTTP；仅 Main / 受控客户端调用）
