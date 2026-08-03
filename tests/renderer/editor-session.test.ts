@@ -154,7 +154,7 @@ function stickerAccess(): AssetAccessState {
 }
 
 describe('EditorSessionService', () => {
-  it('moves idle → loading → ready and exposes subscription snapshots', async () => {
+  it('moves idle 鈫?loading 鈫?ready and exposes subscription snapshots', async () => {
     const adapter = new StubAdapter()
     const service = createSession(adapter)
     const statuses: string[] = []
@@ -169,6 +169,100 @@ describe('EditorSessionService', () => {
     const countAfterUnsubscribe = statuses.length
     service.resizeCanvas(640, 480)
     expect(statuses).toHaveLength(countAfterUnsubscribe)
+  })
+
+  it('returns the committed import result for normal and recovery opens and scene loads', async () => {
+    const adapter = new StubAdapter()
+    const service = createSession(adapter)
+
+    const opened = await service.open({} as HTMLCanvasElement, cloneFixture(validScene), resolver())
+    expect(opened).toEqual({ issues: [] })
+
+    const recoveryIssue: SceneRecoveryIssue = {
+      code: 'ASSET_NOT_FOUND',
+      message: 'missing sticker',
+      assetId: validAsset.assetId,
+      assetType: 'sticker',
+      objectId: 'c2d775d8-e6f8-439a-9d04-0934cb03f81f'
+    }
+    service.dispose()
+
+    const recoveryAdapter = new StubAdapter()
+    recoveryAdapter.importIssues = [recoveryIssue]
+    const recoveryService = createSession(recoveryAdapter)
+    const recovered = await recoveryService.open({} as HTMLCanvasElement, cloneFixture(validScene), resolver())
+    expect(recovered.issues).toEqual([recoveryIssue])
+    expect(recoveryService.getRecoveryIssues()).toEqual([recoveryIssue])
+    expect(recoveryService.getState().status).toBe('recovery')
+
+    recoveryAdapter.importIssues = []
+    const loaded = await recoveryService.loadScene(cloneFixture(validScene), resolver())
+    expect(loaded).toEqual({ issues: [] })
+    expect(recoveryService.getRecoveryIssues()).toEqual([])
+    expect(recoveryService.getState().status).toBe('ready')
+  })
+
+  it('cancels a reentrant open from a loading subscriber and disposes the adapter', async () => {
+    const adapter = new StubAdapter()
+    const service = createSession(adapter)
+    service.subscribe((state) => {
+      if (state.status === 'loading') service.dispose()
+    })
+
+    await expect(service.open({} as HTMLCanvasElement, cloneFixture(validScene), resolver()))
+      .rejects.toMatchObject({ code: 'REQUEST_CANCELLED' })
+    expect(adapter.disposed).toBe(true)
+    expect(service.getState()).toMatchObject({ status: 'disposed', pendingOperations: 0 })
+    await expect(service.open({} as HTMLCanvasElement, cloneFixture(validScene), resolver()))
+      .rejects.toMatchObject({ code: 'INVALID_ARGUMENT' })
+  })
+
+  it('keeps disposed as a terminal state and rejects every session operation', async () => {
+    const adapter = new StubAdapter()
+    const service = createSession(adapter)
+    await service.open({} as HTMLCanvasElement, cloneFixture(validScene), resolver())
+    service.dispose()
+
+    await expect(service.loadScene(sceneB(), resolver())).rejects.toMatchObject({ code: 'INVALID_ARGUMENT' })
+    await expect(service.setBackground(null)).rejects.toMatchObject({ code: 'INVALID_ARGUMENT' })
+    expect(() => service.setSolidBackground('#ffffff')).toThrow(expect.objectContaining({ code: 'INVALID_ARGUMENT' }))
+    expect(() => service.setTransparentBackground()).toThrow(expect.objectContaining({ code: 'INVALID_ARGUMENT' }))
+    expect(() => service.resizeCanvas(640, 480)).toThrow(expect.objectContaining({ code: 'INVALID_ARGUMENT' }))
+    await expect(service.addSticker(cloneFixture(validAsset), stickerAccess()))
+      .rejects.toMatchObject({ code: 'INVALID_ARGUMENT' })
+    expect(() => service.deleteObject('object-1')).toThrow(expect.objectContaining({ code: 'INVALID_ARGUMENT' }))
+    expect(() => service.bringForward('object-1')).toThrow(expect.objectContaining({ code: 'INVALID_ARGUMENT' }))
+    expect(() => service.sendBackward('object-1')).toThrow(expect.objectContaining({ code: 'INVALID_ARGUMENT' }))
+    expect(() => service.bringToFront('object-1')).toThrow(expect.objectContaining({ code: 'INVALID_ARGUMENT' }))
+    expect(() => service.sendToBack('object-1')).toThrow(expect.objectContaining({ code: 'INVALID_ARGUMENT' }))
+    await expect(service.undo()).rejects.toMatchObject({ code: 'INVALID_ARGUMENT' })
+    await expect(service.redo()).rejects.toMatchObject({ code: 'INVALID_ARGUMENT' })
+    expect(() => service.prepareDraftSave()).toThrow(expect.objectContaining({ code: 'DRAFT_SAVE_FAILED' }))
+    await expect(service.prepareProjectSave()).rejects.toMatchObject({ code: 'PROJECT_SAVE_FAILED' })
+    await expect(service.open({} as HTMLCanvasElement, cloneFixture(validScene), resolver()))
+      .rejects.toMatchObject({ code: 'INVALID_ARGUMENT' })
+  })
+
+  it('does not emit when a subscriber reads the recovery getter', async () => {
+    const adapter = new StubAdapter()
+    const service = createSession(adapter)
+    await service.open({} as HTMLCanvasElement, cloneFixture(validScene), resolver())
+
+    const notifications: string[] = []
+    let getterReads = 0
+    const unsubscribe = service.subscribe((state) => {
+      notifications.push(state.status)
+      if (state.status === 'ready') {
+        getterReads += 1
+        expect(service.getRecoveryIssues()).toEqual([])
+      }
+    })
+    const countAfterSubscribe = notifications.length
+
+    expect(service.getRecoveryIssues()).toEqual([])
+    expect(notifications).toHaveLength(countAfterSubscribe)
+    expect(getterReads).toBe(1)
+    unsubscribe()
   })
 
   it('cleans up a first-open failure and does not leave a half-initialized session', async () => {
@@ -304,3 +398,4 @@ describe('EditorSessionService', () => {
     expect(() => service.resizeCanvas(1, 1)).toThrow(expect.objectContaining({ code: 'INVALID_ARGUMENT' }))
   })
 })
+

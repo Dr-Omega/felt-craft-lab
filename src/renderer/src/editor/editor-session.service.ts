@@ -1,6 +1,6 @@
 import { toSharedError, validateSceneDocument } from '@shared/contracts'
 import type { AssetAccessState, AssetRecord, SceneDocument, SharedError, SharedErrorCode } from '@shared/contracts'
-import type { FabricEditorAssetResolver, SceneRecoveryIssue } from './fabric-editor-adapter'
+import type { FabricEditorAssetResolver, SceneImportResult, SceneRecoveryIssue } from './fabric-editor-adapter'
 import type {
   EditorSessionAdapter,
   EditorSessionAdapterFactory,
@@ -66,8 +66,8 @@ export class EditorSessionService {
     return () => this.listeners.delete(listener)
   }
 
-  async open(element: HTMLCanvasElement, scene: SceneDocument, resolver: FabricEditorAssetResolver): Promise<void> {
-    if (this.status !== 'idle' && this.status !== 'disposed') {
+  async open(element: HTMLCanvasElement, scene: SceneDocument, resolver: FabricEditorAssetResolver): Promise<SceneImportResult> {
+    if (this.status !== 'idle') {
       throw sessionError('INVALID_ARGUMENT', 'Editor session is already open.')
     }
 
@@ -75,23 +75,32 @@ export class EditorSessionService {
     this.status = 'loading'
     this.sceneId = undefined
     this.recoveryIssues = []
-    const token = this.beginPending()
-
     let adapter: EditorSessionAdapter | undefined
+    let token: symbol | undefined
     try {
       adapter = this.createAdapter()
       this.adapter = adapter
+      token = this.beginPending()
+      if (transition !== this.sceneTransitionGeneration || this.status !== 'loading' || this.adapter !== adapter) {
+        throw sessionError('REQUEST_CANCELLED', 'Editor session open was superseded.')
+      }
       adapter.initialize(element, scene)
-      await adapter.importScene(scene, resolver)
-      if (transition !== this.sceneTransitionGeneration || this.adapter !== adapter) {
+      const importResult = await adapter.importScene(scene, resolver)
+      if (transition !== this.sceneTransitionGeneration || this.status !== 'loading' || this.adapter !== adapter) {
         throw sessionError('REQUEST_CANCELLED', 'Editor session open was superseded.')
       }
       this.sceneId = scene.sceneId
       this.syncRecoveryState(adapter)
+      if (transition !== this.sceneTransitionGeneration || !isActiveStatus(this.status) || this.adapter !== adapter) {
+        throw sessionError('REQUEST_CANCELLED', 'Editor session open was superseded.')
+      }
+      return this.withCommittedRecoveryIssues(importResult)
     } catch (error) {
-      if (transition === this.sceneTransitionGeneration) {
-        try { adapter?.dispose() } catch { /* preserve the normalized failure */ }
+      if (adapter) {
         if (this.adapter === adapter) this.adapter = undefined
+        try { adapter.dispose() } catch { /* preserve the normalized failure */ }
+      }
+      if (transition === this.sceneTransitionGeneration && this.status === 'loading') {
         this.status = 'idle'
         this.sceneId = undefined
         this.recoveryIssues = []
@@ -99,11 +108,12 @@ export class EditorSessionService {
       }
       throw normalizedError(error, 'SCENE_IMPORT_FAILED')
     } finally {
-      this.endPending(token)
+      if (token) this.endPending(token)
     }
   }
 
-  async loadScene(scene: SceneDocument, resolver: FabricEditorAssetResolver): Promise<void> {
+  async loadScene(scene: SceneDocument, resolver: FabricEditorAssetResolver): Promise<SceneImportResult> {
+    if (this.status === 'disposed') throw sessionError('INVALID_ARGUMENT', 'Editor session is disposed.')
     const adapter = this.requireAdapter('SCENE_IMPORT_FAILED')
     if (!isActiveStatus(this.status)) throw sessionError('INVALID_ARGUMENT', 'Editor session is not ready to load a Scene.')
 
@@ -111,12 +121,16 @@ export class EditorSessionService {
     this.status = 'loading'
     const token = this.beginPending()
     try {
-      await adapter.importScene(scene, resolver)
-      if (transition !== this.sceneTransitionGeneration || this.adapter !== adapter) {
+      const importResult = await adapter.importScene(scene, resolver)
+      if (transition !== this.sceneTransitionGeneration || this.status !== 'loading' || this.adapter !== adapter) {
         throw sessionError('REQUEST_CANCELLED', 'Scene load was superseded.')
       }
       this.sceneId = scene.sceneId
       this.syncRecoveryState(adapter)
+      if (transition !== this.sceneTransitionGeneration || !isActiveStatus(this.status) || this.adapter !== adapter) {
+        throw sessionError('REQUEST_CANCELLED', 'Scene load was superseded.')
+      }
+      return this.withCommittedRecoveryIssues(importResult)
     } catch (error) {
       if (transition === this.sceneTransitionGeneration && this.adapter === adapter) {
         this.syncRecoveryState(adapter)
@@ -176,14 +190,6 @@ export class EditorSessionService {
   }
 
   getRecoveryIssues(): readonly SceneRecoveryIssue[] {
-    if (!this.adapter || this.status === 'idle' || this.status === 'disposed' || this.status === 'loading') {
-      return this.recoveryIssues.map((issue) => ({ ...issue }))
-    }
-    try {
-      this.syncRecoveryState(this.adapter)
-    } catch (error) {
-      throw normalizedError(error, 'UNKNOWN')
-    }
     return this.recoveryIssues.map((issue) => ({ ...issue }))
   }
 
@@ -285,6 +291,13 @@ export class EditorSessionService {
     this.emit()
   }
 
+  private withCommittedRecoveryIssues(result: SceneImportResult): SceneImportResult {
+    return {
+      ...result,
+      issues: this.recoveryIssues.map((issue) => ({ ...issue }))
+    }
+  }
+
   private trySyncRecoveryState(): void {
     if (!this.adapter || this.status === 'idle' || this.status === 'disposed' || this.status === 'loading') return
     try { this.syncRecoveryState(this.adapter) } catch { /* keep the last safe state */ }
@@ -308,3 +321,4 @@ export class EditorSessionService {
     }
   }
 }
+
