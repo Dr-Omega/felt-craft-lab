@@ -1,13 +1,473 @@
 {
   "version": 1,
   "purpose": "fixed_snapshot",
-  "source": "ywn-approved-only",
-  "generatedAt": "2026-08-02T00:00:00",
+  "source": "ywn-approved-2026-08-04-zip-themes+name-en",
+  "generatedAt": "2026-08-04T18:16:14",
   "summary": {
-    "ok": 0,
+    "ok": 51,
     "failed": 0,
-    "total": 0
+    "total": 51
   },
-  "note": "Production index must only list YWN-approved fixed intros under assets/generated/audio. Team demo snapshots live in assets/demo/audio/ and are excluded from electron-builder extraResources.",
-  "items": []
+  "note": "YWN-approved fixed intros for mid_autumn / spring / lantern themes. Electron: felt-resource://audio/<file>.mp3",
+  "items": [
+    {
+      "id": "background_couplet_gate_001_intro_zh",
+      "assetId": "background_couplet_gate_001",
+      "text": "春节是一年的开始，也叫过年。人们会贴春联、挂灯笼、吃团圆饭，盼望新年红红火火、团团圆圆。",
+      "file": "background_couplet_gate_001_intro_zh.mp3",
+      "url": "felt-resource://audio/background_couplet_gate_001_intro_zh.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "background_couplet_gate_001_name_en",
+      "assetId": "background_couplet_gate_001",
+      "text": "Courtyard Gate with Couplets",
+      "file": "background_couplet_gate_001_name_en.mp3",
+      "url": "felt-resource://audio/background_couplet_gate_001_name_en.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "background_couplet_gate_001_name_zh",
+      "assetId": "background_couplet_gate_001",
+      "text": "贴春联的院落大门",
+      "file": "background_couplet_gate_001_name_zh.mp3",
+      "url": "felt-resource://audio/background_couplet_gate_001_name_zh.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "background_lake_moon_001_intro_zh",
+      "assetId": "background_lake_moon_001",
+      "text": "每年农历八月十五是中秋节。月亮又圆又亮，一家人常一起赏月、吃月饼，盼望团团圆圆、平平安安。",
+      "file": "background_lake_moon_001_intro_zh.mp3",
+      "url": "felt-resource://audio/background_lake_moon_001_intro_zh.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "background_lake_moon_001_name_en",
+      "assetId": "background_lake_moon_001",
+      "text": "Lake Boat and Full Moon",
+      "file": "background_lake_moon_001_name_en.mp3",
+      "url": "felt-resource://audio/background_lake_moon_001_name_en.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "background_lake_moon_001_name_zh",
+      "assetId": "background_lake_moon_001",
+      "text": "湖面上的小船与圆月",
+      "file": "background_lake_moon_001_name_zh.mp3",
+      "url": "felt-resource://audio/background_lake_moon_001_name_zh.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "background_lantern_street_001_intro_zh",
+      "assetId": "background_lantern_street_001",
+      "text": "农历正月十五是元宵节。月亮又圆，街上灯火亮亮的。人们常出门赏灯、吃汤圆，盼望团圆平安。",
+      "file": "background_lantern_street_001_intro_zh.mp3",
+      "url": "felt-resource://audio/background_lantern_street_001_intro_zh.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "background_lantern_street_001_name_en",
+      "assetId": "background_lantern_street_001",
+      "text": "Lantern Festival Street",
+      "file": "background_lantern_street_001_name_en.mp3",
+      "url": "felt-resource://audio/background_lantern_street_001_name_en.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "background_lantern_street_001_name_zh",
+      "assetId": "background_lantern_street_001",
+      "text": "灯会街道夜色",
+      "file": "background_lantern_street_001_name_zh.mp3",
+      "url": "felt-resource://audio/background_lantern_street_001_name_zh.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "background_osmanthus_moon_001_intro_zh",
+      "assetId": "background_osmanthus_moon_001",
+      "text": "每年农历八月十五是中秋节。月亮又圆又亮，一家人常一起赏月、吃月饼，盼望团团圆圆、平平安安。",
+      "file": "background_osmanthus_moon_001_intro_zh.mp3",
+      "url": "felt-resource://audio/background_osmanthus_moon_001_intro_zh.mp3",
+      "status": "ok",
+      "cacheHit": true
+    },
+    {
+      "id": "background_osmanthus_moon_001_name_en",
+      "assetId": "background_osmanthus_moon_001",
+      "text": "Osmanthus Tree and Full Moon",
+      "file": "background_osmanthus_moon_001_name_en.mp3",
+      "url": "felt-resource://audio/background_osmanthus_moon_001_name_en.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "background_osmanthus_moon_001_name_zh",
+      "assetId": "background_osmanthus_moon_001",
+      "text": "夜空桂树与满月",
+      "file": "background_osmanthus_moon_001_name_zh.mp3",
+      "url": "felt-resource://audio/background_osmanthus_moon_001_name_zh.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "background_river_lantern_001_intro_zh",
+      "assetId": "background_river_lantern_001",
+      "text": "农历正月十五是元宵节。月亮又圆，街上灯火亮亮的。人们常出门赏灯、吃汤圆，盼望团圆平安。",
+      "file": "background_river_lantern_001_intro_zh.mp3",
+      "url": "felt-resource://audio/background_river_lantern_001_intro_zh.mp3",
+      "status": "ok",
+      "cacheHit": true
+    },
+    {
+      "id": "background_river_lantern_001_name_en",
+      "assetId": "background_river_lantern_001",
+      "text": "River Lanterns Float on The Water Surface.",
+      "file": "background_river_lantern_001_name_en.mp3",
+      "url": "felt-resource://audio/background_river_lantern_001_name_en.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "background_river_lantern_001_name_zh",
+      "assetId": "background_river_lantern_001",
+      "text": "河面上漂着河灯",
+      "file": "background_river_lantern_001_name_zh.mp3",
+      "url": "felt-resource://audio/background_river_lantern_001_name_zh.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "background_snow_window_001_intro_zh",
+      "assetId": "background_snow_window_001",
+      "text": "春节是一年的开始，也叫过年。人们会贴春联、挂灯笼、吃团圆饭，盼望新年红红火火、团团圆圆。",
+      "file": "background_snow_window_001_intro_zh.mp3",
+      "url": "felt-resource://audio/background_snow_window_001_intro_zh.mp3",
+      "status": "ok",
+      "cacheHit": true
+    },
+    {
+      "id": "background_snow_window_001_name_en",
+      "assetId": "background_snow_window_001",
+      "text": "Snowy Window with Paper Cut",
+      "file": "background_snow_window_001_name_en.mp3",
+      "url": "felt-resource://audio/background_snow_window_001_name_en.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "background_snow_window_001_name_zh",
+      "assetId": "background_snow_window_001",
+      "text": "窗花映雪的窗边",
+      "file": "background_snow_window_001_name_zh.mp3",
+      "url": "felt-resource://audio/background_snow_window_001_name_zh.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "sticker_crescent_moon_001_intro_zh",
+      "assetId": "sticker_crescent_moon_001",
+      "text": "月牙是弯弯的月亮。它像一只小船挂在夜空中，看起来安静又好看。中秋时，它提醒我们留意天上的月亮。",
+      "file": "sticker_crescent_moon_001_intro_zh.mp3",
+      "url": "felt-resource://audio/sticker_crescent_moon_001_intro_zh.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "sticker_crescent_moon_001_name_en",
+      "assetId": "sticker_crescent_moon_001",
+      "text": "Crescent Moon",
+      "file": "sticker_crescent_moon_001_name_en.mp3",
+      "url": "felt-resource://audio/sticker_crescent_moon_001_name_en.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "sticker_crescent_moon_001_name_zh",
+      "assetId": "sticker_crescent_moon_001",
+      "text": "月牙",
+      "file": "sticker_crescent_moon_001_name_zh.mp3",
+      "url": "felt-resource://audio/sticker_crescent_moon_001_name_zh.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "sticker_dumpling_001_intro_zh",
+      "assetId": "sticker_dumpling_001",
+      "text": "饺子是春节常见的团圆食物。皮薄馅多，形状像小元宝，吃起来热乎乎的。家人一起包饺子、吃饺子，迎接新年。",
+      "file": "sticker_dumpling_001_intro_zh.mp3",
+      "url": "felt-resource://audio/sticker_dumpling_001_intro_zh.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "sticker_dumpling_001_name_en",
+      "assetId": "sticker_dumpling_001",
+      "text": "Dumpling",
+      "file": "sticker_dumpling_001_name_en.mp3",
+      "url": "felt-resource://audio/sticker_dumpling_001_name_en.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "sticker_dumpling_001_name_zh",
+      "assetId": "sticker_dumpling_001",
+      "text": "饺子",
+      "file": "sticker_dumpling_001_name_zh.mp3",
+      "url": "felt-resource://audio/sticker_dumpling_001_name_zh.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "sticker_firecracker_001_intro_zh",
+      "assetId": "sticker_firecracker_001",
+      "text": "鞭炮是过年常见的喜庆物件。红红的一串，点燃后噼啪作响。人们放鞭炮增添热闹，迎接崭新的一年。",
+      "file": "sticker_firecracker_001_intro_zh.mp3",
+      "url": "felt-resource://audio/sticker_firecracker_001_intro_zh.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "sticker_firecracker_001_name_en",
+      "assetId": "sticker_firecracker_001",
+      "text": "Firecracker",
+      "file": "sticker_firecracker_001_name_en.mp3",
+      "url": "felt-resource://audio/sticker_firecracker_001_name_en.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "sticker_firecracker_001_name_zh",
+      "assetId": "sticker_firecracker_001",
+      "text": "鞭炮",
+      "file": "sticker_firecracker_001_name_zh.mp3",
+      "url": "felt-resource://audio/sticker_firecracker_001_name_zh.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "sticker_flower_lantern_001_intro_zh",
+      "assetId": "sticker_flower_lantern_001",
+      "text": "花灯是元宵节常见的灯饰。有的做成荷花样子，轻轻放进河里漂走。人们放河灯，寄托心愿，盼望事事顺利。",
+      "file": "sticker_flower_lantern_001_intro_zh.mp3",
+      "url": "felt-resource://audio/sticker_flower_lantern_001_intro_zh.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "sticker_flower_lantern_001_name_en",
+      "assetId": "sticker_flower_lantern_001",
+      "text": "Lotus River Lantern",
+      "file": "sticker_flower_lantern_001_name_en.mp3",
+      "url": "felt-resource://audio/sticker_flower_lantern_001_name_en.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "sticker_flower_lantern_001_name_zh",
+      "assetId": "sticker_flower_lantern_001",
+      "text": "莲花河灯",
+      "file": "sticker_flower_lantern_001_name_zh.mp3",
+      "url": "felt-resource://audio/sticker_flower_lantern_001_name_zh.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "sticker_fu_001_intro_zh",
+      "assetId": "sticker_fu_001",
+      "text": "福字是春节常见的吉祥字。人们常把它倒着贴，盼望“福到了”。看到红红的福字，就想起新年要顺顺利利。",
+      "file": "sticker_fu_001_intro_zh.mp3",
+      "url": "felt-resource://audio/sticker_fu_001_intro_zh.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "sticker_fu_001_name_en",
+      "assetId": "sticker_fu_001",
+      "text": "Fu Character",
+      "file": "sticker_fu_001_name_en.mp3",
+      "url": "felt-resource://audio/sticker_fu_001_name_en.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "sticker_fu_001_name_zh",
+      "assetId": "sticker_fu_001",
+      "text": "福字",
+      "file": "sticker_fu_001_name_zh.mp3",
+      "url": "felt-resource://audio/sticker_fu_001_name_zh.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "sticker_lantern_001_intro_zh",
+      "assetId": "sticker_lantern_001",
+      "text": "灯笼是中国传统的节日装饰。红红的灯笼又亮又喜庆，挂起来特别好看。春节时人们常挂起灯笼，盼望新年红火。",
+      "file": "sticker_lantern_001_intro_zh.mp3",
+      "url": "felt-resource://audio/sticker_lantern_001_intro_zh.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "sticker_lantern_001_name_en",
+      "assetId": "sticker_lantern_001",
+      "text": "Lantern",
+      "file": "sticker_lantern_001_name_en.mp3",
+      "url": "felt-resource://audio/sticker_lantern_001_name_en.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "sticker_lantern_001_name_zh",
+      "assetId": "sticker_lantern_001",
+      "text": "灯笼",
+      "file": "sticker_lantern_001_name_zh.mp3",
+      "url": "felt-resource://audio/sticker_lantern_001_name_zh.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "sticker_mooncake_001_intro_zh",
+      "assetId": "sticker_mooncake_001",
+      "text": "月饼是中秋节常吃的圆饼。饼面常有花纹，外形圆圆的，吃起来香香的。大家常在赏月时一起品尝，盼望团圆。",
+      "file": "sticker_mooncake_001_intro_zh.mp3",
+      "url": "felt-resource://audio/sticker_mooncake_001_intro_zh.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "sticker_mooncake_001_name_en",
+      "assetId": "sticker_mooncake_001",
+      "text": "Mooncake",
+      "file": "sticker_mooncake_001_name_en.mp3",
+      "url": "felt-resource://audio/sticker_mooncake_001_name_en.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "sticker_mooncake_001_name_zh",
+      "assetId": "sticker_mooncake_001",
+      "text": "月饼",
+      "file": "sticker_mooncake_001_name_zh.mp3",
+      "url": "felt-resource://audio/sticker_mooncake_001_name_zh.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "sticker_rabbit_001_intro_zh",
+      "assetId": "sticker_rabbit_001",
+      "text": "玉兔是中秋传说里的小兔子。传说它住在月亮上，白白的毛、长长的耳朵。赏月时，大家常会想起这个可爱的故事。",
+      "file": "sticker_rabbit_001_intro_zh.mp3",
+      "url": "felt-resource://audio/sticker_rabbit_001_intro_zh.mp3",
+      "status": "ok",
+      "cacheHit": true
+    },
+    {
+      "id": "sticker_rabbit_001_name_en",
+      "assetId": "sticker_rabbit_001",
+      "text": "Jade Rabbit",
+      "file": "sticker_rabbit_001_name_en.mp3",
+      "url": "felt-resource://audio/sticker_rabbit_001_name_en.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "sticker_rabbit_001_name_zh",
+      "assetId": "sticker_rabbit_001",
+      "text": "玉兔",
+      "file": "sticker_rabbit_001_name_zh.mp3",
+      "url": "felt-resource://audio/sticker_rabbit_001_name_zh.mp3",
+      "status": "ok",
+      "cacheHit": true
+    },
+    {
+      "id": "sticker_red_envelope_001_intro_zh",
+      "assetId": "sticker_red_envelope_001",
+      "text": "红包是装着心意的小红袋。过年时长辈常发给孩子。收到红包时，大家都会觉得开心，也感受到祝福。",
+      "file": "sticker_red_envelope_001_intro_zh.mp3",
+      "url": "felt-resource://audio/sticker_red_envelope_001_intro_zh.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "sticker_red_envelope_001_name_en",
+      "assetId": "sticker_red_envelope_001",
+      "text": "Red Envelope",
+      "file": "sticker_red_envelope_001_name_en.mp3",
+      "url": "felt-resource://audio/sticker_red_envelope_001_name_en.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "sticker_red_envelope_001_name_zh",
+      "assetId": "sticker_red_envelope_001",
+      "text": "红包",
+      "file": "sticker_red_envelope_001_name_zh.mp3",
+      "url": "felt-resource://audio/sticker_red_envelope_001_name_zh.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "sticker_tangyuan_001_intro_zh",
+      "assetId": "sticker_tangyuan_001",
+      "text": "汤圆是圆圆的糯米小球。煮在锅里白白的，像一颗颗小珍珠。“汤圆”谐音“团圆”，象征一家人团团圆圆。",
+      "file": "sticker_tangyuan_001_intro_zh.mp3",
+      "url": "felt-resource://audio/sticker_tangyuan_001_intro_zh.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "sticker_tangyuan_001_name_en",
+      "assetId": "sticker_tangyuan_001",
+      "text": "Tangyuan",
+      "file": "sticker_tangyuan_001_name_en.mp3",
+      "url": "felt-resource://audio/sticker_tangyuan_001_name_en.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "sticker_tangyuan_001_name_zh",
+      "assetId": "sticker_tangyuan_001",
+      "text": "汤圆",
+      "file": "sticker_tangyuan_001_name_zh.mp3",
+      "url": "felt-resource://audio/sticker_tangyuan_001_name_zh.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "sticker_window_flower_001_intro_zh",
+      "assetId": "sticker_window_flower_001",
+      "text": "窗花是贴在窗户上的剪纸。图案常常对称，颜色也很鲜艳，一眼就能认出来。春节时贴窗花，能让家里更热闹好看。",
+      "file": "sticker_window_flower_001_intro_zh.mp3",
+      "url": "felt-resource://audio/sticker_window_flower_001_intro_zh.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "sticker_window_flower_001_name_en",
+      "assetId": "sticker_window_flower_001",
+      "text": "Window Paper-cut",
+      "file": "sticker_window_flower_001_name_en.mp3",
+      "url": "felt-resource://audio/sticker_window_flower_001_name_en.mp3",
+      "status": "ok",
+      "cacheHit": false
+    },
+    {
+      "id": "sticker_window_flower_001_name_zh",
+      "assetId": "sticker_window_flower_001",
+      "text": "窗花",
+      "file": "sticker_window_flower_001_name_zh.mp3",
+      "url": "felt-resource://audio/sticker_window_flower_001_name_zh.mp3",
+      "status": "ok",
+      "cacheHit": false
+    }
+  ]
 }

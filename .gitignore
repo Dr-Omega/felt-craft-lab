@@ -42,6 +42,9 @@ Desktop.ini
 # Test / temp
 tmp/
 temp/
+
+# Local YWN handoff try copies (not for packaging / commit)
+assets/generated/material/ywn-try/
 *.tmp
 tmp_*
 tmp-review/
