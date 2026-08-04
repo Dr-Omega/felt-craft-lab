@@ -9,6 +9,7 @@
     "tests/**/*.ts",
     "src/renderer/src/editor/**/*",
     "src/renderer/src/services/**/*",
+    "src/renderer/src/persistence/**/*",
     "src/shared/**/*",
     "src/main/**/*",
     "src/preload/*.d.ts",
