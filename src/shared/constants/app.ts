@@ -4,6 +4,8 @@ export const APP_ID = 'com.feltcraft.lab'
 export const IPC_CHANNELS = {
   PING: 'felt:bootstrap:ping',
   RESOURCE_INSPECT: 'felt:resource:inspect',
+  PREVIEW_SAVE: 'felt:preview:save',
+  PREVIEW_DELETE: 'felt:preview:delete',
   AI_HEALTH: 'felt:ai:health',
   AI_ASR_TRANSCRIBE: 'felt:ai:asr:transcribe',
   AI_QA_ASK: 'felt:ai:qa:ask',

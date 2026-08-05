@@ -27,6 +27,7 @@
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
+    "dexie": "4.4.4",
     "fabric": "5.3.0",
     "howler": "^2.2.4",
     "lottie-web": "^5.12.2",
@@ -40,6 +41,7 @@
     "electron": "^43.2.0",
     "electron-builder": "^26.15.3",
     "electron-vite": "^5.0.0",
+    "fake-indexeddb": "6.2.5",
     "typescript": "^5.9.3",
     "vitest": "^4.1.10",
     "vue-tsc": "^3.1.5"

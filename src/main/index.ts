@@ -6,6 +6,7 @@ import { APP_DISPLAY_NAME, IPC_CHANNELS } from '@shared/constants/app'
 import { isAllowedExternalUrl } from './external-url'
 import { resolveRuntimeAssetPath } from './paths'
 import { registerAiIpc } from './ai/ipc'
+import { registerPreviewIpc } from './preview'
 import {
   attachFeltResourceProtocol,
   createResourceRoots,
@@ -129,6 +130,7 @@ app.whenReady().then(() => {
   const resourceRoots = createResourceRoots()
   attachFeltResourceProtocol(resourceRoots)
   registerResourceIpc(resourceRoots)
+  registerPreviewIpc(resourceRoots)
   registerBootstrapIpc()
   registerAiIpc()
   createWindow(packagedRendererPath)
