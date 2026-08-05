@@ -45,6 +45,11 @@ export function loadFormalCatalog(raw: unknown): FormalCatalog {
       throw new Error(`Formal Manifest duplicate assetId: ${validated.value.assetId}`)
     }
     seen.add(validated.value.assetId)
+    if (validated.value.status !== 'ready') {
+      throw new Error(
+        `Formal Manifest assets[${index}] status must be ready (got ${validated.value.status}); test_only is rejected.`
+      )
+    }
     if ('owner' in (candidate as object) || 'unlockStatus' in (candidate as object)) {
       throw new Error(`Formal Manifest assets[${index}] must not include owner/unlockStatus.`)
     }

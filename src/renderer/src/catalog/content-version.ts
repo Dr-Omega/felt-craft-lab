@@ -1,7 +1,17 @@
 /**
  * Runtime projection used to continue AssetRecord.contentVersion across Manifest rebuilds.
- * Keep field list aligned with scripts/build-ywn-manifest.py.
+ * Keep field list aligned with scripts/build-ywn-manifest.py (including mediaHashes).
+ * Authoritative bump logic + regressions live in the Python builder tests.
  */
+
+export type MediaHashes = {
+  image: string
+  thumbnail: string
+  preSplit: string
+  nameZhAudio: string
+  nameEnAudio: string
+  introZhAudio: string
+}
 
 export type ContentProjection = {
   type: unknown
@@ -21,6 +31,7 @@ export type ContentProjection = {
   }
   source: string
   license: string
+  mediaHashes: MediaHashes
 }
 
 export type PriorContentVersion = {
@@ -28,11 +39,39 @@ export type PriorContentVersion = {
   projection: ContentProjection
 }
 
-export function contentProjection(record: Record<string, unknown>): ContentProjection {
+function emptyHashes(): MediaHashes {
+  return {
+    image: '',
+    thumbnail: '',
+    preSplit: '',
+    nameZhAudio: '',
+    nameEnAudio: '',
+    introZhAudio: ''
+  }
+}
+
+export function contentProjection(
+  record: Record<string, unknown>,
+  mediaHashes?: Partial<MediaHashes>
+): ContentProjection {
   const audio = (record.audio && typeof record.audio === 'object' ? record.audio : {}) as Record<
     string,
     unknown
   >
+  const fromRecord =
+    record.mediaHashes && typeof record.mediaHashes === 'object'
+      ? (record.mediaHashes as Record<string, unknown>)
+      : {}
+  const hashes = {
+    ...emptyHashes(),
+    ...(typeof fromRecord.image === 'string' ? { image: fromRecord.image } : {}),
+    ...(typeof fromRecord.thumbnail === 'string' ? { thumbnail: fromRecord.thumbnail } : {}),
+    ...(typeof fromRecord.preSplit === 'string' ? { preSplit: fromRecord.preSplit } : {}),
+    ...(typeof fromRecord.nameZhAudio === 'string' ? { nameZhAudio: fromRecord.nameZhAudio } : {}),
+    ...(typeof fromRecord.nameEnAudio === 'string' ? { nameEnAudio: fromRecord.nameEnAudio } : {}),
+    ...(typeof fromRecord.introZhAudio === 'string' ? { introZhAudio: fromRecord.introZhAudio } : {}),
+    ...mediaHashes
+  }
   return {
     type: record.type,
     themeId: record.themeId,
@@ -50,7 +89,8 @@ export function contentProjection(record: Record<string, unknown>): ContentProje
       introZhUrl: typeof audio.introZhUrl === 'string' ? audio.introZhUrl : ''
     },
     source: typeof record.source === 'string' ? record.source : '',
-    license: typeof record.license === 'string' ? record.license : ''
+    license: typeof record.license === 'string' ? record.license : '',
+    mediaHashes: hashes
   }
 }
 

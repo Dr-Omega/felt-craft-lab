@@ -7,9 +7,13 @@ import {
   createCatalogResolver,
   DEFAULT_USER_ID,
   isAssetUnlocked,
-  listCatalogByType,
   YWN_SNAPSHOT_CONTEXT
 } from '../catalog/ywn-catalog'
+import {
+  assetsForTheme,
+  normalizeSelectedAssetId,
+  pickSelectedAsset
+} from '../catalog/editor-selection'
 import { getEditorLaunch, openLibrary } from '../app-nav'
 import {
   AssetAccessStore,
@@ -36,38 +40,42 @@ const question = ref('这是什么？')
 const aiAnswer = ref('')
 const aiBusy = ref(false)
 const accessByAssetId = ref<Record<string, AssetAccessState | undefined>>({})
-const defaultSticker = listCatalogByType('sticker')[0]
-const defaultBackground = listCatalogByType('background')[0]
-const selectedAssetId = ref(defaultSticker?.assetId ?? '')
-const selectedBackgroundId = ref(defaultBackground?.assetId ?? '')
+
+const sceneThemeId = launch?.scene.themeId
+const initialStickers = assetsForTheme(CATALOG_ASSETS, 'sticker', sceneThemeId)
+const initialBackgrounds = assetsForTheme(CATALOG_ASSETS, 'background', sceneThemeId)
+const selectedAssetId = ref(initialStickers[0]?.assetId ?? '')
+const selectedBackgroundId = ref(initialBackgrounds[0]?.assetId ?? '')
 
 const session = shallowRef<EditorSessionService | null>(null)
 let unsubscribe: (() => void) | undefined
 let draftId = launch?.draftId
 let projectId = launch?.projectId
 
-const stickers = computed(() => {
-  const themeId = launch?.scene.themeId
-  const all = listCatalogByType('sticker')
-  return themeId ? all.filter((asset) => asset.themeId === themeId) : all
-})
-const backgrounds = computed(() => {
-  const themeId = launch?.scene.themeId
-  const all = listCatalogByType('background')
-  return themeId ? all.filter((asset) => asset.themeId === themeId) : all
-})
+const stickers = computed(() => assetsForTheme(CATALOG_ASSETS, 'sticker', launch?.scene.themeId))
+const backgrounds = computed(() =>
+  assetsForTheme(CATALOG_ASSETS, 'background', launch?.scene.themeId)
+)
+
+function normalizeSelections(): void {
+  selectedAssetId.value = normalizeSelectedAssetId(selectedAssetId.value, stickers.value)
+  selectedBackgroundId.value = normalizeSelectedAssetId(selectedBackgroundId.value, backgrounds.value)
+}
+
+normalizeSelections()
+
 const canSave = computed(() => Boolean(sessionState.value?.canPrepareDraft && sessionState.value?.canPrepareProject))
 const selectedUnlocked = computed(() => isAssetUnlocked(accessByAssetId.value[selectedAssetId.value]))
 const selectedBackgroundUnlocked = computed(() =>
   isAssetUnlocked(accessByAssetId.value[selectedBackgroundId.value])
 )
 
-function selectedAsset(): AssetRecord {
-  return CATALOG_ASSETS.find((asset) => asset.assetId === selectedAssetId.value) ?? stickers.value[0]!
+function selectedAsset(): AssetRecord | undefined {
+  return pickSelectedAsset(selectedAssetId.value, stickers.value)
 }
 
-function selectedBackground(): AssetRecord {
-  return CATALOG_ASSETS.find((asset) => asset.assetId === selectedBackgroundId.value) ?? backgrounds.value[0]!
+function selectedBackground(): AssetRecord | undefined {
+  return pickSelectedAsset(selectedBackgroundId.value, backgrounds.value)
 }
 
 async function refreshAccess(): Promise<void> {
@@ -82,7 +90,11 @@ async function requireUnlockedAccess(assetId: string): Promise<AssetAccessState>
   const store = new AssetAccessStore(getFeltCraftDatabase())
   const access = await store.get(DEFAULT_USER_ID, assetId)
   if (!isAssetUnlocked(access)) {
-    throw new Error('素材未解锁，不能加入画布。可在素材库使用「测试解锁」。')
+    throw new Error(
+      import.meta.env.DEV
+        ? '素材未解锁，不能加入画布。可在素材库使用「测试解锁」。'
+        : '素材未解锁，不能加入画布。'
+    )
   }
   return access!
 }
@@ -189,6 +201,9 @@ async function askMockQa(): Promise<void> {
   aiAnswer.value = ''
   try {
     const asset = selectedAsset()
+    if (!asset) {
+      throw new Error('当前主题没有可选贴纸。')
+    }
     const response = (await aiClient.qaAsk({
       question: question.value.trim() || '这是什么？',
       asset: {

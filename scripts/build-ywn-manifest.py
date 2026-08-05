@@ -1,12 +1,19 @@
 # -*- coding: utf-8 -*-
-"""Convert YWN Feishu export pack → Program Manifest (SXY)."""
+"""Convert YWN Feishu export pack → Program Manifest (SXY).
+
+Fail-closed: validation issues may write a failure report, but must not mutate
+the previous published Manifest, renderer copy, content-versions sidecar, or
+formal material/audio files.
+"""
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import shutil
 import sys
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -40,6 +47,7 @@ PROJECTION_KEYS = (
     "audio",
     "source",
     "license",
+    "mediaHashes",
 )
 
 
@@ -50,6 +58,53 @@ def utc_now() -> str:
 def new_snapshot_id(now: datetime | None = None) -> str:
     stamp = (now or datetime.now(timezone.utc)).strftime("%Y%m%d_%H%M%S")
     return f"snapshot_ywn_{stamp}"
+
+
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def published_path_for_ref(ref: str, repo_root: Path) -> Path | None:
+    if not isinstance(ref, str) or not ref.startswith("felt-resource://"):
+        return None
+    body = ref[len("felt-resource://") :]
+    if body.startswith("material/"):
+        return repo_root / "assets" / "generated" / "material" / body.split("/", 1)[1]
+    if body.startswith("audio/"):
+        return repo_root / "assets" / "generated" / "audio" / body.split("/", 1)[1]
+    return None
+
+
+def enrich_projection_media_hashes(projection: dict, repo_root: Path = REPO_ROOT) -> dict:
+    """Fill missing mediaHashes from currently published generated media (migration)."""
+    enriched = content_projection(
+        {
+            **projection,
+            "audio": projection.get("audio") or {},
+            "mediaHashes": projection.get("mediaHashes") or {},
+        }
+    )
+    hashes = dict(enriched["mediaHashes"])
+    mapping = (
+        ("image", enriched.get("imageUrl") or ""),
+        ("thumbnail", enriched.get("thumbnailUrl") or ""),
+        ("preSplit", enriched.get("preSplitDataUrl") or ""),
+        ("nameZhAudio", (enriched.get("audio") or {}).get("nameZhUrl") or ""),
+        ("nameEnAudio", (enriched.get("audio") or {}).get("nameEnUrl") or ""),
+        ("introZhAudio", (enriched.get("audio") or {}).get("introZhUrl") or ""),
+    )
+    for key, ref in mapping:
+        if hashes.get(key):
+            continue
+        path = published_path_for_ref(ref, repo_root)
+        if path and path.is_file():
+            hashes[key] = sha256_file(path)
+    enriched["mediaHashes"] = hashes
+    return enriched
 
 
 def header_index(headers: list[str]) -> dict[str, int]:
@@ -93,6 +148,10 @@ def parse_audio_ref(raw: str) -> str | None:
     return None
 
 
+def basename_stem(file_name: str) -> str:
+    return Path(file_name).name.rsplit(".", 1)[0]
+
+
 def find_theme_file(source_root: Path, theme_id: str, relative: str) -> Path | None:
     candidates = [
         source_root / theme_id / "stickers" / relative,
@@ -112,8 +171,9 @@ def find_theme_file(source_root: Path, theme_id: str, relative: str) -> Path | N
     return None
 
 
-def content_projection(record: dict) -> dict:
+def content_projection(record: dict, media_hashes: dict[str, str] | None = None) -> dict:
     audio = record.get("audio") or {}
+    hashes = media_hashes if media_hashes is not None else dict(record.get("mediaHashes") or {})
     return {
         "type": record.get("type"),
         "themeId": record.get("themeId"),
@@ -132,6 +192,14 @@ def content_projection(record: dict) -> dict:
         },
         "source": record.get("source") or "",
         "license": record.get("license") or "",
+        "mediaHashes": {
+            "image": hashes.get("image") or "",
+            "thumbnail": hashes.get("thumbnail") or "",
+            "preSplit": hashes.get("preSplit") or "",
+            "nameZhAudio": hashes.get("nameZhAudio") or "",
+            "nameEnAudio": hashes.get("nameEnAudio") or "",
+            "introZhAudio": hashes.get("introZhAudio") or "",
+        },
     }
 
 
@@ -146,24 +214,44 @@ def resolve_content_version(asset_id: str, projection: dict, prior: dict[str, di
     return old_version + 1
 
 
-def load_prior_versions() -> dict[str, dict]:
-    if OUT_VERSIONS.is_file():
-        raw = json.loads(OUT_VERSIONS.read_text(encoding="utf-8"))
-        return raw.get("assets") if isinstance(raw, dict) else {}
-    if OUT_MANIFEST.is_file():
-        manifest = json.loads(OUT_MANIFEST.read_text(encoding="utf-8"))
+def load_prior_versions(
+    versions_path: Path = OUT_VERSIONS,
+    manifest_path: Path = OUT_MANIFEST,
+    repo_root: Path = REPO_ROOT,
+) -> dict[str, dict]:
+    raw_assets: dict[str, dict] = {}
+    if versions_path.is_file():
+        raw = json.loads(versions_path.read_text(encoding="utf-8"))
+        assets = raw.get("assets") if isinstance(raw, dict) else {}
+        raw_assets = dict(assets or {})
+    elif manifest_path.is_file():
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         assets = manifest.get("assets") or []
-        out: dict[str, dict] = {}
         for asset in assets:
             asset_id = asset.get("assetId")
             if not asset_id:
                 continue
-            out[asset_id] = {
+            raw_assets[asset_id] = {
                 "contentVersion": int(asset.get("contentVersion") or 1),
                 "projection": content_projection(asset),
             }
-        return out
-    return {}
+    out: dict[str, dict] = {}
+    for asset_id, entry in raw_assets.items():
+        projection = entry.get("projection") if isinstance(entry, dict) else None
+        if not isinstance(projection, dict):
+            continue
+        out[asset_id] = {
+            "contentVersion": int(entry.get("contentVersion") or 1),
+            "projection": enrich_projection_media_hashes(projection, repo_root),
+        }
+    return out
+
+
+def merge_version_history(prior: dict[str, dict], updated: dict[str, dict]) -> dict[str, dict]:
+    """Keep historical assetIds that are absent from the current ready batch."""
+    merged = dict(prior)
+    merged.update(updated)
+    return merged
 
 
 def load_ready_rows(source_root: Path) -> tuple[list[dict], list[dict]]:
@@ -185,6 +273,8 @@ def load_ready_rows(source_root: Path) -> tuple[list[dict], list[dict]]:
                 continue
             asset_id = cell(row, idx, "assetId")
             status = cell(row, idx, "status")
+            # Formal import requires status=ready AND licenseStatus=approved.
+            # Non-ready rows are skipped; ready rows with bad license fail below.
             if not asset_id or status != "ready":
                 continue
             if asset_id in seen_ids:
@@ -209,6 +299,7 @@ def load_ready_rows(source_root: Path) -> tuple[list[dict], list[dict]]:
                     "introZh": cell(row, idx, "introZh"),
                     "imageFileName": cell(row, idx, "imageFileName"),
                     "thumbnailFileName": cell(row, idx, "thumbnailFileName"),
+                    "preSplitFileName": cell(row, idx, "preSplitFileName"),
                     "source": cell(row, idx, "source"),
                     "license": cell(row, idx, "license"),
                     "licenseStatus": cell(row, idx, "licenseStatus"),
@@ -227,9 +318,10 @@ def convert_row(
     row: dict,
     source_root: Path,
     prior_versions: dict[str, dict],
-) -> tuple[dict | None, list[str], dict]:
+) -> tuple[dict | None, list[str], dict[str, Path], dict[str, str]]:
     errors: list[str] = []
     copies: dict[str, Path] = {}
+    media_hashes: dict[str, str] = {}
 
     # Strict gate: empty licenseStatus also fails.
     if row["licenseStatus"] != "approved":
@@ -246,11 +338,16 @@ def convert_row(
     if not image_name or not SAFE_FILE.match(image_name):
         errors.append(f"bad imageFileName: {image_name!r}")
     else:
+        if basename_stem(image_name) != row["assetId"]:
+            errors.append(
+                f"imageFileName stem must equal assetId (got {basename_stem(image_name)!r}, expected {row['assetId']!r})"
+            )
         src = find_theme_file(source_root, row["themeId"], image_name)
         if not src:
             errors.append(f"missing image file {image_name}")
         else:
             copies[f"material/{image_name}"] = src
+            media_hashes["image"] = sha256_file(src)
 
     thumb_name = row["thumbnailFileName"]
     thumb_ref = None
@@ -264,8 +361,32 @@ def convert_row(
             else:
                 copies[f"material/{thumb_name}"] = src
                 thumb_ref = f"felt-resource://material/{thumb_name}"
+                media_hashes["thumbnail"] = sha256_file(src)
+
+    pre_split_name = row.get("preSplitFileName") or ""
+    pre_split_ref = None
+    if pre_split_name:
+        if row["type"] == "background":
+            errors.append("background must not have preSplitFileName")
+        elif row["type"] != "sticker":
+            errors.append(f"preSplitFileName not allowed for type {row['type']!r}")
+        elif not SAFE_FILE.match(pre_split_name):
+            errors.append(f"bad preSplitFileName: {pre_split_name!r}")
+        else:
+            src = find_theme_file(source_root, row["themeId"], pre_split_name)
+            if not src:
+                errors.append(f"missing preSplit file {pre_split_name}")
+            else:
+                copies[f"material/{pre_split_name}"] = src
+                pre_split_ref = f"felt-resource://material/{pre_split_name}"
+                media_hashes["preSplit"] = sha256_file(src)
 
     audio: dict[str, str] = {}
+    audio_hash_keys = {
+        "nameZhUrl": "nameZhAudio",
+        "nameEnUrl": "nameEnAudio",
+        "introZhUrl": "introZhAudio",
+    }
     for field, key in (
         ("audioNameZhPath", "nameZhUrl"),
         ("audioNameEnPath", "nameEnUrl"),
@@ -284,6 +405,7 @@ def convert_row(
         else:
             copies[f"audio/{file_name}"] = src
             audio[key] = ref
+            media_hashes[audio_hash_keys[key]] = sha256_file(src)
 
     draft = {
         "assetId": row["assetId"],
@@ -300,28 +422,29 @@ def convert_row(
     }
     if thumb_ref:
         draft["thumbnailUrl"] = thumb_ref
+    if pre_split_ref:
+        draft["preSplitDataUrl"] = pre_split_ref
     if row["source"]:
         draft["source"] = row["source"]
     if row["license"]:
         draft["license"] = row["license"]
 
-    projection = content_projection(draft)
+    projection = content_projection(draft, media_hashes)
     version = resolve_content_version(row["assetId"], projection, prior_versions)
     draft["contentVersion"] = version
 
     if errors:
-        return None, errors, copies
-    return draft, [], copies
+        return None, errors, copies, media_hashes
+    return draft, [], copies, media_hashes
 
 
-def assert_snapshot_immutable(snapshot_id: str, next_manifest: dict) -> None:
-    if not OUT_MANIFEST.is_file():
+def assert_snapshot_immutable(snapshot_id: str, next_manifest: dict, manifest_path: Path = OUT_MANIFEST) -> None:
+    if not manifest_path.is_file():
         return
-    previous = json.loads(OUT_MANIFEST.read_text(encoding="utf-8"))
+    previous = json.loads(manifest_path.read_text(encoding="utf-8"))
     prev_id = previous.get("assetSnapshotId")
     if prev_id != snapshot_id:
         return
-    # Same snapshot id must not be rewritten with different payload.
     prev_cmp = {
         "assets": previous.get("assets"),
         "snapshotContext": previous.get("snapshotContext"),
@@ -336,95 +459,182 @@ def assert_snapshot_immutable(snapshot_id: str, next_manifest: dict) -> None:
         )
 
 
-def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Build formal YWN Asset Manifest")
-    parser.add_argument("--source", type=Path, default=DEFAULT_SOURCE)
-    parser.add_argument(
-        "--snapshot-id",
-        default="",
-        help="Optional snapshot id. Default: snapshot_ywn_YYYYMMDD_HHMMSS (always new).",
-    )
-    args = parser.parse_args(argv)
+def write_failure_report(
+    *,
+    generated_at: str,
+    rows_seen: int,
+    issues: list[dict],
+    snapshot_id: str,
+    report_path: Path = OUT_REPORT,
+) -> None:
+    report = {
+        "generatedAt": generated_at,
+        "readyRowsSeen": rows_seen,
+        "imported": 0,
+        "failed": len(issues),
+        "assetSnapshotId": snapshot_id,
+        "issues": issues,
+        "copiedFiles": 0,
+        "published": False,
+        "notes": [
+            "fail-closed: formal Manifest / content-versions / media were NOT modified",
+            "licenseStatus must equal approved (empty fails)",
+            "duplicate assetId fails into report",
+            "status=ready AND licenseStatus=approved required for formal import",
+        ],
+        "failedDetails": issues,
+        "projectionKeys": list(PROJECTION_KEYS),
+    }
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
-    source_root: Path = args.source
+
+def commit_published_artifacts(
+    *,
+    manifest: dict,
+    versions: dict[str, dict],
+    copies: dict[str, Path],
+    generated_at: str,
+    repo_root: Path = REPO_ROOT,
+    manifest_path: Path = OUT_MANIFEST,
+    renderer_manifest: Path = RENDERER_MANIFEST,
+    versions_path: Path = OUT_VERSIONS,
+) -> list[dict]:
+    """Atomically-ish publish only after full validation success."""
+    material_out = repo_root / "assets" / "generated" / "material"
+    audio_out = repo_root / "assets" / "generated" / "audio"
+    material_out.mkdir(parents=True, exist_ok=True)
+    audio_out.mkdir(parents=True, exist_ok=True)
+
+    copied: list[dict] = []
+    with tempfile.TemporaryDirectory(prefix="felt-manifest-stage-") as tmp:
+        stage = Path(tmp)
+        for rel, src in sorted(copies.items()):
+            dest = stage / rel
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(src, dest)
+
+        for rel, _src in sorted(copies.items()):
+            staged = stage / rel
+            final = repo_root / "assets" / "generated" / rel
+            final.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(staged, final)
+            copied.append({"from": str(_src), "to": str(final.relative_to(repo_root))})
+
+    payload = json.dumps(manifest, ensure_ascii=False, indent=2) + "\n"
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    manifest_path.write_text(payload, encoding="utf-8")
+    renderer_manifest.parent.mkdir(parents=True, exist_ok=True)
+    renderer_manifest.write_text(payload, encoding="utf-8")
+    versions_path.write_text(
+        json.dumps({"updatedAt": generated_at, "assets": versions}, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    return copied
+
+
+def build_manifest(
+    *,
+    source_root: Path,
+    snapshot_id: str = "",
+    repo_root: Path = REPO_ROOT,
+    manifest_path: Path = OUT_MANIFEST,
+    renderer_manifest: Path = RENDERER_MANIFEST,
+    versions_path: Path = OUT_VERSIONS,
+    report_path: Path = OUT_REPORT,
+    sample_path: Path = OUT_SAMPLE,
+) -> int:
     if not source_root.is_dir():
         print(f"SOURCE_ROOT missing: {source_root}", file=sys.stderr)
         return 2
 
-    prior_versions = load_prior_versions()
+    prior_versions = load_prior_versions(versions_path, manifest_path, repo_root)
     rows, duplicate_issues = load_ready_rows(source_root)
     assets: list[dict] = []
     issues: list[dict] = list(duplicate_issues)
-    all_copies: dict[str, Path] = {}
-    next_versions: dict[str, dict] = {}
+    pending_copies: dict[str, Path] = {}
+    updated_versions: dict[str, dict] = {}
+    generated_at = utc_now()
+    planned_snapshot = snapshot_id.strip() or new_snapshot_id()
 
     for row in rows:
-        record, errors, copies = convert_row(row, source_root, prior_versions)
+        record, errors, copies, media_hashes = convert_row(row, source_root, prior_versions)
         if errors:
             issues.append({"assetId": row["assetId"], "errors": errors, "sourceSheet": row["sourceSheet"]})
             continue
         assert record is not None
         assets.append(record)
-        all_copies.update(copies)
-        next_versions[record["assetId"]] = {
+        pending_copies.update(copies)
+        updated_versions[record["assetId"]] = {
             "contentVersion": record["contentVersion"],
-            "projection": content_projection(record),
+            "projection": content_projection(record, media_hashes),
         }
 
-    snapshot_id = args.snapshot_id.strip() or new_snapshot_id()
-    generated_at = utc_now()
+    if issues:
+        write_failure_report(
+            generated_at=generated_at,
+            rows_seen=len(rows),
+            issues=issues,
+            snapshot_id=planned_snapshot,
+            report_path=report_path,
+        )
+        summary = {
+            "imported": 0,
+            "failed": len(issues),
+            "snapshot": planned_snapshot,
+            "published": False,
+        }
+        print(json.dumps(summary, ensure_ascii=False))
+        print(json.dumps(issues, ensure_ascii=False, indent=2))
+        return 1
+
     snapshot_assets = [{"assetId": a["assetId"], "type": a["type"]} for a in assets]
-
-    MATERIAL_OUT.mkdir(parents=True, exist_ok=True)
-    AUDIO_OUT.mkdir(parents=True, exist_ok=True)
-    copied = []
-    for rel, src in sorted(all_copies.items()):
-        dest = REPO_ROOT / "assets" / "generated" / rel
-        dest.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(src, dest)
-        copied.append({"from": str(src), "to": str(dest.relative_to(REPO_ROOT))})
-
     manifest = {
         "schemaVersion": 1,
-        "assetSnapshotId": snapshot_id,
+        "assetSnapshotId": planned_snapshot,
         "generatedAt": generated_at,
         "sourcePack": "归档(3).zip",
         "assets": assets,
-        "snapshotContext": {"snapshots": {snapshot_id: snapshot_assets}},
+        "snapshotContext": {"snapshots": {planned_snapshot: snapshot_assets}},
     }
-    assert_snapshot_immutable(snapshot_id, manifest)
-
-    OUT_MANIFEST.parent.mkdir(parents=True, exist_ok=True)
-    payload = json.dumps(manifest, ensure_ascii=False, indent=2) + "\n"
-    OUT_MANIFEST.write_text(payload, encoding="utf-8")
-    RENDERER_MANIFEST.parent.mkdir(parents=True, exist_ok=True)
-    RENDERER_MANIFEST.write_text(payload, encoding="utf-8")
-
-    OUT_VERSIONS.write_text(
-        json.dumps({"updatedAt": generated_at, "assets": next_versions}, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
+    assert_snapshot_immutable(planned_snapshot, manifest, manifest_path)
+    merged_versions = merge_version_history(prior_versions, updated_versions)
+    copied = commit_published_artifacts(
+        manifest=manifest,
+        versions=merged_versions,
+        copies=pending_copies,
+        generated_at=generated_at,
+        repo_root=repo_root,
+        manifest_path=manifest_path,
+        renderer_manifest=renderer_manifest,
+        versions_path=versions_path,
     )
 
     report = {
         "generatedAt": generated_at,
         "readyRowsSeen": len(rows),
         "imported": len(assets),
-        "failed": len(issues),
-        "assetSnapshotId": snapshot_id,
-        "issues": issues,
+        "failed": 0,
+        "assetSnapshotId": planned_snapshot,
+        "issues": [],
         "copiedFiles": len(copied),
+        "published": True,
         "notes": [
             "owner is kept only in build report workflow, not AssetRecord",
-            "contentVersion continues from assets/generated/content-versions.json",
+            "contentVersion continues from assets/generated/content-versions.json including media SHA-256",
+            "historical content-versions entries are retained when assetId absent from current ready batch",
             "licenseStatus must equal approved (empty fails)",
-            "duplicate assetId fails into report",
-            "review rows were skipped",
+            "status=ready AND licenseStatus=approved required for formal import",
+            "imageFileName stem must equal assetId",
+            "preSplitFileName allowed for stickers only",
+            "fail-closed: formal artifacts written only after whole-batch success",
             "felt-resource resolver allows [A-Za-z0-9._/-]; underscore is a naming preference only",
         ],
-        "failedDetails": issues,
+        "failedDetails": [],
         "projectionKeys": list(PROJECTION_KEYS),
     }
-    OUT_REPORT.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     sample_row = next((r for r in rows if r["assetId"] == "sticker_fu_001"), None)
     sample_asset = next((a for a in assets if a["assetId"] == "sticker_fu_001"), None)
@@ -432,7 +642,7 @@ def main(argv: list[str] | None = None) -> int:
         sample_md = f"""# YWN 单条试转复核：sticker_fu_001
 
 **来源包：** 归档(3).zip  
-**assetSnapshotId：** `{snapshot_id}`  
+**assetSnapshotId：** `{planned_snapshot}`  
 **生成时间：** `{generated_at}`
 
 ## 1. 原始飞书行（春节表）
@@ -449,7 +659,7 @@ def main(argv: list[str] | None = None) -> int:
 
 ## 3. assetSnapshotId
 
-`{snapshot_id}`（本批正式快照；与单条 `contentVersion` 分开；已发布 snapshotId 不可覆盖）
+`{planned_snapshot}`（本批正式快照；与单条 `contentVersion` 分开；已发布 snapshotId 不可覆盖）
 
 ## 4. validateAssetRecord
 
@@ -467,14 +677,29 @@ def main(argv: list[str] | None = None) -> int:
 
 说明：未向 Renderer 暴露 OS 路径；上表仅供 SXY/ZXR 构建复核。
 """
-        OUT_SAMPLE.write_text(sample_md, encoding="utf-8")
+        sample_path.parent.mkdir(parents=True, exist_ok=True)
+        sample_path.write_text(sample_md, encoding="utf-8")
 
-    summary = {"imported": len(assets), "failed": len(issues), "snapshot": snapshot_id}
+    summary = {
+        "imported": len(assets),
+        "failed": 0,
+        "snapshot": planned_snapshot,
+        "published": True,
+    }
     print(json.dumps(summary, ensure_ascii=False))
-    if issues:
-        print(json.dumps(issues, ensure_ascii=False, indent=2))
-        return 1
     return 0
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Build formal YWN Asset Manifest")
+    parser.add_argument("--source", type=Path, default=DEFAULT_SOURCE)
+    parser.add_argument(
+        "--snapshot-id",
+        default="",
+        help="Optional snapshot id. Default: snapshot_ywn_YYYYMMDD_HHMMSS (always new).",
+    )
+    args = parser.parse_args(argv)
+    return build_manifest(source_root=args.source, snapshot_id=args.snapshot_id)
 
 
 if __name__ == "__main__":

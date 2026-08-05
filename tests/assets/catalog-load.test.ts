@@ -26,6 +26,28 @@ describe('formal catalog load boundary', () => {
     ).toThrow(/size/)
   })
 
+  it('rejects test_only even if AssetRecord shape could otherwise validate', () => {
+    const raw = JSON.parse(readFileSync(manifestPath, 'utf8')) as {
+      assetSnapshotId: string
+      assets: Array<Record<string, unknown>>
+      snapshotContext: { snapshots: Record<string, Array<{ assetId: string; type: string }>> }
+    }
+    const clone = structuredClone(raw)
+    const first = clone.assets[0]!
+    first.status = 'test_only'
+    first.assetId = 'sticker_test_only_001'
+    first.imageUrl = 'felt-resource://material/sticker_test_only_001.png'
+    clone.snapshotContext.snapshots[clone.assetSnapshotId] = [
+      ...clone.snapshotContext.snapshots[clone.assetSnapshotId],
+      { assetId: 'sticker_test_only_001', type: String(first.type) }
+    ]
+    // Keep sizes aligned for the status check to be reached after validateAssetRecord
+    // by replacing one ready asset instead of appending mismatched snapshot entries.
+    const replaced = structuredClone(raw)
+    replaced.assets[0] = { ...replaced.assets[0], status: 'test_only' }
+    expect(() => loadFormalCatalog(replaced)).toThrow(/status must be ready/)
+  })
+
   it('treats missing AssetAccess as locked', () => {
     expect(isAssetUnlocked(undefined)).toBe(false)
     expect(

@@ -9,7 +9,7 @@
 ## 1. 正式转换流水线（冻结）
 
 ```text
-飞书 status=ready
+飞书 status=ready AND licenseStatus=approved
   → 字段 / 授权检查
   → 文件名转 ResourceRef
   → 确认实际文件存在
@@ -17,10 +17,17 @@
   → 才进入 Manifest / 快照
 ```
 
+正式导入条件（同时满足）：
+
+- `status === "ready"`
+- `licenseStatus === "approved"`（空值也 fail）
+
 程序**不**实时读飞书；儿童端只读 Manifest。
 
 `assetSnapshotId`：整批不可变素材快照 ID。  
 `contentVersion`：单条素材自己的内容版本。两者分开，不要混用。
+
+构建必须 **fail-closed**：任一条 duplicate / license / 缺文件 / 字段错误时，可以写失败 validation report 并以非 0 退出，但**不得**覆盖上一版正式 Manifest、renderer 副本、`content-versions.json` 或正式 material/audio。
 
 ---
 
@@ -42,6 +49,7 @@
 | `audioNameZhPath` / `audioNameEnPath` / `audioIntroZhPath` | **只填** `felt-resource://audio/{assetId}_name_zh.mp3` 这类引用，或仅文件名；**禁止**本机绝对路径；可空 |
 | `source`（若有） | **真实素材来源/生成来源**（自制、Midjourney、豆包处理等），不是维护人 |
 | `license` | 授权备注；可空 |
+| `licenseStatus` | 授权状态；正式导入要求 **`approved`**（空值也失败） |
 | `status` | 内容侧：`draft` / `review` / `ready` / … |
 
 ### 2.2 不进 AssetRecord 的列
@@ -73,13 +81,13 @@
 | 4 | `thumbnailFileName` | `thumbnailUrl` | 有值则 `felt-resource://material/{...}`；空则省略并记报告 |
 | 5 | `preSplitFileName` | `preSplitDataUrl` | 仅 sticker；`felt-resource://material/{...}`；背景禁止 |
 | 6 | 音频文件名三列 | `audio.*Url` | 有值则 `felt-resource://audio/{fileName}`；全空则 `audio: {}` |
-| 7 | `status` | 过滤 + `status` | **仅飞书 `ready` 进入正式 Manifest**；运行时 `status: "ready"`。`review` **不导入** |
+| 7 | `status` + `licenseStatus` | 过滤 + `status` | **仅** `status=ready` **且** `licenseStatus=approved` 进入正式 Manifest；运行时 `status: "ready"`。`review` **不导入**；`licenseStatus` 空也 fail |
 | 8 | `source`（若有） | `source` | 保留真实出处；**不要**把 `owner=YWN` 写成 `source` |
 | 9 | `owner` | — | **不映射**；仅工作流/构建报告 |
 | 10 | `license` | `license` | trim；空则省略 |
 | 11 | `unlockStatus` | — | **丢弃** |
-| 12 | `assetId`/`type`/`themeId`/`name*` | 同名字段 | trim；ready 要求中英名与介绍非空 |
-| 13 | — | `contentVersion` | 见 §3.1（SXY 生成） |
+| 12 | `assetId`/`type`/`themeId`/`name*` | 同名字段 | trim；ready 要求中英名与介绍非空；主图 stem=`assetId` |
+| 13 | — | `contentVersion` | 见 §3.1（SXY 生成；含媒体 SHA-256 sidecar） |
 
 ### 3.1 `contentVersion`（单条素材版本）
 
@@ -89,17 +97,25 @@
 - 后续同一 `assetId` 发生**实质内容更新**：`contentVersion` 递增
 - **不要**每生成一个新 `assetSnapshotId` 就把所有素材重新写成 `1`
 
-实质更新至少包括：主图/缩略图/预拆分/固定音频文件变更，或 `nameZh`/`nameEn`/`introZh`/`keywords`/`categoryId`/`type`/`themeId`/`license`/`source` 等会影响运行时投影的字段变更。
+实质更新至少包括：主图/缩略图/预拆分/固定音频**文件内容**变更（同文件名换内容也算；SXY sidecar 用 SHA-256 指纹，不写入 AssetRecord），或 `nameZh`/`nameEn`/`introZh`/`keywords`/`categoryId`/`type`/`themeId`/`license`/`source` 等会影响运行时投影的字段变更。
+
+`content-versions.json` 保留历史 `assetId` 记录：当前 ready 批次未出现的条目不要删除，避免以后重新导入时错误回到 `contentVersion=1`。
 
 ### 3.2 导入过滤与失败
 
 ```text
 if status !== "ready" → skip（不进 Manifest；可进报告「未导入」）
+if status === "ready" AND licenseStatus !== "approved" → fail（空值也 fail）
 if imageFileName 缺失 → fail
+if imageFileName basename stem !== assetId → fail
+if preSplitFileName 出现在 background → fail
+if 非空 preSplitFileName 对应文件不存在 → fail
 if ResourceRef 对应文件不存在 → fail
 if assetId 重复 → fail
 if validateAssetRecord 失败 → fail
 ```
+
+失败时 fail-closed：只写失败 report，不改正式产物。
 
 `owner` 缺失只影响构建报告/工作流提示，**不**因此改写 `AssetRecord`。
 

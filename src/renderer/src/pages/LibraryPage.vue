@@ -82,26 +82,15 @@ async function toggleFavorite(assetId: string): Promise<void> {
   await refreshLists()
 }
 
+const allowTestUnlock = import.meta.env.DEV
+
 async function unlockForTest(assetId: string): Promise<void> {
+  if (!allowTestUnlock) return
   busy.value = true
   message.value = ''
   try {
     await new AssetAccessStore(getFeltCraftDatabase()).save(createUnlockedAccess(assetId))
     message.value = `已测试解锁：${assetId}`
-    await refreshLists()
-  } catch (error) {
-    message.value = error instanceof Error ? error.message : String(error)
-  } finally {
-    busy.value = false
-  }
-}
-
-async function lockForTest(assetId: string): Promise<void> {
-  busy.value = true
-  message.value = ''
-  try {
-    await new AssetAccessStore(getFeltCraftDatabase()).delete(DEFAULT_USER_ID, assetId)
-    message.value = `已恢复锁定：${assetId}`
     await refreshLists()
   } catch (error) {
     message.value = error instanceof Error ? error.message : String(error)
@@ -146,7 +135,10 @@ onUnmounted(() => {
           正式 Manifest：{{ CATALOG_ASSETS.length }} 条 ready · snapshot
           <code>{{ YWN_SNAPSHOT_ID }}</code>
         </p>
-        <p class="muted">默认锁定。可浏览/收藏；加入画布前需显式「测试解锁」。</p>
+        <p class="muted">
+          默认锁定。可浏览/收藏；加入画布需要已解锁的 AssetAccess。
+          <template v-if="allowTestUnlock">开发模式可使用「测试解锁」。</template>
+        </p>
       </div>
       <div class="new-work">
         <label>
@@ -181,22 +173,13 @@ onUnmounted(() => {
               {{ favorites.includes(asset.assetId) ? '取消收藏' : '收藏' }}
             </button>
             <button
-              v-if="!unlockedIds.has(asset.assetId)"
+              v-if="allowTestUnlock && !unlockedIds.has(asset.assetId)"
               type="button"
               class="ghost"
               :disabled="busy"
               @click="unlockForTest(asset.assetId)"
             >
               测试解锁
-            </button>
-            <button
-              v-else
-              type="button"
-              class="ghost"
-              :disabled="busy"
-              @click="lockForTest(asset.assetId)"
-            >
-              恢复锁定
             </button>
           </div>
         </div>

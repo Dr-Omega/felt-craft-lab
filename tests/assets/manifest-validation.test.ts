@@ -161,4 +161,26 @@ describe('contentVersion continuation', () => {
     const changed = contentProjection({ ...base, introZh: '新介绍' })
     expect(resolveContentVersion('sticker_fu_001', changed, prior)).toBe(3)
   })
+
+  it('bumps version when media hash changes with the same ResourceRef', () => {
+    const base = {
+      type: 'sticker',
+      themeId: 'spring_festival',
+      categoryIds: ['symbol'],
+      nameZh: '福',
+      nameEn: 'Fu',
+      introZh: 'intro',
+      keywords: ['福'],
+      imageUrl: 'felt-resource://material/a.png',
+      audio: {}
+    }
+    const prior: Record<string, PriorContentVersion> = {
+      sticker_fu_001: {
+        contentVersion: 5,
+        projection: contentProjection(base, { image: 'aaa' })
+      }
+    }
+    const changed = contentProjection(base, { image: 'bbb' })
+    expect(resolveContentVersion('sticker_fu_001', changed, prior)).toBe(6)
+  })
 })
