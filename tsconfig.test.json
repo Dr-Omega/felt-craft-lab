@@ -10,6 +10,8 @@
     "src/renderer/src/editor/**/*",
     "src/renderer/src/services/**/*",
     "src/renderer/src/persistence/**/*",
+    "src/renderer/src/catalog/**/*",
+    "src/renderer/src/app-nav.ts",
     "src/shared/**/*",
     "src/main/**/*",
     "src/preload/*.d.ts",

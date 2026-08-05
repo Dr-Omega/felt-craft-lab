@@ -1,112 +1,47 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { APP_DISPLAY_NAME, type BootstrapPingResult } from '@shared/constants/app'
-import type { ResourceInspectResult } from '@shared/resource'
-import { inspectResource } from './services/resource.service'
+import { onMounted, onUnmounted, ref } from 'vue'
+import { APP_DISPLAY_NAME } from '@shared/constants/app'
+import { getAppView, openLibrary, openStatus, subscribeAppNav, type AppView } from './app-nav'
+import LibraryPage from './pages/LibraryPage.vue'
+import EditorPage from './pages/EditorPage.vue'
+import StatusPage from './pages/StatusPage.vue'
 
-const MOCK_MATERIAL_REF = 'felt-resource://material/mock-sticker.png'
+const view = ref<AppView>(getAppView())
 
-const status = ref<'idle' | 'loading' | 'ok' | 'error'>('idle')
-const ping = ref<BootstrapPingResult | null>(null)
-const resource = ref<ResourceInspectResult | null>(null)
-const errorMessage = ref('')
+function syncView(): void {
+  view.value = getAppView()
+}
 
-onMounted(async () => {
-  status.value = 'loading'
-  try {
-    if (!window.electronAPI?.ping) {
-      throw new Error('electronAPI.ping is unavailable. Open this page inside Electron.')
-    }
-    ping.value = await window.electronAPI.ping()
-    resource.value = await inspectResource(MOCK_MATERIAL_REF)
-    status.value = ping.value.ok ? 'ok' : 'error'
-  } catch (error) {
-    status.value = 'error'
-    errorMessage.value = error instanceof Error ? error.message : String(error)
-  }
+let unsubscribe = subscribeAppNav(syncView)
+
+onMounted(() => {
+  syncView()
+})
+
+onUnmounted(() => {
+  unsubscribe()
 })
 </script>
 
 <template>
-  <main class="page">
-    <header class="hero">
-      <p class="eyebrow">工程基线 · Resource Resolver</p>
-      <h1>{{ APP_DISPLAY_NAME }}</h1>
-      <p class="lead">
-        Electron 主进程、Preload 与 Renderer 最小连通页，并验证
-        <code>felt-resource:</code> 资源引用。素材库、Dexie、Manifest 等业务不在本阶段实现。
-      </p>
+  <div class="shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Material Library · UI Workflows</p>
+        <h1>{{ APP_DISPLAY_NAME }}</h1>
+      </div>
+      <nav class="nav">
+        <button type="button" :class="{ active: view === 'library' }" @click="openLibrary">素材库</button>
+        <button type="button" :class="{ active: view === 'status' }" @click="openStatus">运行状态</button>
+      </nav>
     </header>
 
-    <section class="panel" aria-live="polite">
-      <h2>主进程连通检查</h2>
-      <p v-if="status === 'loading'">正在调用 <code>felt:bootstrap:ping</code>…</p>
-      <p v-else-if="status === 'error'" class="error">
-        连通失败：{{ errorMessage || 'unknown error' }}
-      </p>
-      <dl v-else-if="ping" class="grid">
-        <div>
-          <dt>状态</dt>
-          <dd>{{ ping.ok ? 'OK' : 'FAILED' }}</dd>
-        </div>
-        <div>
-          <dt>版本</dt>
-          <dd>{{ ping.appVersion }}</dd>
-        </div>
-        <div>
-          <dt>Electron</dt>
-          <dd>{{ ping.electronVersion }}</dd>
-        </div>
-        <div>
-          <dt>平台</dt>
-          <dd>{{ ping.platform }} / {{ ping.arch }}</dd>
-        </div>
-        <div>
-          <dt>运行时 marker</dt>
-          <dd>{{ ping.markerFound ? 'found' : 'missing' }}</dd>
-        </div>
-        <div class="wide">
-          <dt>时间戳</dt>
-          <dd>{{ ping.timestamp }}</dd>
-        </div>
-      </dl>
-    </section>
-
-    <section class="panel" aria-live="polite">
-      <h2>felt-resource 检查</h2>
-      <p>
-        Mock 引用：<code>{{ MOCK_MATERIAL_REF }}</code>
-      </p>
-      <template v-if="resource?.ok">
-        <dl class="grid">
-          <div>
-            <dt>kind</dt>
-            <dd>{{ resource.kind }}</dd>
-          </div>
-          <div>
-            <dt>exists</dt>
-            <dd>{{ resource.exists ? 'yes' : 'no' }}</dd>
-          </div>
-          <div class="wide">
-            <dt>relativePath</dt>
-            <dd><code>{{ resource.relativePath }}</code></dd>
-          </div>
-        </dl>
-        <p v-if="resource.exists" class="preview-row">
-          <img
-            :src="MOCK_MATERIAL_REF"
-            crossorigin="anonymous"
-            alt="mock sticker via felt-resource protocol"
-            width="64"
-            height="64"
-          />
-        </p>
-      </template>
-      <p v-else-if="resource && !resource.ok" class="error">
-        资源检查失败：{{ resource.error.code }} — {{ resource.error.message }}
-      </p>
-    </section>
-  </main>
+    <main class="content">
+      <LibraryPage v-if="view === 'library'" />
+      <EditorPage v-else-if="view === 'editor'" />
+      <StatusPage v-else />
+    </main>
+  </div>
 </template>
 
 <style>
@@ -135,89 +70,85 @@ body {
   min-height: 100vh;
 }
 
-.page {
-  max-width: 920px;
-  margin: 0 auto;
-  padding: 48px 24px 64px;
+button {
+  appearance: none;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  padding: 8px 12px;
+  font: inherit;
+  cursor: pointer;
 }
 
-.hero h1 {
-  margin: 8px 0 12px;
-  font-size: clamp(2rem, 4vw, 3rem);
-  letter-spacing: 0.02em;
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+button.ghost,
+button.linkish {
+  background: transparent;
+}
+
+button.linkish {
+  border: 0;
+  padding: 0;
+  color: var(--accent);
+  text-align: left;
+}
+
+button.active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.shell {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 28px 20px 48px;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-end;
+  margin-bottom: 24px;
+}
+
+.topbar h1 {
+  margin: 4px 0 0;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
 }
 
 .eyebrow {
   margin: 0;
   color: var(--accent);
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
 }
 
-.lead {
-  margin: 0;
-  max-width: 42rem;
-  color: var(--muted);
-  line-height: 1.6;
+.nav {
+  display: flex;
+  gap: 8px;
 }
 
-.panel {
-  margin-top: 32px;
-  padding: 24px;
-  background: color-mix(in srgb, var(--panel) 92%, white);
-  border: 1px solid var(--line);
-}
-
-.panel h2 {
-  margin: 0 0 16px;
-  font-size: 1.15rem;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px 24px;
-  margin: 0;
-}
-
-.grid .wide {
-  grid-column: 1 / -1;
-}
-
-dt {
-  font-size: 0.8rem;
-  color: var(--muted);
-}
-
-dd {
-  margin: 4px 0 0;
-  word-break: break-all;
-}
-
-code {
-  font-family: Consolas, "Courier New", monospace;
-  font-size: 0.92em;
-}
-
-.error {
-  color: var(--danger);
-}
-
-.preview-row {
-  margin: 16px 0 0;
-}
-
-.preview-row img {
-  display: block;
-  border: 1px solid var(--line);
-  background: #fff;
+.content {
+  min-height: 60vh;
 }
 
 @media (max-width: 720px) {
-  .grid {
-    grid-template-columns: 1fr;
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 </style>
