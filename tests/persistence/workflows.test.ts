@@ -2,6 +2,7 @@ import 'fake-indexeddb/auto'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   createFeltCraftDatabase,
+  deleteExistingProject,
   DraftStore,
   PersistenceError,
   ProjectStore,
@@ -186,5 +187,49 @@ describe('project workflow', () => {
     expect(saved.length + deleted.length).toBeGreaterThan(0)
     expect(deleted).toEqual(['mock://previews/illegal.png'])
     expect(await new ProjectStore(db).list()).toHaveLength(0)
+  })
+
+  it('deletes Dexie project then best-effort cleans preview', async () => {
+    const { deleted } = installPreviewApi()
+    const existing = validFeltProject({ previewUrl: feltPreviewRef('todeletepreview00141118111111111111.png') })
+    await new ProjectStore(db).save(existing)
+
+    await deleteExistingProject(existing.projectId, { db })
+    expect(await new ProjectStore(db).get(existing.projectId)).toBeUndefined()
+    expect(deleted).toEqual([existing.previewUrl])
+  })
+
+  it('does not delete preview when Dexie delete fails', async () => {
+    const { deleted } = installPreviewApi()
+    const existing = validFeltProject({ previewUrl: feltPreviewRef('keeppreview0000141118111111111111.png') })
+    await new ProjectStore(db).save(existing)
+
+    const brokenDb = {
+      projects: {
+        get: async () => existing,
+        delete: async () => {
+          throw new Error('dexie delete failed')
+        }
+      }
+    } as unknown as FeltCraftDatabase
+
+    await expect(deleteExistingProject(existing.projectId, { db: brokenDb })).rejects.toBeInstanceOf(
+      PersistenceError
+    )
+    expect(deleted).toEqual([])
+    expect(await new ProjectStore(db).get(existing.projectId)).toEqual(existing)
+  })
+
+  it('keeps project deleted when preview cleanup fails', async () => {
+    installPreviewApi({
+      delete: async () => {
+        throw new Error('preview unlink failed')
+      }
+    })
+    const existing = validFeltProject({ previewUrl: feltPreviewRef('orphanpreview00014111811111111111.png') })
+    await new ProjectStore(db).save(existing)
+
+    await expect(deleteExistingProject(existing.projectId, { db })).resolves.toBeUndefined()
+    expect(await new ProjectStore(db).get(existing.projectId)).toBeUndefined()
   })
 })

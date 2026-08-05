@@ -136,3 +136,47 @@ export async function updateExistingProject(
     throw asPersistenceError(error, 'PROJECT_SAVE_FAILED')
   }
 }
+
+export type DeleteProjectOptions = {
+  db?: FeltCraftDatabase
+}
+
+/**
+ * Application-layer Project delete.
+ * Order: load+validate → Dexie delete → best-effort preview cleanup.
+ * Preview is never deleted before Dexie succeeds. Preview cleanup failure must
+ * not restore an already-deleted ProjectRecord.
+ */
+export async function deleteExistingProject(
+  projectId: string,
+  options: DeleteProjectOptions = {}
+): Promise<void> {
+  if (typeof projectId !== 'string' || !projectId.trim()) {
+    throw persistenceError('INVALID_ARGUMENT', 'projectId 无效。')
+  }
+
+  const store = new ProjectStore(options.db ?? getFeltCraftDatabase())
+  let existing: ProjectRecord
+  try {
+    const found = await store.get(projectId)
+    if (!found) {
+      throw persistenceError('INVALID_ARGUMENT', '作品不存在。')
+    }
+    existing = found
+  } catch (error) {
+    throw asPersistenceError(error, 'INVALID_ARGUMENT')
+  }
+
+  try {
+    await store.delete(projectId)
+  } catch (error) {
+    // Dexie failed — preview must remain.
+    throw asPersistenceError(error, 'PROJECT_SAVE_FAILED')
+  }
+
+  try {
+    await deleteProjectPreviewRef(existing.previewUrl)
+  } catch {
+    // Preview cleanup failure must not revive the deleted Project.
+  }
+}

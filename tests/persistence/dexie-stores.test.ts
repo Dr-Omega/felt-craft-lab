@@ -5,6 +5,7 @@ import {
   createFeltCraftDatabase,
   DraftStore,
   FavoriteStore,
+  isFavoriteRecord,
   ProjectStore,
   setFeltCraftDatabaseForTests,
   type FeltCraftDatabase
@@ -109,6 +110,20 @@ describe('Dexie V1 stores', () => {
   it('rejects illegal Favorites', async () => {
     const store = new FavoriteStore(db)
     await expect(store.save({ userId: '', assetId: 'a', createdAt: fixtureTime })).rejects.toMatchObject({
+      shared: { code: 'INVALID_ARGUMENT' }
+    })
+  })
+
+  it('rejects calendar-invalid Favorite timestamps without throwing from the validator', async () => {
+    const store = new FavoriteStore(db)
+    const illegalCalendar = {
+      userId: validAccess.userId,
+      assetId: validAccess.assetId,
+      createdAt: '2026-02-31T05:20:00.000Z'
+    }
+    expect(() => isFavoriteRecord(illegalCalendar)).not.toThrow()
+    expect(isFavoriteRecord(illegalCalendar)).toBe(false)
+    await expect(store.save(illegalCalendar)).rejects.toMatchObject({
       shared: { code: 'INVALID_ARGUMENT' }
     })
   })

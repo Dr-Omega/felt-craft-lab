@@ -14,5 +14,5 @@ export {
   deleteProjectPreviewRef,
   saveProjectPreviewBytes
 } from './preview-bridge'
-export { saveNewProject, updateExistingProject } from './project-workflow'
+export { deleteExistingProject, saveNewProject, updateExistingProject } from './project-workflow'
 export { AssetAccessStore, DraftStore, FavoriteStore, ProjectStore } from './stores'

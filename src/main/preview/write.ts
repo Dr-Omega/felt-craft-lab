@@ -44,8 +44,8 @@ function atomicWritePng(absolutePath: string, bytes: Buffer): void {
 
 /**
  * Write a unique preview PNG under userData/previews and return a felt-resource ref.
- * Never returns OS paths. Filename is crypto.randomUUID() with hyphens stripped
- * (ResourceRef relative paths disallow `-`).
+ * Never returns OS paths. Filename uses crypto.randomUUID() with hyphens stripped as a
+ * project naming convention (underscores preferred); the resolver charset still allows `-`.
  */
 export function savePreviewPng(rawBytes: unknown, roots: ResourceRoots): PreviewSaveResult {
   const parsed = parseTrustedPngBytes(rawBytes)
@@ -59,7 +59,7 @@ export function savePreviewPng(rawBytes: unknown, roots: ResourceRoots): Preview
     return fail('INVALID_ARGUMENT', '预览图数据格式无效。')
   }
 
-  // ResourceRef relative paths disallow `-`; keep UUID entropy without hyphens.
+  // Prefer underscore-style names; not because the protocol forbids `-`.
   const fileName = `${randomUUID().replaceAll('-', '')}.png`
   const ref = buildFeltResourceRef('preview', fileName)
   if (!ref) {
