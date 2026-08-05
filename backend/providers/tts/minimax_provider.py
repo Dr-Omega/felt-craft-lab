@@ -52,7 +52,8 @@ class MiniMaxTtsProvider(TtsProvider):
 
         model = _clean_env("MINIMAX_TTS_MODEL") or DEFAULT_MODEL
         voice_id = _clean_env("MINIMAX_VOICE_ID") or DEFAULT_VOICE
-        cache_key = _hash_key(content, model, voice_id, voice_purpose)
+        speed = _tts_speed()
+        cache_key = _hash_key(content, model, voice_id, voice_purpose, speed)
         cache_path = CACHE_DIR / f"{cache_key}.mp3"
 
         prune_tts_cache(CACHE_DIR)
@@ -72,7 +73,7 @@ class MiniMaxTtsProvider(TtsProvider):
             "stream": False,
             "voice_setting": {
                 "voice_id": voice_id,
-                "speed": 1.0,
+                "speed": speed,
                 "vol": 1.0,
                 "pitch": 0,
             },
@@ -156,8 +157,18 @@ def _candidate_bases() -> list[str]:
     return out
 
 
-def _hash_key(text: str, model: str, voice_id: str, purpose: str) -> str:
-    raw = f"{purpose}|{model}|{voice_id}|{text}".encode("utf-8")
+def _tts_speed() -> float:
+    """MiniMax speed typically 0.5–2.0; kids fixed intros often use ~0.85."""
+    raw = _clean_env("MINIMAX_TTS_SPEED") or "1.0"
+    try:
+        speed = float(raw)
+    except ValueError:
+        return 1.0
+    return max(0.5, min(2.0, speed))
+
+
+def _hash_key(text: str, model: str, voice_id: str, purpose: str, speed: float = 1.0) -> str:
+    raw = f"{purpose}|{model}|{voice_id}|{speed:.2f}|{text}".encode("utf-8")
     return hashlib.sha256(raw).hexdigest()[:32]
 
 
