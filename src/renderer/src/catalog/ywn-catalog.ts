@@ -68,6 +68,18 @@ export function listCatalogThemes(): string[] {
 }
 
 /**
+ * Read-only AssetRecord set for a specific snapshot.
+ * Editor must use launch.scene.assetSnapshotId — never fall back to latest.
+ */
+export function getCatalogAssetsForSnapshot(snapshotId: string): readonly AssetRecord[] {
+  const snapshotAssets = assetsBySnapshotId.get(snapshotId)
+  if (!snapshotAssets) {
+    throw new Error(`Asset snapshot not found: ${snapshotId}`)
+  }
+  return [...snapshotAssets.values()]
+}
+
+/**
  * Resolves AssetRecord by (assetId, assetSnapshotId).
  * Missing historical snapshot must NOT fall back to latest — throw so Adapter Recovery runs.
  */

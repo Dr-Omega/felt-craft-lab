@@ -504,6 +504,8 @@ export class FabricEditorAdapter {
   deleteSelected(): void {
     const active = this.requireReadyCanvas().getActiveObject()
     if (!active?.objectId) return
+    // Ordinary UI delete must not clear Recovery placeholders (explicit deleteObject still may).
+    if (this.recoveryPlaceholders.has(active) || active.selectable === false) return
     this.deleteObject(active.objectId)
   }
 
@@ -826,6 +828,14 @@ export class FabricEditorAdapter {
     const snapshotAsset = snapshotAssets?.get(asset.assetId)
     if (!snapshotAsset || snapshotAsset.type !== asset.type) {
       throw editorError('ASSET_SNAPSHOT_MISMATCH', 'Material does not belong to the scene asset snapshot.')
+    }
+    // Reject latest AssetRecord silently mixed into a historical Scene (same assetId, different snapshot).
+    const marker = `/${metadata.assetSnapshotId}/`
+    if (!asset.imageUrl.includes(marker)) {
+      throw editorError(
+        'ASSET_SNAPSHOT_MISMATCH',
+        'Material ResourceRef does not match the scene asset snapshot.'
+      )
     }
   }
 

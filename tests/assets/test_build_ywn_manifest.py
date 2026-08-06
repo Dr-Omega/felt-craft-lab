@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import shutil
 import sys
 import tempfile
@@ -428,6 +429,75 @@ class BuildYwnManifestTests(unittest.TestCase):
             self.assertEqual(after["latestSnapshotId"], before_latest)
             self.assertEqual(after["latestSnapshotId"], published)
             self.assertNotIn("snapshot_ywn_fail_latest", after["snapshots"])
+
+    def test_publish_fault_after_snapshot_rolls_back_mutable_and_new_dirs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "source"
+            repo = root / "repo"
+            snap1 = _seed_formal_pack(repo, source)
+            p = _paths(repo)
+            before_registry = p["registry"].read_bytes()
+            before_versions = p["versions"].read_bytes()
+            before_manifest = p["manifest"].read_bytes()
+            before_renderer = p["renderer"].read_bytes()
+            before_renderer_registry = p["renderer_registry"].read_bytes()
+            snap1_manifest = (
+                repo / "assets" / "generated" / "snapshots" / snap1 / "assets.manifest.json"
+            ).read_bytes()
+
+            for name, body in (
+                ("sticker_fu_001.png", "NEW"),
+                ("sticker_fu_001_thumb.png", "NEWT"),
+                ("sticker_fu_001_name_zh.mp3", "N1"),
+                ("sticker_fu_001_name_en.mp3", "N2"),
+                ("sticker_fu_001_intro_zh.mp3", "N3"),
+            ):
+                if name.endswith(".png"):
+                    _write(source / "spring_festival" / "stickers" / name, body)
+                else:
+                    _write(source / "audio" / name, body)
+            _write_xlsx(
+                source / "spring_festival" / "feishu_fields_spring_festival.xlsx",
+                HEADERS,
+                [_ready_row()],
+            )
+
+            snap2 = "snapshot_ywn_fault_inject_002"
+            old_env = os.environ.get("FELT_PUBLISH_FAIL_AFTER_SNAPSHOT")
+            os.environ["FELT_PUBLISH_FAIL_AFTER_SNAPSHOT"] = "1"
+            try:
+                code = _build(source, repo, snap2)
+            finally:
+                if old_env is None:
+                    os.environ.pop("FELT_PUBLISH_FAIL_AFTER_SNAPSHOT", None)
+                else:
+                    os.environ["FELT_PUBLISH_FAIL_AFTER_SNAPSHOT"] = old_env
+
+            self.assertEqual(code, 1)
+            self.assertEqual(p["registry"].read_bytes(), before_registry)
+            self.assertEqual(p["versions"].read_bytes(), before_versions)
+            self.assertEqual(p["manifest"].read_bytes(), before_manifest)
+            self.assertEqual(p["renderer"].read_bytes(), before_renderer)
+            self.assertEqual(p["renderer_registry"].read_bytes(), before_renderer_registry)
+            after = json.loads(p["registry"].read_text(encoding="utf-8"))
+            self.assertEqual(after["latestSnapshotId"], snap1)
+            self.assertNotIn(snap2, after["snapshots"])
+            self.assertTrue(
+                (repo / "assets" / "generated" / "snapshots" / snap1 / "assets.manifest.json").is_file()
+            )
+            self.assertEqual(
+                (repo / "assets" / "generated" / "snapshots" / snap1 / "assets.manifest.json").read_bytes(),
+                snap1_manifest,
+            )
+            self.assertFalse((repo / "assets" / "generated" / "snapshots" / snap2).exists())
+            self.assertFalse((repo / "assets" / "generated" / "material" / snap2).exists())
+            self.assertFalse((repo / "assets" / "generated" / "audio" / snap2).exists())
+            self.assertFalse(
+                (repo / "src" / "renderer" / "src" / "catalog" / "snapshots" / f"{snap2}.manifest.json").exists()
+            )
+            report = json.loads(p["report"].read_text(encoding="utf-8"))
+            self.assertFalse(report["published"])
 
     def test_background_presplit_and_stem_mismatch_fail_closed(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

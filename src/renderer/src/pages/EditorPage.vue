@@ -3,9 +3,9 @@ import { computed, nextTick, onMounted, onUnmounted, ref, shallowRef } from 'vue
 import type { AssetAccessState, AssetRecord } from '@shared/contracts'
 import { EditorSessionService, FabricEditorAdapter, type EditorSessionState } from '../editor'
 import {
-  CATALOG_ASSETS,
   createCatalogResolver,
   DEFAULT_USER_ID,
+  getCatalogAssetsForSnapshot,
   isAssetUnlocked,
   YWN_SNAPSHOT_CONTEXT
 } from '../catalog/ywn-catalog'
@@ -41,9 +41,13 @@ const aiAnswer = ref('')
 const aiBusy = ref(false)
 const accessByAssetId = ref<Record<string, AssetAccessState | undefined>>({})
 
+/** Editor catalog must match Scene snapshot — never latest fallback for historical Draft/Project. */
+const sceneCatalogAssets = launch
+  ? getCatalogAssetsForSnapshot(launch.scene.assetSnapshotId)
+  : []
 const sceneThemeId = launch?.scene.themeId
-const initialStickers = assetsForTheme(CATALOG_ASSETS, 'sticker', sceneThemeId)
-const initialBackgrounds = assetsForTheme(CATALOG_ASSETS, 'background', sceneThemeId)
+const initialStickers = assetsForTheme(sceneCatalogAssets, 'sticker', sceneThemeId)
+const initialBackgrounds = assetsForTheme(sceneCatalogAssets, 'background', sceneThemeId)
 const selectedAssetId = ref(initialStickers[0]?.assetId ?? '')
 const selectedBackgroundId = ref(initialBackgrounds[0]?.assetId ?? '')
 
@@ -52,9 +56,9 @@ let unsubscribe: (() => void) | undefined
 let draftId = launch?.draftId
 let projectId = launch?.projectId
 
-const stickers = computed(() => assetsForTheme(CATALOG_ASSETS, 'sticker', launch?.scene.themeId))
+const stickers = computed(() => assetsForTheme(sceneCatalogAssets, 'sticker', launch?.scene.themeId))
 const backgrounds = computed(() =>
-  assetsForTheme(CATALOG_ASSETS, 'background', launch?.scene.themeId)
+  assetsForTheme(sceneCatalogAssets, 'background', launch?.scene.themeId)
 )
 
 function normalizeSelections(): void {

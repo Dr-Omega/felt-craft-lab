@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
 import shutil
 import sys
@@ -635,6 +636,64 @@ def write_failure_report(
     report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
+def _read_optional_bytes(path: Path) -> bytes | None:
+    if not path.exists():
+        return None
+    return path.read_bytes()
+
+
+def _restore_optional_bytes(path: Path, payload: bytes | None) -> None:
+    if payload is None:
+        if path.exists():
+            path.unlink()
+        return
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(payload)
+
+
+def atomic_write_text(path: Path, text: str) -> None:
+    """Write via temp file in the same directory, then os.replace."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp_name = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=str(path.parent))
+    tmp_path = Path(tmp_name)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as handle:
+            handle.write(text)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(tmp_path, path)
+    except Exception:
+        try:
+            if tmp_path.exists():
+                tmp_path.unlink()
+        except OSError:
+            pass
+        raise
+
+
+def atomic_copy_file(src: Path, dest: Path) -> None:
+    """Copy via temp file in the same directory, then os.replace."""
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp_name = tempfile.mkstemp(prefix=f".{dest.name}.", suffix=".tmp", dir=str(dest.parent))
+    os.close(fd)
+    tmp_path = Path(tmp_name)
+    try:
+        shutil.copy2(src, tmp_path)
+        os.replace(tmp_path, dest)
+    except Exception:
+        try:
+            if tmp_path.exists():
+                tmp_path.unlink()
+        except OSError:
+            pass
+        raise
+
+
+def _rm_tree_if_exists(path: Path) -> None:
+    if path.exists():
+        shutil.rmtree(path)
+
+
 def commit_published_artifacts(
     *,
     manifest: dict,
@@ -650,15 +709,27 @@ def commit_published_artifacts(
     registry_path: Path = OUT_REGISTRY,
     renderer_registry: Path = RENDERER_REGISTRY,
 ) -> list[dict]:
-    """Stage entire snapshot under temp; only on full success copy into place (latest last)."""
+    """Publish with rollback: new snapshot resources + atomic mutable pointer updates.
+
+    On any failure after starting the transaction: restore prior mutable bytes and
+    delete this snapshot's newly created media/manifest trees. Old latest unchanged.
+    """
     snapshot_dir = repo_root / "assets" / "generated" / "snapshots" / snapshot_id
     if snapshot_dir.exists():
         raise SystemExit(
             f"Refusing to overwrite existing snapshot dir: {snapshot_dir.relative_to(repo_root)}"
         )
 
+    material_snapshot_dir = repo_root / "assets" / "generated" / "material" / snapshot_id
+    audio_snapshot_dir = repo_root / "assets" / "generated" / "audio" / snapshot_id
+    if material_snapshot_dir.exists() or audio_snapshot_dir.exists():
+        raise SystemExit(f"Refusing to overwrite existing snapshot media for {snapshot_id}")
+
     renderer_catalog = renderer_manifest.parent
     renderer_snapshot = renderer_catalog / "snapshots" / f"{snapshot_id}.manifest.json"
+    if renderer_snapshot.exists():
+        raise SystemExit(f"Refusing to overwrite existing renderer snapshot manifest: {renderer_snapshot}")
+
     next_registry = {
         "latestSnapshotId": snapshot_id,
         "snapshots": {
@@ -674,48 +745,86 @@ def commit_published_artifacts(
     )
     registry_payload = json.dumps(next_registry, ensure_ascii=False, indent=2) + "\n"
 
+    mutable_paths = [
+        versions_path,
+        registry_path,
+        renderer_registry,
+        manifest_path,
+        renderer_manifest,
+    ]
+    mutable_backups = {path: _read_optional_bytes(path) for path in mutable_paths}
+
     copied: list[dict] = []
-    with tempfile.TemporaryDirectory(prefix="felt-snapshot-stage-") as tmp:
-        stage = Path(tmp)
-        stage_manifest = stage / "assets.manifest.json"
-        stage_versions = stage / "content-versions.json"
-        stage_registry = stage / "snapshot-registry.json"
-        stage_manifest.write_text(payload, encoding="utf-8")
-        stage_versions.write_text(versions_payload, encoding="utf-8")
-        stage_registry.write_text(registry_payload, encoding="utf-8")
+    created_files: list[Path] = []
+    created_dirs: list[Path] = []
 
-        for rel, src in sorted(copies.items()):
-            dest = stage / rel
-            dest.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(src, dest)
+    def rollback() -> None:
+        for path, old in mutable_backups.items():
+            _restore_optional_bytes(path, old)
+        for path in created_files:
+            try:
+                if path.exists():
+                    path.unlink()
+            except OSError:
+                pass
+        for path in created_dirs:
+            _rm_tree_if_exists(path)
+        _rm_tree_if_exists(snapshot_dir)
+        _rm_tree_if_exists(material_snapshot_dir)
+        _rm_tree_if_exists(audio_snapshot_dir)
+        if renderer_snapshot.exists():
+            try:
+                renderer_snapshot.unlink()
+            except OSError:
+                pass
 
-        # 1) Immutable snapshot media + snapshot manifest (new dirs only)
-        for rel, _src in sorted(copies.items()):
-            staged = stage / rel
-            final = repo_root / "assets" / "generated" / rel
-            final.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(staged, final)
-            copied.append({"from": str(_src), "to": str(final.relative_to(repo_root))})
+    try:
+        with tempfile.TemporaryDirectory(prefix="felt-snapshot-stage-") as tmp:
+            stage = Path(tmp)
+            stage_manifest = stage / "assets.manifest.json"
+            stage_versions = stage / "content-versions.json"
+            stage_registry = stage / "snapshot-registry.json"
+            stage_manifest.write_text(payload, encoding="utf-8")
+            stage_versions.write_text(versions_payload, encoding="utf-8")
+            stage_registry.write_text(registry_payload, encoding="utf-8")
 
-        snapshot_dir.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(stage_manifest, snapshot_dir / "assets.manifest.json")
-        renderer_snapshot.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(stage_manifest, renderer_snapshot)
+            for rel, src in sorted(copies.items()):
+                dest = stage / rel
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(src, dest)
 
-        # 2) content-versions merge history
-        versions_path.parent.mkdir(parents=True, exist_ok=True)
-        versions_path.write_text(stage_versions.read_text(encoding="utf-8"), encoding="utf-8")
+            # 1) New immutable snapshot media + manifests (transaction-owned)
+            for rel, _src in sorted(copies.items()):
+                staged = stage / rel
+                final = repo_root / "assets" / "generated" / rel
+                atomic_copy_file(staged, final)
+                created_files.append(final)
+                copied.append({"from": str(_src), "to": str(final.relative_to(repo_root))})
 
-        # 3) Registry + latest pointers last
-        registry_path.parent.mkdir(parents=True, exist_ok=True)
-        registry_path.write_text(stage_registry.read_text(encoding="utf-8"), encoding="utf-8")
-        renderer_registry.parent.mkdir(parents=True, exist_ok=True)
-        renderer_registry.write_text(stage_registry.read_text(encoding="utf-8"), encoding="utf-8")
+            created_dirs.extend([material_snapshot_dir, audio_snapshot_dir, snapshot_dir])
 
-        manifest_path.parent.mkdir(parents=True, exist_ok=True)
-        manifest_path.write_text(payload, encoding="utf-8")
-        renderer_manifest.parent.mkdir(parents=True, exist_ok=True)
-        renderer_manifest.write_text(payload, encoding="utf-8")
+            snapshot_dir.mkdir(parents=True, exist_ok=True)
+            snapshot_manifest = snapshot_dir / "assets.manifest.json"
+            atomic_copy_file(stage_manifest, snapshot_manifest)
+            created_files.append(snapshot_manifest)
+
+            renderer_snapshot.parent.mkdir(parents=True, exist_ok=True)
+            atomic_copy_file(stage_manifest, renderer_snapshot)
+            created_files.append(renderer_snapshot)
+
+            # Fault injection: after new snapshot installed, before mutable pointer commit.
+            if os.environ.get("FELT_PUBLISH_FAIL_AFTER_SNAPSHOT") == "1":
+                raise RuntimeError("injected publish failure after snapshot install")
+
+            # 2) Mutable pointers via temp + os.replace (versions → registry → latest)
+            atomic_write_text(versions_path, stage_versions.read_text(encoding="utf-8"))
+            atomic_write_text(registry_path, stage_registry.read_text(encoding="utf-8"))
+            atomic_write_text(renderer_registry, stage_registry.read_text(encoding="utf-8"))
+            atomic_write_text(manifest_path, payload)
+            atomic_write_text(renderer_manifest, payload)
+    except Exception:
+        rollback()
+        raise
 
     return copied
 
@@ -845,6 +954,31 @@ def build_manifest(
             report_path=report_path,
         )
         print(json.dumps({"imported": 0, "failed": 1, "snapshot": planned_snapshot, "published": False}))
+        return 1
+    except Exception as exc:
+        refuse_issues = [
+            {
+                "assetId": "*",
+                "errors": [f"publish rollback: {exc}"],
+                "sourceSheet": "",
+            }
+        ]
+        write_failure_report(
+            generated_at=generated_at,
+            rows_seen=len(rows),
+            issues=refuse_issues,
+            snapshot_id=planned_snapshot,
+            report_path=report_path,
+        )
+        summary = {
+            "imported": 0,
+            "failed": 1,
+            "snapshot": planned_snapshot,
+            "published": False,
+            "latestSnapshotId": prior_registry.get("latestSnapshotId") or "",
+        }
+        print(json.dumps(summary, ensure_ascii=False))
+        print(json.dumps(refuse_issues, ensure_ascii=False, indent=2))
         return 1
 
     report = {
