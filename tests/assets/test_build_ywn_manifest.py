@@ -156,10 +156,11 @@ def _paths(repo: Path) -> dict[str, Path]:
     }
 
 
-def _build(source: Path, repo: Path, snapshot_id: str) -> int:
+def _build(source: Path, repo: Path, snapshot_id: str, source_pack: str = "test-pack.zip") -> int:
     p = _paths(repo)
     return builder.build_manifest(
         source_root=source,
+        source_pack=source_pack,
         snapshot_id=snapshot_id,
         repo_root=repo,
         manifest_path=p["manifest"],
@@ -498,6 +499,40 @@ class BuildYwnManifestTests(unittest.TestCase):
             )
             report = json.loads(p["report"].read_text(encoding="utf-8"))
             self.assertFalse(report["published"])
+
+    def test_source_pack_follows_build_input(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "source"
+            repo = root / "repo"
+            for name, body in (
+                ("sticker_fu_001.png", "IMG"),
+                ("sticker_fu_001_thumb.png", "THUMB"),
+                ("sticker_fu_001_name_zh.mp3", "A1"),
+                ("sticker_fu_001_name_en.mp3", "A2"),
+                ("sticker_fu_001_intro_zh.mp3", "A3"),
+            ):
+                if name.endswith(".png"):
+                    _write(source / "spring_festival" / "stickers" / name, body)
+                else:
+                    _write(source / "audio" / name, body)
+            _write_xlsx(
+                source / "spring_festival" / "feishu_fields_spring_festival.xlsx",
+                HEADERS,
+                [_ready_row()],
+            )
+
+            pack_a = "归档(3).zip"
+            pack_b = "felt-ywn-v4-export.zip"
+            self.assertEqual(_build(source, repo, "snapshot_ywn_pack_a_001", source_pack=pack_a), 0)
+            first = json.loads(_paths(repo)["manifest"].read_text(encoding="utf-8"))
+            self.assertEqual(first["sourcePack"], pack_a)
+            self.assertNotEqual(first["sourcePack"], pack_b)
+
+            self.assertEqual(_build(source, repo, "snapshot_ywn_pack_b_002", source_pack=pack_b), 0)
+            second = json.loads(_paths(repo)["manifest"].read_text(encoding="utf-8"))
+            self.assertEqual(second["sourcePack"], pack_b)
+            self.assertNotEqual(second["sourcePack"], "归档(3).zip")
 
     def test_background_presplit_and_stem_mismatch_fail_closed(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

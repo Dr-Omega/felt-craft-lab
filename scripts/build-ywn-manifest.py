@@ -20,7 +20,6 @@ from pathlib import Path
 
 from openpyxl import load_workbook
 
-DEFAULT_SOURCE = Path(r"C:\Users\xingx\Desktop\felt-ywn-v3")
 REPO_ROOT = Path(__file__).resolve().parents[1]
 OUT_MANIFEST = REPO_ROOT / "assets" / "generated" / "assets.manifest.json"
 OUT_REPORT = REPO_ROOT / "assets" / "generated" / "validation-report.json"
@@ -832,6 +831,7 @@ def commit_published_artifacts(
 def build_manifest(
     *,
     source_root: Path,
+    source_pack: str,
     snapshot_id: str = "",
     repo_root: Path = REPO_ROOT,
     manifest_path: Path = OUT_MANIFEST,
@@ -844,6 +844,10 @@ def build_manifest(
 ) -> int:
     if not source_root.is_dir():
         print(f"SOURCE_ROOT missing: {source_root}", file=sys.stderr)
+        return 2
+    pack_label = source_pack.strip()
+    if not pack_label:
+        print("source_pack is required (non-empty Manifest.sourcePack provenance).", file=sys.stderr)
         return 2
 
     prior_versions = load_prior_versions(versions_path, manifest_path, repo_root)
@@ -924,7 +928,7 @@ def build_manifest(
         "schemaVersion": 1,
         "assetSnapshotId": planned_snapshot,
         "generatedAt": generated_at,
-        "sourcePack": "归档(3).zip",
+        "sourcePack": pack_label,
         "assets": assets,
         "snapshotContext": {"snapshots": {planned_snapshot: snapshot_assets}},
     }
@@ -1014,7 +1018,7 @@ def build_manifest(
     if sample_row and sample_asset:
         sample_md = f"""# YWN 单条试转复核：sticker_fu_001
 
-**来源包：** 归档(3).zip  
+**来源包：** {pack_label}  
 **assetSnapshotId：** `{planned_snapshot}`  
 **生成时间：** `{generated_at}`
 
@@ -1066,14 +1070,28 @@ def build_manifest(
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Build formal YWN Asset Manifest (immutable snapshots)")
-    parser.add_argument("--source", type=Path, default=DEFAULT_SOURCE)
+    parser.add_argument(
+        "--source",
+        type=Path,
+        required=True,
+        help="Path to Feishu export pack root (required; no machine-local default).",
+    )
+    parser.add_argument(
+        "--source-pack",
+        required=True,
+        help='Provenance label written to Manifest.sourcePack (e.g. "归档(3).zip").',
+    )
     parser.add_argument(
         "--snapshot-id",
         default="",
         help="Optional snapshot id. Default: snapshot_ywn_YYYYMMDD_HHMMSS (always new).",
     )
     args = parser.parse_args(argv)
-    return build_manifest(source_root=args.source, snapshot_id=args.snapshot_id)
+    return build_manifest(
+        source_root=args.source,
+        source_pack=args.source_pack,
+        snapshot_id=args.snapshot_id,
+    )
 
 
 if __name__ == "__main__":

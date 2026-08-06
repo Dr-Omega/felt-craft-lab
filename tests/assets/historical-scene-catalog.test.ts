@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import type { AssetRecord, SceneDocument } from '../../src/shared/contracts'
 import { assetsForTheme, pickSelectedAsset } from '../../src/renderer/src/catalog/editor-selection'
-import { getCatalogAssetsForSnapshot, YWN_SNAPSHOT_ID } from '../../src/renderer/src/catalog/ywn-catalog'
+import {
+  getCatalogAssetsForSnapshot,
+  resolveEditorCatalogForSnapshot,
+  YWN_ASSETS,
+  YWN_SNAPSHOT_ID
+} from '../../src/renderer/src/catalog/ywn-catalog'
+import { EditorSessionService, type EditorSessionAdapter } from '../../src/renderer/src/editor'
+import type { FabricEditorAssetResolver, SceneImportResult, SceneRecoveryIssue } from '../../src/renderer/src/editor'
+import { cloneFixture, validScene } from '../shared/contracts.fixtures'
 
 function sticker(snapshotId: string, imageToken: string, contentVersion: number): AssetRecord {
   return {
@@ -20,9 +28,63 @@ function sticker(snapshotId: string, imageToken: string, contentVersion: number)
     license: 'test',
     contentVersion,
     status: 'ready',
-    // Encode distinct media identity without relying on network bytes.
     preSplitDataUrl: imageToken
   }
+}
+
+class RecoveryStubAdapter implements EditorSessionAdapter {
+  issues: SceneRecoveryIssue[] = []
+  scene: SceneDocument | undefined
+
+  initialize(_element: HTMLCanvasElement, scene: SceneDocument): void {
+    this.scene = cloneFixture(scene)
+  }
+
+  async importScene(scene: SceneDocument, _resolver: FabricEditorAssetResolver): Promise<SceneImportResult> {
+    this.scene = cloneFixture(scene)
+    this.issues = [
+      {
+        code: 'ASSET_SNAPSHOT_MISMATCH',
+        message: 'Scene asset snapshot is unavailable.',
+        assetType: 'sticker'
+      }
+    ]
+    return { issues: [...this.issues] }
+  }
+
+  async setBackground(): Promise<void> {}
+  setSolidBackground(): void {}
+  setTransparentBackground(): void {}
+  resizeCanvas(): void {}
+  async addSticker(): Promise<string> {
+    return 'object-1'
+  }
+  deleteObject(): void {}
+  deleteSelected(): void {}
+  bringForward(): void {}
+  sendBackward(): void {}
+  bringToFront(): void {}
+  sendToBack(): void {}
+  bringSelectedForward(): void {}
+  sendSelectedBackward(): void {}
+  bringSelectedToFront(): void {}
+  sendSelectedToBack(): void {}
+  async undo(): Promise<boolean> {
+    return false
+  }
+  async redo(): Promise<boolean> {
+    return false
+  }
+  exportScene(): SceneDocument {
+    return cloneFixture(this.scene!)
+  }
+  async exportPng(): Promise<Blob> {
+    return new Blob(['png'], { type: 'image/png' })
+  }
+  getRecoveryIssues(): readonly SceneRecoveryIssue[] {
+    return this.issues
+  }
+  dispose(): void {}
 }
 
 describe('historical Scene Editor catalog selection', () => {
@@ -34,6 +96,32 @@ describe('historical Scene Editor catalog selection', () => {
 
   it('throws when snapshot is missing (no latest fallback)', () => {
     expect(() => getCatalogAssetsForSnapshot('snapshot_missing_zzz')).toThrow(/Asset snapshot not found/)
+  })
+
+  it('missing snapshot: Editor setup stays controlled, picker empty, Session enters recovery', async () => {
+    const missingId = 'snapshot_entirely_gone_001'
+    expect(() => resolveEditorCatalogForSnapshot(missingId)).not.toThrow()
+    const catalog = resolveEditorCatalogForSnapshot(missingId)
+    expect(catalog.snapshotMissing).toBe(true)
+    expect(catalog.assets).toEqual([])
+    expect(catalog.assets.length).not.toBe(YWN_ASSETS.length)
+    expect(YWN_ASSETS.some((asset) => catalog.assets.includes(asset))).toBe(false)
+
+    const scene = cloneFixture(validScene)
+    scene.assetSnapshotId = missingId
+    const adapter = new RecoveryStubAdapter()
+    const service = new EditorSessionService({ createAdapter: () => adapter })
+    await service.open({} as HTMLCanvasElement, scene, {
+      async resolveAsset() {
+        throw new Error(`Asset snapshot not found: ${missingId}`)
+      }
+    })
+
+    const state = service.getState()
+    expect(state.status).toBe('recovery')
+    expect(state.recoveryIssues.some((issue) => issue.code === 'ASSET_SNAPSHOT_MISMATCH')).toBe(true)
+    expect(assetsForTheme(catalog.assets, 'sticker', scene.themeId)).toEqual([])
+    expect(pickSelectedAsset('sticker_fu_001', catalog.assets as AssetRecord[])).toBeUndefined()
   })
 
   it('keeps Editor picker on snapshot_001 AssetRecord A when latest is B', () => {
@@ -62,8 +150,6 @@ describe('historical Scene Editor catalog selection', () => {
     expect(selected?.contentVersion).toBe(1)
     expect(selected?.imageUrl).not.toContain(snap2)
     expect(selected?.preSplitDataUrl).not.toBe('image-B')
-
-    // Saving semantics: Scene keeps its own snapshot id (Editor never rewrites to latest).
     expect(scene.assetSnapshotId).toBe(snap1)
   })
 })

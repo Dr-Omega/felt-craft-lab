@@ -80,6 +80,21 @@ export function getCatalogAssetsForSnapshot(snapshotId: string): readonly AssetR
 }
 
 /**
+ * Editor boot helper: missing historical snapshot → empty picker (no latest fallback).
+ * Session/Fabric still open and enter ASSET_SNAPSHOT_MISMATCH / Recovery.
+ */
+export function resolveEditorCatalogForSnapshot(snapshotId: string): {
+  assets: readonly AssetRecord[]
+  snapshotMissing: boolean
+} {
+  try {
+    return { assets: getCatalogAssetsForSnapshot(snapshotId), snapshotMissing: false }
+  } catch {
+    return { assets: [], snapshotMissing: true }
+  }
+}
+
+/**
  * Resolves AssetRecord by (assetId, assetSnapshotId).
  * Missing historical snapshot must NOT fall back to latest — throw so Adapter Recovery runs.
  */

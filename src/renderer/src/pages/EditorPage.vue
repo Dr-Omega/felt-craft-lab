@@ -5,8 +5,8 @@ import { EditorSessionService, FabricEditorAdapter, type EditorSessionState } fr
 import {
   createCatalogResolver,
   DEFAULT_USER_ID,
-  getCatalogAssetsForSnapshot,
   isAssetUnlocked,
+  resolveEditorCatalogForSnapshot,
   YWN_SNAPSHOT_CONTEXT
 } from '../catalog/ywn-catalog'
 import {
@@ -33,7 +33,6 @@ if (!launch) {
 
 const canvasEl = ref<HTMLCanvasElement | null>(null)
 const sessionState = ref<EditorSessionState | null>(null)
-const message = ref('')
 const busy = ref(false)
 const workName = ref(launch?.scene.workName ?? '我的新作品')
 const question = ref('这是什么？')
@@ -42,9 +41,16 @@ const aiBusy = ref(false)
 const accessByAssetId = ref<Record<string, AssetAccessState | undefined>>({})
 
 /** Editor catalog must match Scene snapshot — never latest fallback for historical Draft/Project. */
-const sceneCatalogAssets = launch
-  ? getCatalogAssetsForSnapshot(launch.scene.assetSnapshotId)
-  : []
+const editorCatalog = launch
+  ? resolveEditorCatalogForSnapshot(launch.scene.assetSnapshotId)
+  : { assets: [] as readonly AssetRecord[], snapshotMissing: false }
+const sceneCatalogAssets = editorCatalog.assets
+const sceneSnapshotMissing = editorCatalog.snapshotMissing
+const message = ref(
+  sceneSnapshotMissing
+    ? '当前作品引用的素材快照已缺失，已进入恢复模式。不会改用最新素材库。'
+    : ''
+)
 const sceneThemeId = launch?.scene.themeId
 const initialStickers = assetsForTheme(sceneCatalogAssets, 'sticker', sceneThemeId)
 const initialBackgrounds = assetsForTheme(sceneCatalogAssets, 'background', sceneThemeId)
@@ -105,7 +111,9 @@ async function requireUnlockedAccess(assetId: string): Promise<AssetAccessState>
 
 async function boot(): Promise<void> {
   if (!launch || !canvasEl.value) return
-  message.value = ''
+  if (!sceneSnapshotMissing) {
+    message.value = ''
+  }
   await refreshAccess()
   const service = new EditorSessionService({
     createAdapter: () =>
@@ -117,6 +125,14 @@ async function boot(): Promise<void> {
   session.value = service
   unsubscribe = service.subscribe((state) => {
     sessionState.value = state
+    if (sceneSnapshotMissing || state.status === 'recovery') {
+      const codes = state.recoveryIssues.map((issue) => issue.code).join(', ')
+      message.value = sceneSnapshotMissing
+        ? `当前作品引用的素材快照已缺失，已进入恢复模式。不会改用最新素材库。${codes ? `（${codes}）` : ''}`
+        : state.recoveryIssues.length > 0
+          ? `画布处于恢复状态：${codes}`
+          : message.value
+    }
   })
   await service.open(canvasEl.value, launch.scene, createCatalogResolver())
 }
@@ -318,6 +334,9 @@ onUnmounted(() => {
             </button>
           </div>
           <p class="muted">未解锁素材可浏览，但不能 addSticker / setBackground。旧 Scene 恢复不受当前锁影响。</p>
+          <p v-if="sceneSnapshotMissing" class="message">
+            素材选择器为空：Scene.assetSnapshotId 对应快照不在本地 Registry，未使用 latest。
+          </p>
           <div class="row">
             <button type="button" :disabled="!sessionState?.canEdit" @click="session?.undo()">撤销</button>
             <button type="button" :disabled="!sessionState?.canEdit" @click="session?.redo()">重做</button>
