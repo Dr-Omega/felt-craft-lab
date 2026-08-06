@@ -29,10 +29,15 @@ export interface EditorSessionAdapter {
   resizeCanvas(width: number, height: number): void
   addSticker(asset: AssetRecord, access: AssetAccessState, position?: { left: number; top: number }): Promise<string>
   deleteObject(objectId: string): void
+  deleteSelected(): void
   bringForward(objectId: string): void
   sendBackward(objectId: string): void
   bringToFront(objectId: string): void
   sendToBack(objectId: string): void
+  bringSelectedForward(): void
+  sendSelectedBackward(): void
+  bringSelectedToFront(): void
+  sendSelectedToBack(): void
   undo(): Promise<boolean>
   redo(): Promise<boolean>
   exportScene(): SceneDocument

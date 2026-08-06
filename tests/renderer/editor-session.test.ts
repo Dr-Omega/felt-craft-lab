@@ -38,6 +38,9 @@ class StubAdapter implements EditorSessionAdapter {
   pngSceneId: string | undefined
   undoResult = false
   redoResult = false
+  selectedObjectId: string | undefined
+  deletedObjectIds: string[] = []
+  layerOps: Array<{ op: string; objectId: string }> = []
   private nextObjectId = 0
 
   initialize(_element: HTMLCanvasElement, scene: SceneDocument): void {
@@ -96,13 +99,59 @@ class StubAdapter implements EditorSessionAdapter {
 
   deleteObject(objectId: string): void {
     this.ensureReady()
+    this.deletedObjectIds.push(objectId)
     this.issues = this.issues.filter((issue) => issue.objectId !== objectId)
   }
 
-  bringForward(_objectId: string): void { this.ensureReady() }
-  sendBackward(_objectId: string): void { this.ensureReady() }
-  bringToFront(_objectId: string): void { this.ensureReady() }
-  sendToBack(_objectId: string): void { this.ensureReady() }
+  deleteSelected(): void {
+    this.ensureReady()
+    if (!this.selectedObjectId) return
+    this.deleteObject(this.selectedObjectId)
+  }
+
+  bringForward(objectId: string): void {
+    this.ensureReady()
+    this.layerOps.push({ op: 'bringForward', objectId })
+  }
+
+  sendBackward(objectId: string): void {
+    this.ensureReady()
+    this.layerOps.push({ op: 'sendBackward', objectId })
+  }
+
+  bringToFront(objectId: string): void {
+    this.ensureReady()
+    this.layerOps.push({ op: 'bringToFront', objectId })
+  }
+
+  sendToBack(objectId: string): void {
+    this.ensureReady()
+    this.layerOps.push({ op: 'sendToBack', objectId })
+  }
+
+  bringSelectedForward(): void {
+    this.ensureReady()
+    if (!this.selectedObjectId) return
+    this.bringForward(this.selectedObjectId)
+  }
+
+  sendSelectedBackward(): void {
+    this.ensureReady()
+    if (!this.selectedObjectId) return
+    this.sendBackward(this.selectedObjectId)
+  }
+
+  bringSelectedToFront(): void {
+    this.ensureReady()
+    if (!this.selectedObjectId) return
+    this.bringToFront(this.selectedObjectId)
+  }
+
+  sendSelectedToBack(): void {
+    this.ensureReady()
+    if (!this.selectedObjectId) return
+    this.sendToBack(this.selectedObjectId)
+  }
 
   async undo(): Promise<boolean> {
     this.ensureReady()
@@ -231,10 +280,15 @@ describe('EditorSessionService', () => {
     await expect(service.addSticker(cloneFixture(validAsset), stickerAccess()))
       .rejects.toMatchObject({ code: 'INVALID_ARGUMENT' })
     expect(() => service.deleteObject('object-1')).toThrow(expect.objectContaining({ code: 'INVALID_ARGUMENT' }))
+    expect(() => service.deleteSelected()).toThrow(expect.objectContaining({ code: 'INVALID_ARGUMENT' }))
     expect(() => service.bringForward('object-1')).toThrow(expect.objectContaining({ code: 'INVALID_ARGUMENT' }))
     expect(() => service.sendBackward('object-1')).toThrow(expect.objectContaining({ code: 'INVALID_ARGUMENT' }))
     expect(() => service.bringToFront('object-1')).toThrow(expect.objectContaining({ code: 'INVALID_ARGUMENT' }))
     expect(() => service.sendToBack('object-1')).toThrow(expect.objectContaining({ code: 'INVALID_ARGUMENT' }))
+    expect(() => service.bringSelectedForward()).toThrow(expect.objectContaining({ code: 'INVALID_ARGUMENT' }))
+    expect(() => service.sendSelectedBackward()).toThrow(expect.objectContaining({ code: 'INVALID_ARGUMENT' }))
+    expect(() => service.bringSelectedToFront()).toThrow(expect.objectContaining({ code: 'INVALID_ARGUMENT' }))
+    expect(() => service.sendSelectedToBack()).toThrow(expect.objectContaining({ code: 'INVALID_ARGUMENT' }))
     await expect(service.undo()).rejects.toMatchObject({ code: 'INVALID_ARGUMENT' })
     await expect(service.redo()).rejects.toMatchObject({ code: 'INVALID_ARGUMENT' })
     expect(() => service.prepareDraftSave()).toThrow(expect.objectContaining({ code: 'DRAFT_SAVE_FAILED' }))
@@ -373,6 +427,57 @@ describe('EditorSessionService', () => {
     expect(project.scene.sceneId).toBe(validScene.sceneId)
     expect(project.previewPng.size).toBeGreaterThan(0)
     expect(adapter.pngSceneId).toBe(project.scene.sceneId)
+  })
+
+  it('deletes the selected object and no-ops when nothing is selected', async () => {
+    const adapter = new StubAdapter()
+    const service = createSession(adapter)
+    await service.open({} as HTMLCanvasElement, cloneFixture(validScene), resolver())
+
+    expect(() => service.deleteSelected()).not.toThrow()
+    expect(adapter.deletedObjectIds).toEqual([])
+
+    adapter.selectedObjectId = 'object-selected'
+    service.deleteSelected()
+    expect(adapter.deletedObjectIds).toEqual(['object-selected'])
+  })
+
+  it('applies selected layer ops when a selection exists and no-ops otherwise', async () => {
+    const adapter = new StubAdapter()
+    const service = createSession(adapter)
+    await service.open({} as HTMLCanvasElement, cloneFixture(validScene), resolver())
+
+    expect(() => service.bringSelectedForward()).not.toThrow()
+    expect(() => service.sendSelectedBackward()).not.toThrow()
+    expect(() => service.bringSelectedToFront()).not.toThrow()
+    expect(() => service.sendSelectedToBack()).not.toThrow()
+    expect(adapter.layerOps).toEqual([])
+
+    adapter.selectedObjectId = 'object-layer'
+    service.bringSelectedForward()
+    service.sendSelectedBackward()
+    service.bringSelectedToFront()
+    service.sendSelectedToBack()
+    expect(adapter.layerOps).toEqual([
+      { op: 'bringForward', objectId: 'object-layer' },
+      { op: 'sendBackward', objectId: 'object-layer' },
+      { op: 'bringToFront', objectId: 'object-layer' },
+      { op: 'sendToBack', objectId: 'object-layer' }
+    ])
+  })
+
+  it('rejects selected-object mutations after dispose with controlled lifecycle errors', async () => {
+    const adapter = new StubAdapter()
+    const service = createSession(adapter)
+    await service.open({} as HTMLCanvasElement, cloneFixture(validScene), resolver())
+    adapter.selectedObjectId = 'object-1'
+    service.dispose()
+
+    expect(() => service.deleteSelected()).toThrow(expect.objectContaining({ code: 'INVALID_ARGUMENT' }))
+    expect(() => service.bringSelectedForward()).toThrow(expect.objectContaining({ code: 'INVALID_ARGUMENT' }))
+    expect(() => service.sendSelectedBackward()).toThrow(expect.objectContaining({ code: 'INVALID_ARGUMENT' }))
+    expect(() => service.bringSelectedToFront()).toThrow(expect.objectContaining({ code: 'INVALID_ARGUMENT' }))
+    expect(() => service.sendSelectedToBack()).toThrow(expect.objectContaining({ code: 'INVALID_ARGUMENT' }))
   })
 
   it('rejects saves while recovery exists or an operation is pending', async () => {

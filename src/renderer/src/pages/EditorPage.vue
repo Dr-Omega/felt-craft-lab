@@ -318,6 +318,13 @@ onUnmounted(() => {
             <button type="button" :disabled="!sessionState?.canEdit" @click="session?.undo()">撤销</button>
             <button type="button" :disabled="!sessionState?.canEdit" @click="session?.redo()">重做</button>
           </div>
+          <div class="row">
+            <button type="button" :disabled="!sessionState?.canEdit" @click="session?.deleteSelected()">删除</button>
+            <button type="button" :disabled="!sessionState?.canEdit" @click="session?.bringSelectedForward()">上移</button>
+            <button type="button" :disabled="!sessionState?.canEdit" @click="session?.sendSelectedBackward()">下移</button>
+            <button type="button" :disabled="!sessionState?.canEdit" @click="session?.bringSelectedToFront()">置顶</button>
+            <button type="button" :disabled="!sessionState?.canEdit" @click="session?.sendSelectedToBack()">置底</button>
+          </div>
         </section>
 
         <section>

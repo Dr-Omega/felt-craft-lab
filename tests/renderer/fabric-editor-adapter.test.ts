@@ -437,6 +437,37 @@ describe('FabricEditorAdapter', () => {
     expect(adapter.exportScene().objects).toEqual([])
   })
 
+  it('no-ops selected layer ops on recovery placeholders and deleteSelected without an active object', async () => {
+    const unavailableSticker = materialAsset('sticker')
+    unavailableSticker.imageUrl = 'felt-resource://material/missing-selected.png'
+    const scene = cloneFixture(validScene)
+    const { adapter, canvas } = createHarness(scene, new Set([unavailableSticker.imageUrl]))
+    await adapter.importScene(scene, {
+      async resolveAsset(assetId): Promise<AssetRecord> {
+        if (assetId === 'background_moon_001') return materialAsset('background')
+        if (assetId === validAsset.assetId) return unavailableSticker
+        throw new Error('not found')
+      }
+    })
+
+    const placeholder = canvas.getObjects()[0]
+    expect(placeholder.selectable).toBe(false)
+    canvas.setActiveObject(placeholder)
+    const orderBefore = canvas.getObjects().map((object) => object.objectId)
+
+    expect(() => adapter.bringSelectedForward()).not.toThrow()
+    expect(() => adapter.sendSelectedBackward()).not.toThrow()
+    expect(() => adapter.bringSelectedToFront()).not.toThrow()
+    expect(() => adapter.sendSelectedToBack()).not.toThrow()
+    expect(canvas.getObjects().map((object) => object.objectId)).toEqual(orderBefore)
+    expect(adapter.getRecoveryIssues()).toHaveLength(1)
+
+    canvas.discardActiveObject()
+    expect(() => adapter.deleteSelected()).not.toThrow()
+    expect(canvas.getObjects()).toHaveLength(1)
+    expect(adapter.getRecoveryIssues()).toHaveLength(1)
+  })
+
   it('clears recovery issues by objectId when duplicate missing sticker instances share an assetId', async () => {
     const unavailableSticker = materialAsset('sticker')
     unavailableSticker.imageUrl = 'felt-resource://material/missing-duplicate.png'

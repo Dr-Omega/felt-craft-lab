@@ -1,16 +1,12 @@
 /**
- * Runtime projection used to continue AssetRecord.contentVersion across Manifest rebuilds.
- * Keep field list aligned with scripts/build-ywn-manifest.py (including mediaHashes).
- * Authoritative bump logic + regressions live in the Python builder tests.
+ * Align with scripts/build-ywn-manifest.py content_projection.
+ * Version identity = semantic fields + logical media name + sha256 (NOT snapshot ResourceRefs).
+ * Authoritative regressions live in the Python builder tests.
  */
 
-export type MediaHashes = {
-  image: string
-  thumbnail: string
-  preSplit: string
-  nameZhAudio: string
-  nameEnAudio: string
-  introZhAudio: string
+export type MediaIdentity = {
+  logicalName: string
+  sha256: string
 }
 
 export type ContentProjection = {
@@ -21,17 +17,16 @@ export type ContentProjection = {
   nameEn: unknown
   introZh: unknown
   keywords: unknown[]
-  imageUrl: string
-  thumbnailUrl: string
-  preSplitDataUrl: string
+  image: MediaIdentity
+  thumbnail: MediaIdentity
+  preSplit: MediaIdentity
   audio: {
-    nameZhUrl: string
-    nameEnUrl: string
-    introZhUrl: string
+    nameZh: MediaIdentity
+    nameEn: MediaIdentity
+    introZh: MediaIdentity
   }
   source: string
   license: string
-  mediaHashes: MediaHashes
 }
 
 export type PriorContentVersion = {
@@ -39,39 +34,44 @@ export type PriorContentVersion = {
   projection: ContentProjection
 }
 
-function emptyHashes(): MediaHashes {
-  return {
-    image: '',
-    thumbnail: '',
-    preSplit: '',
-    nameZhAudio: '',
-    nameEnAudio: '',
-    introZhAudio: ''
+function emptyIdentity(): MediaIdentity {
+  return { logicalName: '', sha256: '' }
+}
+
+function logicalNameFromRef(ref: unknown): string {
+  if (typeof ref !== 'string' || !ref) return ''
+  const parts = ref.replace(/\\/g, '/').split('/')
+  return parts[parts.length - 1] || ''
+}
+
+function asIdentity(value: unknown, fallbackName = '', fallbackHash = ''): MediaIdentity {
+  if (value && typeof value === 'object') {
+    const row = value as Record<string, unknown>
+    return {
+      logicalName: typeof row.logicalName === 'string' ? row.logicalName : fallbackName,
+      sha256: typeof row.sha256 === 'string' ? row.sha256 : fallbackHash
+    }
   }
+  if (typeof value === 'string') {
+    return { logicalName: fallbackName, sha256: value || fallbackHash }
+  }
+  return { logicalName: fallbackName, sha256: fallbackHash }
 }
 
 export function contentProjection(
   record: Record<string, unknown>,
-  mediaHashes?: Partial<MediaHashes>
+  media?: Partial<Record<'image' | 'thumbnail' | 'preSplit' | 'nameZhAudio' | 'nameEnAudio' | 'introZhAudio', MediaIdentity | string>>
 ): ContentProjection {
   const audio = (record.audio && typeof record.audio === 'object' ? record.audio : {}) as Record<
     string,
     unknown
   >
-  const fromRecord =
+  const supplied = media ?? {}
+  const legacyHashes =
     record.mediaHashes && typeof record.mediaHashes === 'object'
       ? (record.mediaHashes as Record<string, unknown>)
       : {}
-  const hashes = {
-    ...emptyHashes(),
-    ...(typeof fromRecord.image === 'string' ? { image: fromRecord.image } : {}),
-    ...(typeof fromRecord.thumbnail === 'string' ? { thumbnail: fromRecord.thumbnail } : {}),
-    ...(typeof fromRecord.preSplit === 'string' ? { preSplit: fromRecord.preSplit } : {}),
-    ...(typeof fromRecord.nameZhAudio === 'string' ? { nameZhAudio: fromRecord.nameZhAudio } : {}),
-    ...(typeof fromRecord.nameEnAudio === 'string' ? { nameEnAudio: fromRecord.nameEnAudio } : {}),
-    ...(typeof fromRecord.introZhAudio === 'string' ? { introZhAudio: fromRecord.introZhAudio } : {}),
-    ...mediaHashes
-  }
+
   return {
     type: record.type,
     themeId: record.themeId,
@@ -80,17 +80,40 @@ export function contentProjection(
     nameEn: record.nameEn,
     introZh: record.introZh,
     keywords: Array.isArray(record.keywords) ? [...record.keywords] : [],
-    imageUrl: typeof record.imageUrl === 'string' ? record.imageUrl : '',
-    thumbnailUrl: typeof record.thumbnailUrl === 'string' ? record.thumbnailUrl : '',
-    preSplitDataUrl: typeof record.preSplitDataUrl === 'string' ? record.preSplitDataUrl : '',
+    image: asIdentity(
+      supplied.image ?? record.image ?? legacyHashes.image,
+      logicalNameFromRef(record.imageUrl),
+      typeof legacyHashes.image === 'string' ? legacyHashes.image : ''
+    ),
+    thumbnail: asIdentity(
+      supplied.thumbnail ?? record.thumbnail ?? legacyHashes.thumbnail,
+      logicalNameFromRef(record.thumbnailUrl),
+      typeof legacyHashes.thumbnail === 'string' ? legacyHashes.thumbnail : ''
+    ),
+    preSplit: asIdentity(
+      supplied.preSplit ?? record.preSplit ?? legacyHashes.preSplit,
+      logicalNameFromRef(record.preSplitDataUrl),
+      typeof legacyHashes.preSplit === 'string' ? legacyHashes.preSplit : ''
+    ),
     audio: {
-      nameZhUrl: typeof audio.nameZhUrl === 'string' ? audio.nameZhUrl : '',
-      nameEnUrl: typeof audio.nameEnUrl === 'string' ? audio.nameEnUrl : '',
-      introZhUrl: typeof audio.introZhUrl === 'string' ? audio.introZhUrl : ''
+      nameZh: asIdentity(
+        supplied.nameZhAudio ?? audio.nameZh ?? legacyHashes.nameZhAudio,
+        logicalNameFromRef(audio.nameZhUrl),
+        typeof legacyHashes.nameZhAudio === 'string' ? legacyHashes.nameZhAudio : ''
+      ),
+      nameEn: asIdentity(
+        supplied.nameEnAudio ?? audio.nameEn ?? legacyHashes.nameEnAudio,
+        logicalNameFromRef(audio.nameEnUrl),
+        typeof legacyHashes.nameEnAudio === 'string' ? legacyHashes.nameEnAudio : ''
+      ),
+      introZh: asIdentity(
+        supplied.introZhAudio ?? audio.introZh ?? legacyHashes.introZhAudio,
+        logicalNameFromRef(audio.introZhUrl),
+        typeof legacyHashes.introZhAudio === 'string' ? legacyHashes.introZhAudio : ''
+      )
     },
     source: typeof record.source === 'string' ? record.source : '',
-    license: typeof record.license === 'string' ? record.license : '',
-    mediaHashes: hashes
+    license: typeof record.license === 'string' ? record.license : ''
   }
 }
 
@@ -107,3 +130,5 @@ export function resolveContentVersion(
   }
   return oldVersion + 1
 }
+
+export { emptyIdentity }

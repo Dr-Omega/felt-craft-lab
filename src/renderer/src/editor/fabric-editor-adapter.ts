@@ -523,6 +523,22 @@ export class FabricEditorAdapter {
     this.moveLayer(objectId, (canvas, object) => canvas.sendToBack(object))
   }
 
+  bringSelectedForward(): void {
+    this.withSelectedLayerObject((objectId) => this.bringForward(objectId))
+  }
+
+  sendSelectedBackward(): void {
+    this.withSelectedLayerObject((objectId) => this.sendBackward(objectId))
+  }
+
+  bringSelectedToFront(): void {
+    this.withSelectedLayerObject((objectId) => this.bringToFront(objectId))
+  }
+
+  sendSelectedToBack(): void {
+    this.withSelectedLayerObject((objectId) => this.sendToBack(objectId))
+  }
+
   async undo(): Promise<boolean> {
     this.requireReadyCanvas()
     if (this.historyIndex <= 0) return false
@@ -912,6 +928,14 @@ export class FabricEditorAdapter {
     action(canvas, object)
     canvas.requestRenderAll()
     this.captureHistory()
+  }
+
+  /** Layer ops on the active object; no-ops when empty, placeholder, or non-selectable. */
+  private withSelectedLayerObject(action: (objectId: string) => void): void {
+    const active = this.requireReadyCanvas().getActiveObject()
+    if (!active?.objectId) return
+    if (this.recoveryPlaceholders.has(active) || active.selectable === false) return
+    action(active.objectId)
   }
 
   private enforceUniformScale(object: FabricObjectPort): void {

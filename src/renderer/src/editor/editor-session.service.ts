@@ -165,6 +165,10 @@ export class EditorSessionService {
     this.runSyncMutation('INVALID_ARGUMENT', () => this.requireAdapter().deleteObject(objectId))
   }
 
+  deleteSelected(): void {
+    this.runSyncMutation('INVALID_ARGUMENT', () => this.requireAdapter().deleteSelected())
+  }
+
   bringForward(objectId: string): void {
     this.runSyncMutation('INVALID_ARGUMENT', () => this.requireAdapter().bringForward(objectId))
   }
@@ -179,6 +183,22 @@ export class EditorSessionService {
 
   sendToBack(objectId: string): void {
     this.runSyncMutation('INVALID_ARGUMENT', () => this.requireAdapter().sendToBack(objectId))
+  }
+
+  bringSelectedForward(): void {
+    this.runSyncMutation('INVALID_ARGUMENT', () => this.requireAdapter().bringSelectedForward())
+  }
+
+  sendSelectedBackward(): void {
+    this.runSyncMutation('INVALID_ARGUMENT', () => this.requireAdapter().sendSelectedBackward())
+  }
+
+  bringSelectedToFront(): void {
+    this.runSyncMutation('INVALID_ARGUMENT', () => this.requireAdapter().bringSelectedToFront())
+  }
+
+  sendSelectedToBack(): void {
+    this.runSyncMutation('INVALID_ARGUMENT', () => this.requireAdapter().sendSelectedToBack())
   }
 
   async undo(): Promise<boolean> {

@@ -174,13 +174,17 @@ describe('contentVersion continuation', () => {
       imageUrl: 'felt-resource://material/a.png',
       audio: {}
     }
-    const prior: Record<string, PriorContentVersion> = {
+    const prior = {
       sticker_fu_001: {
         contentVersion: 5,
-        projection: contentProjection(base, { image: 'aaa' })
+        projection: contentProjection(base, {
+          image: { logicalName: 'a.png', sha256: 'aaa' }
+        })
       }
     }
-    const changed = contentProjection(base, { image: 'bbb' })
+    const changed = contentProjection(base, {
+      image: { logicalName: 'a.png', sha256: 'bbb' }
+    })
     expect(resolveContentVersion('sticker_fu_001', changed, prior)).toBe(6)
   })
 })
