@@ -53,7 +53,13 @@ class MiniMaxTtsProvider(TtsProvider):
         model = _clean_env("MINIMAX_TTS_MODEL") or DEFAULT_MODEL
         voice_id = _clean_env("MINIMAX_VOICE_ID") or DEFAULT_VOICE
         speed = _tts_speed()
-        cache_key = _hash_key(content, model, voice_id, voice_purpose, speed)
+        vol = _tts_vol()
+        pitch = _tts_pitch()
+        emotion = _tts_emotion()
+        content = _maybe_insert_pauses(content)
+        cache_key = _hash_key(
+            content, model, voice_id, voice_purpose, speed, vol=vol, pitch=pitch, emotion=emotion
+        )
         cache_path = CACHE_DIR / f"{cache_key}.mp3"
 
         prune_tts_cache(CACHE_DIR)
@@ -67,16 +73,19 @@ class MiniMaxTtsProvider(TtsProvider):
                 )
 
         bases = _candidate_bases()
+        voice_setting: dict[str, Any] = {
+            "voice_id": voice_id,
+            "speed": speed,
+            "vol": vol,
+            "pitch": pitch,
+        }
+        if emotion:
+            voice_setting["emotion"] = emotion
         payload = {
             "model": model,
             "text": content[:500],
             "stream": False,
-            "voice_setting": {
-                "voice_id": voice_id,
-                "speed": speed,
-                "vol": 1.0,
-                "pitch": 0,
-            },
+            "voice_setting": voice_setting,
             "audio_setting": {
                 "sample_rate": 32000,
                 "bitrate": 128000,
@@ -167,8 +176,82 @@ def _tts_speed() -> float:
     return max(0.5, min(2.0, speed))
 
 
-def _hash_key(text: str, model: str, voice_id: str, purpose: str, speed: float = 1.0) -> str:
-    raw = f"{purpose}|{model}|{voice_id}|{speed:.2f}|{text}".encode("utf-8")
+def _tts_vol() -> float:
+    """Volume (0, 10]; kids intros often use ~1.8 so speech is less soft."""
+    raw = _clean_env("MINIMAX_TTS_VOL") or "1.0"
+    try:
+        vol = float(raw)
+    except ValueError:
+        return 1.0
+    return max(0.1, min(10.0, vol))
+
+
+def _tts_pitch() -> int:
+    """Pitch [-12, 12]; slight positive can sound brighter / less weak."""
+    raw = _clean_env("MINIMAX_TTS_PITCH") or "0"
+    try:
+        pitch = int(float(raw))
+    except ValueError:
+        return 0
+    return max(-12, min(12, pitch))
+
+
+def _tts_emotion() -> str:
+    """Optional emotion: happy/sad/.../calm; empty = provider auto."""
+    raw = (_clean_env("MINIMAX_TTS_EMOTION") or "").lower()
+    allowed = {
+        "happy",
+        "sad",
+        "angry",
+        "fearful",
+        "disgusted",
+        "surprised",
+        "calm",
+        "fluent",
+        "whisper",
+    }
+    return raw if raw in allowed else ""
+
+
+def _maybe_insert_pauses(text: str) -> str:
+    """Insert MiniMax <#sec#> pauses after sentence punctuation for clearer 顿挫."""
+    raw = _clean_env("MINIMAX_TTS_PAUSE_SEC") or "0"
+    try:
+        sec = float(raw)
+    except ValueError:
+        return text
+    if sec <= 0:
+        return text
+    sec = max(0.01, min(2.0, round(sec, 2)))
+    marker = f"<#{sec}#>"
+    # Avoid stacking if already present
+    if "<#" in text:
+        return text
+    out = text
+    for ch in ("。", "！", "？", "；", "!", "?"):
+        out = out.replace(ch, f"{ch}{marker}")
+    # Also pause after Chinese colon used as story beat (嫦娥奔月:)
+    out = out.replace("：", f"：{marker}").replace(":", f":{marker}")
+    # Don't leave trailing pause at very end if useless — MiniMax ok either way
+    return out
+
+
+def _hash_key(
+    text: str,
+    model: str,
+    voice_id: str,
+    purpose: str,
+    speed: float = 1.0,
+    *,
+    vol: float = 1.0,
+    pitch: int = 0,
+    emotion: str = "",
+) -> str:
+    raw = (
+        f"{purpose}|{model}|{voice_id}|{speed:.2f}|{vol:.2f}|{pitch}|{emotion}|{text}".encode(
+            "utf-8"
+        )
+    )
     return hashlib.sha256(raw).hexdigest()[:32]
 
 
