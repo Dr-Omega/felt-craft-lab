@@ -42,6 +42,7 @@ export interface FabricCanvasPort {
   sendToBack(object: FabricObjectPort): unknown
   on(eventName: string, listener: (event: { target?: FabricObjectPort }) => void): unknown
   off(eventName: string, listener?: (event: { target?: FabricObjectPort }) => void): unknown
+  calcOffset(): unknown
   requestRenderAll(): unknown
   toDataURL(options?: { format?: string; multiplier?: number }): string
   dispose(): unknown
@@ -154,7 +155,12 @@ const defaultRuntime: FabricEditorRuntime = {
       height,
       preserveObjectStacking: true,
       selection: true,
-      uniformScaling: true
+      uniformScaling: true,
+      centeredScaling: true,
+      centeredRotation: true,
+      fireRightClick: true,
+      stopContextMenu: true,
+      allowTouchScrolling: false
     }) as unknown as FabricCanvasPort
   },
   createImage(sourceUrl, options) {
@@ -345,6 +351,7 @@ export class FabricEditorAdapter {
         for (const [assetId, asset] of prepared.assets) this.assetCache.set(assetId, asset)
         this.sceneReady = true
         this.committedSceneReady = true
+        canvas.calcOffset()
         canvas.discardActiveObject()
         canvas.requestRenderAll()
         this.resetHistory()
@@ -368,6 +375,7 @@ export class FabricEditorAdapter {
       canvas.setBackgroundImage(null, () => undefined)
       this.backgroundAssetId = null
       if (previousBackgroundAssetId) this.clearRecoveryIssueIfResolved(previousBackgroundAssetId, 'background')
+      canvas.calcOffset()
       canvas.requestRenderAll()
       this.captureHistory()
       return
@@ -396,6 +404,7 @@ export class FabricEditorAdapter {
     this.assertProspectiveScene({ width, height })
     canvas.setWidth(width)
     canvas.setHeight(height)
+    canvas.calcOffset()
     if (canvas.backgroundImage) this.fitBackground(canvas.backgroundImage, canvas)
     canvas.requestRenderAll()
     this.captureHistory()
@@ -412,6 +421,7 @@ export class FabricEditorAdapter {
     this.backgroundColor = color
     this.backgroundAssetId = null
     if (previousBackgroundAssetId) this.clearRecoveryIssueIfResolved(previousBackgroundAssetId, 'background')
+    canvas.calcOffset()
     canvas.requestRenderAll()
     this.captureHistory()
   }
@@ -427,6 +437,7 @@ export class FabricEditorAdapter {
     this.backgroundColor = undefined
     this.backgroundAssetId = null
     if (previousBackgroundAssetId) this.clearRecoveryIssueIfResolved(previousBackgroundAssetId, 'background')
+    canvas.calcOffset()
     canvas.requestRenderAll()
     this.captureHistory()
   }
@@ -469,6 +480,7 @@ export class FabricEditorAdapter {
     canvas.add(loaded.object)
     this.objectResources.set(loaded.object, loaded.release)
     canvas.setActiveObject(loaded.object)
+    canvas.calcOffset()
     canvas.requestRenderAll()
     this.captureHistory()
     return objectId
@@ -480,6 +492,7 @@ export class FabricEditorAdapter {
     if (!object || object.selectable === false) throw editorError('INVALID_ARGUMENT', 'Sticker is not selectable.')
     const canvas = this.requireCanvas()
     canvas.setActiveObject(object)
+    canvas.calcOffset()
     canvas.requestRenderAll()
   }
 
@@ -497,6 +510,7 @@ export class FabricEditorAdapter {
     if (recoveryAssetId && recoveryObjectId) {
       this.clearRecoveryIssueIfResolved(recoveryAssetId, 'sticker', recoveryObjectId)
     }
+    canvas.calcOffset()
     canvas.requestRenderAll()
     this.captureHistory()
   }
@@ -965,6 +979,7 @@ export class FabricEditorAdapter {
       scaleY: scale
     })
     object.setCoords()
+    canvas.calcOffset()
   }
 
   private findObject(objectId: string): FabricObjectPort | undefined {

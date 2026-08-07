@@ -148,6 +148,8 @@ class FakeCanvas implements FabricCanvasPort {
     this.listeners.set(eventName, (this.listeners.get(eventName) ?? []).filter((candidate) => candidate !== listener))
   }
 
+  calcOffset(): void {}
+
   requestRenderAll(): void {}
 
   toDataURL(): string {
