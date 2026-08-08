@@ -15,6 +15,12 @@ import {
   validateSceneSnapshotValidationContext
 } from '@shared/contracts'
 import { FELT_RESOURCE_REF_POLICY, parseFeltResourceRef } from '@shared/resource'
+import {
+  inspectCanvasDom,
+  serializeFabricObject,
+  type CanvasDomDiagnostic,
+  type FabricObjectDiagnostic
+} from './fabric-editor-dev-diagnostics'
 
 /**
  * The renderer's only Fabric boundary. Vue components should use this adapter
@@ -601,6 +607,56 @@ export class FabricEditorAdapter {
     const response = await fetch(this.exportPngDataUrl())
     if (!response.ok) throw editorError('PREVIEW_EXPORT_FAILED', 'PNG preview export failed.')
     return response.blob()
+  }
+
+  /** DEV-only: isolation Rect that bypasses felt-resource loading. */
+  devAddDiagnosticRect(): string {
+    if (!import.meta.env.DEV) throw editorError('INVALID_ARGUMENT', 'Diagnostic rect is DEV-only.')
+    const canvas = this.requireReadyCanvas()
+    const objectId = this.createObjectId()
+    const object = new fabric.Rect({
+      left: canvas.getWidth() / 2,
+      top: canvas.getHeight() / 2,
+      originX: 'center',
+      originY: 'center',
+      width: 120,
+      height: 80,
+      fill: 'rgba(255, 120, 0, 0.35)',
+      stroke: '#cc5500',
+      strokeWidth: 2,
+      selectable: true,
+      evented: true
+    }) as unknown as FabricObjectPort
+    object.objectId = objectId
+    canvas.add(object)
+    canvas.setActiveObject(object)
+    canvas.calcOffset()
+    canvas.requestRenderAll()
+    return objectId
+  }
+
+  devGetObjectCount(): number {
+    if (!import.meta.env.DEV) return 0
+    return this.requireReadyCanvas().getObjects().length
+  }
+
+  devGetActiveObjectDiagnostic(): FabricObjectDiagnostic {
+    if (!import.meta.env.DEV) return { exists: false }
+    return serializeFabricObject(this.requireReadyCanvas().getActiveObject())
+  }
+
+  devInspectCanvasDom(hostCanvas: HTMLCanvasElement): CanvasDomDiagnostic {
+    if (!import.meta.env.DEV) {
+      return {
+        hostCanvas: { selector: 'host-canvas', found: false },
+        lowerCanvas: { selector: 'lower-canvas', found: false },
+        upperCanvas: { selector: 'upper-canvas', found: false },
+        logicWidth: 0,
+        logicHeight: 0,
+        layersMatchLogic: false
+      }
+    }
+    return inspectCanvasDom(hostCanvas, this.requireReadyCanvas())
   }
 
   dispose(): void {
