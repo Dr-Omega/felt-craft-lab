@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref, shallowRef } from 'vue'
+import { computed, onMounted, onUnmounted, ref, shallowRef } from 'vue'
 import type { AssetAccessState, AssetRecord } from '@shared/contracts'
 import { EditorSessionService, FabricEditorAdapter, type EditorSessionState } from '../editor'
 import {
@@ -32,7 +32,6 @@ if (!launch) {
 }
 
 const canvasEl = ref<HTMLCanvasElement | null>(null)
-const canvasHostEl = ref<HTMLDivElement | null>(null)
 const sessionState = ref<EditorSessionState | null>(null)
 const busy = ref(false)
 const workName = ref(launch?.scene.workName ?? '我的新作品')
@@ -62,9 +61,6 @@ const session = shallowRef<EditorSessionService | null>(null)
 let unsubscribe: (() => void) | undefined
 let draftId = launch?.draftId
 let projectId = launch?.projectId
-let resizeObserver: ResizeObserver | undefined
-let resizeFrame = 0
-let lastHostSize = { width: 0, height: 0 }
 
 const stickers = computed(() => assetsForTheme(sceneCatalogAssets, 'sticker', launch?.scene.themeId))
 const backgrounds = computed(() =>
@@ -113,29 +109,6 @@ async function requireUnlockedAccess(assetId: string): Promise<AssetAccessState>
   return access!
 }
 
-function syncCanvasSizeToHost(force = false): void {
-  const host = canvasHostEl.value
-  const canvas = canvasEl.value
-  const adapter = session.value
-  if (!host || !canvas || !adapter) return
-
-  const width = Math.max(1, Math.round(host.clientWidth))
-  const height = Math.max(1, Math.round(host.clientHeight))
-  if (!force && width === lastHostSize.width && height === lastHostSize.height) return
-  lastHostSize = { width, height }
-  canvas.style.width = `${width}px`
-  canvas.style.height = `${height}px`
-  adapter.resizeCanvas(width, height)
-}
-
-function scheduleCanvasResize(): void {
-  if (resizeFrame) window.cancelAnimationFrame(resizeFrame)
-  resizeFrame = window.requestAnimationFrame(() => {
-    resizeFrame = 0
-    syncCanvasSizeToHost()
-  })
-}
-
 async function boot(): Promise<void> {
   if (!launch || !canvasEl.value) return
   if (!sceneSnapshotMissing) {
@@ -162,14 +135,6 @@ async function boot(): Promise<void> {
     }
   })
   await service.open(canvasEl.value, launch.scene, createCatalogResolver())
-  await nextTick()
-  syncCanvasSizeToHost(true)
-  if (canvasHostEl.value && typeof ResizeObserver !== 'undefined') {
-    resizeObserver = new ResizeObserver(() => {
-      scheduleCanvasResize()
-    })
-    resizeObserver.observe(canvasHostEl.value)
-  }
 }
 
 async function addSelectedSticker(): Promise<void> {
@@ -295,8 +260,6 @@ async function askMockQa(): Promise<void> {
 }
 
 function goBack(): void {
-  resizeObserver?.disconnect()
-  if (resizeFrame) window.cancelAnimationFrame(resizeFrame)
   unsubscribe?.()
   session.value?.dispose()
   session.value = null
@@ -304,7 +267,6 @@ function goBack(): void {
 }
 
 onMounted(async () => {
-  await nextTick()
   try {
     await boot()
   } catch (error) {
@@ -313,8 +275,6 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  resizeObserver?.disconnect()
-  if (resizeFrame) window.cancelAnimationFrame(resizeFrame)
   unsubscribe?.()
   session.value?.dispose()
   audioService.stop('primary')
@@ -332,7 +292,7 @@ onUnmounted(() => {
     </header>
 
     <div class="workspace">
-      <div ref="canvasHostEl" class="canvas-wrap">
+      <div class="canvas-wrap">
         <canvas ref="canvasEl" class="editor-canvas" width="960" height="640"></canvas>
       </div>
 
@@ -451,9 +411,6 @@ onUnmounted(() => {
 }
 
 .canvas-wrap {
-  display: inline-flex;
-  width: 100%;
-  min-height: 640px;
   overflow: auto;
   padding: 12px;
   background: var(--panel);

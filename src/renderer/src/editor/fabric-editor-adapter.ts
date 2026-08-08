@@ -155,12 +155,7 @@ const defaultRuntime: FabricEditorRuntime = {
       height,
       preserveObjectStacking: true,
       selection: true,
-      uniformScaling: true,
-      centeredScaling: true,
-      centeredRotation: true,
-      fireRightClick: true,
-      stopContextMenu: true,
-      allowTouchScrolling: false
+      uniformScaling: true
     }) as unknown as FabricCanvasPort
   },
   createImage(sourceUrl, options) {
