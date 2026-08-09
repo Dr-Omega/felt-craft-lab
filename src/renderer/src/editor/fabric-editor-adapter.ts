@@ -146,7 +146,47 @@ interface PreparedScene {
 }
 
 const DEFAULT_STICKER_SCALE = 1
+export const STICKER_SAFE_EDGE_MARGIN = 24
+export const STICKER_ROTATION_CONTROL_OFFSET = 40
+export const STICKER_INITIAL_MAX_WIDTH_RATIO = 0.5
+export const STICKER_INITIAL_MAX_HEIGHT_RATIO = 0.5
 export const FABRIC_EDITOR_HISTORY_LIMIT = 100
+
+/**
+ * Calculates the persisted transform for a newly created Sticker only.
+ * Existing SceneDocument objects always retain their saved transform.
+ */
+export function calculateStickerInitialScale(
+  canvasWidth: number,
+  canvasHeight: number,
+  imageWidth: number | undefined,
+  imageHeight: number | undefined
+): number {
+  if (
+    typeof imageWidth !== 'number'
+    || !Number.isFinite(imageWidth)
+    || imageWidth <= 0
+    || typeof imageHeight !== 'number'
+    || !Number.isFinite(imageHeight)
+    || imageHeight <= 0
+  ) {
+    throw editorError('ASSET_NOT_FOUND', 'Material image dimensions are invalid.')
+  }
+
+  const safeWidth = canvasWidth - STICKER_SAFE_EDGE_MARGIN * 2
+  const verticalInset = STICKER_SAFE_EDGE_MARGIN + STICKER_ROTATION_CONTROL_OFFSET
+  const safeHeight = canvasHeight - verticalInset * 2
+  const productWidth = canvasWidth * STICKER_INITIAL_MAX_WIDTH_RATIO
+  const productHeight = canvasHeight * STICKER_INITIAL_MAX_HEIGHT_RATIO
+  const maxWidth = Math.max(1, Math.min(safeWidth, productWidth))
+  const maxHeight = Math.max(1, Math.min(safeHeight, productHeight))
+  const scale = Math.min(DEFAULT_STICKER_SCALE, maxWidth / imageWidth, maxHeight / imageHeight)
+
+  if (!Number.isFinite(scale) || scale <= 0) {
+    throw editorError('ASSET_NOT_FOUND', 'Material image dimensions are invalid.')
+  }
+  return scale
+}
 
 const defaultRuntime: FabricEditorRuntime = {
   createCanvas(element, width, height) {
@@ -522,6 +562,26 @@ export class FabricEditorAdapter {
       lockMovementX: false,
       lockMovementY: false
     }, operation, canvas)
+    if (position === undefined) {
+      try {
+        const scale = calculateStickerInitialScale(
+          canvas.getWidth(),
+          canvas.getHeight(),
+          loaded.object.width,
+          loaded.object.height
+        )
+        loaded.object.set({
+          left: canvas.getWidth() / 2,
+          top: canvas.getHeight() / 2,
+          scaleX: scale,
+          scaleY: scale
+        })
+        loaded.object.setCoords()
+      } catch (error) {
+        loaded.release()
+        throw error
+      }
+    }
     canvas.add(loaded.object)
     this.objectResources.set(loaded.object, loaded.release)
     canvas.setActiveObject(loaded.object)

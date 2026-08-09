@@ -5,6 +5,9 @@ import type { AssetRecord, SceneDocument } from '../../src/shared/contracts'
 import {
   FABRIC_EDITOR_HISTORY_LIMIT,
   FabricEditorAdapter,
+  STICKER_ROTATION_CONTROL_OFFSET,
+  STICKER_SAFE_EDGE_MARGIN,
+  calculateStickerInitialScale,
   validateFabricFromURLResult,
   type FabricCanvasPort,
   type FabricEditorRuntime,
@@ -32,6 +35,8 @@ class FakeObject implements FabricObjectPort {
   scaleX?: number
   scaleY?: number
   angle?: number
+  width?: number
+  height?: number
   visible?: boolean
   selectable?: boolean
   evented?: boolean
@@ -43,6 +48,8 @@ class FakeObject implements FabricObjectPort {
   lockRotation?: boolean
 
   constructor(options: Record<string, unknown>) {
+    this.width = 100
+    this.height = 100
     this.set(options)
   }
 
@@ -182,7 +189,11 @@ function materialAsset(type: AssetRecord['type']): AssetRecord {
   }
 }
 
-function createHarness(scene = cloneFixture(validScene), unavailableRefs = new Set<string>()): {
+function createHarness(
+  scene = cloneFixture(validScene),
+  unavailableRefs = new Set<string>(),
+  imageDimensions?: { width: number; height: number }
+): {
   adapter: FabricEditorAdapter
   canvas: FakeCanvas
   loadedRefs: string[]
@@ -193,7 +204,7 @@ function createHarness(scene = cloneFixture(validScene), unavailableRefs = new S
   const released: string[] = []
   const runtime: FabricEditorRuntime = {
     createCanvas: () => canvas,
-    createImage: async (_sourceUrl, options) => new FakeObject(options),
+    createImage: async (_sourceUrl, options) => new FakeObject({ ...options, ...imageDimensions }),
     createPlaceholder: (options) => new FakeObject(options)
   }
   const adapter = new FabricEditorAdapter({
@@ -223,6 +234,50 @@ function resolver(): { resolveAsset(assetId: string): Promise<AssetRecord> } {
     }
   }
 }
+
+describe('new Sticker initial scale', () => {
+  it('fits an 885×802 Sticker into the medium 960×640 creation box with reachable controls', () => {
+    const scale = calculateStickerInitialScale(960, 640, 885, 802)
+    const displayWidth = 885 * scale
+    const displayHeight = 802 * scale
+    const mtrY = 320 - displayHeight / 2 - STICKER_ROTATION_CONTROL_OFFSET
+
+    expect(scale).toBeCloseTo(320 / 802)
+    expect(scale).toBeLessThan(1)
+    expect(displayWidth).toBeLessThanOrEqual(480)
+    expect(displayHeight).toBeLessThanOrEqual(320)
+    expect(mtrY).toBeGreaterThanOrEqual(STICKER_SAFE_EDGE_MARGIN)
+  })
+
+  it('fits a 790×471 wide Sticker by the medium creation width', () => {
+    const scale = calculateStickerInitialScale(960, 640, 790, 471)
+
+    expect(scale).toBeCloseTo(480 / 790)
+    expect(790 * scale).toBeLessThanOrEqual(480)
+    expect(471 * scale).toBeLessThanOrEqual(320)
+  })
+
+  it('does not enlarge a small Sticker', () => {
+    expect(calculateStickerInitialScale(960, 640, 200, 150)).toBe(1)
+  })
+
+  it('uses the medium creation height for an extra-tall Sticker', () => {
+    const scale = calculateStickerInitialScale(960, 640, 300, 1000)
+    expect(scale).toBeCloseTo(320 / 1000)
+  })
+
+  it('uses the medium creation width for an extra-wide Sticker', () => {
+    const scale = calculateStickerInitialScale(960, 640, 1600, 100)
+    expect(scale).toBeCloseTo(480 / 1600)
+  })
+
+  it.each([0, -1, Number.NaN, Number.POSITIVE_INFINITY])('rejects invalid image dimensions: %s', (dimension) => {
+    expect(() => calculateStickerInitialScale(960, 640, dimension, 100))
+      .toThrow(expect.objectContaining({ code: 'ASSET_NOT_FOUND' }))
+    expect(() => calculateStickerInitialScale(960, 640, 100, dimension))
+      .toThrow(expect.objectContaining({ code: 'ASSET_NOT_FOUND' }))
+  })
+})
 
 describe('FabricEditorAdapter', () => {
   it('blocks editing and export after initialize until a Scene import succeeds', async () => {
@@ -273,6 +328,68 @@ describe('FabricEditorAdapter', () => {
     const exported = adapter.exportScene()
     expect(exported.objects.map((object) => object.zIndex)).toEqual([1, 2])
     expect(exported.objects[0]).toMatchObject({ objectId: secondId, scaleX: 0.6, scaleY: 0.6, angle: -180 })
+  })
+
+  it('persists the centered medium initial transform for a default new Sticker', async () => {
+    const scene = cloneFixture(validScene)
+    scene.canvas = { width: 960, height: 640, backgroundColor: '#FFF8E7' }
+    scene.backgroundAssetId = null
+    scene.objects = []
+    const { adapter, canvas } = createHarness(scene, new Set(), { width: 885, height: 802 })
+    await adapter.importScene(scene, resolver())
+
+    const objectId = await adapter.addSticker(materialAsset('sticker'), validAccess)
+    const expectedScale = calculateStickerInitialScale(960, 640, 885, 802)
+    const object = canvas.getObjects().find((candidate) => candidate.objectId === objectId)
+    const exported = adapter.exportScene().objects[0]
+
+    expect(object).toMatchObject({ left: 480, top: 320, scaleX: expectedScale, scaleY: expectedScale, angle: 0 })
+    expect(exported).toMatchObject({ objectId, left: 480, top: 320, scaleX: expectedScale, scaleY: expectedScale, angle: 0 })
+  })
+
+  it('keeps an explicit Sticker position on the existing scale=1 path', async () => {
+    const scene = cloneFixture(validScene)
+    scene.backgroundAssetId = null
+    scene.objects = []
+    const { adapter, canvas } = createHarness(scene, new Set(), { width: 885, height: 802 })
+    await adapter.importScene(scene, resolver())
+
+    const objectId = await adapter.addSticker(materialAsset('sticker'), validAccess, { left: 600, top: 320 })
+    expect(canvas.getObjects().find((candidate) => candidate.objectId === objectId))
+      .toMatchObject({ left: 600, top: 320, scaleX: 1, scaleY: 1, angle: 0 })
+  })
+
+  it('rejects invalid dimensions without adding a Sticker or leaking its loaded resource', async () => {
+    const scene = cloneFixture(validScene)
+    scene.backgroundAssetId = null
+    scene.objects = []
+    const { adapter, canvas, released } = createHarness(scene, new Set(), { width: 0, height: 802 })
+    await adapter.importScene(scene, resolver())
+
+    await expect(adapter.addSticker(materialAsset('sticker'), validAccess))
+      .rejects.toMatchObject({ code: 'ASSET_NOT_FOUND' })
+    expect(canvas.getObjects()).toEqual([])
+    expect(released).toContain(`felt-resource://material/${validScene.assetSnapshotId}/mock-sticker.png`)
+  })
+
+  it('does not recalculate the persisted transform for imported or history-restored Stickers', async () => {
+    const scene = cloneFixture(validScene)
+    scene.canvas = { width: 960, height: 640, backgroundColor: '#FFF8E7' }
+    scene.backgroundAssetId = null
+    scene.objects[0].scaleX = 0.72
+    scene.objects[0].scaleY = 0.72
+    const { adapter, canvas } = createHarness(scene, new Set(), { width: 885, height: 802 })
+    await adapter.importScene(scene, resolver())
+
+    expect(canvas.getObjects()[0]).toMatchObject({ scaleX: 0.72, scaleY: 0.72 })
+    const addedId = await adapter.addSticker(materialAsset('sticker'), validAccess, { left: 700, top: 320 })
+    await expect(adapter.undo()).resolves.toBe(true)
+    expect(adapter.exportScene().objects).toEqual([expect.objectContaining({ scaleX: 0.72, scaleY: 0.72 })])
+    await expect(adapter.redo()).resolves.toBe(true)
+    expect(adapter.exportScene().objects).toEqual(expect.arrayContaining([
+      expect.objectContaining({ scaleX: 0.72, scaleY: 0.72 }),
+      expect.objectContaining({ objectId: addedId, scaleX: 1, scaleY: 1 })
+    ]))
   })
 
   it('locks Fabric flip/skew controls and rejects unsupported transforms at serialization', async () => {
