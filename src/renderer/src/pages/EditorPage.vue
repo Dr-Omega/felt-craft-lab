@@ -10,7 +10,7 @@ import {
   YWN_SNAPSHOT_CONTEXT
 } from '../catalog/ywn-catalog'
 import {
-  assetsForTheme,
+  assetsForEditor,
   normalizeSelectedAssetId,
   pickSelectedAsset
 } from '../catalog/editor-selection'
@@ -52,8 +52,8 @@ const message = ref(
     : ''
 )
 const sceneThemeId = launch?.scene.themeId
-const initialStickers = assetsForTheme(sceneCatalogAssets, 'sticker', sceneThemeId)
-const initialBackgrounds = assetsForTheme(sceneCatalogAssets, 'background', sceneThemeId)
+const initialStickers = assetsForEditor(sceneCatalogAssets, 'sticker', sceneThemeId)
+const initialBackgrounds = assetsForEditor(sceneCatalogAssets, 'background', sceneThemeId)
 const selectedAssetId = ref(initialStickers[0]?.assetId ?? '')
 const selectedBackgroundId = ref(initialBackgrounds[0]?.assetId ?? '')
 
@@ -62,9 +62,9 @@ let unsubscribe: (() => void) | undefined
 let draftId = launch?.draftId
 let projectId = launch?.projectId
 
-const stickers = computed(() => assetsForTheme(sceneCatalogAssets, 'sticker', launch?.scene.themeId))
+const stickers = computed(() => assetsForEditor(sceneCatalogAssets, 'sticker', launch?.scene.themeId))
 const backgrounds = computed(() =>
-  assetsForTheme(sceneCatalogAssets, 'background', launch?.scene.themeId)
+  assetsForEditor(sceneCatalogAssets, 'background', launch?.scene.themeId)
 )
 
 function normalizeSelections(): void {

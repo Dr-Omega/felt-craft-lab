@@ -3,13 +3,13 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import type { DraftRecord, ProjectRecord } from '@shared/contracts'
 import {
   CATALOG_ASSETS,
-  createBlankScene,
   createUnlockedAccess,
   DEFAULT_USER_ID,
   isAssetUnlocked,
   listCatalogThemes,
   YWN_SNAPSHOT_ID
 } from '../catalog/ywn-catalog'
+import { prepareNewWorkScene } from '../catalog/library-new-work'
 import { openEditor } from '../app-nav'
 import {
   AssetAccessStore,
@@ -45,13 +45,18 @@ async function refreshLists(): Promise<void> {
 }
 
 async function startNewWork(): Promise<void> {
-  busy.value = true
   message.value = ''
+  const prepared = prepareNewWorkScene(newWorkName.value, themeFilter.value)
+  if (!prepared.scene) {
+    message.value = prepared.message
+    return
+  }
+
+  busy.value = true
   try {
-    const themeId = themeFilter.value === 'all' ? themes[0] : themeFilter.value
     openEditor({
       mode: 'new',
-      scene: createBlankScene(newWorkName.value, themeId)
+      scene: prepared.scene
     })
   } catch (error) {
     message.value = error instanceof Error ? error.message : String(error)

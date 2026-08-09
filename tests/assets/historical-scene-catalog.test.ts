@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { AssetRecord, SceneDocument } from '../../src/shared/contracts'
-import { assetsForTheme, pickSelectedAsset } from '../../src/renderer/src/catalog/editor-selection'
+import { assetsForEditor, pickSelectedAsset } from '../../src/renderer/src/catalog/editor-selection'
 import {
   getCatalogAssetsForSnapshot,
   resolveEditorCatalogForSnapshot,
@@ -120,7 +120,7 @@ describe('historical Scene Editor catalog selection', () => {
     const state = service.getState()
     expect(state.status).toBe('recovery')
     expect(state.recoveryIssues.some((issue) => issue.code === 'ASSET_SNAPSHOT_MISMATCH')).toBe(true)
-    expect(assetsForTheme(catalog.assets, 'sticker', scene.themeId)).toEqual([])
+    expect(assetsForEditor(catalog.assets, 'sticker', scene.themeId)).toEqual([])
     expect(pickSelectedAsset('sticker_fu_001', catalog.assets as AssetRecord[])).toBeUndefined()
   })
 
@@ -143,7 +143,7 @@ describe('historical Scene Editor catalog selection', () => {
     expect(sceneAssets[0]?.preSplitDataUrl).toBe('image-A')
     expect(sceneAssets[0]?.contentVersion).toBe(1)
 
-    const stickers = assetsForTheme(sceneAssets, 'sticker', scene.themeId)
+    const stickers = assetsForEditor(sceneAssets, 'sticker', scene.themeId)
     const selected = pickSelectedAsset('sticker_fu_001', stickers)
     expect(selected?.imageUrl).toContain(`/${snap1}/`)
     expect(selected?.preSplitDataUrl).toBe('image-A')

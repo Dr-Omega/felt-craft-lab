@@ -1,17 +1,17 @@
-/**
- * Theme-scoped Editor selection helpers.
- * selected IDs must stay inside the current Scene theme collection.
- */
+/** Editor selection helpers for the Scene's immutable asset snapshot. */
 import type { AssetRecord } from '@shared/contracts'
 
-export function assetsForTheme(
+export function assetsForEditor(
   assets: readonly AssetRecord[],
   type: AssetRecord['type'],
-  themeId: string | undefined
+  sceneThemeId: string | undefined
 ): AssetRecord[] {
   const typed = assets.filter((asset) => asset.type === type)
-  if (!themeId) return typed
-  return typed.filter((asset) => asset.themeId === themeId)
+  if (!sceneThemeId) return typed
+  return [
+    ...typed.filter((asset) => asset.themeId === sceneThemeId),
+    ...typed.filter((asset) => asset.themeId !== sceneThemeId)
+  ]
 }
 
 export function normalizeSelectedAssetId(
