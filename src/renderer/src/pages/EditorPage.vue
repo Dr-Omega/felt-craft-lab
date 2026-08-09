@@ -23,10 +23,6 @@ import {
   saveNewProject,
   updateExistingProject
 } from '../persistence'
-import {
-  formatDiagnosticSummary,
-  type FabricDevDiagnosticReport
-} from '../editor/fabric-editor-dev-diagnostics'
 import { aiClient } from '../services/ai.client'
 import { audioService } from '../services/audio.service'
 
@@ -55,9 +51,6 @@ const message = ref(
     ? '当前作品引用的素材快照已缺失，已进入恢复模式。不会改用最新素材库。'
     : ''
 )
-const devDiagnostics = ref<FabricDevDiagnosticReport[]>([])
-const devDiagSummary = ref('')
-const isDev = import.meta.env.DEV
 const sceneThemeId = launch?.scene.themeId
 const initialStickers = assetsForTheme(sceneCatalogAssets, 'sticker', sceneThemeId)
 const initialBackgrounds = assetsForTheme(sceneCatalogAssets, 'background', sceneThemeId)
@@ -142,16 +135,6 @@ async function boot(): Promise<void> {
     }
   })
   await service.open(canvasEl.value, launch.scene, createCatalogResolver())
-  if (isDev) {
-    await recordDevDiagnostics('after-editor-boot')
-  }
-}
-
-async function recordDevDiagnostics(label: string, resourceRef?: string): Promise<void> {
-  if (!isDev || !session.value || !canvasEl.value) return
-  const report = await session.value.devCollectFabricDiagnostics(canvasEl.value, label, resourceRef)
-  devDiagnostics.value = [report, ...devDiagnostics.value].slice(0, 8)
-  devDiagSummary.value = formatDiagnosticSummary(report)
 }
 
 async function addSelectedSticker(): Promise<void> {
@@ -166,57 +149,11 @@ async function addSelectedSticker(): Promise<void> {
     const access = await requireUnlockedAccess(asset.assetId)
     await session.value.addSticker(asset, access)
     message.value = `已加入贴纸：${asset.nameZh}`
-    if (isDev) {
-      await recordDevDiagnostics('after-add-sticker', asset.imageUrl)
-    }
   } catch (error) {
     message.value = error instanceof Error ? error.message : String(error)
-    if (isDev) {
-      console.error('[fabric-dev-diag] addSelectedSticker failed', error)
-      await recordDevDiagnostics('add-sticker-error')
-    }
   } finally {
     busy.value = false
   }
-}
-
-function deleteSelectedWithDiagnostics(): void {
-  if (!session.value) return
-  if (isDev) {
-    const diagnostic = session.value.devDeleteSelectedWithDiagnostics()
-    if (diagnostic.error) {
-      message.value = `删除失败：${diagnostic.error}`
-      return
-    }
-    if (diagnostic.afterObjectCount === diagnostic.beforeObjectCount) {
-      message.value = `删除未生效：objects ${diagnostic.beforeObjectCount} → ${diagnostic.afterObjectCount}（见控制台 [fabric-dev-diag]）`
-      return
-    }
-    message.value = `已删除选中对象：objects ${diagnostic.beforeObjectCount} → ${diagnostic.afterObjectCount}`
-    void recordDevDiagnostics('after-delete-selected')
-    return
-  }
-  session.value.deleteSelected()
-}
-
-async function addDiagnosticRect(): Promise<void> {
-  if (!isDev || !session.value) return
-  busy.value = true
-  try {
-    const objectId = session.value.devAddDiagnosticRect()
-    message.value = `已加入 DEV 诊断 Rect：${objectId}。请手动测试选中/拖动/缩放/删除。`
-    await recordDevDiagnostics('after-add-diagnostic-rect')
-  } catch (error) {
-    message.value = error instanceof Error ? error.message : String(error)
-    console.error('[fabric-dev-diag] addDiagnosticRect failed', error)
-  } finally {
-    busy.value = false
-  }
-}
-
-async function dumpDevDiagnostics(): Promise<void> {
-  if (!isDev || !session.value || !canvasEl.value) return
-  await recordDevDiagnostics('manual-dump', selectedAsset()?.imageUrl)
 }
 
 async function applyBackground(): Promise<void> {
@@ -400,27 +337,16 @@ onUnmounted(() => {
             素材选择器为空：Scene.assetSnapshotId 对应快照不在本地 Registry，未使用 latest。
           </p>
           <div class="row">
-            <button type="button" :disabled="!sessionState?.canEdit" @click="deleteSelectedWithDiagnostics">删除</button>
             <button type="button" :disabled="!sessionState?.canEdit" @click="session?.undo()">撤销</button>
             <button type="button" :disabled="!sessionState?.canEdit" @click="session?.redo()">重做</button>
           </div>
           <div class="row">
+            <button type="button" :disabled="!sessionState?.canEdit" @click="session?.deleteSelected()">删除</button>
             <button type="button" :disabled="!sessionState?.canEdit" @click="session?.bringSelectedForward()">上移</button>
             <button type="button" :disabled="!sessionState?.canEdit" @click="session?.sendSelectedBackward()">下移</button>
             <button type="button" :disabled="!sessionState?.canEdit" @click="session?.bringSelectedToFront()">置顶</button>
             <button type="button" :disabled="!sessionState?.canEdit" @click="session?.sendSelectedToBack()">置底</button>
           </div>
-        </section>
-
-        <section v-if="isDev" class="dev-diag">
-          <h3>DEV · Fabric 运行时诊断</h3>
-          <p class="muted">加入贴纸 / 删除 / 诊断 Rect 后会写入控制台 <code>[fabric-dev-diag]</code>，并在此显示摘要。</p>
-          <div class="row">
-            <button type="button" :disabled="busy || !sessionState?.canEdit" @click="addDiagnosticRect">加入诊断 Rect</button>
-            <button type="button" :disabled="!sessionState?.canEdit" @click="dumpDevDiagnostics">刷新诊断快照</button>
-          </div>
-          <p v-if="devDiagSummary" class="diag-summary">{{ devDiagSummary }}</p>
-          <pre v-for="report in devDiagnostics" :key="report.timestamp + report.label" class="diag-block">{{ JSON.stringify(report, null, 2) }}</pre>
         </section>
 
         <section>
@@ -558,30 +484,6 @@ onUnmounted(() => {
 
 .message {
   color: var(--accent);
-}
-
-.dev-diag {
-  border-color: #d4a017;
-}
-
-.diag-summary {
-  margin: 10px 0 0;
-  font-size: 0.82rem;
-  line-height: 1.45;
-  color: var(--ink);
-}
-
-.diag-block {
-  margin: 10px 0 0;
-  padding: 10px;
-  max-height: 220px;
-  overflow: auto;
-  background: #f7faf9;
-  border: 1px solid var(--line);
-  font-size: 0.72rem;
-  line-height: 1.35;
-  white-space: pre-wrap;
-  word-break: break-word;
 }
 
 @media (max-width: 960px) {

@@ -1,14 +1,6 @@
 import { toSharedError, validateSceneDocument } from '@shared/contracts'
 import type { AssetAccessState, AssetRecord, SceneDocument, SharedError, SharedErrorCode } from '@shared/contracts'
 import type { FabricEditorAssetResolver, SceneImportResult, SceneRecoveryIssue } from './fabric-editor-adapter'
-import { FabricEditorAdapter } from './fabric-editor-adapter'
-import {
-  inspectFeltResource,
-  logDevDeleteDiagnostic,
-  logFabricDevDiagnostic,
-  type DevDeleteDiagnostic,
-  type FabricDevDiagnosticReport
-} from './fabric-editor-dev-diagnostics'
 import type {
   EditorSessionAdapter,
   EditorSessionAdapterFactory,
@@ -261,65 +253,6 @@ export class EditorSessionService {
     this.sceneId = undefined
     this.recoveryIssues = []
     this.emit()
-  }
-
-  async devCollectFabricDiagnostics(
-    hostCanvas: HTMLCanvasElement,
-    label: string,
-    resourceRef?: string
-  ): Promise<FabricDevDiagnosticReport> {
-    if (!import.meta.env.DEV) throw sessionError('INVALID_ARGUMENT', 'Fabric diagnostics are DEV-only.')
-    const adapter = this.requireDevFabricAdapter()
-    const resource = resourceRef ? await inspectFeltResource(resourceRef) : undefined
-    const report: FabricDevDiagnosticReport = {
-      label,
-      timestamp: new Date().toISOString(),
-      session: {
-        sessionStatus: this.status,
-        pendingOperations: this.pendingTokens.size,
-        recoveryIssues: this.recoveryIssues.map((issue) => ({ ...issue })),
-        objectCount: adapter.devGetObjectCount(),
-        activeObject: adapter.devGetActiveObjectDiagnostic()
-      },
-      canvasDom: adapter.devInspectCanvasDom(hostCanvas),
-      ...(resource ? { resource } : {})
-    }
-    logFabricDevDiagnostic(report)
-    return report
-  }
-
-  devAddDiagnosticRect(): string {
-    if (!import.meta.env.DEV) throw sessionError('INVALID_ARGUMENT', 'Diagnostic rect is DEV-only.')
-    let objectId = ''
-    this.runSyncMutation('INVALID_ARGUMENT', () => {
-      objectId = this.requireDevFabricAdapter().devAddDiagnosticRect()
-    })
-    return objectId
-  }
-
-  devDeleteSelectedWithDiagnostics(): DevDeleteDiagnostic {
-    if (!import.meta.env.DEV) throw sessionError('INVALID_ARGUMENT', 'Fabric diagnostics are DEV-only.')
-    const adapter = this.requireDevFabricAdapter()
-    const beforeObjectCount = adapter.devGetObjectCount()
-    const diagnostic: DevDeleteDiagnostic = { beforeObjectCount, afterObjectCount: beforeObjectCount }
-    try {
-      this.runSyncMutation('INVALID_ARGUMENT', () => adapter.deleteSelected())
-      diagnostic.afterObjectCount = adapter.devGetObjectCount()
-    } catch (error) {
-      diagnostic.error = error instanceof Error ? error.message : String(error)
-      diagnostic.stack = error instanceof Error ? error.stack : undefined
-      diagnostic.afterObjectCount = adapter.devGetObjectCount()
-    }
-    logDevDeleteDiagnostic('deleteSelected', diagnostic)
-    return diagnostic
-  }
-
-  private requireDevFabricAdapter(): FabricEditorAdapter {
-    const adapter = this.requireAdapter()
-    if (!(adapter instanceof FabricEditorAdapter)) {
-      throw sessionError('INVALID_ARGUMENT', 'Fabric diagnostics require FabricEditorAdapter.')
-    }
-    return adapter
   }
 
   private async runAsyncMutation<T>(fallbackCode: SharedErrorCode, task: () => Promise<T>): Promise<T> {
