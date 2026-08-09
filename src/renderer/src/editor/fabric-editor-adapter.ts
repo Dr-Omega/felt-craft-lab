@@ -161,8 +161,26 @@ const defaultRuntime: FabricEditorRuntime = {
   createImage(sourceUrl, options) {
     return new Promise((resolve, reject) => {
       try {
-        fabric.Image.fromURL(sourceUrl, (image) => {
-          if (!image) {
+        // Fabric 5.3.0: fromURL callback signature is (image, isError) in some builds.
+        // Guard the ghost-Image regression where a failed load still produces an
+        // image with `_element=null`, `width=0`, `height=0`. Such ghost images
+        // would otherwise reach the canvas and propagate NaN coordinates on drag.
+        const fromURL = fabric.Image.fromURL as unknown as (
+          url: string,
+          callback: (imageOrError: unknown, isError?: boolean) => void,
+          options?: Record<string, unknown>
+        ) => void
+        fromURL(sourceUrl, (imageOrError, isError) => {
+          const image = imageOrError as
+            | (FabricObjectPort & { set: (options: Record<string, unknown>) => unknown })
+            | { set?: (options: Record<string, unknown>) => unknown; width?: unknown; height?: unknown }
+            | null
+          const error = validateFabricFromURLResult(imageOrError, isError, image)
+          if (error) {
+            reject(error)
+            return
+          }
+          if (!image || typeof image.set !== 'function') {
             reject(editorError('ASSET_NOT_FOUND', 'Material image could not be loaded.'))
             return
           }
@@ -202,6 +220,38 @@ export function normalizeSceneAngle(angle: number): number {
   if (!Number.isFinite(angle)) return 0
   const normalized = ((angle + 180) % 360 + 360) % 360 - 180
   return Object.is(normalized, -0) ? 0 : normalized
+}
+
+/**
+ * Validates the result of `fabric.Image.fromURL`. Returns an `ASSET_NOT_FOUND`
+ * `SharedError` when:
+ * - the Fabric 5.3.0 callback reports `isError=true` (signals a load failure);
+ * - the `image` argument is missing or not a Fabric object (no `set` method);
+ * - `width` or `height` is not a finite positive number (ghost-image regression
+ *   where a failed load still produces an Image with `width=0`, `height=0`).
+ *
+ * Returns `null` when the image is safe to add to the canvas.
+ */
+export function validateFabricFromURLResult(
+  imageOrError: unknown,
+  isError: unknown,
+  image: { set?: unknown; width?: unknown; height?: unknown } | null = imageOrError as { set?: unknown; width?: unknown; height?: unknown } | null
+): SharedError | null {
+  if (isError === true) {
+    return editorError('ASSET_NOT_FOUND', 'Material image could not be loaded.')
+  }
+  if (!image || typeof image.set !== 'function') {
+    return editorError('ASSET_NOT_FOUND', 'Material image could not be loaded.')
+  }
+  const width = image.width
+  const height = image.height
+  if (
+    typeof width !== 'number' || !Number.isFinite(width) || width <= 0
+    || typeof height !== 'number' || !Number.isFinite(height) || height <= 0
+  ) {
+    return editorError('ASSET_NOT_FOUND', 'Material image could not be loaded.')
+  }
+  return null
 }
 
 function createUuid(): string {
@@ -598,9 +648,31 @@ export class FabricEditorAdapter {
   }
 
   async exportPng(): Promise<Blob> {
-    const response = await fetch(this.exportPngDataUrl())
-    if (!response.ok) throw editorError('PREVIEW_EXPORT_FAILED', 'PNG preview export failed.')
-    return response.blob()
+    // Convert the PNG data URL directly to a Blob. The previous `fetch(data:...)`
+    // path is unreliable under Electron CSP: `connect-src` can refuse data URLs,
+    // which silently breaks preview export in the renderer.
+    const dataUrl = this.exportPngDataUrl()
+    const match = /^data:image\/png;base64,([A-Za-z0-9+/=]+)$/.exec(dataUrl)
+    if (!match) {
+      throw editorError('PREVIEW_EXPORT_FAILED', 'PNG preview export failed.')
+    }
+    let buffer: ArrayBuffer
+    try {
+      const binary = atob(match[1])
+      const length = binary.length
+      if (length === 0) {
+        throw editorError('PREVIEW_EXPORT_FAILED', 'PNG preview export failed.')
+      }
+      buffer = new ArrayBuffer(length)
+      const view = new Uint8Array(buffer)
+      for (let index = 0; index < length; index += 1) {
+        view[index] = binary.charCodeAt(index)
+      }
+    } catch (error) {
+      if (isSharedError(error)) throw error
+      throw editorError('PREVIEW_EXPORT_FAILED', 'PNG preview export failed.')
+    }
+    return new Blob([buffer], { type: 'image/png' })
   }
 
   dispose(): void {

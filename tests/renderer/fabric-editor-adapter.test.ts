@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import type { AssetRecord, SceneDocument } from '../../src/shared/contracts'
 import {
   FABRIC_EDITOR_HISTORY_LIMIT,
   FabricEditorAdapter,
+  validateFabricFromURLResult,
   type FabricCanvasPort,
   type FabricEditorRuntime,
   type FabricObjectPort
@@ -919,5 +922,165 @@ describe('FabricEditorAdapter', () => {
     expect(adapter.exportScene().sceneId).toBe(sceneC.sceneId)
     await expect(adapter.redo()).resolves.toBe(true)
     expect(adapter.exportScene().sceneId).toBe(sceneC.sceneId)
+  })
+})
+
+describe('P0 Fabric image validation and PNG export', () => {
+  function ghostImage(overrides: Partial<{ width: unknown; height: unknown; set: unknown }> = {}): Record<string, unknown> {
+    return { width: 0, height: 0, set: () => undefined, ...overrides }
+  }
+
+  // A. Fabric 5.3.0 reports isError=true with a non-null image of width=0, height=0.
+  it('rejects a ghost Image when Fabric reports isError=true', () => {
+    const error = validateFabricFromURLResult(ghostImage(), true)
+    expect(error).toMatchObject({ code: 'ASSET_NOT_FOUND' })
+  })
+
+  // B. isError is not provided but width or height is 0 (or non-finite) — still rejected.
+  it('rejects a ghost Image when isError is missing but width or height is non-positive', () => {
+    expect(validateFabricFromURLResult(ghostImage({ width: 0, height: 802 }), undefined)).toMatchObject({ code: 'ASSET_NOT_FOUND' })
+    expect(validateFabricFromURLResult(ghostImage({ width: 885, height: 0 }), undefined)).toMatchObject({ code: 'ASSET_NOT_FOUND' })
+    expect(validateFabricFromURLResult(ghostImage({ width: Number.NaN, height: 802 }), undefined)).toMatchObject({ code: 'ASSET_NOT_FOUND' })
+    expect(validateFabricFromURLResult(ghostImage({ width: Number.POSITIVE_INFINITY, height: 802 }), undefined)).toMatchObject({ code: 'ASSET_NOT_FOUND' })
+    expect(validateFabricFromURLResult(ghostImage({ width: -10, height: 20 }), undefined)).toMatchObject({ code: 'ASSET_NOT_FOUND' })
+  })
+
+  it('rejects when image is missing or does not expose set()', () => {
+    expect(validateFabricFromURLResult(null, false)).toMatchObject({ code: 'ASSET_NOT_FOUND' })
+    expect(validateFabricFromURLResult({ width: 100, height: 100 }, false)).toMatchObject({ code: 'ASSET_NOT_FOUND' })
+  })
+
+  // C. A normal image with finite positive width/height is accepted.
+  it('accepts a normal Image with finite positive width/height', () => {
+    expect(validateFabricFromURLResult({ width: 885, height: 802, set: () => undefined }, false)).toBeNull()
+  })
+
+  it('propagates ASSET_NOT_FOUND through the adapter and does not add a ghost to the canvas', async () => {
+    // Simulate the default runtime's behavior: a failed Fabric load surfaces as
+    // an ASSET_NOT_FOUND rejection. The adapter must surface it as-is and the
+    // canvas object count must not increase.
+    const canvas = new FakeCanvas(validScene.canvas.width, validScene.canvas.height)
+    const assetNotFound = { code: 'ASSET_NOT_FOUND', message: 'Material image could not be loaded.', retryable: false }
+    const adapter = new FabricEditorAdapter({
+      snapshotContext: validSnapshotContext,
+      allowTestAssets: true,
+      runtime: {
+        createCanvas: () => canvas,
+        createImage: async () => {
+          throw assetNotFound
+        },
+        createPlaceholder: (options) => new FakeObject(options)
+      },
+      now: () => new Date('2026-08-01T08:00:00.000Z'),
+      createObjectId: () => 'c2d775d8-e6f8-439a-9d04-0934cb03f81f',
+      loadResource: async (ref) => ({ sourceUrl: `blob:${ref}`, dispose: () => undefined })
+    })
+    // Initialize with an empty scene so the background import does not pre-populate
+    // the canvas (which would then later interfere with the assertion below).
+    const emptyScene: SceneDocument = {
+      ...cloneFixture(validScene),
+      backgroundAssetId: null,
+      objects: []
+    }
+    adapter.initialize({} as HTMLCanvasElement, emptyScene)
+    await adapter.importScene(emptyScene, resolver())
+
+    const initialCount = canvas.getObjects().length
+    await expect(adapter.addSticker(materialAsset('sticker'), validAccess))
+      .rejects.toMatchObject({ code: 'ASSET_NOT_FOUND' })
+    expect(canvas.getObjects()).toHaveLength(initialCount)
+  })
+
+  it('exportPng() produces a valid PNG blob with non-zero size and image/png type', async () => {
+    const { adapter } = createHarness()
+    await adapter.importScene(cloneFixture(validScene), resolver())
+
+    const blob = await adapter.exportPng()
+    expect(blob.size).toBeGreaterThan(0)
+    expect(blob.type).toBe('image/png')
+
+    const buffer = new Uint8Array(await blob.arrayBuffer())
+    // PNG magic: 89 50 4E 47 0D 0A 1A 0A
+    expect(Array.from(buffer.slice(0, 8))).toEqual([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A])
+  })
+
+  it('exportPng() rejects a non-PNG data URL with PREVIEW_EXPORT_FAILED', async () => {
+    const scene = cloneFixture(validScene)
+    const canvas = new FakeCanvas(scene.canvas.width, scene.canvas.height)
+    canvas.toDataURL = () => 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAABAAEDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD/AD/6KKK/IT/Z4/9k='
+    const adapter = new FabricEditorAdapter({
+      snapshotContext: validSnapshotContext,
+      allowTestAssets: true,
+      runtime: {
+        createCanvas: () => canvas,
+        createImage: async (_sourceUrl, options) => new FakeObject(options),
+        createPlaceholder: (options) => new FakeObject(options)
+      },
+      now: () => new Date('2026-08-01T08:00:00.000Z'),
+      createObjectId: () => 'c2d775d8-e6f8-439a-9d04-0934cb03f81f',
+      loadResource: async (ref) => ({ sourceUrl: `blob:${ref}`, dispose: () => undefined })
+    })
+    adapter.initialize({} as HTMLCanvasElement, scene)
+    await adapter.importScene(scene, resolver())
+
+    await expect(adapter.exportPng()).rejects.toMatchObject({ code: 'PREVIEW_EXPORT_FAILED' })
+  })
+
+  it('exportPng() rejects a malformed base64 payload with PREVIEW_EXPORT_FAILED', async () => {
+    const scene = cloneFixture(validScene)
+    const canvas = new FakeCanvas(scene.canvas.width, scene.canvas.height)
+    canvas.toDataURL = () => 'data:image/png;base64,!!!not-base64!!!'
+    const adapter = new FabricEditorAdapter({
+      snapshotContext: validSnapshotContext,
+      allowTestAssets: true,
+      runtime: {
+        createCanvas: () => canvas,
+        createImage: async (_sourceUrl, options) => new FakeObject(options),
+        createPlaceholder: (options) => new FakeObject(options)
+      },
+      now: () => new Date('2026-08-01T08:00:00.000Z'),
+      createObjectId: () => 'c2d775d8-e6f8-439a-9d04-0934cb03f81f',
+      loadResource: async (ref) => ({ sourceUrl: `blob:${ref}`, dispose: () => undefined })
+    })
+    adapter.initialize({} as HTMLCanvasElement, scene)
+    await adapter.importScene(scene, resolver())
+
+    await expect(adapter.exportPng()).rejects.toMatchObject({ code: 'PREVIEW_EXPORT_FAILED' })
+  })
+})
+
+describe('P0 Renderer CSP allows blob: for image rendering', () => {
+  function readCspMeta(htmlPath: string): string {
+    const html = readFileSync(htmlPath, 'utf8')
+    // The content attribute is double-quoted and may contain single quotes inside
+    // its value (e.g. 'self'). Match only the double-quote form.
+    const match = /<meta[^>]+http-equiv=["']Content-Security-Policy["'][^>]+content="([^"]+)"/i.exec(html)
+    expect(match, `CSP meta tag should be present in ${htmlPath}`).not.toBeNull()
+    return match![1]
+  }
+
+  function extractDirective(csp: string, name: string): string | undefined {
+    return csp
+      .split(';')
+      .map((part) => part.trim())
+      .find((part) => part.startsWith(name))
+  }
+
+  it('src/renderer/index.html img-src includes blob: (and keeps data: and felt-resource:)', () => {
+    const csp = readCspMeta(resolve('src/renderer/index.html'))
+    const imgSrc = extractDirective(csp, 'img-src')
+    expect(imgSrc, 'img-src directive should exist').toBeDefined()
+    expect(imgSrc).toMatch(/(\s|^)blob:(\s|$)/)
+    expect(imgSrc).toMatch(/(\s|^)data:(\s|$)/)
+    expect(imgSrc).toMatch(/(\s|^)felt-resource:(\s|$)/)
+  })
+
+  it('src/renderer/fabric-smoke.html img-src includes blob: for smoke parity', () => {
+    const csp = readCspMeta(resolve('src/renderer/fabric-smoke.html'))
+    const imgSrc = extractDirective(csp, 'img-src')
+    expect(imgSrc, 'img-src directive should exist').toBeDefined()
+    expect(imgSrc).toMatch(/(\s|^)blob:(\s|$)/)
+    expect(imgSrc).toMatch(/(\s|^)data:(\s|$)/)
+    expect(imgSrc).toMatch(/(\s|^)felt-resource:(\s|$)/)
   })
 })
