@@ -1075,6 +1075,17 @@ describe('P0 Renderer CSP allows blob: for image rendering', () => {
     expect(imgSrc).toMatch(/(\s|^)felt-resource:(\s|$)/)
   })
 
+  it('src/renderer/index.html media-src does NOT include blob: (minimum permission)', () => {
+    // media-src is used for <audio>/<video>. The current renderer uses Howler
+    // with felt-resource://audio/... URLs directly; no code path emits a blob:
+    // URL into a media element. Adding blob: here would be an over-permission.
+    const csp = readCspMeta(resolve('src/renderer/index.html'))
+    const mediaSrc = extractDirective(csp, 'media-src')
+    expect(mediaSrc, 'media-src directive should exist').toBeDefined()
+    expect(mediaSrc).not.toMatch(/(\s|^)blob:(\s|$)/)
+    expect(mediaSrc).toMatch(/(\s|^)felt-resource:(\s|$)/)
+  })
+
   it('src/renderer/fabric-smoke.html img-src includes blob: for smoke parity', () => {
     const csp = readCspMeta(resolve('src/renderer/fabric-smoke.html'))
     const imgSrc = extractDirective(csp, 'img-src')
@@ -1082,5 +1093,13 @@ describe('P0 Renderer CSP allows blob: for image rendering', () => {
     expect(imgSrc).toMatch(/(\s|^)blob:(\s|$)/)
     expect(imgSrc).toMatch(/(\s|^)data:(\s|$)/)
     expect(imgSrc).toMatch(/(\s|^)felt-resource:(\s|$)/)
+  })
+
+  it('src/renderer/fabric-smoke.html media-src does NOT include blob: (smoke parity)', () => {
+    const csp = readCspMeta(resolve('src/renderer/fabric-smoke.html'))
+    const mediaSrc = extractDirective(csp, 'media-src')
+    expect(mediaSrc, 'media-src directive should exist').toBeDefined()
+    expect(mediaSrc).not.toMatch(/(\s|^)blob:(\s|$)/)
+    expect(mediaSrc).toMatch(/(\s|^)felt-resource:(\s|$)/)
   })
 })
