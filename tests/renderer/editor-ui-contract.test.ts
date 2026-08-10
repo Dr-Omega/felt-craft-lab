@@ -58,6 +58,15 @@ describe('V4.6 formal Editor UI contract', () => {
     expect(drawer).toContain("'is-locked'")
   })
 
+  it('keeps the Material Sheet candidate empty until an explicit user selection', () => {
+    expect(page).toContain("const selectedStickerId = ref('')")
+    expect(page).not.toContain('normalizeSelectedAssetId(selectedStickerId.value, stickers.value)')
+    expect(page).toContain('function closeMaterialSheet()')
+    expect(page).toContain('function openMaterialSheet()')
+    expect(page).toContain('selectedStickerId.value = \'\'')
+    expect(page).toContain('@close="closeMaterialSheet"')
+  })
+
   it('provides accessible icon-only controls and the return fallback choices', () => {
     expect(topbar).toContain('aria-label="返回素材库"')
     expect(topbar).toContain('aria-label="返回素材库"')

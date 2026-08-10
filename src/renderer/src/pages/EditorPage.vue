@@ -9,7 +9,7 @@ import {
   resolveEditorCatalogForSnapshot,
   YWN_SNAPSHOT_CONTEXT
 } from '../catalog/ywn-catalog'
-import { assetsForEditor, normalizeSelectedAssetId, pickSelectedAsset } from '../catalog/editor-selection'
+import { assetsForEditor, pickSelectedAsset } from '../catalog/editor-selection'
 import { getEditorLaunch, openLibrary } from '../app-nav'
 import {
   AssetAccessStore,
@@ -54,14 +54,19 @@ const sceneCatalogAssets = editorCatalog.assets
 const sceneThemeId = launch?.scene.themeId
 const stickers = computed(() => assetsForEditor(sceneCatalogAssets, 'sticker', sceneThemeId))
 const backgrounds = computed(() => assetsForEditor(sceneCatalogAssets, 'background', sceneThemeId))
-const selectedStickerId = ref(stickers.value[0]?.assetId ?? '')
+const selectedStickerId = ref('')
 const selectedBackgroundId = ref(launch?.scene.backgroundAssetId ?? '')
 
 const canEdit = computed(() => Boolean(sessionState.value?.canEdit))
 const canFinish = computed(() => Boolean(sessionState.value?.canPrepareProject))
 
 function normalizeSelections(): void {
-  selectedStickerId.value = normalizeSelectedAssetId(selectedStickerId.value, stickers.value)
+  if (
+    selectedStickerId.value
+    && !stickers.value.some((asset) => asset.assetId === selectedStickerId.value)
+  ) {
+    selectedStickerId.value = ''
+  }
   if (selectedBackgroundId.value && !backgrounds.value.some((asset) => asset.assetId === selectedBackgroundId.value)) {
     selectedBackgroundId.value = ''
   }
@@ -132,19 +137,30 @@ async function requireUnlocked(asset: AssetRecord): Promise<AssetAccessState> {
   return access!
 }
 
-function closeTransientContexts(): void {
+function closeMaterialSheet(): void {
   sheetOpen.value = false
+  selectedStickerId.value = ''
+}
+
+function openMaterialSheet(): void {
+  selectedStickerId.value = ''
+  backgroundDrawerOpen.value = false
+  sheetOpen.value = true
+}
+
+function closeTransientContexts(): void {
+  closeMaterialSheet()
   backgroundDrawerOpen.value = false
 }
 
 function toggleSheet(): void {
-  sheetOpen.value = !sheetOpen.value
-  if (sheetOpen.value) backgroundDrawerOpen.value = false
+  if (sheetOpen.value) closeMaterialSheet()
+  else openMaterialSheet()
 }
 
 function toggleBackgroundDrawer(): void {
   backgroundDrawerOpen.value = !backgroundDrawerOpen.value
-  if (backgroundDrawerOpen.value) sheetOpen.value = false
+  if (backgroundDrawerOpen.value) closeMaterialSheet()
 }
 
 function selectSticker(assetId: string): void {
@@ -324,7 +340,7 @@ onUnmounted(() => {
       :busy="busy"
       @select="selectSticker"
       @add="addSticker"
-      @close="sheetOpen = false"
+      @close="closeMaterialSheet"
     />
 
     <ReturnSaveModal
