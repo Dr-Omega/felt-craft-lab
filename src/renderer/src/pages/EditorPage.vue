@@ -343,6 +343,7 @@ async function finish(): Promise<void> {
 async function quickBringForward(): Promise<void> {
   const selection = oqtSelection.value
   if (!selection || !session.value) return
+  hideRemoveToast()
   try {
     session.value.bringForward(selection.objectId)
     void nextTick(updateOqtPosition)
@@ -354,6 +355,7 @@ async function quickBringForward(): Promise<void> {
 async function quickSendBackward(): Promise<void> {
   const selection = oqtSelection.value
   if (!selection || !session.value) return
+  hideRemoveToast()
   try {
     session.value.sendBackward(selection.objectId)
     void nextTick(updateOqtPosition)
@@ -447,67 +449,7 @@ watch([oqtOpen, oqtSelection], () => { void nextTick(updateOqtPosition) })
       <div class="creation-workspace" @click.self="closeTransientContexts">
         <button
           class="background-trigger"
-          type="button"
-          aria-label="打开背景选择"
-          :class="{ 'is-open': backgroundDrawerOpen }"
-          @click.stop="toggleBackgroundDrawer"
-        >
-          <span class="background-trigger-pad" aria-hidden="true">▧</span>
-        </button>
-
-        <BackgroundDrawer
-          :assets="backgrounds"
-          :access-by-asset-id="accessByAssetId"
-          :selected-asset-id="selectedBackgroundId"
-          :open="backgroundDrawerOpen"
-          :busy="busy"
-          @select="(assetId) => (selectedBackgroundId = assetId)"
-          @apply="applyBackground"
-          @close="backgroundDrawerOpen = false"
-        />
-
-        <div class="canvas-frame">
-          <div class="canvas-wrap">
-            <canvas
-              ref="canvasEl"
-              class="editor-canvas"
-              :width="logicalCanvasWidth"
-              :height="logicalCanvasHeight"
-            ></canvas>
-          </div>
-        </div>
-
-        <BottomActionDock
-          :busy="busy"
-          :can-edit="canEdit"
-          :sheet-open="sheetOpen"
-          @undo="undo"
-          @redo="redo"
-          @toggle-sheet="toggleSheet"
-        />
-      </div>
-    </main>
-
-    <p v-if="sessionState?.status === 'recovery' || sceneSnapshotMissing" class="editor-state-banner">
-      有些以前用过的素材暂时找不到啦，这件作品先不能继续保存或完成。
-    </p>
-    <p v-if="feedback" class="editor-feedback" :class="`is-${feedbackKind}`" role="status">{{ feedback }}</p>
-
-    <MaterialSheet
-      :assets="stickers"
-      :access-by-asset-id="accessByAssetId"
-      :selected-asset-id="selectedStickerId"
-      :open="sheetOpen"
-      :busy="busy"
-      @select="selectSticker"
-      @add="addSticker"
-      @close="closeMaterialSheet"
-    />
-
-    <ObjectQuickTools
-      v-if="oqtOpen"
-      ref="oqtElement"
-      :left="oqtPosition.left"
+       �~��G����ƭy�Position.left"
       :top="oqtPosition.top"
       :below="oqtPosition.below"
       @forward="quickBringForward"
