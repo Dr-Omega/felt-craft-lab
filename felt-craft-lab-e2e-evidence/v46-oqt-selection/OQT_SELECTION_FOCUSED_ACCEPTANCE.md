@@ -23,7 +23,7 @@ NOT_TESTED rather than being called PASS.
 
 - Verdict: `OQT_SELECTION_FOCUSED_WITH_MINOR_ISSUES`
 - Branch: `feature/material-library/oqt-selection-projection`
-- Tested source: `c61886cc401f1a4d99d95c3caaaa8dad6ea54167` (before the final evidence-only commit)
+- Tested source: `f352246ca79ca0f604ba395e0c288b0ea327b2c7` (the committed implementation under test)
 - Production mode: built Electron renderer, no test-only Fabric smoke page
 - Single click selects a sticker and does not auto-open OQT: PASS
 - Double click opens OQT: PASS
