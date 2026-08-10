@@ -640,8 +640,8 @@ body { margin: 0; overflow: hidden; }
 
 .canvas-wrap,
 .canvas-wrap .canvas-container {
-  width: 100%;
-  height: 100%;
+  width: 100% !important;
+  height: 100% !important;
   border-radius: var(--radius-xl);
   overflow: visible;
   background: var(--bg-app);
