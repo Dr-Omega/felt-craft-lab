@@ -2,29 +2,28 @@
 
 ## Scope
 
-This is a focused production Electron acceptance run for the renderer-only
-selection projection and Object Quick Tools. It is not FULL E2E and does not
-change the UI branch, Shared Contracts, SceneDocument, persistence, resolver,
-or Electron security boundary.
+Focused acceptance of the renderer-only selection projection and Object Quick
+Tools in the built production Electron renderer. This is not FULL E2E. The
+run does not change Shared Contracts, SceneDocument, persistence, resolver,
+catalog/snapshot rules, or Electron security boundaries.
 
 ## Result
 
-`OQT_SELECTION_FOCUSED_WITH_MINOR_ISSUES`
+`OQT_SELECTION_FOCUSED_PASSED`
 
-The core production UI path passed: library → themed new Scene → real mouse
-sticker additions → double-click selection → quick-tool layer actions → remove
-toast → toast undo. Unit coverage for geometry projection and listener cleanup
-also passed. The only minor/test issue is the existing production display
-surface mismatch documented in `oqt-geometry.json`; it prevented a reliable
-focused GUI assertion that OQT follows a real drag, so that assertion remains
-NOT_TESTED rather than being called PASS.
+The real production UI path passed: library → themed new Scene → real mouse
+sticker additions → single-click selection → double-click OQT → layer actions
+→ real drag with OQT open → real corner scale with OQT open → real rotation
+with OQT open → remove toast → toast undo. The final run used only production
+UI mouse input for these actions; no Session/Adapter delete or Fabric-object
+mutation was invoked by the harness.
 
 ## Requested fields
 
-- Verdict: `OQT_SELECTION_FOCUSED_WITH_MINOR_ISSUES`
+- Verdict: `OQT_SELECTION_FOCUSED_PASSED`
 - Branch: `feature/material-library/oqt-selection-projection`
-- Tested source: `f352246ca79ca0f604ba395e0c288b0ea327b2c7` (the committed implementation under test)
-- Production mode: built Electron renderer, no test-only Fabric smoke page
+- Tested source: `27b8f9c99b9642b88b74ae095db54e2539cbafda`
+- Production mode: built Electron renderer; no test-only Fabric smoke page
 - Single click selects a sticker and does not auto-open OQT: PASS
 - Double click opens OQT: PASS
 - OQT labels: `往前`, `往后`, `拿掉`
@@ -33,24 +32,34 @@ NOT_TESTED rather than being called PASS.
 - Remove toast text and undo affordance: PASS
 - Toast undo restores through Session history: PASS
 - OQT closes after removal: PASS
-- Geometry projection event coverage: PASS (unit tests)
-- Real drag with OQT open: NOT_TESTED / TEST_ISSUE (surface mismatch)
-- Real corner scale with OQT open: NOT_TESTED / TEST_ISSUE (surface mismatch)
-- Real rotation with OQT open: NOT_TESTED / TEST_ISSUE (surface mismatch)
+- Real drag with OQT open and projection follows geometry: PASS
+- Real corner scale with OQT open: PASS
+- Real rotation with OQT open: PASS
 - Invalid object projection suppression: PASS (unit tests)
 - Recovery placeholder suppression: PASS (unit tests)
 - Listener unsubscribe: PASS (unit tests)
 - Adapter dispose clears selection listeners: PASS (unit tests)
 - Session subscription boundary before open/disposed: PASS (unit tests)
 - Listener exception isolation: PASS (unit tests)
-- Logical-to-screen mapping implementation: PASS (code review/unit boundary)
+- Retina-safe logical-to-screen mapping: PASS (unit test/real Electron)
 - Selection persistence: not implemented by design
 - SceneDocument schema changes: none
 - Fabric JSON persistence: none
-- Canvas/display surface mismatch: MINOR TEST ISSUE, pre-existing shell geometry
 - Console errors: 0
 - Page errors: 0
-- Main process errors: 0 (only DevTools banner and Canvas2D performance hint)
+- Network errors: 0
+- Main process product errors: 0; only DevTools banner and Canvas2D
+  `willReadFrequently` performance hint were observed
+
+## Geometry correction
+
+Fabric sets the HTML canvas backing dimensions to `1440x1440` at the Electron
+test DPR of 1.5 while the SceneDocument logical canvas remains `960x960` and
+the visible/event CSS surface is `518x518`. OQT projection now uses the stable
+logical SceneDocument dimensions and the CSS `getBoundingClientRect`, so it
+does not multiply by DPR or mistake retina backing size for logical geometry.
+The Fabric container is explicitly constrained to the visible frame, keeping
+real pointer hit testing aligned with the projected controls.
 
 ## Evidence
 
@@ -60,8 +69,6 @@ NOT_TESTED rather than being called PASS.
 - `error-audit.json`
 - `01_single_click_selection.png` through `13_after_resize.png`
 
-All critical actions were dispatched as real mouse input to the production
-Electron window. The harness did not call `session.deleteSelected`,
-`adapter.deleteSelected`, `adapter.deleteObject`, or mutate Fabric objects.
 The only setup operation was seeding explicit unlock rows in the isolated test
-profile so production UI could reach the normal unlocked-material path.
+profile so the normal production unlocked-material path was reachable. The
+profile is disposable and is not a product data change.

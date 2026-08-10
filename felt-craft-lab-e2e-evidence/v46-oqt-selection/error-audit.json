@@ -1,4 +1,6 @@
 {
+  "testedSource": "27b8f9c99b9642b88b74ae095db54e2539cbafda",
+  "mode": "built-production-electron",
   "consoleErrors": [],
   "pageErrors": [],
   "networkErrors": [],

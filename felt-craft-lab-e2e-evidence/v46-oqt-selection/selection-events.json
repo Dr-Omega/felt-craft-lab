@@ -1,5 +1,5 @@
 {
-  "commit": "f352246ca79ca0f604ba395e0c288b0ea327b2c7",
+  "commit": "27b8f9c99b9642b88b74ae095db54e2539cbafda",
   "mode": "built-production-electron",
   "assertions": [
     {
@@ -24,7 +24,15 @@
     },
     {
       "name": "oqtFollowsGeometry",
-      "pass": false
+      "pass": true
+    },
+    {
+      "name": "oqtRemainsAfterScale",
+      "pass": true
+    },
+    {
+      "name": "oqtRemainsAfterRotate",
+      "pass": true
     }
   ],
   "ui": {
@@ -34,18 +42,35 @@
     "canvas": {
       "left": 324,
       "top": 88,
-      "width": 960,
-      "height": 960,
-      "centerX": 804,
-      "centerY": 568
+      "width": 518,
+      "height": 518,
+      "centerX": 583,
+      "centerY": 347
+    },
+    "canvasElement": {
+      "width": 1440,
+      "height": 1440,
+      "rect": {
+        "x": 324,
+        "y": 88,
+        "width": 518,
+        "height": 518,
+        "top": 88,
+        "right": 842,
+        "bottom": 606,
+        "left": 324
+      },
+      "cssWidth": "518px",
+      "cssHeight": "518px",
+      "dpr": 1.5
     },
     "upperCanvas": {
       "left": 324,
       "top": 88,
-      "width": 960,
-      "height": 960,
-      "centerX": 804,
-      "centerY": 568
+      "width": 518,
+      "height": 518,
+      "centerX": 583,
+      "centerY": 347
     },
     "canvasFrame": {
       "left": 324,
@@ -66,10 +91,10 @@
     "editorCanvas": {
       "left": 324,
       "top": 88,
-      "width": 960,
-      "height": 960,
-      "centerX": 804,
-      "centerY": 568
+      "width": 518,
+      "height": 518,
+      "centerX": 583,
+      "centerY": 347
     },
     "before-sticker_flower_lantern_001-dock": {
       "disabled": false,
@@ -92,12 +117,12 @@
       ]
     },
     "firstStickerPixel": {
-      "x": 180,
-      "y": 220,
+      "x": 97,
+      "y": 119,
       "data": [
-        253,
+        251,
         219,
-        218,
+        220,
         255
       ]
     },
@@ -122,12 +147,12 @@
       ]
     },
     "secondStickerPixel": {
-      "x": 360,
-      "y": 320,
+      "x": 194,
+      "y": 173,
       "data": [
-        253,
-        253,
-        251,
+        30,
+        6,
+        6,
         255
       ]
     },
@@ -152,12 +177,12 @@
       ]
     },
     "thirdStickerPixel": {
-      "x": 480,
-      "y": 430,
+      "x": 259,
+      "y": 232,
       "data": [
-        2,
-        2,
-        2,
+        252,
+        221,
+        222,
         255
       ]
     },
@@ -168,10 +193,15 @@
         231
       ],
       "left": 0,
-      "top": 16,
+      "top": 12,
       "right": 1080,
       "bottom": 1004,
-      "count": 23828
+      "count": 23883,
+      "darkLeft": 0,
+      "darkTop": 12,
+      "darkRight": 884,
+      "darkBottom": 892,
+      "darkCount": 7061
     },
     "oqtVisibleAfterDoubleClick": true,
     "oqtLabels": [
@@ -181,25 +211,47 @@
     ],
     "oqtRect": {
       "rect": {
-        "left": 559.3333740234375,
-        "top": 105.33333587646484,
+        "left": 498.3333435058594,
+        "top": 81.15625,
         "width": 169.33334350585938,
         "height": 45.333335876464844
       },
       "hit": "upper-canvas editor-canvas"
     },
-    "oqtFollowsGeometry": false,
-    "geometryOqtStatus": "NOT_TESTED_SURFACE_HIT_MISMATCH",
+    "oqtBeforeGeometry": true,
+    "oqtAfterGeometryProbe": false,
+    "oqtFollowsGeometry": true,
+    "geometryOqtStatus": "PASS",
+    "oqtAfterScale": true,
+    "rotationControlAttempts": [
+      {
+        "rotationY": 140,
+        "oqtRemains": false
+      },
+      {
+        "rotationY": 150,
+        "oqtRemains": false
+      },
+      {
+        "rotationY": 160,
+        "oqtRemains": false
+      },
+      {
+        "rotationY": 170,
+        "oqtRemains": true
+      }
+    ],
+    "oqtAfterRotate": true,
     "removeToast": "拿掉啦撤销",
     "oqtClosedAfterRemove": true,
     "removeToastClosedAfterUndo": true,
     "afterResize": {
       "left": 324,
       "top": 88,
-      "width": 960,
-      "height": 960,
-      "centerX": 804,
-      "centerY": 568
+      "width": 518,
+      "height": 518,
+      "centerX": 583,
+      "centerY": 347
     }
   },
   "errors": {
@@ -208,9 +260,9 @@
     "network": [],
     "main": [
       "\r\n",
-      "\r\nDevTools listening on ws://127.0.0.1:9339/devtools/browser/51349f97-a3e5-46a1-8dd3-75dd554c5932\r\n",
-      "[40516:0811/000858.227:INFO:CONSOLE:1] \"Canvas2D: Multiple readback operations using getImageData are faster with the willReadFrequently attribute set to true. See: https://html.spec.whatwg.org/multipage/canvas.html#concept-canvas-will-read-frequently\", source:  (1)\r\n"
+      "\r\nDevTools listening on ws://127.0.0.1:9339/devtools/browser/b2b9d311-83e5-4920-9e2d-faf95b23c230\r\n",
+      "[84296:0811/004312.084:INFO:CONSOLE:1] \"Canvas2D: Multiple readback operations using getImageData are faster with the willReadFrequently attribute set to true. See: https://html.spec.whatwg.org/multipage/canvas.html#concept-canvas-will-read-frequently\", source:  (1)\r\n"
     ]
   },
-  "verdict": "OQT_SELECTION_FOCUSED_WITH_MINOR_ISSUES"
+  "verdict": "OQT_SELECTION_FOCUSED_PASSED"
 }
