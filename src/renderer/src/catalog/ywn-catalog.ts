@@ -8,6 +8,7 @@ import {
   indexAssetsBySnapshot,
   loadSnapshotRegistry
 } from './snapshot-registry'
+import { DEFAULT_SCENE_CANVAS } from './scene-defaults'
 
 export { createUnlockedAccess, DEFAULT_USER_ID, isAssetUnlocked }
 
@@ -125,7 +126,7 @@ export function createBlankScene(workName: string, themeId?: string): SceneDocum
     workName: name,
     themeId: theme,
     assetSnapshotId: YWN_SNAPSHOT_ID,
-    canvas: { width: 960, height: 640, backgroundColor: '#FFF8E7' },
+    canvas: { ...DEFAULT_SCENE_CANVAS, backgroundColor: '#FFF8E7' },
     backgroundAssetId: null,
     objects: [],
     createdAt: now,

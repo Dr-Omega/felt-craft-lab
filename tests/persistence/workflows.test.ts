@@ -120,6 +120,20 @@ describe('project workflow', () => {
     expect(await new ProjectStore(db).get(project.projectId)).toEqual(project)
   })
 
+  it('persists canonical square Scene dimensions without rewriting the Scene', async () => {
+    const input = prepared()
+    input.scene.canvas = { width: 960, height: 960, backgroundColor: '#FFF8E7' }
+
+    const project = await saveNewProject(input, {
+      db,
+      projectId: 'c3ac4f13-c4be-4ce0-8781-c60b78a21e83',
+      createdAt: fixtureTime
+    })
+
+    expect(project.scene.canvas).toEqual(input.scene.canvas)
+    expect(project.previewUrl).toMatch(/^felt-resource:\/\/preview\//)
+  })
+
   it('updates an existing project with a new preview and deletes the old one after Dexie success', async () => {
     const { api, deleted } = installPreviewApi()
     const existing = validFeltProject({ previewUrl: feltPreviewRef('oldpreview000141118111111111111111.png') })

@@ -5,6 +5,7 @@ import type {
   SceneSnapshotValidationContext
 } from '@shared/contracts'
 import type { FabricEditorAssetResolver } from '../editor'
+import { DEFAULT_SCENE_CANVAS } from './scene-defaults'
 
 export const MOCK_USER_ID = 'user_demo_001'
 export const MOCK_SNAPSHOT_ID = 'snapshot_ui_workflows_001'
@@ -107,7 +108,7 @@ export function createBlankScene(workName: string): SceneDocument {
     workName,
     themeId: MOCK_THEME_ID,
     assetSnapshotId: MOCK_SNAPSHOT_ID,
-    canvas: { width: 960, height: 640, backgroundColor: '#FFF8E7' },
+    canvas: { ...DEFAULT_SCENE_CANVAS, backgroundColor: '#FFF8E7' },
     backgroundAssetId: null,
     objects: [],
     createdAt: now,

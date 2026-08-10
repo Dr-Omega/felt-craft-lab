@@ -429,6 +429,19 @@ describe('EditorSessionService', () => {
     expect(adapter.pngSceneId).toBe(project.scene.sceneId)
   })
 
+  it('prepares a canonical square Scene without changing its logical dimensions', async () => {
+    const adapter = new StubAdapter()
+    const scene = cloneFixture(validScene)
+    scene.canvas = { width: 960, height: 960, backgroundColor: '#FFF8E7' }
+    const service = createSession(adapter)
+    await service.open({} as HTMLCanvasElement, scene, resolver())
+
+    expect(service.prepareDraftSave().canvas).toEqual(scene.canvas)
+    const prepared = await service.prepareProjectSave()
+    expect(prepared.scene.canvas).toEqual(scene.canvas)
+    expect(prepared.previewPng.type).toBe('image/png')
+  })
+
   it('deletes the selected object and no-ops when nothing is selected', async () => {
     const adapter = new StubAdapter()
     const service = createSession(adapter)

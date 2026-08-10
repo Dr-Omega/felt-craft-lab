@@ -236,45 +236,47 @@ function resolver(): { resolveAsset(assetId: string): Promise<AssetRecord> } {
 }
 
 describe('new Sticker initial scale', () => {
-  it('fits an 885×802 Sticker into the medium 960×640 creation box with reachable controls', () => {
-    const scale = calculateStickerInitialScale(960, 640, 885, 802)
+  it('fits an 885×802 Sticker into the medium 960×960 creation box with reachable controls', () => {
+    const canvasWidth = 960
+    const canvasHeight = 960
+    const scale = calculateStickerInitialScale(canvasWidth, canvasHeight, 885, 802)
     const displayWidth = 885 * scale
     const displayHeight = 802 * scale
-    const mtrY = 320 - displayHeight / 2 - STICKER_ROTATION_CONTROL_OFFSET
+    const mtrY = canvasHeight / 2 - displayHeight / 2 - STICKER_ROTATION_CONTROL_OFFSET
 
-    expect(scale).toBeCloseTo(320 / 802)
+    expect(scale).toBeCloseTo(480 / 885)
     expect(scale).toBeLessThan(1)
     expect(displayWidth).toBeLessThanOrEqual(480)
-    expect(displayHeight).toBeLessThanOrEqual(320)
+    expect(displayHeight).toBeLessThanOrEqual(480)
     expect(mtrY).toBeGreaterThanOrEqual(STICKER_SAFE_EDGE_MARGIN)
   })
 
   it('fits a 790×471 wide Sticker by the medium creation width', () => {
-    const scale = calculateStickerInitialScale(960, 640, 790, 471)
+    const scale = calculateStickerInitialScale(960, 960, 790, 471)
 
     expect(scale).toBeCloseTo(480 / 790)
     expect(790 * scale).toBeLessThanOrEqual(480)
-    expect(471 * scale).toBeLessThanOrEqual(320)
+    expect(471 * scale).toBeLessThanOrEqual(480)
   })
 
   it('does not enlarge a small Sticker', () => {
-    expect(calculateStickerInitialScale(960, 640, 200, 150)).toBe(1)
+    expect(calculateStickerInitialScale(960, 960, 200, 150)).toBe(1)
   })
 
   it('uses the medium creation height for an extra-tall Sticker', () => {
-    const scale = calculateStickerInitialScale(960, 640, 300, 1000)
-    expect(scale).toBeCloseTo(320 / 1000)
+    const scale = calculateStickerInitialScale(960, 960, 300, 1000)
+    expect(scale).toBeCloseTo(480 / 1000)
   })
 
   it('uses the medium creation width for an extra-wide Sticker', () => {
-    const scale = calculateStickerInitialScale(960, 640, 1600, 100)
+    const scale = calculateStickerInitialScale(960, 960, 1600, 100)
     expect(scale).toBeCloseTo(480 / 1600)
   })
 
   it.each([0, -1, Number.NaN, Number.POSITIVE_INFINITY])('rejects invalid image dimensions: %s', (dimension) => {
-    expect(() => calculateStickerInitialScale(960, 640, dimension, 100))
+    expect(() => calculateStickerInitialScale(960, 960, dimension, 100))
       .toThrow(expect.objectContaining({ code: 'ASSET_NOT_FOUND' }))
-    expect(() => calculateStickerInitialScale(960, 640, 100, dimension))
+    expect(() => calculateStickerInitialScale(960, 960, 100, dimension))
       .toThrow(expect.objectContaining({ code: 'ASSET_NOT_FOUND' }))
   })
 })
@@ -332,19 +334,19 @@ describe('FabricEditorAdapter', () => {
 
   it('persists the centered medium initial transform for a default new Sticker', async () => {
     const scene = cloneFixture(validScene)
-    scene.canvas = { width: 960, height: 640, backgroundColor: '#FFF8E7' }
+    scene.canvas = { width: 960, height: 960, backgroundColor: '#FFF8E7' }
     scene.backgroundAssetId = null
     scene.objects = []
     const { adapter, canvas } = createHarness(scene, new Set(), { width: 885, height: 802 })
     await adapter.importScene(scene, resolver())
 
     const objectId = await adapter.addSticker(materialAsset('sticker'), validAccess)
-    const expectedScale = calculateStickerInitialScale(960, 640, 885, 802)
+    const expectedScale = calculateStickerInitialScale(960, 960, 885, 802)
     const object = canvas.getObjects().find((candidate) => candidate.objectId === objectId)
     const exported = adapter.exportScene().objects[0]
 
-    expect(object).toMatchObject({ left: 480, top: 320, scaleX: expectedScale, scaleY: expectedScale, angle: 0 })
-    expect(exported).toMatchObject({ objectId, left: 480, top: 320, scaleX: expectedScale, scaleY: expectedScale, angle: 0 })
+    expect(object).toMatchObject({ left: 480, top: 480, scaleX: expectedScale, scaleY: expectedScale, angle: 0 })
+    expect(exported).toMatchObject({ objectId, left: 480, top: 480, scaleX: expectedScale, scaleY: expectedScale, angle: 0 })
   })
 
   it('keeps an explicit Sticker position on the existing scale=1 path', async () => {
@@ -374,7 +376,7 @@ describe('FabricEditorAdapter', () => {
 
   it('does not recalculate the persisted transform for imported or history-restored Stickers', async () => {
     const scene = cloneFixture(validScene)
-    scene.canvas = { width: 960, height: 640, backgroundColor: '#FFF8E7' }
+    scene.canvas = { width: 960, height: 960, backgroundColor: '#FFF8E7' }
     scene.backgroundAssetId = null
     scene.objects[0].scaleX = 0.72
     scene.objects[0].scaleY = 0.72

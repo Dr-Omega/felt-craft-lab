@@ -32,6 +32,8 @@ if (!launch) {
 }
 
 const canvasEl = ref<HTMLCanvasElement | null>(null)
+const logicalCanvasWidth = launch?.scene.canvas.width ?? 960
+const logicalCanvasHeight = launch?.scene.canvas.height ?? 960
 const sessionState = ref<EditorSessionState | null>(null)
 const busy = ref(false)
 const workName = ref(launch?.scene.workName ?? '我的新作品')
@@ -292,8 +294,16 @@ onUnmounted(() => {
     </header>
 
     <div class="workspace">
-      <div class="canvas-wrap">
-        <canvas ref="canvasEl" class="editor-canvas" width="960" height="640"></canvas>
+      <div
+        class="canvas-wrap"
+        :style="{ '--canvas-aspect-ratio': `${logicalCanvasWidth} / ${logicalCanvasHeight}` }"
+      >
+        <canvas
+          ref="canvasEl"
+          class="editor-canvas"
+          :width="logicalCanvasWidth"
+          :height="logicalCanvasHeight"
+        ></canvas>
       </div>
 
       <aside class="side">
@@ -417,15 +427,25 @@ onUnmounted(() => {
   border: 1px solid var(--line);
 }
 
-.editor-canvas {
+.editor-canvas,
+.canvas-wrap :deep(.canvas-container) {
   display: block;
-  width: 960px;
-  height: 640px;
-  max-width: none;
+  /* CSS display size is responsive; the bound attributes remain logical/backing size. */
+  width: min(100%, calc(100vh - 180px), 760px);
+  height: auto !important;
+  aspect-ratio: var(--canvas-aspect-ratio);
+  max-width: 100%;
   max-height: none;
   background: #fff;
   border: 1px solid var(--line);
   touch-action: none;
+}
+
+/* Fabric writes logical dimensions as inline styles on both interaction layers. */
+.canvas-wrap :deep(.canvas-container .lower-canvas),
+.canvas-wrap :deep(.canvas-container .upper-canvas) {
+  width: 100% !important;
+  height: 100% !important;
 }
 
 .side {

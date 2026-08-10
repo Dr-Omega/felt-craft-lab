@@ -17,6 +17,7 @@ describe('Library new work theme selection', () => {
     const prepared = prepareNewWorkScene('元宵作品', 'lantern_festival')
 
     expect(prepared.scene?.themeId).toBe('lantern_festival')
+    expect(prepared.scene?.canvas).toMatchObject({ width: 960, height: 960 })
     expect(prepared.message).toBeUndefined()
   })
 })
