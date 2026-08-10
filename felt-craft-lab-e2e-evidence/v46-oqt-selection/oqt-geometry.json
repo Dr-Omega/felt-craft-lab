@@ -1,20 +1,39 @@
 {
+  "testedSource": "a6eba360c07968c32fd72b66751c9057a31a8d90",
+  "mode": "built-production-electron",
   "projection": "EditorSelectionProjection",
-  "source": "Fabric getBoundingRect(true, true)",
-  "logicalToScreen": "canvasEl.getBoundingClientRect with independent scaleX/scaleY; logicalCanvasWidth/logicalCanvasHeight (not retina backing width); no DPR multiplication",
+  "source": "Fabric public getBoundingRect and selection events",
+  "logicalToScreen": "CSS getBoundingClientRect with independent scaleX/scaleY using logicalCanvasWidth/logicalCanvasHeight; no DPR multiplication",
   "surfaceAlignment": "PASS",
   "surfaceEvidence": {
     "editorCanvasCssRect": { "width": 518, "height": 518 },
     "visibleCanvasFrameCssRect": { "width": 518, "height": 518 },
     "retinaBackingSize": { "width": 1440, "height": 1440, "devicePixelRatio": 1.5 },
-    "note": "The production Fabric event surface and visible frame are aligned. Projection uses the 960x960 logical SceneDocument dimensions instead of the 1440x1440 retina backing dimensions."
+    "note": "Production Fabric event surfaces align with the visible frame."
   },
   "singleClickSelection": "PASS",
   "doubleClickOpensOqt": "PASS",
   "realDragWithOqtOpen": "PASS",
-  "realScaleWithOqtOpen": "PASS",
-  "realRotationWithOqtOpen": "PASS",
-  "focusedProductionResult": "PASS",
+  "realScaleWithOqtOpen": {
+    "pass": true,
+    "beforeScale": 0.46875,
+    "afterScale": 0.44069739382239387,
+    "uniform": true
+  },
+  "realRotationWithOqtOpen": {
+    "pass": true,
+    "angle": 9.74296645573645,
+    "oqtRemains": true,
+    "rotationHandleNoOqtCollision": true
+  },
+  "resize": {
+    "before": { "width": 518, "height": 518 },
+    "after": { "width": 398, "height": 398 },
+    "dpr": 1.5,
+    "scenePreserved": true,
+    "oqtReprojected": true
+  },
+  "focusedProductionResult": "OQT_SELECTION_FOCUSED_PASSED",
   "unitCoverage": [
     "selection created/updated/cleared",
     "mouse double-click",
