@@ -10,6 +10,7 @@ import type {
   EditorSessionStatus,
   PreparedProjectSave
 } from './editor-session.types'
+import type { EditorSelectionListener } from './editor-selection.types'
 
 function sessionError(code: SharedErrorCode, message: string): SharedError {
   return { code, message, retryable: false }
@@ -31,6 +32,7 @@ function isActiveStatus(status: EditorSessionStatus): boolean {
 export class EditorSessionService {
   private readonly createAdapter: EditorSessionAdapterFactory
   private readonly listeners = new Set<EditorSessionListener>()
+  private readonly selectionSubscriptions = new Set<() => void>()
   private readonly pendingTokens = new Set<symbol>()
   private adapter: EditorSessionAdapter | undefined
   private status: EditorSessionStatus = 'idle'
@@ -213,6 +215,27 @@ export class EditorSessionService {
     return this.recoveryIssues.map((issue) => ({ ...issue }))
   }
 
+  subscribeSelection(listener: EditorSelectionListener): () => void {
+    const adapter = this.requireAdapter('INVALID_ARGUMENT')
+    if (!isActiveStatus(this.status)) {
+      throw sessionError('INVALID_ARGUMENT', 'Editor session is not ready for selection subscriptions.')
+    }
+
+    const safeListener: EditorSelectionListener = (event) => {
+      try { listener(event) } catch { /* view listeners cannot break the session boundary */ }
+    }
+    const adapterUnsubscribe = adapter.subscribeSelection(safeListener)
+    let active = true
+    const unsubscribe = (): void => {
+      if (!active) return
+      active = false
+      this.selectionSubscriptions.delete(unsubscribe)
+      try { adapterUnsubscribe() } catch { /* unsubscribe is intentionally idempotent */ }
+    }
+    this.selectionSubscriptions.add(unsubscribe)
+    return unsubscribe
+  }
+
   prepareDraftSave(): SceneDocument {
     const adapter = this.requireSaveAdapter('DRAFT_SAVE_FAILED')
     try {
@@ -245,6 +268,8 @@ export class EditorSessionService {
 
   dispose(): void {
     ++this.sceneTransitionGeneration
+    for (const unsubscribe of [...this.selectionSubscriptions]) unsubscribe()
+    this.selectionSubscriptions.clear()
     const adapter = this.adapter
     this.adapter = undefined
     this.pendingTokens.clear()

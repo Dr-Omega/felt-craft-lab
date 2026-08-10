@@ -1,5 +1,6 @@
 import type { AssetAccessState, AssetRecord, SceneDocument } from '@shared/contracts'
 import type { FabricEditorAssetResolver, SceneImportResult, SceneRecoveryIssue } from './fabric-editor-adapter'
+import type { EditorSelectionListener } from './editor-selection.types'
 
 export type EditorSessionStatus = 'idle' | 'loading' | 'ready' | 'recovery' | 'disposed'
 
@@ -43,6 +44,7 @@ export interface EditorSessionAdapter {
   exportScene(): SceneDocument
   exportPng(): Promise<Blob>
   getRecoveryIssues(): readonly SceneRecoveryIssue[]
+  subscribeSelection(listener: EditorSelectionListener): () => void
   dispose(): void
 }
 

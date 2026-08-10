@@ -8,6 +8,9 @@ const drawer = readFileSync(resolve('src/renderer/src/components/editor/Backgrou
 const sheet = readFileSync(resolve('src/renderer/src/components/editor/MaterialSheet.vue'), 'utf8')
 const dock = readFileSync(resolve('src/renderer/src/components/editor/BottomActionDock.vue'), 'utf8')
 const modal = readFileSync(resolve('src/renderer/src/components/editor/ReturnSaveModal.vue'), 'utf8')
+const quickTools = readFileSync(resolve('src/renderer/src/components/editor/ObjectQuickTools.vue'), 'utf8')
+const removeToast = readFileSync(resolve('src/renderer/src/components/editor/RemoveToast.vue'), 'utf8')
+const selectionTypes = readFileSync(resolve('src/renderer/src/editor/editor-selection.types.ts'), 'utf8')
 
 describe('V4.6 formal Editor UI contract', () => {
   it('keeps the production template free of engineering side-panel copy', () => {
@@ -83,5 +86,27 @@ describe('V4.6 formal Editor UI contract', () => {
     for (const placeholder of ['动物', '植物', '房屋', '装饰', '天空', 'Demo', 'Placeholder']) {
       expect(sheet).not.toContain(placeholder)
     }
+  })
+
+  it('keeps OQT renderer-only and maps exact objectId actions through Session', () => {
+    expect(quickTools).toContain('往前')
+    expect(quickTools).toContain('往后')
+    expect(quickTools).toContain('拿掉')
+    expect(removeToast).toContain('拿掉啦')
+    expect(removeToast).toContain('撤销')
+    expect(page).toContain('session.value.bringForward(selection.objectId)')
+    expect(page).toContain('session.value.sendBackward(selection.objectId)')
+    expect(page).toContain('session.value.deleteObject(selection.objectId)')
+    expect(page).toContain('service.subscribeSelection(handleSelectionEvent)')
+    expect(page).toContain('selection.bounds.left * scaleX')
+    expect(page).not.toContain('adapter.deleteSelected()')
+    expect(page).not.toContain('adapter.getCanvas')
+  })
+
+  it('keeps selection projection free of Fabric, DOM, Scene, and resource types', () => {
+    expect(selectionTypes).not.toMatch(/from ['"].*(fabric|Scene|resource|DOM|HTMLCanvas)/i)
+    expect(selectionTypes).not.toContain('object:')
+    expect(selectionTypes).toContain('objectId: string')
+    expect(selectionTypes).toContain('bounds: EditorSelectionBounds')
   })
 })

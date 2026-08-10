@@ -1,0 +1,21 @@
+{
+  "projection": "EditorSelectionProjection",
+  "source": "Fabric getBoundingRect(true, true)",
+  "logicalToScreen": "canvasEl.getBoundingClientRect with independent scaleX/scaleY; no DPR multiplication",
+  "singleClickSelection": "PASS",
+  "doubleClickOpensOqt": "PASS",
+  "geometryEvents": "PASS in unit tests; focused production mouse gesture did not retain OQT",
+  "focusedProductionResult": "NOT_TESTED_SURFACE_HIT_MISMATCH",
+  "surfaceEvidence": {
+    "editorCanvasCssRect": { "width": 960, "height": 960 },
+    "visibleCanvasFrameCssRect": { "width": 518, "height": 518 },
+    "note": "The existing production shell exposes a 960px Fabric event surface over a 518px visible frame. The mismatch causes a real mouse drag started from the visually inferred object position to clear selection before the OQT geometry callback can be observed. No product state was injected."
+  },
+  "unitCoverage": [
+    "selection created/updated/cleared",
+    "mouse double-click",
+    "object moving/scaling/rotating/modified geometry events",
+    "invalid object and recovery placeholder suppression",
+    "listener unsubscribe and dispose"
+  ]
+}

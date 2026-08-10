@@ -1,0 +1,12 @@
+{
+  "consoleErrors": [],
+  "pageErrors": [],
+  "networkErrors": [],
+  "mainProcessErrors": [],
+  "nonProductWarnings": [
+    "Electron DevTools listening banner",
+    "Canvas2D getImageData willReadFrequently performance hint"
+  ],
+  "cspRegression": "none observed",
+  "resourceRegression": "none observed in npm run test:electron-resource"
+}

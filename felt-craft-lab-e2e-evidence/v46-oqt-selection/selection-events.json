@@ -1,0 +1,216 @@
+{
+  "commit": "c61886cc401f1a4d99d95c3caaaa8dad6ea54167",
+  "mode": "built-production-electron",
+  "assertions": [
+    {
+      "name": "bringForwardUsesOqt",
+      "pass": true
+    },
+    {
+      "name": "sendBackwardUsesOqt",
+      "pass": true
+    },
+    {
+      "name": "singleClickSelection",
+      "pass": true
+    },
+    {
+      "name": "doubleClickOqt",
+      "pass": true
+    },
+    {
+      "name": "removeUndoToast",
+      "pass": true
+    },
+    {
+      "name": "oqtFollowsGeometry",
+      "pass": false
+    }
+  ],
+  "ui": {
+    "libraryLoaded": true,
+    "theme": "lantern_festival",
+    "editorLoaded": true,
+    "canvas": {
+      "left": 324,
+      "top": 88,
+      "width": 960,
+      "height": 960,
+      "centerX": 804,
+      "centerY": 568
+    },
+    "upperCanvas": {
+      "left": 324,
+      "top": 88,
+      "width": 960,
+      "height": 960,
+      "centerX": 804,
+      "centerY": 568
+    },
+    "canvasFrame": {
+      "left": 324,
+      "top": 88,
+      "width": 518,
+      "height": 518,
+      "centerX": 583,
+      "centerY": 347
+    },
+    "canvasWrap": {
+      "left": 324,
+      "top": 88,
+      "width": 518,
+      "height": 518,
+      "centerX": 583,
+      "centerY": 347
+    },
+    "editorCanvas": {
+      "left": 324,
+      "top": 88,
+      "width": 960,
+      "height": 960,
+      "centerX": 804,
+      "centerY": 568
+    },
+    "before-sticker_flower_lantern_001-dock": {
+      "disabled": false,
+      "rect": {
+        "left": 561,
+        "top": 622,
+        "width": 44,
+        "height": 44
+      },
+      "hit": "material-box-icon",
+      "sheet": false
+    },
+    "after-sticker_flower_lantern_001-dock": {
+      "sheet": true,
+      "buttons": [
+        {
+          "disabled": false,
+          "class": "dock-material is-open"
+        }
+      ]
+    },
+    "firstStickerPixel": {
+      "x": 180,
+      "y": 220,
+      "data": [
+        253,
+        219,
+        218,
+        255
+      ]
+    },
+    "before-sticker_tangyuan_001-dock": {
+      "disabled": false,
+      "rect": {
+        "left": 561,
+        "top": 622,
+        "width": 44,
+        "height": 44
+      },
+      "hit": "material-box-icon",
+      "sheet": false
+    },
+    "after-sticker_tangyuan_001-dock": {
+      "sheet": true,
+      "buttons": [
+        {
+          "disabled": false,
+          "class": "dock-material is-open"
+        }
+      ]
+    },
+    "secondStickerPixel": {
+      "x": 360,
+      "y": 320,
+      "data": [
+        253,
+        253,
+        251,
+        255
+      ]
+    },
+    "before-sticker_rabbit_001-dock": {
+      "disabled": false,
+      "rect": {
+        "left": 561,
+        "top": 622,
+        "width": 44,
+        "height": 44
+      },
+      "hit": "material-box-icon",
+      "sheet": false
+    },
+    "after-sticker_rabbit_001-dock": {
+      "sheet": true,
+      "buttons": [
+        {
+          "disabled": false,
+          "class": "dock-material is-open"
+        }
+      ]
+    },
+    "thirdStickerPixel": {
+      "x": 480,
+      "y": 430,
+      "data": [
+        2,
+        2,
+        2,
+        255
+      ]
+    },
+    "inkBounds": {
+      "bg": [
+        255,
+        248,
+        231
+      ],
+      "left": 0,
+      "top": 16,
+      "right": 1080,
+      "bottom": 1004,
+      "count": 23828
+    },
+    "oqtVisibleAfterDoubleClick": true,
+    "oqtLabels": [
+      "往前",
+      "往后",
+      "拿掉"
+    ],
+    "oqtRect": {
+      "rect": {
+        "left": 559.3333740234375,
+        "top": 105.33333587646484,
+        "width": 169.33334350585938,
+        "height": 45.333335876464844
+      },
+      "hit": "upper-canvas editor-canvas"
+    },
+    "oqtFollowsGeometry": false,
+    "geometryOqtStatus": "NOT_TESTED_SURFACE_HIT_MISMATCH",
+    "removeToast": "拿掉啦撤销",
+    "oqtClosedAfterRemove": true,
+    "removeToastClosedAfterUndo": true,
+    "afterResize": {
+      "left": 324,
+      "top": 88,
+      "width": 960,
+      "height": 960,
+      "centerX": 804,
+      "centerY": 568
+    }
+  },
+  "errors": {
+    "console": [],
+    "page": [],
+    "network": [],
+    "main": [
+      "\r\n",
+      "\r\nDevTools listening on ws://127.0.0.1:9339/devtools/browser/51349f97-a3e5-46a1-8dd3-75dd554c5932\r\n",
+      "[40516:0811/000858.227:INFO:CONSOLE:1] \"Canvas2D: Multiple readback operations using getImageData are faster with the willReadFrequently attribute set to true. See: https://html.spec.whatwg.org/multipage/canvas.html#concept-canvas-will-read-frequently\", source:  (1)\r\n"
+    ]
+  },
+  "verdict": "OQT_SELECTION_FOCUSED_WITH_MINOR_ISSUES"
+}

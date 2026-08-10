@@ -1,7 +1,13 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, shallowRef } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue'
 import type { AssetAccessState, AssetRecord } from '@shared/contracts'
-import { EditorSessionService, FabricEditorAdapter, type EditorSessionState } from '../editor'
+import {
+  EditorSessionService,
+  FabricEditorAdapter,
+  type EditorSelectionEvent,
+  type EditorSelectionProjection,
+  type EditorSessionState
+} from '../editor'
 import {
   createCatalogResolver,
   DEFAULT_USER_ID,
@@ -24,6 +30,8 @@ import BottomActionDock from '../components/editor/BottomActionDock.vue'
 import BackgroundDrawer from '../components/editor/BackgroundDrawer.vue'
 import MaterialSheet from '../components/editor/MaterialSheet.vue'
 import ReturnSaveModal from '../components/editor/ReturnSaveModal.vue'
+import ObjectQuickTools from '../components/editor/ObjectQuickTools.vue'
+import RemoveToast from '../components/editor/RemoveToast.vue'
 
 const launch = getEditorLaunch()
 if (!launch) openLibrary()
@@ -42,8 +50,16 @@ const returnModalError = ref('')
 const sheetOpen = ref(false)
 const backgroundDrawerOpen = ref(false)
 const sceneSnapshotMissing = ref(false)
+const currentSelection = ref<EditorSelectionProjection | null>(null)
+const oqtSelection = ref<EditorSelectionProjection | null>(null)
+const oqtOpen = ref(false)
+const oqtPosition = ref({ left: 0, top: 0, below: false })
+const oqtElement = ref<{ $el: HTMLElement } | null>(null)
+const removeToastOpen = ref(false)
 
 let unsubscribe: (() => void) | undefined
+let selectionUnsubscribe: (() => void) | undefined
+let removeToastTimer: number | undefined
 let draftId = launch?.draftId
 let projectId = launch?.projectId
 
@@ -102,6 +118,87 @@ function showFeedback(message: string, kind: 'success' | 'error' | 'info' = 'inf
   }, kind === 'success' ? 2800 : 4200)
 }
 
+function hideRemoveToast(): void {
+  removeToastOpen.value = false
+  if (removeToastTimer !== undefined) {
+    window.clearTimeout(removeToastTimer)
+    removeToastTimer = undefined
+  }
+}
+
+function showRemoveToast(): void {
+  hideRemoveToast()
+  removeToastOpen.value = true
+  removeToastTimer = window.setTimeout(() => {
+    removeToastOpen.value = false
+    removeToastTimer = undefined
+  }, 2800)
+}
+
+function closeOqt(): void {
+  oqtOpen.value = false
+  oqtSelection.value = null
+}
+
+function updateOqtPosition(): void {
+  const canvas = canvasEl.value
+  const selection = oqtSelection.value
+  const element = oqtElement.value?.$el ?? null
+  if (!canvas || !selection || !oqtOpen.value || !element) return
+
+  const canvasRect = canvas.getBoundingClientRect()
+  const logicalWidth = canvas.width || logicalCanvasWidth || 1
+  const logicalHeight = canvas.height || logicalCanvasHeight || 1
+  const scaleX = canvasRect.width / logicalWidth
+  const scaleY = canvasRect.height / logicalHeight
+  const screenLeft = canvasRect.left + selection.bounds.left * scaleX
+  const screenTop = canvasRect.top + selection.bounds.top * scaleY
+  const screenWidth = selection.bounds.width * scaleX
+  const screenHeight = selection.bounds.height * scaleY
+  const quickToolsRect = element.getBoundingClientRect()
+  const clearance = 52
+  const gap = 12
+  const horizontalPadding = 16
+  let left = screenLeft + screenWidth / 2 - quickToolsRect.width / 2
+  let top = screenTop - quickToolsRect.height - clearance - gap
+  let below = false
+  if (top < horizontalPadding) {
+    top = screenTop + screenHeight + clearance + gap
+    below = true
+  }
+  left = Math.max(horizontalPadding, Math.min(left, window.innerWidth - quickToolsRect.width - horizontalPadding))
+  top = Math.max(horizontalPadding, Math.min(top, window.innerHeight - quickToolsRect.height - horizontalPadding))
+  oqtPosition.value = { left, top, below }
+}
+
+function handleSelectionEvent(event: EditorSelectionEvent): void {
+  if (event.type === 'cleared') {
+    currentSelection.value = null
+    closeOqt()
+    return
+  }
+
+  currentSelection.value = event.selection
+  if (event.type === 'selected') {
+    if (oqtSelection.value && oqtSelection.value.objectId !== event.selection.objectId) closeOqt()
+    return
+  }
+  if (event.type === 'geometry') {
+    hideRemoveToast()
+    if (oqtOpen.value && oqtSelection.value?.objectId === event.selection.objectId) {
+      oqtSelection.value = event.selection
+      void nextTick(updateOqtPosition)
+    }
+    return
+  }
+
+  closeMaterialSheet()
+  backgroundDrawerOpen.value = false
+  oqtSelection.value = event.selection
+  oqtOpen.value = true
+  void nextTick(updateOqtPosition)
+}
+
 async function refreshAccess(): Promise<void> {
   const store = new AssetAccessStore(getFeltCraftDatabase())
   const rows = await store.listForUser(DEFAULT_USER_ID)
@@ -126,6 +223,7 @@ async function boot(): Promise<void> {
   })
   try {
     await service.open(canvasEl.value, launch.scene, createCatalogResolver())
+    selectionUnsubscribe = service.subscribeSelection(handleSelectionEvent)
   } catch (error) {
     showFeedback(friendlyError(error), 'error')
   }
@@ -145,12 +243,14 @@ function closeMaterialSheet(): void {
 function openMaterialSheet(): void {
   selectedStickerId.value = ''
   backgroundDrawerOpen.value = false
+  closeOqt()
   sheetOpen.value = true
 }
 
 function closeTransientContexts(): void {
   closeMaterialSheet()
   backgroundDrawerOpen.value = false
+  closeOqt()
 }
 
 function toggleSheet(): void {
@@ -160,7 +260,10 @@ function toggleSheet(): void {
 
 function toggleBackgroundDrawer(): void {
   backgroundDrawerOpen.value = !backgroundDrawerOpen.value
-  if (backgroundDrawerOpen.value) closeMaterialSheet()
+  if (backgroundDrawerOpen.value) {
+    closeMaterialSheet()
+    closeOqt()
+  }
 }
 
 function selectSticker(assetId: string): void {
@@ -169,6 +272,7 @@ function selectSticker(assetId: string): void {
 
 async function addSticker(asset: AssetRecord): Promise<void> {
   if (!session.value) return
+  hideRemoveToast()
   busy.value = true
   try {
     const access = await requireUnlocked(asset)
@@ -184,6 +288,7 @@ async function addSticker(asset: AssetRecord): Promise<void> {
 
 async function applyBackground(asset: AssetRecord | null): Promise<void> {
   if (!session.value) return
+  hideRemoveToast()
   busy.value = true
   try {
     if (asset) await session.value.setBackground(asset, await requireUnlocked(asset))
@@ -200,16 +305,19 @@ async function applyBackground(asset: AssetRecord | null): Promise<void> {
 
 async function undo(): Promise<void> {
   if (!session.value) return
+  hideRemoveToast()
   try { await session.value.undo() } catch (error) { showFeedback(friendlyError(error), 'error') }
 }
 
 async function redo(): Promise<void> {
   if (!session.value) return
+  hideRemoveToast()
   try { await session.value.redo() } catch (error) { showFeedback(friendlyError(error), 'error') }
 }
 
 async function finish(): Promise<void> {
   if (!session.value) return
+  closeOqt()
   busy.value = true
   try {
     const prepared = await session.value.prepareProjectSave()
@@ -226,6 +334,50 @@ async function finish(): Promise<void> {
     showFeedback(friendlyError(error), 'error')
   } finally {
     busy.value = false
+  }
+}
+
+async function quickBringForward(): Promise<void> {
+  const selection = oqtSelection.value
+  if (!selection || !session.value) return
+  try {
+    session.value.bringForward(selection.objectId)
+    void nextTick(updateOqtPosition)
+  } catch (error) {
+    showFeedback(friendlyError(error), 'error')
+  }
+}
+
+async function quickSendBackward(): Promise<void> {
+  const selection = oqtSelection.value
+  if (!selection || !session.value) return
+  try {
+    session.value.sendBackward(selection.objectId)
+    void nextTick(updateOqtPosition)
+  } catch (error) {
+    showFeedback(friendlyError(error), 'error')
+  }
+}
+
+async function quickRemove(): Promise<void> {
+  const selection = oqtSelection.value
+  if (!selection || !session.value) return
+  try {
+    session.value.deleteObject(selection.objectId)
+    closeOqt()
+    showRemoveToast()
+  } catch (error) {
+    showFeedback(friendlyError(error), 'error')
+  }
+}
+
+async function undoRemoval(): Promise<void> {
+  hideRemoveToast()
+  if (!session.value) return
+  try {
+    await session.value.undo()
+  } catch (error) {
+    showFeedback(friendlyError(error), 'error')
   }
 }
 
@@ -263,13 +415,19 @@ function continueEditing(): void {
 }
 
 onMounted(async () => {
+  window.addEventListener('resize', updateOqtPosition)
   try { await boot() } catch (error) { showFeedback(friendlyError(error), 'error') }
 })
 
 onUnmounted(() => {
   unsubscribe?.()
+  selectionUnsubscribe?.()
+  hideRemoveToast()
+  window.removeEventListener('resize', updateOqtPosition)
   session.value?.dispose()
 })
+
+watch([oqtOpen, oqtSelection], () => { void nextTick(updateOqtPosition) })
 </script>
 
 <template>
@@ -342,6 +500,19 @@ onUnmounted(() => {
       @add="addSticker"
       @close="closeMaterialSheet"
     />
+
+    <ObjectQuickTools
+      v-if="oqtOpen"
+      ref="oqtElement"
+      :left="oqtPosition.left"
+      :top="oqtPosition.top"
+      :below="oqtPosition.below"
+      @forward="quickBringForward"
+      @backward="quickSendBackward"
+      @remove="quickRemove"
+    />
+
+    <RemoveToast :open="removeToastOpen" @undo="undoRemoval" />
 
     <ReturnSaveModal
       :open="returnModalOpen"
@@ -568,6 +739,26 @@ body { margin: 0; overflow: hidden; }
 .editor-feedback { position: absolute; bottom: 18px; left: 50%; z-index: 120; margin: 0; padding: 10px 18px; border-radius: var(--radius-pill); background: #fffef8; color: var(--color-text); box-shadow: var(--shadow-lift); font-size: 13px; transform: translateX(-50%); }
 .editor-feedback.is-success { background: var(--color-confirm); color: #fff; }
 .editor-feedback.is-error { background: #f4d5c0; color: var(--wood-deeper); }
+
+.object-quick-tools {
+  position: fixed;
+  z-index: 150;
+  display: inline-flex;
+  gap: 6px;
+  padding: 6px;
+  border: 1px solid rgba(89, 71, 56, 0.16);
+  border-radius: var(--radius-pill);
+  background: rgba(255, 254, 248, 0.96);
+  box-shadow: var(--shadow-lift);
+  transform: translateZ(0);
+}
+.object-quick-tools::after { content: ""; position: absolute; left: 50%; bottom: -7px; width: 12px; height: 12px; border-right: 1px solid rgba(89, 71, 56, 0.16); border-bottom: 1px solid rgba(89, 71, 56, 0.16); background: rgba(255, 254, 248, 0.96); transform: translateX(-50%) rotate(45deg); }
+.object-quick-tools.is-below::after { top: -7px; bottom: auto; transform: translateX(-50%) rotate(225deg); }
+.object-quick-tools button { min-height: 32px; padding: 0 12px; border: 0; border-radius: var(--radius-pill); background: var(--wood-surface); color: var(--color-text); font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
+.object-quick-tools button:hover { background: var(--color-primary-soft); }
+.object-quick-tools button:last-child { background: var(--color-primary); color: var(--color-on-primary); }
+.remove-toast { position: fixed; left: 50%; bottom: 72px; z-index: 160; display: inline-flex; align-items: center; gap: 14px; min-height: 42px; padding: 0 8px 0 18px; border-radius: var(--radius-pill); background: rgba(89, 71, 56, 0.94); color: #fff; box-shadow: var(--shadow-lift); font-size: 13px; transform: translateX(-50%); }
+.remove-toast button { min-height: 32px; padding: 0 14px; border: 0; border-radius: var(--radius-pill); background: var(--color-primary-soft); color: var(--wood-deeper); font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
 
 .return-modal-layer { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; }
 .return-modal-backdrop { position: absolute; inset: 0; border: 0; background: rgba(89, 71, 56, 0.32); }

@@ -11,6 +11,12 @@ export type {
 } from './fabric-editor-adapter'
 export { EditorSessionService } from './editor-session.service'
 export type {
+  EditorSelectionBounds,
+  EditorSelectionEvent,
+  EditorSelectionListener,
+  EditorSelectionProjection
+} from './editor-selection.types'
+export type {
   EditorSessionAdapter,
   EditorSessionAdapterFactory,
   EditorSessionListener,

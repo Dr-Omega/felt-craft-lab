@@ -15,6 +15,11 @@ import {
   validateSceneSnapshotValidationContext
 } from '@shared/contracts'
 import { FELT_RESOURCE_REF_POLICY, parseFeltResourceRef } from '@shared/resource'
+import type {
+  EditorSelectionEvent,
+  EditorSelectionListener,
+  EditorSelectionProjection
+} from './editor-selection.types'
 
 /**
  * The renderer's only Fabric boundary. Vue components should use this adapter
@@ -77,6 +82,7 @@ export interface FabricObjectPort {
   skewY?: number
   set(options: Record<string, unknown>): unknown
   setCoords(): unknown
+  getBoundingRect(absolute?: boolean, calculate?: boolean): { left: number; top: number; width: number; height: number }
 }
 
 export interface LoadedResource {
@@ -344,6 +350,7 @@ export class FabricEditorAdapter {
   private readonly recoveryPlaceholders = new WeakSet<FabricObjectPort>()
   private readonly assetCache = new Map<string, AssetRecord>()
   private readonly listeners: Array<[string, (event: { target?: FabricObjectPort }) => void]> = []
+  private readonly selectionListeners = new Set<EditorSelectionListener>()
   private canvas: FabricCanvasPort | undefined
   private metadata: EditorSceneMetadata | undefined
   private backgroundAssetId: string | null = null
@@ -697,6 +704,16 @@ export class FabricEditorAdapter {
     return this.recoveryIssues.map((issue) => ({ ...issue }))
   }
 
+  subscribeSelection(listener: EditorSelectionListener): () => void {
+    this.selectionListeners.add(listener)
+    let active = true
+    return (): void => {
+      if (!active) return
+      active = false
+      this.selectionListeners.delete(listener)
+    }
+  }
+
   exportPngDataUrl(): string {
     try {
       const value = this.requireReadyCanvas().toDataURL({ format: 'png', multiplier: 1 })
@@ -740,6 +757,7 @@ export class FabricEditorAdapter {
     this.sceneReady = false
     this.committedSceneReady = false
     this.activeHistoryRestoreGeneration = undefined
+    this.selectionListeners.clear()
     const canvas = this.canvas
     if (!canvas) {
       this.recoveryIssues = []
@@ -762,21 +780,53 @@ export class FabricEditorAdapter {
 
   private attachCanvasListeners(canvas: FabricCanvasPort): void {
     const scaling = (event: { target?: FabricObjectPort }) => {
-      if (event.target?.objectId) this.enforceUniformScale(event.target)
+      if (event.target?.objectId) {
+        this.enforceUniformScale(event.target)
+        this.emitSelectionFor('geometry', event.target)
+      }
     }
     const rotating = (event: { target?: FabricObjectPort }) => {
       if (event.target?.objectId) {
         event.target.set({ angle: normalizeSceneAngle(event.target.angle ?? 0) })
         event.target.setCoords()
+        this.emitSelectionFor('geometry', event.target)
       }
     }
-    const modified = () => {
+    const moving = (event: { target?: FabricObjectPort }) => {
+      this.emitSelectionFor('geometry', event.target)
+    }
+    const modified = (event: { target?: FabricObjectPort }) => {
       if (!this.restoring) this.captureHistory()
+      this.emitSelectionFor('geometry', event.target)
+    }
+    const selectionCreated = () => {
+      this.emitSelectionFor('selected', canvas.getActiveObject())
+    }
+    const selectionUpdated = () => {
+      this.emitSelectionFor('selected', canvas.getActiveObject())
+    }
+    const selectionCleared = () => {
+      this.emitSelection({ type: 'cleared', selection: null })
+    }
+    const doubleClick = (event: { target?: FabricObjectPort }) => {
+      const target = event.target
+      const selection = this.selectionProjection(target)
+      if (!selection) return
+      if (canvas.getActiveObject() !== target && target) {
+        canvas.setActiveObject(target)
+        canvas.requestRenderAll()
+      }
+      this.emitSelection({ type: 'double-click', selection })
     }
     for (const [eventName, listener] of [
+      ['selection:created', selectionCreated],
+      ['selection:updated', selectionUpdated],
+      ['selection:cleared', selectionCleared],
+      ['object:moving', moving],
       ['object:scaling', scaling],
       ['object:rotating', rotating],
-      ['object:modified', modified]
+      ['object:modified', modified],
+      ['mouse:dblclick', doubleClick]
     ] as const) {
       canvas.on(eventName, listener)
       this.listeners.push([eventName, listener])
@@ -1188,6 +1238,63 @@ export class FabricEditorAdapter {
       this.objectResources.delete(object)
       release()
     }
+  }
+
+  private selectionProjection(object: FabricObjectPort | null | undefined): EditorSelectionProjection | undefined {
+    if (
+      !object
+      || typeof object.objectId !== 'string'
+      || object.objectId.length === 0
+      || object.assetType !== 'sticker'
+      || object.selectable === false
+      || this.recoveryPlaceholders.has(object)
+      || typeof object.getBoundingRect !== 'function'
+    ) return undefined
+
+    try {
+      const bounds = object.getBoundingRect(true, true)
+      if (
+        !Number.isFinite(bounds.left)
+        || !Number.isFinite(bounds.top)
+        || !Number.isFinite(bounds.width)
+        || !Number.isFinite(bounds.height)
+        || bounds.width <= 0
+        || bounds.height <= 0
+      ) return undefined
+      return {
+        objectId: object.objectId,
+        bounds: {
+          left: bounds.left,
+          top: bounds.top,
+          width: bounds.width,
+          height: bounds.height
+        }
+      }
+    } catch {
+      return undefined
+    }
+  }
+
+  private emitSelection(event: EditorSelectionEvent): void {
+    for (const listener of this.selectionListeners) {
+      try {
+        if (event.type === 'cleared') listener({ type: 'cleared', selection: null })
+        else listener({
+          type: event.type,
+          selection: {
+            objectId: event.selection.objectId,
+            bounds: { ...event.selection.bounds }
+          }
+        })
+      } catch {
+        // One view listener must not break Fabric's event pipeline.
+      }
+    }
+  }
+
+  private emitSelectionFor(type: 'selected' | 'geometry' | 'double-click', object: FabricObjectPort | null | undefined): void {
+    const selection = this.selectionProjection(object)
+    if (selection) this.emitSelection({ type, selection })
   }
 
   private requireCanvas(): FabricCanvasPort {

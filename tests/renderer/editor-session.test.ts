@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { AssetAccessState, AssetRecord, SceneDocument } from '../../src/shared/contracts'
 import { EditorSessionService, type EditorSessionAdapter } from '../../src/renderer/src/editor'
 import type { FabricEditorAssetResolver, SceneImportResult, SceneRecoveryIssue } from '../../src/renderer/src/editor'
+import type { EditorSelectionEvent, EditorSelectionListener } from '../../src/renderer/src/editor'
 import { cloneFixture, validAccess, validAsset, validScene } from '../shared/contracts.fixtures'
 
 function deferred<T>(): { promise: Promise<T>; resolve(value: T): void; reject(error: unknown): void } {
@@ -41,6 +42,7 @@ class StubAdapter implements EditorSessionAdapter {
   selectedObjectId: string | undefined
   deletedObjectIds: string[] = []
   layerOps: Array<{ op: string; objectId: string }> = []
+  private readonly selectionListeners = new Set<EditorSelectionListener>()
   private nextObjectId = 0
 
   initialize(_element: HTMLCanvasElement, scene: SceneDocument): void {
@@ -178,6 +180,22 @@ class StubAdapter implements EditorSessionAdapter {
 
   getRecoveryIssues(): readonly SceneRecoveryIssue[] {
     return this.issues.map((issue) => ({ ...issue }))
+  }
+
+  subscribeSelection(listener: EditorSelectionListener): () => void {
+    this.selectionListeners.add(listener)
+    let active = true
+    return () => {
+      if (!active) return
+      active = false
+      this.selectionListeners.delete(listener)
+    }
+  }
+
+  emitSelection(event: EditorSelectionEvent): void {
+    for (const listener of this.selectionListeners) {
+      try { listener(event) } catch { /* adapter isolates view listeners */ }
+    }
   }
 
   dispose(): void {
@@ -514,6 +532,38 @@ describe('EditorSessionService', () => {
     await expect(service.addSticker(cloneFixture(validAsset), stickerAccess()))
       .rejects.toMatchObject({ code: 'INVALID_ARGUMENT' })
     expect(() => service.resizeCanvas(1, 1)).toThrow(expect.objectContaining({ code: 'INVALID_ARGUMENT' }))
+  })
+
+  it('forwards read-only selection projections and cleans subscriptions on unsubscribe/dispose', async () => {
+    const adapter = new StubAdapter()
+    const service = createSession(adapter)
+    await service.open({} as HTMLCanvasElement, cloneFixture(validScene), resolver())
+
+    const events: EditorSelectionEvent[] = []
+    const unsubscribe = service.subscribeSelection((event) => events.push(event))
+    const selected: EditorSelectionEvent = {
+      type: 'selected',
+      selection: { objectId: 'object-42', bounds: { left: 10, top: 12, width: 40, height: 30 } }
+    }
+    adapter.emitSelection(selected)
+    expect(events).toEqual([selected])
+    unsubscribe()
+    adapter.emitSelection({ type: 'cleared', selection: null })
+    expect(events).toEqual([selected])
+
+    const second = service.subscribeSelection(() => { throw new Error('view listener failure') })
+    expect(() => adapter.emitSelection(selected)).not.toThrow()
+    service.dispose()
+    second()
+    expect(() => service.subscribeSelection(() => undefined)).toThrow(expect.objectContaining({ code: 'INVALID_ARGUMENT' }))
+    adapter.emitSelection(selected)
+    expect(events).toEqual([selected])
+  })
+
+  it('rejects selection subscription before open', () => {
+    const service = createSession(new StubAdapter())
+    expect(() => service.subscribeSelection(() => undefined))
+      .toThrow(expect.objectContaining({ code: 'INVALID_ARGUMENT' }))
   })
 })
 

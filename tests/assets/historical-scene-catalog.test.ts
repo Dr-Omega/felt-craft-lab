@@ -9,6 +9,7 @@ import {
 } from '../../src/renderer/src/catalog/ywn-catalog'
 import { EditorSessionService, type EditorSessionAdapter } from '../../src/renderer/src/editor'
 import type { FabricEditorAssetResolver, SceneImportResult, SceneRecoveryIssue } from '../../src/renderer/src/editor'
+import type { EditorSelectionEvent, EditorSelectionListener } from '../../src/renderer/src/editor'
 import { cloneFixture, validScene } from '../shared/contracts.fixtures'
 
 function sticker(snapshotId: string, imageToken: string, contentVersion: number): AssetRecord {
@@ -35,6 +36,7 @@ function sticker(snapshotId: string, imageToken: string, contentVersion: number)
 class RecoveryStubAdapter implements EditorSessionAdapter {
   issues: SceneRecoveryIssue[] = []
   scene: SceneDocument | undefined
+  private readonly selectionListeners = new Set<EditorSelectionListener>()
 
   initialize(_element: HTMLCanvasElement, scene: SceneDocument): void {
     this.scene = cloneFixture(scene)
@@ -83,6 +85,15 @@ class RecoveryStubAdapter implements EditorSessionAdapter {
   }
   getRecoveryIssues(): readonly SceneRecoveryIssue[] {
     return this.issues
+  }
+
+  subscribeSelection(listener: EditorSelectionListener): () => void {
+    this.selectionListeners.add(listener)
+    return () => this.selectionListeners.delete(listener)
+  }
+
+  emitSelection(event: EditorSelectionEvent): void {
+    for (const listener of this.selectionListeners) listener(event)
   }
   dispose(): void {}
 }

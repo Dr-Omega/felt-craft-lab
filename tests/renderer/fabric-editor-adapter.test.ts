@@ -13,6 +13,7 @@ import {
   type FabricEditorRuntime,
   type FabricObjectPort
 } from '../../src/renderer/src/editor/fabric-editor-adapter'
+import type { EditorSelectionEvent } from '../../src/renderer/src/editor/editor-selection.types'
 import { cloneFixture, validAccess, validAsset, validScene, validSnapshotContext } from '../shared/contracts.fixtures'
 
 function deferred<T>(): { promise: Promise<T>; resolve(value: T): void } {
@@ -45,7 +46,14 @@ class FakeObject implements FabricObjectPort {
   lockScalingX?: boolean
   lockScalingY?: boolean
   lockUniScaling?: boolean
+  lockScalingFlip?: boolean
+  lockSkewingX?: boolean
+  lockSkewingY?: boolean
   lockRotation?: boolean
+  flipX?: boolean
+  flipY?: boolean
+  skewX?: number
+  skewY?: number
 
   constructor(options: Record<string, unknown>) {
     this.width = 100
@@ -58,6 +66,17 @@ class FakeObject implements FabricObjectPort {
   }
 
   setCoords(): void {}
+
+  getBoundingRect(): { left: number; top: number; width: number; height: number } {
+    const width = Math.abs((this.width ?? 0) * (this.scaleX ?? 1))
+    const height = Math.abs((this.height ?? 0) * (this.scaleY ?? 1))
+    return {
+      left: (this.left ?? 0) - width / 2,
+      top: (this.top ?? 0) - height / 2,
+      width,
+      height
+    }
+  }
 }
 
 class FakeCanvas implements FabricCanvasPort {
@@ -1165,6 +1184,91 @@ describe('P0 Fabric image validation and PNG export', () => {
     await adapter.importScene(scene, resolver())
 
     await expect(adapter.exportPng()).rejects.toMatchObject({ code: 'PREVIEW_EXPORT_FAILED' })
+  })
+})
+
+describe('Fabric selection projection', () => {
+  it('projects selection, geometry, double-click, and cleared events with logical bounds', async () => {
+    const scene = cloneFixture(validScene)
+    const { adapter, canvas } = createHarness(scene)
+    await adapter.importScene(scene, resolver())
+    const object = canvas.getObjects()[0]
+    const events: EditorSelectionEvent[] = []
+    const unsubscribe = adapter.subscribeSelection((event) => events.push(event))
+
+    canvas.setActiveObject(object)
+    canvas.emit('selection:created')
+    object.set({ left: 600, top: 360, scaleX: 0.8, scaleY: 0.8, angle: 540 })
+    canvas.emit('object:moving', object)
+    canvas.emit('object:scaling', object)
+    canvas.emit('object:rotating', object)
+    canvas.emit('object:modified', object)
+    canvas.emit('mouse:dblclick', object)
+    canvas.emit('selection:cleared')
+
+    expect(events.map((event) => event.type)).toEqual([
+      'selected', 'geometry', 'geometry', 'geometry', 'geometry', 'double-click', 'cleared'
+    ])
+    const projection = events.find((event) => event.type === 'selected')
+    expect(projection).toMatchObject({
+      type: 'selected',
+      selection: {
+        objectId: validScene.objects[0].objectId,
+        bounds: { left: 380, top: 220, width: 80, height: 80 }
+      }
+    })
+    expect(object.angle).toBe(-180)
+    unsubscribe()
+    canvas.emit('selection:created', object)
+    expect(events).toHaveLength(7)
+  })
+
+  it('does not project invalid objects or recovery placeholders and clears listeners on dispose', async () => {
+    const scene = cloneFixture(validScene)
+    const { adapter, canvas } = createHarness(scene)
+    await adapter.importScene(scene, resolver())
+    const events: EditorSelectionEvent[] = []
+    adapter.subscribeSelection((event) => events.push(event))
+
+    const invalid = new FakeObject({ objectId: '', assetType: 'sticker', selectable: true, left: 10, top: 10 })
+    canvas.add(invalid)
+    canvas.setActiveObject(invalid)
+    canvas.emit('selection:created')
+    expect(events).toEqual([])
+
+    const unavailable = materialAsset('sticker')
+    unavailable.imageUrl = 'felt-resource://material/recovery-placeholder.png'
+    const recovery = createHarness(cloneFixture(validScene), new Set([unavailable.imageUrl]))
+    await recovery.adapter.importScene(cloneFixture(validScene), {
+      async resolveAsset(assetId): Promise<AssetRecord> {
+        if (assetId === 'background_moon_001') return materialAsset('background')
+        if (assetId === validAsset.assetId) return unavailable
+        throw new Error('not found')
+      }
+    })
+    const placeholder = recovery.canvas.getObjects()[0]
+    const recoveryEvents: EditorSelectionEvent[] = []
+    recovery.adapter.subscribeSelection((event) => recoveryEvents.push(event))
+    recovery.canvas.setActiveObject(placeholder)
+    recovery.canvas.emit('selection:created')
+    expect(recoveryEvents).toEqual([])
+
+    adapter.dispose()
+    recovery.adapter.dispose()
+    expect(() => canvas.emit('selection:created', invalid)).not.toThrow()
+    expect(events).toEqual([])
+  })
+
+  it('isolates selection listener failures', async () => {
+    const { adapter, canvas } = createHarness()
+    await adapter.importScene(cloneFixture(validScene), resolver())
+    const object = canvas.getObjects()[0]
+    const received: EditorSelectionEvent[] = []
+    adapter.subscribeSelection(() => { throw new Error('view failure') })
+    adapter.subscribeSelection((event) => received.push(event))
+    canvas.setActiveObject(object)
+    expect(() => canvas.emit('selection:created')).not.toThrow()
+    expect(received).toHaveLength(1)
   })
 })
 
