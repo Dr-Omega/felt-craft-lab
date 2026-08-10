@@ -14,6 +14,10 @@ FabricEditorAdapter, or EditorSessionService semantics.
   Layer and removal actions call the Session by exact `objectId`; the UI does
   not keep Fabric instances, screen coordinates, or persisted selection state.
   `RemoveToast` offers a short-lived `撤销` action through Session undo.
+- **Geometry boundary:** logical SceneDocument dimensions are mapped through
+  the canvas CSS rect; retina backing dimensions are never treated as logical
+  coordinates. The Fabric container and visible frame share the same CSS
+  surface so real pointer hit testing follows the projection.
 - **Status:** `RESOLVED_IN_OQT_SELECTION_PROJECTION`.
 
 ## 2. Dirty state and return gate

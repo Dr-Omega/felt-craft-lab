@@ -147,8 +147,11 @@ function updateOqtPosition(): void {
   if (!canvas || !selection || !oqtOpen.value || !element) return
 
   const canvasRect = canvas.getBoundingClientRect()
-  const logicalWidth = canvas.width || logicalCanvasWidth || 1
-  const logicalHeight = canvas.height || logicalCanvasHeight || 1
+  // Fabric's canvas.width/height become retina-scaled backing dimensions
+  // (1440x1440 at DPR 1.5). Projection coordinates are SceneDocument logical
+  // units, so use the stable logical canvas dimensions instead of backing size.
+  const logicalWidth = logicalCanvasWidth || 1
+  const logicalHeight = logicalCanvasHeight || 1
   const scaleX = canvasRect.width / logicalWidth
   const scaleY = canvasRect.height / logicalHeight
   const screenLeft = canvasRect.left + selection.bounds.left * scaleX

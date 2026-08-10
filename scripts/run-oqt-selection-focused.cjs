@@ -183,7 +183,7 @@ async function main() {
   }
 
   async function canvasInkBounds() {
-    return evaluate(`(() => { const canvas=document.querySelector('.canvas-wrap .lower-canvas'); const context=canvas?.getContext('2d'); if (!canvas || !context) return null; const width=canvas.width; const height=canvas.height; const data=context.getImageData(0,0,width,height).data; const bg=[data[0],data[1],data[2]]; let left=width,top=height,right=-1,bottom=-1,count=0; for(let y=0;y<height;y+=4){ for(let x=0;x<width;x+=4){ const i=(y*width+x)*4; if(Math.abs(data[i]-bg[0])+Math.abs(data[i+1]-bg[1])+Math.abs(data[i+2]-bg[2])>28){ left=Math.min(left,x); top=Math.min(top,y); right=Math.max(right,x); bottom=Math.max(bottom,y); count++; } } } return {bg,left,top,right,bottom,count}; })()`)
+    return evaluate(`(() => { const canvas=document.querySelector('.canvas-wrap .lower-canvas'); const context=canvas?.getContext('2d'); if (!canvas || !context) return null; const width=canvas.width; const height=canvas.height; const data=context.getImageData(0,0,width,height).data; const bg=[data[0],data[1],data[2]]; let left=width,top=height,right=-1,bottom=-1,count=0; let darkLeft=width,darkTop=height,darkRight=-1,darkBottom=-1,darkCount=0; for(let y=0;y<height;y+=4){ for(let x=0;x<width;x+=4){ const i=(y*width+x)*4; const r=data[i],g=data[i+1],b=data[i+2],a=data[i+3]; if(Math.abs(r-bg[0])+Math.abs(g-bg[1])+Math.abs(b-bg[2])>28){ left=Math.min(left,x); top=Math.min(top,y); right=Math.max(right,x); bottom=Math.max(bottom,y); count++; } if(a>200 && r<80 && g<80 && b<80){ darkLeft=Math.min(darkLeft,x); darkTop=Math.min(darkTop,y); darkRight=Math.max(darkRight,x); darkBottom=Math.max(darkBottom,y); darkCount++; } } } return {bg,left,top,right,bottom,count,darkLeft,darkTop,darkRight,darkBottom,darkCount}; })()`)
   }
 
   async function screenPoint(canvas, logicalX, logicalY) {
@@ -220,17 +220,16 @@ async function main() {
     await waitFor('Boolean(document.querySelector(".editor-stage"))')
     result.ui.editorLoaded = true
     await sleep(900)
-
     const canvas = await canvasRect()
     result.ui.canvas = canvas
+    result.ui.canvasElement = await evaluate(`(() => { const e=document.querySelector('.canvas-wrap .lower-canvas'); const s=e ? getComputedStyle(e) : null; return e ? { width:e.width, height:e.height, rect:e.getBoundingClientRect().toJSON(), cssWidth:s?.width, cssHeight:s?.height, dpr:window.devicePixelRatio } : null })()`)
     result.ui.upperCanvas = await rect('.canvas-wrap .upper-canvas')
     result.ui.canvasFrame = await rect('.canvas-frame')
     result.ui.canvasWrap = await rect('.canvas-wrap')
     result.ui.editorCanvas = await rect('.editor-canvas')
     const center = await screenPoint(canvas, 480, 480)
-    // The production shell currently displays a 518px frame while Fabric's
-    // event surface remains the 960px logical canvas. Keep all targets within
-    // the visible frame while using the actual Fabric surface mapping.
+    // Keep all targets within the visible frame and map logical SceneDocument
+    // coordinates through the actual Fabric surface rect.
     const firstTarget = await screenPoint(canvas, 180, 220)
     const secondTarget = await screenPoint(canvas, 360, 320)
     const thirdTarget = await screenPoint(canvas, 480, 430)
@@ -285,10 +284,21 @@ async function main() {
     result.assertions.push({ name: 'sendBackwardUsesOqt', pass: true })
     await screenshot('07_after_send_backward.png')
 
-    // Fabric's event surface is the upper canvas (960 CSS px in this build),
-    // while the shell frame is narrower. Use the real event-surface point for
-    // the mouse gesture; OQT itself is positioned from the read-only projection.
-    const selectedCenter = { x: firstTarget.x, y: firstTarget.y }
+    // The third sticker was selected by the preceding real double-click. Its
+    // center is the exact mouse target used for insertion, so all following
+    // gestures remain on the selected object after the Fabric surface/frame
+    // alignment fix.
+    const selectedCenter = { x: thirdTarget.x, y: thirdTarget.y }
+    result.ui.oqtBeforeGeometry = Boolean(await evaluate('document.querySelector(".object-quick-tools")'))
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: selectedCenter.x, y: selectedCenter.y })
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mousePressed', x: selectedCenter.x, y: selectedCenter.y, button: 'left', clickCount: 1 })
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: selectedCenter.x, y: selectedCenter.y, button: 'left', clickCount: 1 })
+    await sleep(160)
+    result.ui.oqtAfterGeometryProbe = Boolean(await evaluate('document.querySelector(".object-quick-tools")'))
+    if (!result.ui.oqtAfterGeometryProbe) {
+      await doubleClickAt(selectedCenter.x, selectedCenter.y)
+      await waitFor('Boolean(document.querySelector(".object-quick-tools"))')
+    }
     await drag(selectedCenter.x, selectedCenter.y, selectedCenter.x + 30, selectedCenter.y + 18)
     result.ui.oqtFollowsGeometry = Boolean(await evaluate('document.querySelector(".object-quick-tools")'))
     result.ui.geometryOqtStatus = result.ui.oqtFollowsGeometry ? 'PASS' : 'NOT_TESTED_SURFACE_HIT_MISMATCH'
@@ -296,11 +306,27 @@ async function main() {
 
     // Corner and rotation gestures use the real Fabric upper canvas controls.
     if (result.ui.oqtFollowsGeometry) await click('.object-quick-tools button:nth-child(2)')
-    const corner = { x: selectedCenter.x - 56, y: selectedCenter.y - 56 }
+    // The selected rabbit is a 1024x1024 source at the adapter's 0.5
+    // initial scale; at the 518px display this is roughly 138px from center
+    // to each corner. Use the real control region rather than an interior
+    // point, which would be interpreted as another object hit.
+    const corner = { x: selectedCenter.x - 138, y: selectedCenter.y - 138 }
     await drag(corner.x, corner.y, corner.x + 18, corner.y + 18, 10)
+    result.ui.oqtAfterScale = Boolean(await evaluate('document.querySelector(".object-quick-tools")'))
     await screenshot('09_after_corner_scale.png')
-    const rotationHandle = { x: selectedCenter.x, y: selectedCenter.y - 112 }
-    await drag(rotationHandle.x, rotationHandle.y, rotationHandle.x + 28, rotationHandle.y - 18, 12)
+    const rotationCandidates = [140, 150, 160, 170, 180, 190]
+    result.ui.rotationControlAttempts = []
+    for (const rotationY of rotationCandidates) {
+      if (!await evaluate('Boolean(document.querySelector(".object-quick-tools"))')) {
+        await doubleClickAt(selectedCenter.x, selectedCenter.y)
+        await waitFor('Boolean(document.querySelector(".object-quick-tools"))')
+      }
+      await drag(selectedCenter.x, rotationY, selectedCenter.x + 28, rotationY - 18, 12)
+      const remains = Boolean(await evaluate('document.querySelector(".object-quick-tools")'))
+      result.ui.rotationControlAttempts.push({ rotationY, oqtRemains: remains })
+      if (remains) break
+    }
+    result.ui.oqtAfterRotate = Boolean(await evaluate('document.querySelector(".object-quick-tools")'))
     await screenshot('10_after_rotation.png')
 
     if (!await evaluate('Boolean(document.querySelector(".object-quick-tools"))')) {
@@ -322,6 +348,8 @@ async function main() {
     result.assertions.push({ name: 'doubleClickOqt', pass: result.ui.oqtVisibleAfterDoubleClick === true })
     result.assertions.push({ name: 'removeUndoToast', pass: result.ui.removeToast.includes('拿掉啦') && result.ui.removeToastClosedAfterUndo === true })
     result.assertions.push({ name: 'oqtFollowsGeometry', pass: result.ui.oqtFollowsGeometry === true })
+    result.assertions.push({ name: 'oqtRemainsAfterScale', pass: result.ui.oqtAfterScale === true })
+    result.assertions.push({ name: 'oqtRemainsAfterRotate', pass: result.ui.oqtAfterRotate === true })
     const corePass = result.assertions.filter((item) => item.name !== 'oqtFollowsGeometry').every((item) => item.pass)
     result.verdict = corePass
       ? (result.ui.oqtFollowsGeometry ? 'OQT_SELECTION_FOCUSED_PASSED' : 'OQT_SELECTION_FOCUSED_WITH_MINOR_ISSUES')
