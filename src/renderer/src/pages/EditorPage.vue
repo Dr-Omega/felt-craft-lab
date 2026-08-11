@@ -74,6 +74,8 @@ const selectedStickerId = ref('')
 const selectedBackgroundId = ref(launch?.scene.backgroundAssetId ?? '')
 
 const canEdit = computed(() => Boolean(sessionState.value?.canEdit))
+const canUndo = computed(() => Boolean(sessionState.value?.canUndo))
+const canRedo = computed(() => Boolean(sessionState.value?.canRedo))
 const canFinish = computed(() => Boolean(sessionState.value?.canPrepareProject))
 
 function normalizeSelections(): void {
@@ -226,6 +228,7 @@ async function boot(): Promise<void> {
   })
   try {
     await service.open(canvasEl.value, launch.scene, createCatalogResolver())
+    if (launch.mode === 'draft' || launch.mode === 'project') service.markSaved()
     selectionUnsubscribe = service.subscribeSelection(handleSelectionEvent)
   } catch (error) {
     showFeedback(friendlyError(error), 'error')
@@ -332,6 +335,7 @@ async function finish(): Promise<void> {
       const saved = await saveNewProject(prepared)
       projectId = saved.projectId
     }
+    session.value.markSaved()
     showFeedback('作品收好啦！', 'success')
   } catch (error) {
     showFeedback(friendlyError(error), 'error')
@@ -389,6 +393,10 @@ async function undoRemoval(): Promise<void> {
 function requestBack(): void {
   closeTransientContexts()
   returnModalError.value = ''
+  if (sessionState.value?.isDirty === false) {
+    openLibrary()
+    return
+  }
   returnModalOpen.value = true
 }
 
@@ -400,6 +408,7 @@ async function saveProgressAndBack(): Promise<void> {
     const preparedScene = session.value.prepareDraftSave()
     const saved = await saveDraftFromPreparedScene(preparedScene, { draftId })
     draftId = saved.draftId
+    session.value.markSaved()
     returnModalOpen.value = false
     openLibrary()
   } catch (error) {
@@ -482,6 +491,8 @@ watch([oqtOpen, oqtSelection], () => { void nextTick(updateOqtPosition) })
         <BottomActionDock
           :busy="busy"
           :can-edit="canEdit"
+          :can-undo="canUndo"
+          :can-redo="canRedo"
           :sheet-open="sheetOpen"
           @undo="undo"
           @redo="redo"

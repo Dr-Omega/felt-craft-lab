@@ -20,6 +20,10 @@ import type {
   EditorSelectionListener,
   EditorSelectionProjection
 } from './editor-selection.types'
+import type {
+  EditorHistoryListener,
+  EditorHistoryProjection
+} from './editor-history.types'
 
 /**
  * The renderer's only Fabric boundary. Vue components should use this adapter
@@ -80,6 +84,23 @@ export interface FabricObjectPort {
   flipY?: boolean
   skewX?: number
   skewY?: number
+  cornerSize?: number
+  transparentCorners?: boolean
+  borderColor?: string
+  cornerColor?: string
+  cornerStrokeColor?: string
+  cornerStyle?: 'rect' | 'circle'
+  borderScaleFactor?: number
+  padding?: number
+  controls?: Record<string, {
+    offsetX?: number
+    offsetY?: number
+    withConnection?: boolean
+    sizeX?: number
+    sizeY?: number
+    touchSizeX?: number
+    touchSizeY?: number
+  }>
   set(options: Record<string, unknown>): unknown
   setCoords(): unknown
   getBoundingRect(absolute?: boolean, calculate?: boolean): { left: number; top: number; width: number; height: number }
@@ -128,6 +149,7 @@ type EditorSceneMetadata = Omit<SceneDocument, 'canvas' | 'backgroundAssetId' | 
 
 interface HistoryEntry {
   scene: SceneDocument
+  revision: number
 }
 
 type AsyncOperationKind = 'import' | 'background' | 'sticker'
@@ -157,6 +179,25 @@ export const STICKER_ROTATION_CONTROL_OFFSET = 40
 export const STICKER_INITIAL_MAX_WIDTH_RATIO = 0.5
 export const STICKER_INITIAL_MAX_HEIGHT_RATIO = 0.5
 export const FABRIC_EDITOR_HISTORY_LIMIT = 100
+
+/**
+ * V4.6 selection-control theme. These are Fabric public Object/Control
+ * properties only; they do not alter SceneDocument serialization semantics.
+ */
+export const V46_FABRIC_CONTROL_THEME = Object.freeze({
+  borderColor: '#E8A572',
+  cornerColor: '#FFFFFF',
+  cornerStrokeColor: '#E8A572',
+  transparentCorners: false,
+  cornerStyle: 'circle' as const,
+  cornerSize: 8,
+  touchSize: 18,
+  borderScaleFactor: 1,
+  padding: 4,
+  rotationControlOffset: STICKER_ROTATION_CONTROL_OFFSET,
+  rotationControlSize: 8,
+  rotationControlTouchSize: 20
+})
 
 /**
  * Calculates the persisted transform for a newly created Sticker only.
@@ -300,6 +341,44 @@ export function validateFabricFromURLResult(
   return null
 }
 
+/**
+ * Applies the frozen V4.6 visual treatment through Fabric's public object and
+ * Control APIs. A generous touch target keeps real mouse interaction usable
+ * while the visible handle remains the requested compact size.
+ */
+export function applyFabricControlTheme(object: FabricObjectPort): void {
+  object.set({
+    borderColor: V46_FABRIC_CONTROL_THEME.borderColor,
+    cornerColor: V46_FABRIC_CONTROL_THEME.cornerColor,
+    cornerStrokeColor: V46_FABRIC_CONTROL_THEME.cornerStrokeColor,
+    transparentCorners: V46_FABRIC_CONTROL_THEME.transparentCorners,
+    cornerStyle: V46_FABRIC_CONTROL_THEME.cornerStyle,
+    cornerSize: V46_FABRIC_CONTROL_THEME.cornerSize,
+    borderScaleFactor: V46_FABRIC_CONTROL_THEME.borderScaleFactor,
+    padding: V46_FABRIC_CONTROL_THEME.padding
+  })
+
+  const controls = object.controls
+  if (!controls) return
+  for (const key of ['tl', 'mt', 'tr', 'ml', 'mr', 'bl', 'mb', 'br']) {
+    const control = controls[key]
+    if (!control) continue
+    control.sizeX = V46_FABRIC_CONTROL_THEME.cornerSize
+    control.sizeY = V46_FABRIC_CONTROL_THEME.cornerSize
+    control.touchSizeX = V46_FABRIC_CONTROL_THEME.touchSize
+    control.touchSizeY = V46_FABRIC_CONTROL_THEME.touchSize
+  }
+  const rotation = controls.mtr
+  if (rotation) {
+    rotation.offsetY = -V46_FABRIC_CONTROL_THEME.rotationControlOffset
+    rotation.withConnection = true
+    rotation.sizeX = V46_FABRIC_CONTROL_THEME.rotationControlSize
+    rotation.sizeY = V46_FABRIC_CONTROL_THEME.rotationControlSize
+    rotation.touchSizeX = V46_FABRIC_CONTROL_THEME.rotationControlTouchSize
+    rotation.touchSizeY = V46_FABRIC_CONTROL_THEME.rotationControlTouchSize
+  }
+}
+
 function createUuid(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') return crypto.randomUUID()
   throw editorError('UNKNOWN', 'Secure object identifier generation is unavailable.')
@@ -351,12 +430,14 @@ export class FabricEditorAdapter {
   private readonly assetCache = new Map<string, AssetRecord>()
   private readonly listeners: Array<[string, (event: { target?: FabricObjectPort }) => void]> = []
   private readonly selectionListeners = new Set<EditorSelectionListener>()
+  private readonly historyListeners = new Set<EditorHistoryListener>()
   private canvas: FabricCanvasPort | undefined
   private metadata: EditorSceneMetadata | undefined
   private backgroundAssetId: string | null = null
   private backgroundColor: string | undefined
   private history: HistoryEntry[] = []
   private historyIndex = -1
+  private historyRevisionCounter = 0
   private restoring = false
   private resolver: FabricEditorAssetResolver | undefined
   private recoveryIssues: SceneRecoveryIssue[] = []
@@ -446,7 +527,7 @@ export class FabricEditorAdapter {
         canvas.calcOffset()
         canvas.discardActiveObject()
         canvas.requestRenderAll()
-        this.resetHistory()
+        if (historyRestoreGeneration === undefined) this.resetHistory()
         return { issues: [...prepared.issues] }
       } finally {
         this.restoring = false
@@ -674,6 +755,7 @@ export class FabricEditorAdapter {
     const target = this.history[previousIndex - 1]
     await this.restoreHistory(target)
     this.historyIndex = previousIndex - 1
+    this.emitHistoryProjection()
     return true
   }
 
@@ -684,6 +766,7 @@ export class FabricEditorAdapter {
     const target = this.history[previousIndex + 1]
     await this.restoreHistory(target)
     this.historyIndex = previousIndex + 1
+    this.emitHistoryProjection()
     return true
   }
 
@@ -711,6 +794,24 @@ export class FabricEditorAdapter {
       if (!active) return
       active = false
       this.selectionListeners.delete(listener)
+    }
+  }
+
+  getHistoryProjection(): EditorHistoryProjection {
+    return {
+      revision: this.history[this.historyIndex]?.revision ?? 0,
+      canUndo: this.historyIndex > 0,
+      canRedo: this.historyIndex >= 0 && this.historyIndex < this.history.length - 1
+    }
+  }
+
+  subscribeHistory(listener: EditorHistoryListener): () => void {
+    this.historyListeners.add(listener)
+    let active = true
+    return (): void => {
+      if (!active) return
+      active = false
+      this.historyListeners.delete(listener)
     }
   }
 
@@ -758,6 +859,7 @@ export class FabricEditorAdapter {
     this.committedSceneReady = false
     this.activeHistoryRestoreGeneration = undefined
     this.selectionListeners.clear()
+    this.historyListeners.clear()
     const canvas = this.canvas
     if (!canvas) {
       this.recoveryIssues = []
@@ -957,6 +1059,7 @@ export class FabricEditorAdapter {
       this.ensureCurrentOperation(operation)
       const object = await this.runtime.createImage(resource.sourceUrl, options)
       this.ensureCurrentOperation(operation)
+      if (options.assetType === 'sticker') applyFabricControlTheme(object)
       return { object, release: resource.dispose }
     } catch (error) {
       resource?.dispose()
@@ -985,6 +1088,7 @@ export class FabricEditorAdapter {
       lockSkewingY: true,
       lockRotation: true
     })
+    if (assetType === 'sticker') applyFabricControlTheme(object)
     this.recoveryPlaceholders.add(object)
     return { object, release: () => undefined }
   }
@@ -1165,18 +1269,27 @@ export class FabricEditorAdapter {
 
   private captureHistory(): void {
     if (this.restoring || !this.sceneReady || !this.metadata || !this.canvas) return
-    const entry = { scene: this.serializeScene() }
+    const entry = { scene: this.serializeScene(), revision: ++this.historyRevisionCounter }
     this.history = this.history.slice(0, this.historyIndex + 1)
     this.history.push(entry)
     if (this.history.length > FABRIC_EDITOR_HISTORY_LIMIT) {
       this.history.splice(0, this.history.length - FABRIC_EDITOR_HISTORY_LIMIT)
     }
     this.historyIndex = this.history.length - 1
+    this.emitHistoryProjection()
   }
 
   private resetHistory(): void {
-    this.history = [{ scene: this.serializeScene() }]
+    this.history = [{ scene: this.serializeScene(), revision: ++this.historyRevisionCounter }]
     this.historyIndex = 0
+    this.emitHistoryProjection()
+  }
+
+  private emitHistoryProjection(): void {
+    const projection = this.getHistoryProjection()
+    for (const listener of this.historyListeners) {
+      try { listener({ ...projection }) } catch { /* view listeners cannot break history */ }
+    }
   }
 
   private async restoreHistory(entry: HistoryEntry): Promise<void> {

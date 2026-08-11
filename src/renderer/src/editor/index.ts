@@ -1,4 +1,9 @@
-export { FabricEditorAdapter, normalizeSceneAngle } from './fabric-editor-adapter'
+export {
+  FabricEditorAdapter,
+  V46_FABRIC_CONTROL_THEME,
+  applyFabricControlTheme,
+  normalizeSceneAngle
+} from './fabric-editor-adapter'
 export type {
   FabricCanvasPort,
   FabricEditorAdapterOptions,
@@ -9,6 +14,7 @@ export type {
   SceneImportResult,
   SceneRecoveryIssue
 } from './fabric-editor-adapter'
+export type { EditorHistoryListener, EditorHistoryProjection } from './editor-history.types'
 export { EditorSessionService } from './editor-session.service'
 export type {
   EditorSelectionBounds,

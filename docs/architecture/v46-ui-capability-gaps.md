@@ -1,63 +1,86 @@
 # V4.6 Editor UI Capability Gaps
 
-This document records the public application-layer capability gaps for the
-V4.6 editor UI. It does not change Shared Contracts, SceneDocument,
-FabricEditorAdapter, or EditorSessionService semantics.
+This document records the application-layer capabilities required by the
+V4.6 editor. It does not change Shared Contracts, SceneDocument,
+Persistence, Resolver, Snapshot, or the canonical 960x960 Canvas.
 
 ## 1. OQT selection, quick tools, and removal
 
-- **Public capability:** `EditorSessionService` now exposes a renderer-only,
+- **Public capability:** `EditorSessionService` exposes a renderer-only,
   read-only selection projection (`objectId` and logical Canvas bounds) through
-  `subscribeSelection(listener)`. The adapter emits selected, geometry,
-  double-click, and cleared events without leaking Fabric objects.
-- **UI boundary:** `ObjectQuickTools` renders only `往前`, `往后`, and `拿掉`.
-  Layer and removal actions call the Session by exact `objectId`; the UI does
-  not keep Fabric instances, screen coordinates, or persisted selection state.
-  `RemoveToast` offers a short-lived `撤销` action through Session undo.
+  `subscribeSelection(listener)`.
+- **UI boundary:** `ObjectQuickTools` calls Session commands by exact
+  `objectId`; it never stores Fabric objects or persisted selection state.
 - **Geometry boundary:** logical SceneDocument dimensions are mapped through
-  the canvas CSS rect; retina backing dimensions are never treated as logical
-  coordinates. The Fabric container and visible frame share the same CSS
-  surface so real pointer hit testing follows the projection.
+  the visible Canvas CSS rectangle. Retina backing dimensions are never used
+  as logical coordinates.
 - **Status:** `RESOLVED_IN_OQT_SELECTION_PROJECTION`.
 
-## 2. Dirty state and return gate
+## 2. Dirty state and save baseline
 
-- **Current public capability:** Session lifecycle, recovery state, and pending
-  operations are public, but there is no public dirty baseline or save-baseline
-  comparison.
-- **Minimum missing capability:** a read-only `isDirty` projection or equivalent
-  change subscription backed by successful Draft/Project save baselines. It must
-  not compare Fabric JSON in the page.
-- **Status:** `TEMP_UI_FALLBACK`. The return flow retains its explicit save,
-  discard, and continue choices; this is not a real dirty detector.
+- **Public capability:** `EditorSessionState.isDirty` is derived from runtime
+  History Projection revisions. It is not based on Fabric JSON or a persisted
+  Scene field.
+- **Baseline:** `EditorSessionService.markSaved()` records the current
+  history revision after an outer Draft/Project persistence write succeeds.
+  `prepareDraftSave()` and `prepareProjectSave()` never mark the session clean.
+- **Launch semantics:** a new work session starts dirty; successfully opened
+  Draft and Project sessions are marked clean by `EditorPage` after import.
+- **Return gate:** clean Draft/Project sessions return directly to Library;
+  dirty sessions, including untouched new work, use the Return Save Modal.
+- **Status:** `RESOLVED_IN_EDITOR_STATE_CONTROLS`.
 
-## 3. Fabric control theming
+## 3. History capability projection
 
-- **Current public capability:** Fabric control behavior is owned by the adapter;
-  Vue cannot safely restyle controls through a public application API.
-- **Minimum missing capability:** an adapter-level control theme mapping to V4.6
-  tokens without changing SceneDocument.
-- **Status:** `BLOCKED_BY_AUTHORIZATION`. This branch intentionally leaves it
-  unchanged.
+- **Public capability:** `EditorHistoryProjection` contains only
+  `revision`, `canUndo`, and `canRedo`.
+- **Adapter boundary:** `FabricEditorAdapter.subscribeHistory(listener)`
+  emits only after a stable history entry/index is committed. Undo and redo
+  reuse the target entry revision; a new mutation receives a new runtime
+  revision and truncates the redo branch.
+- **Session boundary:** `EditorSessionState` projects `canUndo` and `canRedo`.
+  The Dock disables commands using those values, `busy`, and `canEdit`; Vue
+  does not inspect Fabric history.
+- **Status:** `RESOLVED_IN_EDITOR_STATE_CONTROLS`.
 
-## 4. Undo/Redo capability projection
+## 4. Fabric selection-control theme
 
-- **Current public capability:** Session exposes `undo()` and `redo()` commands,
-  but `EditorSessionState` does not expose `canUndo` or `canRedo`.
-- **Minimum missing capability:** a read-only history capability projection so
-  the dock can disable unavailable commands without inspecting Fabric history.
-- **Status:** `BLOCKED_BY_AUTHORIZATION`.
+- **Public API only:** the adapter applies `V46_FABRIC_CONTROL_THEME` through
+  Fabric Object options and the public `object.controls` / `Control` API.
+  No private Fabric fields, DOM overlays, or test-only hit-test controls are
+  used.
+- **Frozen tokens:** border `#E8A572`, white handle fill `#FFFFFF`,
+  `#E8A572` handle stroke, circular handles, compact 8px visible controls,
+  and a 40px public rotation-control offset with a larger touch target.
+- **Coverage:** new Stickers, imported Scene Stickers, history-restored
+  Stickers, and recovery placeholders receive the same adapter-level theme.
+  Transform semantics remain unchanged: centered origin, uniform positive
+  scaling, normalized rotation, no flip, no skew, drag, Safe Fit, and zIndex
+  serialization are not altered.
+- **Status:** `RESOLVED_IN_EDITOR_STATE_CONTROLS`.
 
-## 5. Resource category filtering
+## 5. Public API limitation
 
-- `AssetRecord` has no category field. This UI therefore keeps the formal
-  catalog's `全部` view and does not invent categories or change snapshot or
-  unlock rules.
+Fabric 5.3.0 exposes public control sizing and touch-area properties, but it
+does not provide a global CSS-pixel guarantee independent of display scaling.
+The implementation therefore prioritizes correct frozen colors, circular
+handles, a clear selection ring, a reachable rotation control, and real mouse
+interaction at supported window sizes.
+
+- **Status:** `RESOLVED_WITH_PUBLIC_API_LIMITATION`.
+
+## 6. Resource category filtering
+
+`AssetRecord` has no category field. The editor retains the formal catalog's
+available `all` view and does not invent categories or change snapshot/unlock
+rules.
+
 - **Status:** `CATEGORY_SOURCE_NOT_AVAILABLE`.
 
 ## Current completion boundary
 
-The OQT selection projection is the only capability resolved in this branch.
-Dirty tracking, Fabric control theming, Undo/Redo capability state, and
-category filtering remain explicit follow-up gaps. No private Fabric state,
-DOM inference, or frozen Contracts were used to bridge them.
+OQT selection projection, dirty state, History Projection, Undo/Redo capability
+state, return gating, and the V4.6 Fabric control theme are resolved in the
+`editor-state-controls` implementation. Category filtering remains blocked by
+the frozen source contract. No persistence schema or product boundary is
+changed by these renderer-only capabilities.

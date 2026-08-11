@@ -3,6 +3,7 @@ import type { AssetAccessState, AssetRecord, SceneDocument } from '../../src/sha
 import { EditorSessionService, type EditorSessionAdapter } from '../../src/renderer/src/editor'
 import type { FabricEditorAssetResolver, SceneImportResult, SceneRecoveryIssue } from '../../src/renderer/src/editor'
 import type { EditorSelectionEvent, EditorSelectionListener } from '../../src/renderer/src/editor'
+import type { EditorHistoryListener, EditorHistoryProjection } from '../../src/renderer/src/editor'
 import { cloneFixture, validAccess, validAsset, validScene } from '../shared/contracts.fixtures'
 
 function deferred<T>(): { promise: Promise<T>; resolve(value: T): void; reject(error: unknown): void } {
@@ -43,6 +44,8 @@ class StubAdapter implements EditorSessionAdapter {
   deletedObjectIds: string[] = []
   layerOps: Array<{ op: string; objectId: string }> = []
   private readonly selectionListeners = new Set<EditorSelectionListener>()
+  private readonly historyListeners = new Set<EditorHistoryListener>()
+  private historyProjection: EditorHistoryProjection = { revision: 0, canUndo: false, canRedo: false }
   private nextObjectId = 0
 
   initialize(_element: HTMLCanvasElement, scene: SceneDocument): void {
@@ -62,6 +65,8 @@ class StubAdapter implements EditorSessionAdapter {
     this.scene = cloneFixture(scene)
     this.ready = true
     this.issues = [...(this.importIssues ?? this.issues)]
+    this.historyProjection = { revision: this.historyProjection.revision + 1, canUndo: false, canRedo: false }
+    this.emitHistory()
     return { issues: [...this.issues] }
   }
 
@@ -96,6 +101,8 @@ class StubAdapter implements EditorSessionAdapter {
     const gate = this.addGates.shift()
     if (gate) await gate.promise
     this.nextObjectId += 1
+    this.historyProjection = { revision: this.historyProjection.revision + 1, canUndo: true, canRedo: false }
+    this.emitHistory()
     return `object-${this.nextObjectId}`
   }
 
@@ -165,6 +172,17 @@ class StubAdapter implements EditorSessionAdapter {
     return this.redoResult
   }
 
+  getHistoryProjection(): EditorHistoryProjection {
+    return { ...this.historyProjection }
+  }
+
+  subscribeHistory(listener: EditorHistoryListener): () => void {
+    this.historyListeners.add(listener)
+    return () => this.historyListeners.delete(listener)
+  }
+
+  markSaved(): void {}
+
   exportScene(): SceneDocument {
     this.ensureReady()
     if (!this.scene) throw new Error('missing scene')
@@ -198,6 +216,15 @@ class StubAdapter implements EditorSessionAdapter {
     }
   }
 
+  emitHistory(): void {
+    for (const listener of this.historyListeners) listener({ ...this.historyProjection })
+  }
+
+  setHistoryProjection(projection: EditorHistoryProjection): void {
+    this.historyProjection = { ...projection }
+    this.emitHistory()
+  }
+
   dispose(): void {
     this.disposed = true
     this.ready = false
@@ -221,6 +248,37 @@ function stickerAccess(): AssetAccessState {
 }
 
 describe('EditorSessionService', () => {
+  it('projects NEW dirty state from history identity and keeps prepare side-effect free', async () => {
+    const adapter = new StubAdapter()
+    const service = createSession(adapter)
+    await service.open({} as HTMLCanvasElement, cloneFixture(validScene), resolver())
+
+    expect(service.getState()).toMatchObject({ isDirty: true, canUndo: false, canRedo: false })
+    service.markSaved()
+    expect(service.getState()).toMatchObject({ isDirty: false })
+
+    await service.addSticker(cloneFixture(validAsset), stickerAccess())
+    expect(service.getState()).toMatchObject({ isDirty: true, canUndo: true, canRedo: false })
+    service.prepareDraftSave()
+    await service.prepareProjectSave()
+    expect(service.getState().isDirty).toBe(true)
+
+    adapter.setHistoryProjection({ revision: 3, canUndo: false, canRedo: true })
+    expect(service.getState()).toMatchObject({ isDirty: true, canUndo: false, canRedo: true })
+  })
+
+  it('marks a persisted revision clean without clearing redo capability', async () => {
+    const adapter = new StubAdapter()
+    const service = createSession(adapter)
+    await service.open({} as HTMLCanvasElement, cloneFixture(validScene), resolver())
+    await service.addSticker(cloneFixture(validAsset), stickerAccess())
+    service.markSaved()
+    expect(service.getState()).toMatchObject({ isDirty: false, canUndo: true, canRedo: false })
+
+    adapter.setHistoryProjection({ revision: 1, canUndo: false, canRedo: true })
+    expect(service.getState()).toMatchObject({ isDirty: true, canUndo: false, canRedo: true })
+  })
+
   it('moves idle 鈫?loading 鈫?ready and exposes subscription snapshots', async () => {
     const adapter = new StubAdapter()
     const service = createSession(adapter)

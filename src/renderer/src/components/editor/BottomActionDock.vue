@@ -3,6 +3,8 @@ defineProps<{
   busy?: boolean
   sheetOpen?: boolean
   canEdit?: boolean
+  canUndo?: boolean
+  canRedo?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -19,7 +21,7 @@ const emit = defineEmits<{
       type="button"
       aria-label="撤销"
       title="撤销"
-      :disabled="busy || canEdit === false"
+      :disabled="busy || canEdit === false || canUndo === false"
       @click="emit('undo')"
     >
       <span aria-hidden="true">↶</span>
@@ -40,7 +42,7 @@ const emit = defineEmits<{
       type="button"
       aria-label="重做"
       title="重做"
-      :disabled="busy || canEdit === false"
+      :disabled="busy || canEdit === false || canRedo === false"
       @click="emit('redo')"
     >
       <span aria-hidden="true">↷</span>

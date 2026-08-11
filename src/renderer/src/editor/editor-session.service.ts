@@ -11,6 +11,7 @@ import type {
   PreparedProjectSave
 } from './editor-session.types'
 import type { EditorSelectionListener } from './editor-selection.types'
+import type { EditorHistoryProjection } from './editor-history.types'
 
 function sessionError(code: SharedErrorCode, message: string): SharedError {
   return { code, message, retryable: false }
@@ -35,10 +36,15 @@ export class EditorSessionService {
   private readonly selectionSubscriptions = new Set<() => void>()
   private readonly pendingTokens = new Set<symbol>()
   private adapter: EditorSessionAdapter | undefined
+  private historyUnsubscribe: (() => void) | undefined
   private status: EditorSessionStatus = 'idle'
   private sceneId: string | undefined
   private recoveryIssues: SceneRecoveryIssue[] = []
   private sceneTransitionGeneration = 0
+  private currentHistoryRevision: number | undefined
+  private savedHistoryRevision: number | undefined
+  private historyCanUndo = false
+  private historyCanRedo = false
 
   constructor(options: EditorSessionServiceOptions | EditorSessionAdapterFactory) {
     this.createAdapter = typeof options === 'function' ? options : options.createAdapter
@@ -47,12 +53,18 @@ export class EditorSessionService {
   getState(): EditorSessionState {
     const canEdit = isActiveStatus(this.status)
     const canPrepare = this.status === 'ready' && this.pendingTokens.size === 0 && this.recoveryIssues.length === 0
+    const isDirty = canEdit
+      && this.currentHistoryRevision !== undefined
+      && this.currentHistoryRevision !== this.savedHistoryRevision
     return {
       status: this.status,
       ...(this.sceneId === undefined ? {} : { sceneId: this.sceneId }),
       pendingOperations: this.pendingTokens.size,
       recoveryIssues: this.recoveryIssues.map((issue) => ({ ...issue })),
       canEdit,
+      isDirty,
+      canUndo: canEdit && this.historyCanUndo,
+      canRedo: canEdit && this.historyCanRedo,
       canPrepareDraft: canPrepare,
       canPrepareProject: canPrepare
     }
@@ -77,6 +89,8 @@ export class EditorSessionService {
     this.status = 'loading'
     this.sceneId = undefined
     this.recoveryIssues = []
+    this.resetHistoryProjection()
+    this.savedHistoryRevision = undefined
     let adapter: EditorSessionAdapter | undefined
     let token: symbol | undefined
     try {
@@ -92,13 +106,20 @@ export class EditorSessionService {
         throw sessionError('REQUEST_CANCELLED', 'Editor session open was superseded.')
       }
       this.sceneId = scene.sceneId
-      this.syncRecoveryState(adapter)
+      this.attachHistory(adapter)
+      this.syncHistoryProjection(adapter.getHistoryProjection(), false)
+      this.syncRecoveryState(adapter, false)
       if (transition !== this.sceneTransitionGeneration || !isActiveStatus(this.status) || this.adapter !== adapter) {
         throw sessionError('REQUEST_CANCELLED', 'Editor session open was superseded.')
       }
+      this.emit()
       return this.withCommittedRecoveryIssues(importResult)
     } catch (error) {
       if (adapter) {
+        if (this.adapter === adapter) {
+          this.historyUnsubscribe?.()
+          this.historyUnsubscribe = undefined
+        }
         if (this.adapter === adapter) this.adapter = undefined
         try { adapter.dispose() } catch { /* preserve the normalized failure */ }
       }
@@ -106,6 +127,8 @@ export class EditorSessionService {
         this.status = 'idle'
         this.sceneId = undefined
         this.recoveryIssues = []
+        this.resetHistoryProjection()
+        this.savedHistoryRevision = undefined
         this.emit()
       }
       throw normalizedError(error, 'SCENE_IMPORT_FAILED')
@@ -128,10 +151,13 @@ export class EditorSessionService {
         throw sessionError('REQUEST_CANCELLED', 'Scene load was superseded.')
       }
       this.sceneId = scene.sceneId
-      this.syncRecoveryState(adapter)
+      this.savedHistoryRevision = undefined
+      this.syncHistoryProjection(adapter.getHistoryProjection(), false)
+      this.syncRecoveryState(adapter, false)
       if (transition !== this.sceneTransitionGeneration || !isActiveStatus(this.status) || this.adapter !== adapter) {
         throw sessionError('REQUEST_CANCELLED', 'Scene load was superseded.')
       }
+      this.emit()
       return this.withCommittedRecoveryIssues(importResult)
     } catch (error) {
       if (transition === this.sceneTransitionGeneration && this.adapter === adapter) {
@@ -211,6 +237,16 @@ export class EditorSessionService {
     return this.runAsyncMutation('INVALID_ARGUMENT', () => this.requireAdapter().redo())
   }
 
+  /** Marks the current runtime history entry as persisted by an outer layer. */
+  markSaved(): void {
+    this.requireAdapter('INVALID_ARGUMENT')
+    if (!isActiveStatus(this.status) || this.currentHistoryRevision === undefined) {
+      throw sessionError('INVALID_ARGUMENT', 'Editor session has no current history entry.')
+    }
+    this.savedHistoryRevision = this.currentHistoryRevision
+    this.emit()
+  }
+
   getRecoveryIssues(): readonly SceneRecoveryIssue[] {
     return this.recoveryIssues.map((issue) => ({ ...issue }))
   }
@@ -270,6 +306,8 @@ export class EditorSessionService {
     ++this.sceneTransitionGeneration
     for (const unsubscribe of [...this.selectionSubscriptions]) unsubscribe()
     this.selectionSubscriptions.clear()
+    this.historyUnsubscribe?.()
+    this.historyUnsubscribe = undefined
     const adapter = this.adapter
     this.adapter = undefined
     this.pendingTokens.clear()
@@ -277,6 +315,8 @@ export class EditorSessionService {
     this.status = 'disposed'
     this.sceneId = undefined
     this.recoveryIssues = []
+    this.resetHistoryProjection()
+    this.savedHistoryRevision = undefined
     this.emit()
   }
 
@@ -322,7 +362,36 @@ export class EditorSessionService {
     return this.adapter
   }
 
-  private syncRecoveryState(adapter: EditorSessionAdapter): void {
+  private attachHistory(adapter: EditorSessionAdapter): void {
+    this.historyUnsubscribe?.()
+    this.historyUnsubscribe = adapter.subscribeHistory((projection) => {
+      this.syncHistoryProjection(projection, this.status !== 'loading')
+    })
+  }
+
+  private syncHistoryProjection(projection: EditorHistoryProjection, emit = true): void {
+    if (
+      !projection
+      || typeof projection.revision !== 'number'
+      || !Number.isFinite(projection.revision)
+      || typeof projection.canUndo !== 'boolean'
+      || typeof projection.canRedo !== 'boolean'
+    ) {
+      throw sessionError('UNKNOWN', 'Adapter returned invalid history projection.')
+    }
+    this.currentHistoryRevision = projection.revision
+    this.historyCanUndo = projection.canUndo
+    this.historyCanRedo = projection.canRedo
+    if (emit && this.status !== 'loading') this.emit()
+  }
+
+  private resetHistoryProjection(): void {
+    this.currentHistoryRevision = undefined
+    this.historyCanUndo = false
+    this.historyCanRedo = false
+  }
+
+  private syncRecoveryState(adapter: EditorSessionAdapter, emit = true): void {
     let rawIssues: readonly SceneRecoveryIssue[]
     try {
       rawIssues = adapter.getRecoveryIssues()
@@ -333,7 +402,7 @@ export class EditorSessionService {
     const issues = rawIssues.map((issue) => ({ ...issue }))
     this.recoveryIssues = issues
     this.status = issues.length > 0 ? 'recovery' : 'ready'
-    this.emit()
+    if (emit) this.emit()
   }
 
   private withCommittedRecoveryIssues(result: SceneImportResult): SceneImportResult {

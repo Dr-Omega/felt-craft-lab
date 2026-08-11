@@ -1,6 +1,7 @@
 import type { AssetAccessState, AssetRecord, SceneDocument } from '@shared/contracts'
 import type { FabricEditorAssetResolver, SceneImportResult, SceneRecoveryIssue } from './fabric-editor-adapter'
 import type { EditorSelectionListener } from './editor-selection.types'
+import type { EditorHistoryListener, EditorHistoryProjection } from './editor-history.types'
 
 export type EditorSessionStatus = 'idle' | 'loading' | 'ready' | 'recovery' | 'disposed'
 
@@ -10,6 +11,9 @@ export interface EditorSessionState {
   pendingOperations: number
   recoveryIssues: readonly SceneRecoveryIssue[]
   canEdit: boolean
+  isDirty: boolean
+  canUndo: boolean
+  canRedo: boolean
   canPrepareDraft: boolean
   canPrepareProject: boolean
 }
@@ -41,6 +45,8 @@ export interface EditorSessionAdapter {
   sendSelectedToBack(): void
   undo(): Promise<boolean>
   redo(): Promise<boolean>
+  getHistoryProjection(): EditorHistoryProjection
+  subscribeHistory(listener: EditorHistoryListener): () => void
   exportScene(): SceneDocument
   exportPng(): Promise<Blob>
   getRecoveryIssues(): readonly SceneRecoveryIssue[]

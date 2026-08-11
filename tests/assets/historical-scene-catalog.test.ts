@@ -10,6 +10,7 @@ import {
 import { EditorSessionService, type EditorSessionAdapter } from '../../src/renderer/src/editor'
 import type { FabricEditorAssetResolver, SceneImportResult, SceneRecoveryIssue } from '../../src/renderer/src/editor'
 import type { EditorSelectionEvent, EditorSelectionListener } from '../../src/renderer/src/editor'
+import type { EditorHistoryListener, EditorHistoryProjection } from '../../src/renderer/src/editor'
 import { cloneFixture, validScene } from '../shared/contracts.fixtures'
 
 function sticker(snapshotId: string, imageToken: string, contentVersion: number): AssetRecord {
@@ -37,6 +38,8 @@ class RecoveryStubAdapter implements EditorSessionAdapter {
   issues: SceneRecoveryIssue[] = []
   scene: SceneDocument | undefined
   private readonly selectionListeners = new Set<EditorSelectionListener>()
+  private readonly historyListeners = new Set<EditorHistoryListener>()
+  private historyProjection: EditorHistoryProjection = { revision: 0, canUndo: false, canRedo: false }
 
   initialize(_element: HTMLCanvasElement, scene: SceneDocument): void {
     this.scene = cloneFixture(scene)
@@ -51,6 +54,8 @@ class RecoveryStubAdapter implements EditorSessionAdapter {
         assetType: 'sticker'
       }
     ]
+    this.historyProjection = { revision: this.historyProjection.revision + 1, canUndo: false, canRedo: false }
+    for (const listener of this.historyListeners) listener({ ...this.historyProjection })
     return { issues: [...this.issues] }
   }
 
@@ -77,6 +82,14 @@ class RecoveryStubAdapter implements EditorSessionAdapter {
   async redo(): Promise<boolean> {
     return false
   }
+  getHistoryProjection(): EditorHistoryProjection {
+    return { ...this.historyProjection }
+  }
+  subscribeHistory(listener: EditorHistoryListener): () => void {
+    this.historyListeners.add(listener)
+    return () => this.historyListeners.delete(listener)
+  }
+  markSaved(): void {}
   exportScene(): SceneDocument {
     return cloneFixture(this.scene!)
   }

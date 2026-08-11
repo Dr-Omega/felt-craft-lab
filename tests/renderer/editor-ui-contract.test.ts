@@ -13,6 +13,13 @@ const removeToast = readFileSync(resolve('src/renderer/src/components/editor/Rem
 const selectionTypes = readFileSync(resolve('src/renderer/src/editor/editor-selection.types.ts'), 'utf8')
 
 describe('V4.6 formal Editor UI contract', () => {
+  it('uses runtime dirty state for the return gate and explicit persistence baselines', () => {
+    expect(page).toContain('sessionState.value?.isDirty === false')
+    expect(page).toContain("launch.mode === 'draft' || launch.mode === 'project'")
+    expect(page).toContain('service.markSaved()')
+    expect(page).toContain('session.value.markSaved()')
+  })
+
   it('keeps the production template free of engineering side-panel copy', () => {
     const template = page.match(/<template>([\s\S]*?)<\/template>/)?.[1] ?? ''
     const renderedText = template.replace(/<[^>]+>/g, ' ')
@@ -51,6 +58,8 @@ describe('V4.6 formal Editor UI contract', () => {
     expect(page).toContain('session.value.prepareProjectSave()')
     expect(page).toContain('session.value.prepareDraftSave()')
     expect(page).toContain('saveDraftFromPreparedScene')
+    expect(page).toContain(':can-undo="canUndo"')
+    expect(page).toContain(':can-redo="canRedo"')
   })
 
   it('keeps locked assets visible and makes add/apply two-step actions explicit', () => {
@@ -77,6 +86,8 @@ describe('V4.6 formal Editor UI contract', () => {
     expect(dock).toContain('aria-label="打开素材盒"')
     expect(dock).toContain('aria-label="重做"')
     expect(modal).toContain('保存进度再回去')
+    expect(dock).toContain('canUndo')
+    expect(dock).toContain('canRedo')
     expect(modal).toContain('直接回去')
     expect(modal).toContain('继续做')
   })

@@ -5,6 +5,7 @@ import type { AssetRecord, SceneDocument } from '../../src/shared/contracts'
 import {
   FABRIC_EDITOR_HISTORY_LIMIT,
   FabricEditorAdapter,
+  applyFabricControlTheme,
   STICKER_ROTATION_CONTROL_OFFSET,
   STICKER_SAFE_EDGE_MARGIN,
   calculateStickerInitialScale,
@@ -54,6 +55,15 @@ class FakeObject implements FabricObjectPort {
   flipY?: boolean
   skewX?: number
   skewY?: number
+  controls?: Record<string, {
+    offsetX?: number
+    offsetY?: number
+    withConnection?: boolean
+    sizeX?: number
+    sizeY?: number
+    touchSizeX?: number
+    touchSizeY?: number
+  }>
 
   constructor(options: Record<string, unknown>) {
     this.width = 100
@@ -417,12 +427,26 @@ describe('FabricEditorAdapter', () => {
     const { adapter, canvas } = createHarness()
     await adapter.importScene(cloneFixture(validScene), resolver())
     const imported = canvas.getObjects()[0]
-    expect(imported).toMatchObject({ lockScalingFlip: true, lockSkewingX: true, lockSkewingY: true })
+    expect(imported).toMatchObject({
+      lockScalingFlip: true,
+      lockSkewingX: true,
+      lockSkewingY: true,
+      borderColor: '#E8A572',
+      cornerColor: '#FFFFFF',
+      cornerStyle: 'circle'
+    })
 
     const addedId = await adapter.addSticker(materialAsset('sticker'), validAccess)
     const added = canvas.getObjects().find((object) => object.objectId === addedId)
     if (!added) throw new Error('added sticker missing')
-    expect(added).toMatchObject({ lockScalingFlip: true, lockSkewingX: true, lockSkewingY: true })
+    expect(added).toMatchObject({
+      lockScalingFlip: true,
+      lockSkewingX: true,
+      lockSkewingY: true,
+      borderColor: '#E8A572',
+      cornerColor: '#FFFFFF',
+      cornerStyle: 'circle'
+    })
 
     added.set({ flipX: true })
     expect(() => adapter.exportScene()).toThrow(expect.objectContaining({ code: 'SCENE_VALIDATION_FAILED' }))
@@ -468,6 +492,57 @@ describe('FabricEditorAdapter', () => {
     expect(adapter.exportScene().objects).toHaveLength(1)
     await expect(adapter.redo()).resolves.toBe(true)
     expect(adapter.exportScene().objects).toHaveLength(2)
+  })
+
+  it('projects stable history capabilities with unique mutation revisions', async () => {
+    const { adapter } = createHarness()
+    const projections: Array<{ revision: number; canUndo: boolean; canRedo: boolean }> = []
+    adapter.subscribeHistory((projection) => projections.push(projection))
+
+    await adapter.importScene(cloneFixture(validScene), resolver())
+    const imported = adapter.getHistoryProjection()
+    expect(imported).toMatchObject({ canUndo: false, canRedo: false })
+
+    await adapter.addSticker(materialAsset('sticker'), validAccess)
+    const added = adapter.getHistoryProjection()
+    expect(added.canUndo).toBe(true)
+    expect(added.canRedo).toBe(false)
+    expect(added.revision).not.toBe(imported.revision)
+
+    await expect(adapter.undo()).resolves.toBe(true)
+    const undone = adapter.getHistoryProjection()
+    expect(undone).toMatchObject({ revision: imported.revision, canUndo: false, canRedo: true })
+
+    await expect(adapter.redo()).resolves.toBe(true)
+    const redone = adapter.getHistoryProjection()
+    expect(redone).toEqual(added)
+
+    await expect(adapter.undo()).resolves.toBe(true)
+    await adapter.addSticker(materialAsset('sticker'), validAccess, { left: 700, top: 320 })
+    const branched = adapter.getHistoryProjection()
+    expect(branched.canRedo).toBe(false)
+    expect(branched.revision).not.toBe(added.revision)
+    expect(new Set(projections.map((projection) => projection.revision)).size)
+      .toBeGreaterThanOrEqual(3)
+  })
+
+  it('applies the V4.6 control theme through public object and Control properties', () => {
+    const controls: Record<string, { offsetY?: number; withConnection?: boolean; sizeX?: number; sizeY?: number; touchSizeX?: number; touchSizeY?: number }> = {}
+    for (const key of ['tl', 'mt', 'tr', 'ml', 'mr', 'bl', 'mb', 'br', 'mtr']) controls[key] = {}
+    const object = new FakeObject({ controls })
+
+    applyFabricControlTheme(object)
+
+    expect(object).toMatchObject({
+      borderColor: '#E8A572',
+      cornerColor: '#FFFFFF',
+      cornerStrokeColor: '#E8A572',
+      transparentCorners: false,
+      cornerStyle: 'circle',
+      cornerSize: 8
+    })
+    expect(object.controls?.tl).toMatchObject({ sizeX: 8, sizeY: 8, touchSizeX: 18, touchSizeY: 18 })
+    expect(object.controls?.mtr).toMatchObject({ offsetY: -40, withConnection: true, sizeX: 8, sizeY: 8 })
   })
 
   it('exports a non-empty PNG and releases object URLs/listeners on dispose', async () => {
