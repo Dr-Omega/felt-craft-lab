@@ -9,7 +9,10 @@ import {
   listCatalogThemes,
   YWN_SNAPSHOT_ID
 } from '../catalog/ywn-catalog'
-import { prepareNewWorkScene } from '../catalog/library-new-work'
+import {
+  isAcceptanceAllThemesInEditorEnabled,
+  prepareNewWorkScene
+} from '../catalog/library-new-work'
 import { openEditor } from '../app-nav'
 import {
   AssetAccessStore,
@@ -28,6 +31,9 @@ const message = ref('')
 const busy = ref(false)
 const themeFilter = ref<string>('all')
 const newWorkName = ref('我的新作品')
+const acceptanceAllThemesInEditor = isAcceptanceAllThemesInEditorEnabled(
+  import.meta.env.VITE_ACCEPTANCE_ALL_THEMES_IN_EDITOR
+)
 
 const themes = listCatalogThemes()
 const visibleAssets = computed(() => {
@@ -46,7 +52,9 @@ async function refreshLists(): Promise<void> {
 
 async function startNewWork(): Promise<void> {
   message.value = ''
-  const prepared = prepareNewWorkScene(newWorkName.value, themeFilter.value)
+  const prepared = prepareNewWorkScene(newWorkName.value, themeFilter.value, {
+    allowAllThemes: acceptanceAllThemesInEditor
+  })
   if (!prepared.scene) {
     message.value = prepared.message
     return

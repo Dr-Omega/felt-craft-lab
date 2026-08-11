@@ -1,11 +1,17 @@
 import { describe, expect, it } from 'vitest'
-import type { AssetRecord } from '../../src/shared/contracts'
+import type { AssetAccessState, AssetRecord } from '../../src/shared/contracts'
 import {
   assetsForEditor,
   normalizeSelectedAssetId,
   pickSelectedAsset
 } from '../../src/renderer/src/catalog/editor-selection'
 import { isAssetUnlocked } from '../../src/renderer/src/catalog/asset-access-helpers'
+import { seedAcceptanceUnlockedAccess } from '../../src/renderer/src/catalog/acceptance-access'
+import {
+  getCatalogAssetsForSnapshot,
+  YWN_SNAPSHOT_ID
+} from '../../src/renderer/src/catalog/ywn-catalog'
+import { prepareNewWorkScene } from '../../src/renderer/src/catalog/library-new-work'
 
 function asset(partial: Partial<AssetRecord> & Pick<AssetRecord, 'assetId' | 'type' | 'themeId'>): AssetRecord {
   return {
@@ -74,5 +80,42 @@ describe('editor snapshot-scoped selection', () => {
     expect(crossThemeSticker).toBeDefined()
     expect(crossThemeBackground).toBeDefined()
     expect(isAssetUnlocked(undefined)).toBe(false)
+  })
+
+  it('shows every theme from the acceptance Scene snapshot without crossing snapshot boundaries', () => {
+    const prepared = prepareNewWorkScene('全主题验收作品', 'all', { allowAllThemes: true })
+    const scene = prepared.scene
+    expect(scene?.assetSnapshotId).toBe(YWN_SNAPSHOT_ID)
+    expect(scene?.themeId).not.toBe('all')
+
+    const snapshotAssets = getCatalogAssetsForSnapshot(scene!.assetSnapshotId)
+    for (const type of ['background', 'sticker'] as const) {
+      const options = assetsForEditor(snapshotAssets, type, scene!.themeId)
+      expect(new Set(options.map((asset) => asset.themeId)).size).toBeGreaterThan(1)
+      expect(options.every((asset) => snapshotAssets.some((row) => row.assetId === asset.assetId))).toBe(true)
+    }
+  })
+
+  it('combines all-theme selection with acceptance unlock-all access for both asset types', async () => {
+    const prepared = prepareNewWorkScene('全主题全解锁验收作品', 'all', { allowAllThemes: true })
+    const snapshotAssets = getCatalogAssetsForSnapshot(prepared.scene!.assetSnapshotId)
+    const saved: AssetAccessState[] = []
+    await seedAcceptanceUnlockedAccess(
+      {
+        save: async (row: AssetAccessState) => {
+          saved.push(row)
+          return row
+        }
+      },
+      snapshotAssets,
+      true
+    )
+    const accessById = new Map(saved.map((row) => [row.assetId, row]))
+
+    for (const type of ['background', 'sticker'] as const) {
+      const options = assetsForEditor(snapshotAssets, type, prepared.scene!.themeId)
+      expect(options.length).toBeGreaterThan(1)
+      expect(options.every((asset) => isAssetUnlocked(accessById.get(asset.assetId)))).toBe(true)
+    }
   })
 })
