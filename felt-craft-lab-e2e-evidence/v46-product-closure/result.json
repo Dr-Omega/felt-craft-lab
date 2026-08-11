@@ -1,6 +1,35 @@
 {
-  "commit": "cb36573e6536c21f0ca42127dfb28ad7f958dcf6",
+  "commit": "1a2077cad25e5cb12c7afe7ae221360012698265",
   "mode": "built-production-electron",
+  "profileDir": "C:\\Users\\1\\Desktop\\Tang_Shihan_Programme\\felt-craft-lab-ui-redesign\\.tmp-product-closure-electron-profile",
+  "phases": [
+    {
+      "label": "in-process UI verification (41 assertions)",
+      "startedAt": "2026-08-11T16:58:18.471Z"
+    },
+    {
+      "label": "post-restart #1: Draft persistence + reopen",
+      "startedAt": "2026-08-11T16:58:44.611Z",
+      "uptimeMs": 3614,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "mainErrors": [
+        "\r\n",
+        "\r\nDevTools listening on ws://127.0.0.1:9340/devtools/browser/a737fbf3-a1c2-4aae-9adc-9fb3a1c42600\r\n"
+      ]
+    },
+    {
+      "label": "post-restart #2: Project persistence + reopen",
+      "startedAt": "2026-08-11T16:58:48.679Z",
+      "uptimeMs": 2089,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "mainErrors": [
+        "\r\n",
+        "\r\nDevTools listening on ws://127.0.0.1:9340/devtools/browser/5b15dc12-bc78-425d-9d1f-7156bc24ca57\r\n"
+      ]
+    }
+  ],
   "assertions": [
     {
       "name": "Library exposes 我的创作 heading",
@@ -159,22 +188,62 @@
       "pass": true
     },
     {
-      "name": "No unexpected console errors",
+      "name": "Draft exists before process restart",
       "pass": true
     },
     {
-      "name": "No unexpected page exceptions",
+      "name": "Draft persists after Electron process restart",
+      "pass": true
+    },
+    {
+      "name": "Draft reopens after Electron process restart",
+      "pass": true
+    },
+    {
+      "name": "Project exists before process restart",
+      "pass": true
+    },
+    {
+      "name": "Project preview exists before process restart",
+      "pass": true
+    },
+    {
+      "name": "Project persists after Electron process restart",
+      "pass": true
+    },
+    {
+      "name": "Project preview persists after Electron process restart",
+      "pass": true
+    },
+    {
+      "name": "Project reopens after Electron process restart",
+      "pass": true
+    },
+    {
+      "name": "No unexpected console errors across all 3 process phases",
+      "pass": true
+    },
+    {
+      "name": "No unexpected page exceptions across all 3 process phases",
       "pass": true
     }
   ],
-  "errors": {
-    "console": [],
-    "page": [],
-    "main": [
-      "\r\n",
-      "\r\nDevTools listening on ws://127.0.0.1:9340/devtools/browser/cf9ef762-5534-4ecd-a813-563f3226872a\r\n"
+  "preRestart": {
+    "draftCount": 1,
+    "projectCount": 2,
+    "draftNames": [
+      "我的新作品我的第一件草稿"
+    ],
+    "projectNames": [
+      "我的新作品我的第一件草稿"
+    ],
+    "projectPreviewUrls": [
+      "felt-resource://preview/e18ebba72ce34b14b33fa29c5c781322.png",
+      "felt-resource://preview/e694598be9e148a3b6589e7a5f42c5b9.png"
     ]
   },
-  "pass": 41,
-  "fail": 0
+  "pass": 49,
+  "fail": 0,
+  "crossProcessConsoleErrors": [],
+  "crossProcessPageErrors": []
 }
