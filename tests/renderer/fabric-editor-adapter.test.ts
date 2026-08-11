@@ -539,10 +539,13 @@ describe('FabricEditorAdapter', () => {
       cornerStrokeColor: '#E8A572',
       transparentCorners: false,
       cornerStyle: 'circle',
-      cornerSize: 8
+      cornerSize: 8,
+      touchCornerSize: 24
     })
-    expect(object.controls?.tl).toMatchObject({ sizeX: 8, sizeY: 8, touchSizeX: 24, touchSizeY: 24 })
-    expect(object.controls?.mtr).toMatchObject({ offsetY: -40, withConnection: true, sizeX: 8, sizeY: 8, touchSizeX: 28, touchSizeY: 28 })
+    expect(object.controls?.tl?.sizeX).toBeUndefined()
+    expect(object.controls?.tl?.touchSizeX).toBeUndefined()
+    expect(object.controls?.mtr).toMatchObject({ offsetY: -40, withConnection: true })
+    expect(object.controls?.mtr).not.toHaveProperty('touchSizeX')
   })
 
   it('exports a non-empty PNG and releases object URLs/listeners on dispose', async () => {

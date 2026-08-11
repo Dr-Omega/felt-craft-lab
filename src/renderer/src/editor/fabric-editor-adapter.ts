@@ -343,8 +343,8 @@ export function validateFabricFromURLResult(
 
 /**
  * Applies the frozen V4.6 visual treatment through Fabric's public object and
- * Control APIs. A generous touch target keeps real mouse interaction usable
- * while the visible handle remains the requested compact size.
+ * Control APIs. The object-level touchCornerSize keeps the hit area usable
+ * without mutating Fabric's shared prototype Control geometry.
  */
 export function applyFabricControlTheme(object: FabricObjectPort): void {
   object.set({
@@ -354,28 +354,15 @@ export function applyFabricControlTheme(object: FabricObjectPort): void {
     transparentCorners: V46_FABRIC_CONTROL_THEME.transparentCorners,
     cornerStyle: V46_FABRIC_CONTROL_THEME.cornerStyle,
     cornerSize: V46_FABRIC_CONTROL_THEME.cornerSize,
+    touchCornerSize: V46_FABRIC_CONTROL_THEME.touchSize,
     borderScaleFactor: V46_FABRIC_CONTROL_THEME.borderScaleFactor,
     padding: V46_FABRIC_CONTROL_THEME.padding
   })
 
-  const controls = object.controls
-  if (!controls) return
-  for (const key of ['tl', 'mt', 'tr', 'ml', 'mr', 'bl', 'mb', 'br']) {
-    const control = controls[key]
-    if (!control) continue
-    control.sizeX = V46_FABRIC_CONTROL_THEME.cornerSize
-    control.sizeY = V46_FABRIC_CONTROL_THEME.cornerSize
-    control.touchSizeX = V46_FABRIC_CONTROL_THEME.touchSize
-    control.touchSizeY = V46_FABRIC_CONTROL_THEME.touchSize
-  }
-  const rotation = controls.mtr
+  const rotation = object.controls?.mtr
   if (rotation) {
     rotation.offsetY = -V46_FABRIC_CONTROL_THEME.rotationControlOffset
     rotation.withConnection = true
-    rotation.sizeX = V46_FABRIC_CONTROL_THEME.rotationControlSize
-    rotation.sizeY = V46_FABRIC_CONTROL_THEME.rotationControlSize
-    rotation.touchSizeX = V46_FABRIC_CONTROL_THEME.rotationControlTouchSize
-    rotation.touchSizeY = V46_FABRIC_CONTROL_THEME.rotationControlTouchSize
   }
 }
 
