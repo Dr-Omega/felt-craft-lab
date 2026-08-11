@@ -39,6 +39,13 @@ describe('V4.6 formal Editor UI contract', () => {
     expect(page).toContain('height: 100% !important')
   })
 
+  it('keeps Fabric upper-canvas transparent so lower-canvas content stays visible', () => {
+    const upperCanvasRule = page.match(/\.canvas-wrap \.canvas-container \.upper-canvas\s*\{([\s\S]*?)\}/)?.[1] ?? ''
+    const editorCanvasRule = page.match(/\.editor-canvas\s*\{([\s\S]*?)\}/)?.[1] ?? ''
+    expect(upperCanvasRule).toContain('background: transparent !important')
+    expect(editorCanvasRule).not.toMatch(/background\s*:/)
+  })
+
   it('defines the frozen V4.6 visual tokens and geometry layers', () => {
     for (const token of ['#f8f0e2', '#f0e2c5', '#efe2c9', '#d9b98a', '#a88b6c', '#7e6244', '#e8a572', '#f4c9a4', '#9caf88', '#594738']) {
       expect(page).toContain(token)

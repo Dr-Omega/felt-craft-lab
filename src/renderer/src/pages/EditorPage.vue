@@ -673,8 +673,9 @@ body { margin: 0; overflow: hidden; }
 }
 
 .canvas-wrap { position: relative; }
-.editor-canvas { display: block; width: 100%; height: 100%; border-radius: var(--radius-xl); background: var(--bg-app); touch-action: none; }
-.canvas-wrap .canvas-container .lower-canvas, .canvas-wrap .canvas-container .upper-canvas { width: 100% !important; height: 100% !important; border-radius: var(--radius-xl); }
+.editor-canvas { display: block; width: 100%; height: 100%; border-radius: var(--radius-xl); touch-action: none; }
+.canvas-wrap .canvas-container .lower-canvas { width: 100% !important; height: 100% !important; border-radius: var(--radius-xl); }
+.canvas-wrap .canvas-container .upper-canvas { width: 100% !important; height: 100% !important; border-radius: var(--radius-xl); background: transparent !important; }
 
 .background-trigger {
   position: absolute;
