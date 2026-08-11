@@ -541,8 +541,8 @@ describe('FabricEditorAdapter', () => {
       cornerStyle: 'circle',
       cornerSize: 8
     })
-    expect(object.controls?.tl).toMatchObject({ sizeX: 8, sizeY: 8, touchSizeX: 18, touchSizeY: 18 })
-    expect(object.controls?.mtr).toMatchObject({ offsetY: -40, withConnection: true, sizeX: 8, sizeY: 8 })
+    expect(object.controls?.tl).toMatchObject({ sizeX: 8, sizeY: 8, touchSizeX: 24, touchSizeY: 24 })
+    expect(object.controls?.mtr).toMatchObject({ offsetY: -40, withConnection: true, sizeX: 8, sizeY: 8, touchSizeX: 28, touchSizeY: 28 })
   })
 
   it('exports a non-empty PNG and releases object URLs/listeners on dispose', async () => {

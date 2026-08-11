@@ -191,12 +191,12 @@ export const V46_FABRIC_CONTROL_THEME = Object.freeze({
   transparentCorners: false,
   cornerStyle: 'circle' as const,
   cornerSize: 8,
-  touchSize: 18,
+  touchSize: 24,
   borderScaleFactor: 1,
   padding: 4,
   rotationControlOffset: STICKER_ROTATION_CONTROL_OFFSET,
   rotationControlSize: 8,
-  rotationControlTouchSize: 20
+  rotationControlTouchSize: 28
 })
 
 /**
