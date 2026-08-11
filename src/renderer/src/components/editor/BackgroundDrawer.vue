@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { AssetAccessState, AssetRecord } from '@shared/contracts'
 import { isAssetUnlocked } from '../../catalog/ywn-catalog'
+import AssetAudioControls from './AssetAudioControls.vue'
 
 const props = defineProps<{
   assets: readonly AssetRecord[]
@@ -52,6 +53,11 @@ function unlocked(asset: AssetRecord): boolean {
         <span class="card-name">{{ asset.nameZh }}</span>
       </button>
     </div>
+    <AssetAudioControls
+      v-if="selectedAsset()"
+      :asset="selectedAsset()"
+      :active="open"
+    />
     <button
       class="drawer-apply"
       type="button"

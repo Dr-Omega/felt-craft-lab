@@ -36,6 +36,7 @@ import MaterialSheet from '../components/editor/MaterialSheet.vue'
 import ReturnSaveModal from '../components/editor/ReturnSaveModal.vue'
 import ObjectQuickTools from '../components/editor/ObjectQuickTools.vue'
 import RemoveToast from '../components/editor/RemoveToast.vue'
+import { audioService } from '../services/audio.service'
 
 const launch = getEditorLaunch()
 if (!launch) openLibrary()
@@ -205,7 +206,7 @@ function handleSelectionEvent(event: EditorSelectionEvent): void {
   }
 
   closeMaterialSheet()
-  backgroundDrawerOpen.value = false
+  closeBackgroundDrawer()
   oqtSelection.value = event.selection
   oqtOpen.value = true
   void nextTick(updateOqtPosition)
@@ -251,20 +252,26 @@ async function requireUnlocked(asset: AssetRecord): Promise<AssetAccessState> {
 }
 
 function closeMaterialSheet(): void {
+  audioService.stop('primary')
   sheetOpen.value = false
   selectedStickerId.value = ''
 }
 
+function closeBackgroundDrawer(): void {
+  audioService.stop('primary')
+  backgroundDrawerOpen.value = false
+}
+
 function openMaterialSheet(): void {
   selectedStickerId.value = ''
-  backgroundDrawerOpen.value = false
+  closeBackgroundDrawer()
   closeOqt()
   sheetOpen.value = true
 }
 
 function closeTransientContexts(): void {
   closeMaterialSheet()
-  backgroundDrawerOpen.value = false
+  closeBackgroundDrawer()
   closeOqt()
 }
 
@@ -274,8 +281,10 @@ function toggleSheet(): void {
 }
 
 function toggleBackgroundDrawer(): void {
-  backgroundDrawerOpen.value = !backgroundDrawerOpen.value
   if (backgroundDrawerOpen.value) {
+    closeBackgroundDrawer()
+  } else {
+    backgroundDrawerOpen.value = true
     closeMaterialSheet()
     closeOqt()
   }
@@ -309,7 +318,7 @@ async function applyBackground(asset: AssetRecord | null): Promise<void> {
     if (asset) await session.value.setBackground(asset, await requireUnlocked(asset))
     else await session.value.setBackground(null)
     selectedBackgroundId.value = asset?.assetId ?? ''
-    backgroundDrawerOpen.value = false
+    closeBackgroundDrawer()
     showFeedback(asset ? '背景换好啦' : '换成空白纸啦', 'success')
   } catch (error) {
     showFeedback(friendlyError(error), 'error')
@@ -418,6 +427,7 @@ async function saveProgressAndBack(): Promise<void> {
     const saved = await saveDraftFromPreparedScene(preparedScene, { draftId })
     draftId = saved.draftId
     session.value.markSaved()
+    audioService.stop('primary')
     returnModalOpen.value = false
     openLibrary()
   } catch (error) {
@@ -428,6 +438,7 @@ async function saveProgressAndBack(): Promise<void> {
 }
 
 function discardAndBack(): void {
+  audioService.stop('primary')
   returnModalOpen.value = false
   openLibrary()
 }
@@ -448,6 +459,7 @@ onUnmounted(() => {
   hideRemoveToast()
   window.removeEventListener('resize', updateOqtPosition)
   session.value?.dispose()
+  audioService.stop('primary')
 })
 
 watch([oqtOpen, oqtSelection], () => { void nextTick(updateOqtPosition) })
@@ -483,7 +495,7 @@ watch([oqtOpen, oqtSelection], () => { void nextTick(updateOqtPosition) })
           :busy="busy"
           @select="(assetId) => (selectedBackgroundId = assetId)"
           @apply="applyBackground"
-          @close="backgroundDrawerOpen = false"
+          @close="closeBackgroundDrawer"
         />
 
         <div class="canvas-frame">
@@ -756,7 +768,7 @@ body { margin: 0; overflow: hidden; }
 .material-card.is-selected { border-color: var(--color-primary); box-shadow: 0 4px 14px rgba(232, 165, 114, 0.3); }
 .material-card.is-locked { opacity: 0.55; }
 .material-card-name { position: absolute; right: 6px; bottom: 5px; left: 6px; overflow: hidden; color: var(--color-text); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
-.sheet-footer { display: flex; align-items: center; justify-content: center; gap: 14px; padding: 10px 30px 16px; }
+.sheet-footer { display: grid; justify-items: center; gap: 10px; padding: 10px 30px 16px; }
 .sheet-selection { color: var(--color-text-soft); font-size: 13px; }
 .sheet-add { min-height: 40px; padding: 0 22px; border: 0; border-radius: var(--radius-pill); background: var(--color-primary); color: var(--color-on-primary); font: inherit; font-weight: 700; cursor: pointer; }
 .sheet-add:disabled { cursor: not-allowed; opacity: 0.46; }

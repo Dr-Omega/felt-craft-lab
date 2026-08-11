@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { AssetAccessState, AssetRecord } from '@shared/contracts'
 import { isAssetUnlocked } from '../../catalog/ywn-catalog'
+import AssetAudioControls from './AssetAudioControls.vue'
 
 const props = defineProps<{
   assets: readonly AssetRecord[]
@@ -59,6 +60,7 @@ function selectedAsset(): AssetRecord | null {
       </div>
       <div v-if="selectedAsset()" class="sheet-footer">
         <span class="sheet-selection">{{ selectedAsset()?.nameZh }}</span>
+        <AssetAudioControls :asset="selectedAsset()" :active="open" />
         <button
           class="sheet-add"
           type="button"
