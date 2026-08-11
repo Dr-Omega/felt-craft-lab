@@ -1,0 +1,180 @@
+{
+  "commit": "cb36573e6536c21f0ca42127dfb28ad7f958dcf6",
+  "mode": "built-production-electron",
+  "assertions": [
+    {
+      "name": "Library exposes 我的创作 heading",
+      "pass": true
+    },
+    {
+      "name": "Library exposes 继续制作 heading",
+      "pass": true
+    },
+    {
+      "name": "Library exposes 我的作品 heading",
+      "pass": true
+    },
+    {
+      "name": "Library exposes 素材库 heading",
+      "pass": true
+    },
+    {
+      "name": "New work button is visible",
+      "pass": true
+    },
+    {
+      "name": "New work button label is 新建作品",
+      "pass": true
+    },
+    {
+      "name": "Empty state visible for drafts initially",
+      "pass": true
+    },
+    {
+      "name": "Empty state visible for projects initially",
+      "pass": true
+    },
+    {
+      "name": "Material sheet exposes a search input",
+      "pass": true
+    },
+    {
+      "name": "Category chips include 全部",
+      "pass": true
+    },
+    {
+      "name": "Category chips include at least one dynamic chip",
+      "pass": true
+    },
+    {
+      "name": "Search \"灯笼\" filters to at most 2 cards",
+      "pass": true
+    },
+    {
+      "name": "Clearing search restores all visible cards",
+      "pass": true
+    },
+    {
+      "name": "Category filter shows fewer cards than \"全部\"",
+      "pass": true
+    },
+    {
+      "name": "Sticker add populates the canvas",
+      "pass": true
+    },
+    {
+      "name": "Draft \"我的第一件草稿\" appears in 继续制作",
+      "pass": true
+    },
+    {
+      "name": "Library does not leak draftId",
+      "pass": true
+    },
+    {
+      "name": "Library does not leak assetSnapshotId",
+      "pass": true
+    },
+    {
+      "name": "Library does not leak syncStatus",
+      "pass": true
+    },
+    {
+      "name": "Library does not leak local_only",
+      "pass": true
+    },
+    {
+      "name": "Draft card has friendly metadata, not ISO timestamp",
+      "pass": true
+    },
+    {
+      "name": "Reopened draft has at least one canvas container",
+      "pass": true
+    },
+    {
+      "name": "OQT opens on double-click",
+      "pass": true
+    },
+    {
+      "name": "OQT exposes 往前",
+      "pass": true
+    },
+    {
+      "name": "OQT exposes 往后",
+      "pass": true
+    },
+    {
+      "name": "OQT exposes 置顶",
+      "pass": true
+    },
+    {
+      "name": "OQT exposes 置底",
+      "pass": true
+    },
+    {
+      "name": "OQT exposes 拿掉",
+      "pass": true
+    },
+    {
+      "name": "OQT stays open after 置顶 (no regression)",
+      "pass": true
+    },
+    {
+      "name": "Remove toast appears after 拿掉",
+      "pass": true
+    },
+    {
+      "name": "Topbar finish button is enabled after draft reopen",
+      "pass": true
+    },
+    {
+      "name": "Project appears in 我的作品",
+      "pass": true
+    },
+    {
+      "name": "Project has a preview thumbnail",
+      "pass": true
+    },
+    {
+      "name": "Preview modal renders the previewUrl image",
+      "pass": true
+    },
+    {
+      "name": "Preview modal closes",
+      "pass": true
+    },
+    {
+      "name": "Reopened project has canvas content",
+      "pass": true
+    },
+    {
+      "name": "Delete confirm can be cancelled",
+      "pass": true
+    },
+    {
+      "name": "Selection visible before category switch",
+      "pass": true
+    },
+    {
+      "name": "Selection safety: footer reflects the current selection visibility",
+      "pass": true
+    },
+    {
+      "name": "No unexpected console errors",
+      "pass": true
+    },
+    {
+      "name": "No unexpected page exceptions",
+      "pass": true
+    }
+  ],
+  "errors": {
+    "console": [],
+    "page": [],
+    "main": [
+      "\r\n",
+      "\r\nDevTools listening on ws://127.0.0.1:9340/devtools/browser/cf9ef762-5534-4ecd-a813-563f3226872a\r\n"
+    ]
+  },
+  "pass": 41,
+  "fail": 0
+}

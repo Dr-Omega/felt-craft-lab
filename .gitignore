@@ -45,6 +45,7 @@ temp/
 *.tmp
 tmp_*
 tmp-review/
+.tmp-*
 docs/ai-services/_pr11*
 docs/_pr11*
 docs/_extract_pr_comments.py
