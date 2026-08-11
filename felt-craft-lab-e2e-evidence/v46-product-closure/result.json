@@ -1,32 +1,32 @@
 {
-  "commit": "1a2077cad25e5cb12c7afe7ae221360012698265",
+  "commit": "daffa4cae175072096681915b90ccf2d4094c217",
   "mode": "built-production-electron",
   "profileDir": "C:\\Users\\1\\Desktop\\Tang_Shihan_Programme\\felt-craft-lab-ui-redesign\\.tmp-product-closure-electron-profile",
   "phases": [
     {
       "label": "in-process UI verification (41 assertions)",
-      "startedAt": "2026-08-11T16:58:18.471Z"
+      "startedAt": "2026-08-11T17:51:56.789Z"
     },
     {
       "label": "post-restart #1: Draft persistence + reopen",
-      "startedAt": "2026-08-11T16:58:44.611Z",
-      "uptimeMs": 3614,
+      "startedAt": "2026-08-11T17:52:22.211Z",
+      "uptimeMs": 3546,
       "consoleErrors": [],
       "pageErrors": [],
       "mainErrors": [
         "\r\n",
-        "\r\nDevTools listening on ws://127.0.0.1:9340/devtools/browser/a737fbf3-a1c2-4aae-9adc-9fb3a1c42600\r\n"
+        "\r\nDevTools listening on ws://127.0.0.1:9340/devtools/browser/0b2a35ea-b4eb-4a39-9897-984e12f69e02\r\n"
       ]
     },
     {
       "label": "post-restart #2: Project persistence + reopen",
-      "startedAt": "2026-08-11T16:58:48.679Z",
-      "uptimeMs": 2089,
+      "startedAt": "2026-08-11T17:52:26.327Z",
+      "uptimeMs": 2098,
       "consoleErrors": [],
       "pageErrors": [],
       "mainErrors": [
         "\r\n",
-        "\r\nDevTools listening on ws://127.0.0.1:9340/devtools/browser/5b15dc12-bc78-425d-9d1f-7156bc24ca57\r\n"
+        "\r\nDevTools listening on ws://127.0.0.1:9340/devtools/browser/5bbb69d2-7202-4c45-95d6-5513931254a8\r\n"
       ]
     }
   ],
@@ -238,8 +238,8 @@
       "我的新作品我的第一件草稿"
     ],
     "projectPreviewUrls": [
-      "felt-resource://preview/e18ebba72ce34b14b33fa29c5c781322.png",
-      "felt-resource://preview/e694598be9e148a3b6589e7a5f42c5b9.png"
+      "felt-resource://preview/70aa152865c14facb3cc47cd0921d4aa.png",
+      "felt-resource://preview/e478ee3e09584021bcf1e87b014bd286.png"
     ]
   },
   "pass": 49,
