@@ -6,8 +6,7 @@ import {
   createUnlockedAccess,
   DEFAULT_USER_ID,
   isAssetUnlocked,
-  listCatalogThemes,
-  YWN_SNAPSHOT_ID
+  listCatalogThemes
 } from '../catalog/ywn-catalog'
 import {
   isAcceptanceAllThemesInEditorEnabled,
@@ -17,11 +16,13 @@ import { openEditor } from '../app-nav'
 import {
   AssetAccessStore,
   DraftStore,
-  FavoriteStore,
   deleteExistingProject,
+  FavoriteStore,
   getFeltCraftDatabase,
   ProjectStore
 } from '../persistence'
+import ProjectPreviewModal from '../components/library/ProjectPreviewModal.vue'
+import { friendlyRelativeTime } from '../util/friendly-time'
 
 const drafts = ref<DraftRecord[]>([])
 const projects = ref<ProjectRecord[]>([])
@@ -34,6 +35,13 @@ const newWorkName = ref('我的新作品')
 const acceptanceAllThemesInEditor = isAcceptanceAllThemesInEditorEnabled(
   import.meta.env.VITE_ACCEPTANCE_ALL_THEMES_IN_EDITOR
 )
+const confirmDelete = ref<
+  | { kind: 'draft'; record: DraftRecord }
+  | { kind: 'project'; record: ProjectRecord }
+  | null
+>(null)
+const previewProject = ref<ProjectRecord | null>(null)
+const previewOpen = ref(false)
 
 const themes = listCatalogThemes()
 const visibleAssets = computed(() => {
@@ -81,6 +89,68 @@ function openProject(project: ProjectRecord): void {
   openEditor({ mode: 'project', scene: project.scene, projectId: project.projectId })
 }
 
+function continueProject(project: ProjectRecord): void {
+  openEditor({ mode: 'project', scene: project.scene, projectId: project.projectId })
+}
+
+function askRemoveDraft(draft: DraftRecord): void {
+  confirmDelete.value = { kind: 'draft', record: draft }
+}
+
+function askRemoveProject(project: ProjectRecord): void {
+  confirmDelete.value = { kind: 'project', record: project }
+}
+
+function cancelRemove(): void {
+  confirmDelete.value = null
+}
+
+async function confirmRemoveNow(): Promise<void> {
+  const target = confirmDelete.value
+  if (!target) return
+  busy.value = true
+  message.value = ''
+  try {
+    if (target.kind === 'draft') {
+      await new DraftStore(getFeltCraftDatabase()).delete(target.record.draftId)
+      message.value = '已删除草稿'
+    } else {
+      await deleteExistingProject(target.record.projectId)
+      message.value = '已删除作品'
+    }
+    confirmDelete.value = null
+    await refreshLists()
+  } catch (error) {
+    message.value = error instanceof Error ? error.message : String(error)
+  } finally {
+    busy.value = false
+  }
+}
+
+function showProjectPreview(project: ProjectRecord): void {
+  previewProject.value = project
+  previewOpen.value = true
+}
+
+function closeProjectPreview(): void {
+  previewOpen.value = false
+  previewProject.value = null
+}
+
+function openProjectFromPreview(project: ProjectRecord): void {
+  previewOpen.value = false
+  previewProject.value = null
+  openEditor({ mode: 'project', scene: project.scene, projectId: project.projectId })
+}
+
+function draftLabel(draft: DraftRecord): string {
+  return draft.scene.workName?.trim() || '未命名草稿'
+}
+
+function projectLabel(project: ProjectRecord): string {
+  return project.projectName?.trim() || '未命名作品'
+}
+
 async function toggleFavorite(assetId: string): Promise<void> {
   const store = new FavoriteStore(getFeltCraftDatabase())
   if (favorites.value.includes(assetId)) {
@@ -112,20 +182,6 @@ async function unlockForTest(assetId: string): Promise<void> {
   }
 }
 
-async function removeProject(project: ProjectRecord): Promise<void> {
-  busy.value = true
-  message.value = ''
-  try {
-    await deleteExistingProject(project.projectId)
-    message.value = `已删除作品：${project.projectId}`
-    await refreshLists()
-  } catch (error) {
-    message.value = error instanceof Error ? error.message : String(error)
-  } finally {
-    busy.value = false
-  }
-}
-
 onMounted(() => {
   void refreshLists()
 })
@@ -141,104 +197,161 @@ onUnmounted(() => {
 
 <template>
   <section class="library">
-    <header class="section-head">
-      <div>
-        <h2>素材库</h2>
-        <p>
-          正式 Manifest：{{ CATALOG_ASSETS.length }} 条 ready · snapshot
-          <code>{{ YWN_SNAPSHOT_ID }}</code>
-        </p>
-        <p class="muted">
-          默认锁定。可浏览/收藏；加入画布需要已解锁的 AssetAccess。
-          <template v-if="allowTestUnlock">开发模式可使用「测试解锁」。</template>
-        </p>
-      </div>
-      <div class="new-work">
-        <label>
-          新作品名
-          <input v-model="newWorkName" type="text" maxlength="40" />
-        </label>
-        <button type="button" class="primary" :disabled="busy" @click="startNewWork">新建作品</button>
-      </div>
-    </header>
-
-    <label class="filter">
-      主题
-      <select v-model="themeFilter">
-        <option value="all">全部</option>
-        <option v-for="theme in themes" :key="theme" :value="theme">{{ theme }}</option>
-      </select>
-    </label>
-
-    <p v-if="message" class="error">{{ message }}</p>
-
-    <div class="asset-grid">
-      <article v-for="asset in visibleAssets" :key="asset.assetId" class="asset-card">
-        <img :src="asset.thumbnailUrl || asset.imageUrl" :alt="asset.nameZh" width="96" height="96" />
+    <div class="library-scroll">
+      <header class="section-head">
         <div>
-          <h3>{{ asset.nameZh }}</h3>
-          <p>
-            {{ asset.type }} · {{ asset.themeId }} ·
-            {{ unlockedIds.has(asset.assetId) ? '已解锁' : '锁定' }}
-          </p>
-          <div class="actions">
-            <button type="button" class="ghost" @click="toggleFavorite(asset.assetId)">
-              {{ favorites.includes(asset.assetId) ? '取消收藏' : '收藏' }}
-            </button>
-            <button
-              v-if="allowTestUnlock && !unlockedIds.has(asset.assetId)"
-              type="button"
-              class="ghost"
-              :disabled="busy"
-              @click="unlockForTest(asset.assetId)"
-            >
-              测试解锁
-            </button>
-          </div>
+          <h2>我的创作</h2>
+          <p class="muted">继续做以前的草稿，看看自己已经完成的作品。</p>
         </div>
-      </article>
+      </header>
+
+      <section class="creation-cluster" aria-label="我的创作">
+        <div class="creation-cluster-toolbar">
+          <label class="creation-cluster-name">
+            新作品名
+            <input v-model="newWorkName" type="text" maxlength="40" />
+          </label>
+          <label class="creation-cluster-theme">
+            主题
+            <select v-model="themeFilter">
+              <option value="all">全部</option>
+              <option v-for="theme in themes" :key="theme" :value="theme">{{ theme }}</option>
+            </select>
+          </label>
+          <button type="button" class="primary new-work-button" :disabled="busy" @click="startNewWork">
+            新建作品
+          </button>
+        </div>
+
+        <div class="creation-row">
+          <section class="creation-card-list" aria-label="继续制作">
+            <header class="creation-card-list-head">
+              <h3>继续制作</h3>
+              <span class="creation-card-list-count">{{ drafts.length }} 件</span>
+            </header>
+            <p v-if="drafts.length === 0" class="creation-empty">还没有草稿，新建一件作品开始吧。</p>
+            <ul v-else class="creation-cards">
+              <li v-for="draft in drafts" :key="draft.draftId" class="creation-card">
+                <div class="creation-card-body">
+                  <h4 class="creation-card-title">{{ draftLabel(draft) }}</h4>
+                  <p class="creation-card-meta">{{ friendlyRelativeTime(draft.updatedAt) }} · 草稿</p>
+                </div>
+                <div class="creation-card-actions">
+                  <button type="button" class="primary" :disabled="busy" @click="openDraft(draft)">继续制作</button>
+                  <button type="button" class="ghost" :disabled="busy" @click="askRemoveDraft(draft)">删除</button>
+                </div>
+              </li>
+            </ul>
+          </section>
+
+          <section class="creation-card-list" aria-label="我的作品">
+            <header class="creation-card-list-head">
+              <h3>我的作品</h3>
+              <span class="creation-card-list-count">{{ projects.length }} 件</span>
+            </header>
+            <p v-if="projects.length === 0" class="creation-empty">还没有作品，完成第一件吧。</p>
+            <ul v-else class="creation-cards creation-cards-projects">
+              <li v-for="project in projects" :key="project.projectId" class="creation-card creation-card-project">
+                <button
+                  v-if="project.previewUrl"
+                  type="button"
+                  class="creation-card-thumb"
+                  :aria-label="`预览 ${projectLabel(project)}`"
+                  @click="showProjectPreview(project)"
+                >
+                  <img :src="project.previewUrl" :alt="projectLabel(project)" />
+                </button>
+                <div v-else class="creation-card-thumb creation-card-thumb-empty" aria-hidden="true">—</div>
+                <div class="creation-card-body">
+                  <h4 class="creation-card-title">{{ projectLabel(project) }}</h4>
+                  <p class="creation-card-meta">{{ friendlyRelativeTime(project.updatedAt) }} · 作品</p>
+                  <div class="creation-card-actions">
+                    <button type="button" class="primary" :disabled="busy" @click="continueProject(project)">打开作品</button>
+                    <button type="button" class="ghost" :disabled="busy" @click="showProjectPreview(project)">预览</button>
+                    <button type="button" class="ghost" :disabled="busy" @click="askRemoveProject(project)">删除</button>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </section>
+        </div>
+      </section>
+
+      <p v-if="message" class="error">{{ message }}</p>
+
+      <section class="material-library" aria-label="素材库">
+        <header class="section-head section-head-secondary">
+          <div>
+            <h2>素材库</h2>
+            <p class="muted">挑一个喜欢的素材，等开始做作品时再放进画布。</p>
+          </div>
+        </header>
+
+        <div class="asset-grid">
+          <article v-for="asset in visibleAssets" :key="asset.assetId" class="asset-card">
+            <img :src="asset.thumbnailUrl || asset.imageUrl" :alt="asset.nameZh" width="96" height="96" />
+            <div>
+              <h3>{{ asset.nameZh }}</h3>
+              <p>
+                {{ unlockedIds.has(asset.assetId) ? '已解锁' : '锁定' }}
+              </p>
+              <div class="actions">
+                <button type="button" class="ghost" @click="toggleFavorite(asset.assetId)">
+                  {{ favorites.includes(asset.assetId) ? '取消收藏' : '收藏' }}
+                </button>
+                <button
+                  v-if="allowTestUnlock && !unlockedIds.has(asset.assetId)"
+                  type="button"
+                  class="ghost"
+                  :disabled="busy"
+                  @click="unlockForTest(asset.assetId)"
+                >
+                  测试解锁
+                </button>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
     </div>
 
-    <div class="lists">
-      <section>
-        <h3>本地草稿</h3>
-        <p v-if="drafts.length === 0" class="muted">暂无草稿</p>
-        <ul>
-          <li v-for="draft in drafts" :key="draft.draftId">
-            <button type="button" class="linkish" @click="openDraft(draft)">
-              {{ draft.scene.workName }} · {{ draft.updatedAt }}
-            </button>
-          </li>
-        </ul>
-      </section>
-      <section>
-        <h3>本地作品</h3>
-        <p v-if="projects.length === 0" class="muted">暂无作品</p>
-        <ul>
-          <li v-for="project in projects" :key="project.projectId" class="project-row">
-            <button type="button" class="linkish" @click="openProject(project)">
-              {{ project.projectName }} · {{ project.syncStatus }}
-            </button>
-            <img
-              v-if="project.previewUrl"
-              class="preview"
-              :src="project.previewUrl"
-              :alt="project.projectName"
-              width="48"
-              height="48"
-            />
-            <button type="button" class="ghost" :disabled="busy" @click="removeProject(project)">删除</button>
-          </li>
-        </ul>
-      </section>
+    <div v-if="confirmDelete" class="confirm-backdrop" role="presentation" @click.self="cancelRemove">
+      <div class="confirm-dialog" role="dialog" aria-modal="true" :aria-label="confirmDelete.kind === 'draft' ? '删除草稿' : '删除作品'">
+        <h3>
+          {{ confirmDelete.kind === 'draft' ? '确定要删掉这个草稿吗？' : '确定要删掉这件作品吗？' }}
+        </h3>
+        <p class="muted">
+          {{ confirmDelete.kind === 'draft' ? draftLabel(confirmDelete.record) : projectLabel(confirmDelete.record) }}
+        </p>
+        <p class="muted">删掉之后就不能再找回来了。</p>
+        <div class="confirm-actions">
+          <button type="button" class="ghost" :disabled="busy" @click="cancelRemove">再想想</button>
+          <button type="button" class="danger" :disabled="busy" @click="confirmRemoveNow">确定删除</button>
+        </div>
+      </div>
     </div>
+
+    <ProjectPreviewModal
+      :project="previewProject"
+      :open="previewOpen"
+      @close="closeProjectPreview"
+      @open="openProjectFromPreview"
+    />
   </section>
 </template>
 
 <style scoped>
 .library {
+  display: block;
+}
+
+.library-scroll {
   display: grid;
-  gap: 28px;
+  gap: 32px;
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+  padding: 4px 8px 32px;
+  scrollbar-gutter: stable;
 }
 
 .section-head {
@@ -250,6 +363,7 @@ onUnmounted(() => {
 
 .section-head h2 {
   margin: 0 0 6px;
+  font-size: 1.6rem;
 }
 
 .section-head p,
@@ -259,37 +373,181 @@ onUnmounted(() => {
   line-height: 1.5;
 }
 
-.new-work {
-  display: grid;
-  gap: 8px;
-  justify-items: end;
+.section-head-secondary h2 {
+  font-size: 1.3rem;
 }
 
-.new-work label {
+.creation-cluster {
+  display: grid;
+  gap: 18px;
+  padding: 20px;
+  background: var(--panel, #fff);
+  border: 1px solid var(--line, #c5d5d0);
+  border-radius: 24px;
+  box-shadow: 0 2px 12px rgba(22, 48, 43, 0.06);
+}
+
+.creation-cluster-toolbar {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(160px, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.creation-cluster-name,
+.creation-cluster-theme {
   display: grid;
   gap: 4px;
   color: var(--muted);
   font-size: 0.85rem;
 }
 
-.new-work input {
-  min-width: 180px;
+.creation-cluster-name input,
+.creation-cluster-theme select {
   padding: 8px 10px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line, #c5d5d0);
   background: #fff;
+  border-radius: 12px;
+  font: inherit;
 }
 
-.filter {
+.new-work-button {
+  height: 40px;
+  padding: 0 18px;
+  border-radius: 12px;
+}
+
+.creation-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.creation-card-list {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  background: var(--paper, #eef4f2);
+  border: 1px solid var(--line, #c5d5d0);
+  border-radius: 20px;
+  min-height: 180px;
+}
+
+.creation-card-list-head {
   display: flex;
+  justify-content: space-between;
+  align-items: baseline;
   gap: 8px;
-  align-items: center;
+}
+
+.creation-card-list-head h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.creation-card-list-count {
+  font-size: 0.85rem;
   color: var(--muted);
 }
 
-.filter select {
-  padding: 8px 10px;
-  border: 1px solid var(--line);
+.creation-empty {
+  margin: auto;
+  color: var(--muted);
+  font-size: 0.95rem;
+  text-align: center;
+  padding: 24px 8px;
+}
+
+.creation-cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.creation-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
   background: #fff;
+  border: 1px solid var(--line, #c5d5d0);
+  border-radius: 16px;
+}
+
+.creation-card-title {
+  margin: 0 0 2px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.creation-card-meta {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.creation-card-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.creation-card-actions button {
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+}
+
+.creation-cards-projects .creation-card {
+  grid-template-columns: 72px 1fr;
+  align-items: stretch;
+}
+
+.creation-card-thumb {
+  width: 72px;
+  height: 72px;
+  border: 1px solid var(--line, #c5d5d0);
+  background: #fff;
+  border-radius: 14px;
+  padding: 0;
+  cursor: pointer;
+  overflow: hidden;
+  appearance: none;
+}
+
+.creation-card-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.creation-card-thumb-empty {
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 1.4rem;
+  background: var(--paper, #eef4f2);
+  cursor: default;
+}
+
+.creation-card-project .creation-card-body {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+}
+
+.creation-card-project .creation-card-actions {
+  justify-content: flex-start;
+}
+
+.material-library {
+  display: grid;
+  gap: 16px;
 }
 
 .asset-grid {
@@ -304,13 +562,14 @@ onUnmounted(() => {
   padding: 14px;
   background: var(--panel);
   border: 1px solid var(--line);
+  border-radius: 16px;
 }
 
-.asset-card img,
-.preview {
+.asset-card img {
   object-fit: contain;
   background: #fff;
   border: 1px solid var(--line);
+  border-radius: 12px;
 }
 
 .asset-card h3 {
@@ -330,47 +589,59 @@ onUnmounted(() => {
   gap: 8px;
 }
 
-.lists {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-}
-
-.lists ul {
-  list-style: none;
-  margin: 8px 0 0;
-  padding: 0;
-}
-
-.lists li + li {
-  margin-top: 8px;
-}
-
-.project-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-}
-
 .error {
-  color: var(--danger);
+  margin: 0;
+  color: var(--danger, #9b2c2c);
 }
 
-code {
-  font-family: Consolas, "Courier New", monospace;
-  font-size: 0.85em;
+.confirm-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(89, 71, 56, 0.45);
+  display: grid;
+  place-items: center;
+  z-index: 50;
 }
 
-@media (max-width: 720px) {
-  .section-head,
-  .lists {
+.confirm-dialog {
+  background: #fff;
+  border: 1px solid var(--line, #c5d5d0);
+  border-radius: 20px;
+  padding: 24px;
+  width: min(90vw, 420px);
+  display: grid;
+  gap: 12px;
+  box-shadow: 0 12px 32px rgba(89, 71, 56, 0.22);
+}
+
+.confirm-dialog h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+button.danger {
+  background: var(--danger, #9b2c2c);
+  border-color: var(--danger, #9b2c2c);
+  color: #fff;
+}
+
+button.danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 900px) {
+  .creation-row {
     grid-template-columns: 1fr;
-    flex-direction: column;
   }
-
-  .new-work {
-    justify-items: stretch;
+  .creation-cluster-toolbar {
+    grid-template-columns: 1fr;
   }
 }
 </style>
