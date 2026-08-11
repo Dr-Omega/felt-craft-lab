@@ -386,6 +386,30 @@ async function quickSendBackward(): Promise<void> {
   }
 }
 
+async function quickBringToFront(): Promise<void> {
+  const selection = oqtSelection.value
+  if (!selection || !session.value) return
+  hideRemoveToast()
+  try {
+    session.value.bringToFront(selection.objectId)
+    void nextTick(updateOqtPosition)
+  } catch (error) {
+    showFeedback(friendlyError(error), 'error')
+  }
+}
+
+async function quickSendToBack(): Promise<void> {
+  const selection = oqtSelection.value
+  if (!selection || !session.value) return
+  hideRemoveToast()
+  try {
+    session.value.sendToBack(selection.objectId)
+    void nextTick(updateOqtPosition)
+  } catch (error) {
+    showFeedback(friendlyError(error), 'error')
+  }
+}
+
 async function quickRemove(): Promise<void> {
   const selection = oqtSelection.value
   if (!selection || !session.value) return
@@ -546,6 +570,8 @@ watch([oqtOpen, oqtSelection], () => { void nextTick(updateOqtPosition) })
       :below="oqtPosition.below"
       @forward="quickBringForward"
       @backward="quickSendBackward"
+      @bring-to-front="quickBringToFront"
+      @send-to-back="quickSendToBack"
       @remove="quickRemove"
     />
 
