@@ -16,6 +16,10 @@ import {
   YWN_SNAPSHOT_CONTEXT
 } from '../catalog/ywn-catalog'
 import { assetsForEditor, pickSelectedAsset } from '../catalog/editor-selection'
+import {
+  isAcceptanceUnlockAllAssetsEnabled,
+  seedAcceptanceUnlockedAccess
+} from '../catalog/acceptance-access'
 import { getEditorLaunch, openLibrary } from '../app-nav'
 import {
   AssetAccessStore,
@@ -68,6 +72,9 @@ const editorCatalog = launch
   : { assets: [] as readonly AssetRecord[], snapshotMissing: false }
 const sceneCatalogAssets = editorCatalog.assets
 const sceneThemeId = launch?.scene.themeId
+const acceptanceUnlockAllAssets = isAcceptanceUnlockAllAssetsEnabled(
+  import.meta.env.VITE_ACCEPTANCE_UNLOCK_ALL_ASSETS
+)
 const stickers = computed(() => assetsForEditor(sceneCatalogAssets, 'sticker', sceneThemeId))
 const backgrounds = computed(() => assetsForEditor(sceneCatalogAssets, 'background', sceneThemeId))
 const selectedStickerId = ref('')
@@ -215,6 +222,8 @@ async function refreshAccess(): Promise<void> {
 async function boot(): Promise<void> {
   if (!launch || !canvasEl.value) return
   sceneSnapshotMissing.value = editorCatalog.snapshotMissing
+  const accessStore = new AssetAccessStore(getFeltCraftDatabase())
+  await seedAcceptanceUnlockedAccess(accessStore, sceneCatalogAssets, acceptanceUnlockAllAssets)
   await refreshAccess()
   const service = new EditorSessionService({
     createAdapter: () => new FabricEditorAdapter({ allowTestAssets: false, snapshotContext: YWN_SNAPSHOT_CONTEXT })

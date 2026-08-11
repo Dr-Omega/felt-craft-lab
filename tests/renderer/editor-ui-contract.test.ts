@@ -62,6 +62,14 @@ describe('V4.6 formal Editor UI contract', () => {
     expect(page).toContain(':can-redo="canRedo"')
   })
 
+  it('keeps acceptance unlock-all explicit and refreshes through normal access rows', () => {
+    expect(page).toContain('VITE_ACCEPTANCE_UNLOCK_ALL_ASSETS')
+    expect(page).toContain('seedAcceptanceUnlockedAccess')
+    expect(page).toContain('await refreshAccess()')
+    expect(sheet).toContain('isAssetUnlocked')
+    expect(drawer).toContain('isAssetUnlocked')
+  })
+
   it('keeps locked assets visible and makes add/apply two-step actions explicit', () => {
     expect(sheet).toContain("'is-locked'")
     expect(sheet).toContain('放进作品')
