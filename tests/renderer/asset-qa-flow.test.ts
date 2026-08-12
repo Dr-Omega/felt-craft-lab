@@ -823,5 +823,147 @@ describe('AssetQaSheet — mounted voice flow', () => {
     expect(stopTrack).toHaveBeenCalled()
     mount.unmount()
   })
+
+  // -----------------------------------------------------------------------
+  // C7: Voice A pending → 切素材B → B 启新 Voice → A 旧 stream 迟到 resolve
+  //     验证 A 自己的 token 仍被判定为 stale，A 的 stream 被 stop，
+  //     A 不会启动旧 Recorder，B 完全不受影响。
+  // -----------------------------------------------------------------------
+  it('C7) A pending getUserMedia → switch to B → B starts new voice → A late resolve drops A only', async () => {
+    const stopTrackA = vi.fn()
+    const stopTrackB = vi.fn()
+    const streamA = {
+      getTracks: () => [{ stop: stopTrackA, kind: 'audio' }],
+      getAudioTracks: () => [{ stop: stopTrackA, kind: 'audio' }],
+      getVideoTracks: () => []
+    } as unknown as MediaStream
+    const streamB = {
+      getTracks: () => [{ stop: stopTrackB, kind: 'audio' }],
+      getAudioTracks: () => [{ stop: stopTrackB, kind: 'audio' }],
+      getVideoTracks: () => []
+    } as unknown as MediaStream
+    const gates: Deferred<MediaStream>[] = []
+    defineMediaDevices({
+      getUserMedia: () => {
+        const d = deferred<MediaStream>()
+        gates.push(d)
+        return d.promise
+      }
+    })
+    const asrMock = vi.fn().mockResolvedValue({ ok: true, result: { transcript: 'should-not-fire' } })
+    const qaMock = vi.fn().mockResolvedValue({ ok: true, result: { answer: 'should-not-fire' } })
+    vi.stubGlobal('window', { electronAPI: { ai: { asrTranscribe: asrMock, qaAsk: qaMock } } })
+
+    const mount = mountSheetReactive(sampleAsset)
+    await flush()
+
+    // 1) Voice A starts; getUserMedia is pending (deferred).
+    const voiceBtn = mount.root.querySelector('.asset-qa-voice') as HTMLButtonElement | null
+    voiceBtn?.click()
+    await new Promise((r) => setTimeout(r, 10))
+    expect(gates.length).toBe(1)
+
+    // 2) Real asset prop switch to B. The watcher fires, bumps voiceGen.
+    mount.setAsset(sampleAssetB)
+    await flush()
+
+    // 3) Click voice on B. A new getUserMedia is requested; A's stream is
+    //    still in flight.
+    voiceBtn?.click()
+    await new Promise((r) => setTimeout(r, 10))
+    expect(gates.length).toBe(2)
+
+    // 4) A's deferred late-resolves now. Because each flow captured its
+    //    own local token, A's token is the OLD pre-bump value, so the
+    //    stale check fails for A only.
+    gates[0]!.resolve(streamA)
+    await new Promise((r) => setTimeout(r, 30))
+    expect(stopTrackA).toHaveBeenCalled()
+    // No qaAsk, no asrTranscribe triggered by A.
+    expect(qaMock).not.toHaveBeenCalled()
+    expect(asrMock).not.toHaveBeenCalled()
+
+    // 5) B's deferred resolves. B's flow continues, its recorder starts.
+    gates[1]!.resolve(streamB)
+    await new Promise((r) => setTimeout(r, 60))
+    // B is now in recording state on the new asset.
+    const liveBtn = mount.root.querySelector('.asset-qa-voice.is-live') as HTMLButtonElement | null
+    expect(liveBtn).toBeTruthy()
+    // B's own stream is still alive (not stopped by A's late path).
+    expect(stopTrackB).not.toHaveBeenCalled()
+
+    // Cleanup: stop B's recording to release the mic.
+    liveBtn?.click()
+    await new Promise((r) => setTimeout(r, 50))
+    mount.unmount()
+  })
+
+  // -----------------------------------------------------------------------
+  // C8: Voice A pending → 切素材B → B 启新 Voice → A 旧请求迟到 reject
+  //     验证 A 不会调用 failRecording，B 不会被 A 的 reject 影响（不显示
+  //     mic denied，不调用 qaAsk/asrTranscribe）。
+  // -----------------------------------------------------------------------
+  it('C8) A pending getUserMedia → switch to B → B starts new voice → A late reject does not leak mic denied into B', async () => {
+    const gates: Deferred<MediaStream>[] = []
+    defineMediaDevices({
+      getUserMedia: () => {
+        const d = deferred<MediaStream>()
+        gates.push(d)
+        return d.promise
+      }
+    })
+    const asrMock = vi.fn().mockResolvedValue({ ok: true, result: { transcript: 'should-not-fire' } })
+    const qaMock = vi.fn().mockResolvedValue({ ok: true, result: { answer: 'should-not-fire' } })
+    vi.stubGlobal('window', { electronAPI: { ai: { asrTranscribe: asrMock, qaAsk: qaMock } } })
+
+    const mount = mountSheetReactive(sampleAsset)
+    await flush()
+
+    // 1) Voice A starts; getUserMedia pending.
+    const voiceBtn = mount.root.querySelector('.asset-qa-voice') as HTMLButtonElement | null
+    voiceBtn?.click()
+    await new Promise((r) => setTimeout(r, 10))
+    expect(gates.length).toBe(1)
+
+    // 2) Asset switch → bumps voiceGen.
+    mount.setAsset(sampleAssetB)
+    await flush()
+
+    // 3) Voice B starts; A still pending.
+    voiceBtn?.click()
+    await new Promise((r) => setTimeout(r, 10))
+    expect(gates.length).toBe(2)
+
+    // 4) A's deferred late-rejects with NotAllowedError. A's local token
+    //    is stale, so the catch must silently return — no failRecording
+    //    call, no mic denied hint on B.
+    gates[0]!.reject(Object.assign(new Error('denied'), { name: 'NotAllowedError' }))
+    await new Promise((r) => setTimeout(r, 30))
+
+    // No mic-denied hint on B (the hint element either doesn't exist or
+    // is empty). This is the key proof: A's late reject did NOT call
+    // controller.failRecording('denied').
+    const hintB = mount.root.querySelector('.asset-qa-mic-hint') as HTMLElement | null
+    expect(hintB?.textContent ?? '').toBe('')
+    // No qaAsk / asrTranscribe from A's late path.
+    expect(qaMock).not.toHaveBeenCalled()
+    expect(asrMock).not.toHaveBeenCalled()
+
+    // 5) B's deferred resolves with a real stream; B is unaffected.
+    const stopTrackB = vi.fn()
+    const streamB = {
+      getTracks: () => [{ stop: stopTrackB, kind: 'audio' }],
+      getAudioTracks: () => [{ stop: stopTrackB, kind: 'audio' }],
+      getVideoTracks: () => []
+    } as unknown as MediaStream
+    gates[1]!.resolve(streamB)
+    await new Promise((r) => setTimeout(r, 60))
+    const liveBtn = mount.root.querySelector('.asset-qa-voice.is-live') as HTMLButtonElement | null
+    expect(liveBtn).toBeTruthy()
+    // Stop B and unmount.
+    liveBtn?.click()
+    await new Promise((r) => setTimeout(r, 50))
+    mount.unmount()
+  })
 })
 

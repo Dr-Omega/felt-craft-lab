@@ -98,11 +98,34 @@ async function sendTextQuestion(): Promise<void> {
 }
 
 // --- Voice (MediaRecorder) helpers ---
+//
+// IMPORTANT — per-operation voice token contract:
+//
+// Every async voice flow captures its OWN immutable `myToken`, `recorder`,
+// `stream`, and `chunks` in local variables. After any `await`, the only
+// way to tell whether this exact flow is still current is to compare the
+// local `myToken` against `controller.captureVoiceGeneration()` — we MUST
+// NOT re-read any shared module-scope variable. The recorder callbacks
+// (`ondataavailable`, `onstop`, `onerror`) also bind to the per-flow
+// locals, never to the shared slot.
+//
+// The shared `activeStream / activeRecorder / activeChunks / activeVoiceToken`
+// slots exist ONLY so that `releaseMicImmediate` (called on close / asset
+// switch / unmount) can find the current recorder and stop it. Once a
+// per-flow callback runs, it cleans up its own recorder/stream via the
+// locals — it does not touch the shared slot for state reads.
 
 let activeStream: MediaStream | null = null
 let activeRecorder: MediaRecorder | null = null
 let activeChunks: Blob[] = []
 let activeVoiceToken = 0
+
+interface RecorderContext {
+  token: number
+  recorder: MediaRecorder
+  stream: MediaStream
+  chunks: Blob[]
+}
 
 function pickRecorderMimeType(): string {
   const candidates = [
@@ -130,21 +153,21 @@ async function startRecording(): Promise<void> {
     controller.failRecording('unavailable')
     return
   }
-  // Capture a voice-generation token *before* any await. Anything that runs
-  // after a getUserMedia rejection / late reject / sheet close / asset switch
-  // / unmount must check this token against controller.captureVoiceGeneration().
-  activeVoiceToken = controller.captureVoiceGeneration()
+  // Capture the voice-generation token LOCALLY. After any await, the only
+  // way to check whether THIS flow is still current is to compare against
+  // this local — never re-read a shared global, which may have been
+  // overwritten by a newer voice flow on a different asset.
+  const myToken = controller.captureVoiceGeneration()
   controller.beginRecording()
   let stream: MediaStream | null = null
   try {
     stream = await navigator.mediaDevices.getUserMedia({ audio: true })
   } catch (err) {
     // Late reject: the user may have closed the sheet / switched asset /
-    // unmounted while the mic prompt was open. The Promise then rejects
-    // *after* the controller has been reset, so we must NOT touch state.
-    if (!controller.isVoiceTokenCurrent(activeVoiceToken)) return
-    // Friendly: never expose the raw error. Distinguish denied vs other
-    // failures by the underlying error name only.
+    // unmounted (or a newer voice flow on another asset has started)
+    // while the mic prompt was open. The Promise then rejects AFTER the
+    // controller has been reset, so we must NOT touch state.
+    if (!controller.isVoiceTokenCurrent(myToken)) return
     const name = (err as { name?: string })?.name ?? ''
     if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
       controller.failRecording('denied')
@@ -153,41 +176,51 @@ async function startRecording(): Promise<void> {
     }
     return
   }
-  // Stale guard: if the sheet closed, asset switched, or component unmounted
-  // while we waited on the mic permission prompt, drop the stream immediately
-  // and never start a MediaRecorder.
-  if (!controller.isVoiceTokenCurrent(activeVoiceToken)) {
+  // Stale guard: if a newer flow has taken over, drop the stream immediately
+  // and never start a MediaRecorder. We compare against OUR local token, not
+  // against any shared slot.
+  if (!controller.isVoiceTokenCurrent(myToken)) {
     stopStream(stream)
     return
   }
-  activeStream = stream
   const mimeType = pickRecorderMimeType()
   const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream)
-  activeRecorder = recorder
-  activeChunks = []
+  const chunks: Blob[] = []
+  const ctx: RecorderContext = { token: myToken, recorder, stream, chunks }
+  // Bind callbacks to the per-flow locals. They must NOT touch the shared
+  // slot for state reads.
   recorder.ondataavailable = (event) => {
-    if (event.data && event.data.size > 0) activeChunks.push(event.data)
+    if (event.data && event.data.size > 0) ctx.chunks.push(event.data)
   }
   recorder.onstop = () => {
-    void finishRecording()
+    void finishRecording(ctx)
   }
   recorder.onerror = () => {
-    if (!controller.isVoiceTokenCurrent(activeVoiceToken)) return
+    if (!controller.isVoiceTokenCurrent(ctx.token)) return
     controller.failRecording('unavailable')
-    cleanupRecorder()
+    try { ctx.recorder.stop() } catch { /* ignore */ }
+    stopStream(ctx.stream)
   }
-  // One more stale check right before start() — a race between the previous
-  // check and the construction above is unlikely but cheap to verify.
-  if (!controller.isVoiceTokenCurrent(activeVoiceToken)) {
+  // One more stale check right before start().
+  if (!controller.isVoiceTokenCurrent(myToken)) {
     stopStream(stream)
-    activeStream = null
-    activeRecorder = null
     return
   }
+  // Stash on shared slot ONLY so releaseMicImmediate can find THIS
+  // recorder on close/unmount. The per-flow locals above are still the
+  // source of truth for everything else.
+  activeStream = stream
+  activeRecorder = recorder
+  activeChunks = chunks
+  activeVoiceToken = myToken
   try {
     recorder.start()
   } catch {
-    cleanupRecorder()
+    try { recorder.stop() } catch { /* ignore */ }
+    stopStream(stream)
+    activeStream = null
+    activeRecorder = null
+    activeChunks = []
     controller.failRecording('unavailable')
     return
   }
@@ -205,42 +238,43 @@ function stopRecording(): void {
   }
 }
 
-async function finishRecording(): Promise<void> {
+async function finishRecording(ctx: RecorderContext): Promise<void> {
   // Stale guard FIRST. The recorder.onstop callback may fire after the user
-  // closed the sheet / switched asset / unmounted the component. We must
-  // never touch controller state in that case — not even beginTranscribing().
-  const myToken = activeVoiceToken
-  if (!controller.isVoiceTokenCurrent(myToken)) {
-    cleanupRecorder()
-    if (activeStream) {
-      stopStream(activeStream)
-      activeStream = null
-    }
+  // closed the sheet / switched asset / unmounted (or after a newer voice
+  // flow on another asset has started). We must never touch controller
+  // state in that case — not even beginTranscribing(). ctx.token is the
+  // exact value captured by THIS startRecording invocation; we never
+  // re-read any shared global.
+  if (!controller.isVoiceTokenCurrent(ctx.token)) {
+    try { ctx.recorder.stop() } catch { /* ignore */ }
+    stopStream(ctx.stream)
     return
   }
-  const streamAtStop = activeStream
-  const chunks = activeChunks
-  const recorder = activeRecorder
-  cleanupRecorder()
+  const mimeType = ctx.recorder.mimeType || 'audio/webm'
+  const blob = new Blob(ctx.chunks, { type: mimeType })
+  // Clear shared slot if it still points to this flow; otherwise leave
+  // the newer flow's references alone.
+  if (activeRecorder === ctx.recorder) activeRecorder = null
+  if (activeStream === ctx.stream) activeStream = null
+  if (activeVoiceToken === ctx.token) {
+    activeChunks = []
+    activeVoiceToken = 0
+  }
+  stopStream(ctx.stream)
   controller.beginTranscribing()
-  if (!recorder || chunks.length === 0) {
-    if (streamAtStop) stopStream(streamAtStop)
+  if (ctx.chunks.length === 0) {
     controller.releaseMic()
     return
   }
-  const mimeType = recorder.mimeType || 'audio/webm'
-  const blob = new Blob(chunks, { type: mimeType })
-  if (streamAtStop) stopStream(streamAtStop)
   try {
     const base64 = await blobToBase64(blob)
-    // Stale guard: the sheet/asset might have changed during FileReader or ASR.
-    if (!controller.isVoiceTokenCurrent(myToken)) return
+    // Stale guard: the sheet/asset might have changed during FileReader.
+    if (!controller.isVoiceTokenCurrent(ctx.token)) return
     const result = await aiClient.asrTranscribe({ audioBase64: base64, mimeType })
-    if (!controller.isVoiceTokenCurrent(myToken)) return
+    if (!controller.isVoiceTokenCurrent(ctx.token)) return
     controller.applyTranscript(result.transcript)
   } catch (err) {
-    if (!controller.isVoiceTokenCurrent(myToken)) return
-    // Friendly text only — never surface the raw error.
+    if (!controller.isVoiceTokenCurrent(ctx.token)) return
     void err
     controller.failTranscription()
   }
@@ -322,7 +356,10 @@ const loadingCopy = computed(() => {
 })
 
 const inputPlaceholder = computed(() => {
-  if (isRecording.value) return '玉兔正在听你说……'
+  if (isRecording.value) {
+    if (props.asset?.nameZh) return `${props.asset.nameZh}正在听你说……`
+    return '正在听你说……'
+  }
   if (props.asset?.nameZh) return `问${props.asset.nameZh}一个问题吧`
   return '问它一个问题吧'
 })

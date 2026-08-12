@@ -214,7 +214,7 @@ export class AssetQaController {
     const text = this.input.trim()
     if (!text) return
     if (text.length > ASSET_QA_MAX_QUESTION) {
-      this.errorMessage = '问题太长啦，简化一下吧。'
+      this.errorMessage = '问题太长啦，短一点再问吧。'
       this.emit()
       return
     }
