@@ -26,6 +26,10 @@ const evidenceDir = path.join(root, 'felt-craft-lab-e2e-evidence', 'v46-product-
 const profileDir = path.join(root, '.tmp-product-closure-electron-profile')
 const debugPort = 9340
 const electronExe = path.join(root, 'node_modules', 'electron', 'dist', 'electron.exe')
+// Allow Electron's sandboxed renderer/preload bootstrap to settle before CDP
+// Runtime/Page/Log domains are enabled. The delay is measured from child spawn
+// (before page-target discovery), matching the validated acceptance experiment.
+const CDP_STARTUP_STABILIZATION_MS = 750
 
 // One-time wipe so the first launch starts from a clean profile.
 fs.rmSync(evidenceDir, { recursive: true, force: true })
@@ -165,6 +169,7 @@ class Instance {
     this.child.stderr.on('data', (chunk) => this.mainErrors.push(String(chunk)))
     this.child.stdout.on('data', (chunk) => this.mainErrors.push(String(chunk)))
 
+    await sleep(CDP_STARTUP_STABILIZATION_MS)
     const page = await waitForTarget(debugPort)
     this.cdp = new Cdp(page.webSocketDebuggerUrl)
     await this.cdp.send('Runtime.enable')
