@@ -408,11 +408,34 @@ async function runInProcessPhase1(instance) {
     await i.waitFor('Boolean(document.querySelector(".material-sheet.is-open"))')
     await sleep(300)
   }
-  await i.click('.material-card:nth-child(1)')
-  await sleep(160)
-  await i.click('.sheet-add')
-  await i.waitFor('document.querySelectorAll(".material-card").length >= 0')
-  await sleep(400)
+  // Round 8: use two explicit stickers from different formal themes. This
+  // proves an all-theme Scene can really add cross-theme content through the
+  // normal MaterialSheet → Editor path, rather than merely showing the cards.
+  async function addStickerNamed(name) {
+    // Category/filter interactions re-render the grid, so always reset the
+    // real UI filter and resolve a fresh card rectangle before clicking.
+    await i.click('.category-chip:first-child')
+    await sleep(160)
+    const card = await i.evaluate(`(() => {
+      const card = Array.from(document.querySelectorAll('.material-card'))
+        .find((node) => node.textContent.includes(${JSON.stringify(name)}))
+      if (!card) return null
+      const rect = card.getBoundingClientRect()
+      return { centerX: rect.left + rect.width / 2, centerY: rect.top + rect.height / 2 }
+    })()`)
+    check(`(round 8) MaterialSheet can select ${name}`, Boolean(card))
+    if (!card) throw new Error(`MaterialSheet card missing: ${name}`)
+    await i.clickPoint(card.centerX, card.centerY)
+    await sleep(160)
+    await i.click('.sheet-add')
+    await i.waitFor('!document.querySelector(".bottom-action-dock .dock-material")?.disabled', 15000)
+    // Wait for the real closing transition before attempting to reopen the
+    // sheet. During that transition the outgoing drawer still overlays the
+    // dock and can legitimately receive the mouse event.
+    await sleep(420)
+  }
+
+  await addStickerNamed('莲花河灯')
   await i.screenshot('06_after_add_sticker.png')
   const hasStickerOnCanvas = await i.evaluate(`(() => { const objects = document.querySelectorAll('.canvas-container'); return objects.length > 0; })()`)
   check('Sticker add populates the canvas', hasStickerOnCanvas)
@@ -438,6 +461,10 @@ async function runInProcessPhase1(instance) {
   check('(round 8) Persisted draft has a valid assetSnapshotId',
     Boolean(allDraft?.scene?.assetSnapshotId),
     `assetSnapshotId=${allDraft?.scene?.assetSnapshotId}`)
+  const allDraftAssetIds = new Set((allDraft?.scene?.objects || []).map((object) => object.assetId))
+  check('(round 8) Draft persists cross-theme sticker 莲花河灯',
+    allDraftAssetIds.has('sticker_flower_lantern_001'),
+    `assetIds=${JSON.stringify([...allDraftAssetIds])}`)
 
   const libraryText = await i.evaluate(`document.querySelector('.library')?.textContent || ''`)
   check('Library does not leak draftId', !libraryText.includes('draftId'))

@@ -77,6 +77,14 @@ describe('draft workflow', () => {
     expect(await store.get(draft.draftId)).toEqual(draft)
   })
 
+  it('round 8: preserves the formal all theme when a Draft is saved and reopened', async () => {
+    const scene = preparedScene({ themeId: 'all' })
+    const draft = await saveDraftFromPreparedScene(scene, { db })
+
+    expect(draft.scene.themeId).toBe('all')
+    expect((await new DraftStore(db).get(draft.draftId))?.scene.themeId).toBe('all')
+  })
+
   it('rejects an illegal scene for draft save', async () => {
     const scene = preparedScene()
     // @ts-expect-error intentional invalid schema
@@ -118,6 +126,19 @@ describe('project workflow', () => {
     expect(project.syncStatus).toBe('local_only')
     expect(project.previewUrl).toMatch(/^felt-resource:\/\/preview\//)
     expect(await new ProjectStore(db).get(project.projectId)).toEqual(project)
+  })
+
+  it('round 8: preserves the formal all theme when a Project is saved and reopened', async () => {
+    const input = prepared()
+    input.scene.themeId = 'all'
+    const project = await saveNewProject(input, {
+      db,
+      projectId: 'c3ac4f13-c4be-4ce0-8781-c60b78a21e83',
+      createdAt: fixtureTime
+    })
+
+    expect(project.scene.themeId).toBe('all')
+    expect((await new ProjectStore(db).get(project.projectId))?.scene.themeId).toBe('all')
   })
 
   it('persists canonical square Scene dimensions without rewriting the Scene', async () => {
