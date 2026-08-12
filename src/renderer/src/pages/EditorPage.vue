@@ -813,13 +813,20 @@ body { margin: 0; overflow: hidden; }
 .sheet-header h2 { margin: 0; font-size: 16px; font-weight: 700; }
 .sheet-close { width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--color-text-soft); font-size: 26px; cursor: pointer; }
 .sheet-category { display: flex; gap: 8px; padding: 10px 30px 4px; }
-.material-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 14px; max-width: 1210px; width: 100%; margin: 0 auto; padding: 4px 30px 12px; flex: 1 1 auto; min-height: 180px; overflow-y: auto; align-content: start; }
-.material-card { position: relative; aspect-ratio: 1; overflow: hidden; padding: 0; border: 2px solid transparent; border-radius: var(--radius-xs); background: #fffef8; cursor: pointer; box-shadow: var(--shadow-soft); }
+/* MaterialGrid is the only scrollable zone. The grid template uses
+   `grid-auto-rows: max-content` + `align-items: start` so cards never
+   stretch or overlap when the available height shrinks. Each card is a
+   flex column with a 1:1 image area and a fixed-height name strip below
+   — the name sits on its own paper-coloured row instead of overlaying the
+   image. */
+.material-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); grid-auto-rows: max-content; align-items: start; gap: 14px; max-width: 1210px; width: 100%; margin: 0 auto; padding: 4px 30px 12px; flex: 1 1 auto; min-height: 180px; overflow-y: auto; align-content: start; }
+.material-card { position: relative; display: flex; flex-direction: column; gap: 0; padding: 0; border: 2px solid transparent; border-radius: var(--radius-xs); background: #fffef8; cursor: pointer; box-shadow: var(--shadow-soft); overflow: hidden; }
+.material-card-image { position: relative; width: 100%; aspect-ratio: 1; overflow: hidden; background: var(--wood-light); }
 .material-card img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .material-card:hover:not(.is-locked) { transform: translateY(-2px); }
 .material-card.is-selected { border-color: var(--color-primary); box-shadow: 0 4px 14px rgba(232, 165, 114, 0.3); }
 .material-card.is-locked { opacity: 0.55; }
-.material-card-name { position: absolute; right: 6px; bottom: 5px; left: 6px; overflow: hidden; color: var(--color-text); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.material-card-name { position: static; min-height: 28px; display: flex; align-items: center; justify-content: center; padding: 0 4px; background: #fffef8; color: var(--color-text); font-size: 11px; line-height: 1.1; text-align: center; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; border-top: 1px solid rgba(89, 71, 56, 0.08); }
 
 .editor-state-banner { position: absolute; top: 74px; left: 50%; z-index: 40; margin: 0; padding: 8px 16px; border-radius: var(--radius-pill); background: rgba(244, 213, 192, 0.92); color: var(--wood-deeper); font-size: 13px; transform: translateX(-50%); }
 .editor-feedback { position: absolute; bottom: 18px; left: 50%; z-index: 120; margin: 0; padding: 10px 18px; border-radius: var(--radius-pill); background: #fffef8; color: var(--color-text); box-shadow: var(--shadow-lift); font-size: 13px; transform: translateX(-50%); }

@@ -13,11 +13,15 @@ describe('V4.6 Editor audio controls', () => {
     expect(controls).toContain('if (audio.nameZhUrl)')
     expect(controls).toContain('if (audio.nameEnUrl)')
     expect(controls).toContain('if (audio.introZhUrl)')
-    expect(controls).toContain("label: '中文名称'")
-    expect(controls).toContain("label: '英文名称'")
-    expect(controls).toContain("label: '听介绍'")
+    // Short child-friendly labels: 中文 / English / 介绍
+    expect(controls).toContain("label: '中文'")
+    expect(controls).toContain("label: 'English'")
+    expect(controls).toContain("label: '介绍'")
     expect(controls).toContain('v-if="audioButtons.length > 0"')
     expect(controls).not.toContain('<audio')
+    // No blue speaker emoji — replaced with a single-color SVG
+    expect(controls).not.toContain('🔊')
+    expect(controls).toContain('<svg')
   })
 
   it('uses the existing primary AudioService without consulting AssetAccess', () => {

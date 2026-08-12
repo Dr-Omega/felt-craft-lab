@@ -110,11 +110,10 @@ function askSelection(): void {
       </header>
       <div class="sheet-toolbar">
         <label class="sheet-search">
-          <span class="sheet-search-label">搜索素材</span>
           <input
             v-model="searchQuery"
             type="search"
-            placeholder="搜索素材……"
+            placeholder="找一找素材……"
             aria-label="搜索素材"
             autocomplete="off"
             spellcheck="false"
@@ -161,8 +160,10 @@ function askSelection(): void {
           :aria-label="`${asset.nameZh}${unlocked(asset) ? '' : '，锁定'}`"
           @click="emit('select', asset.assetId)"
         >
-          <img :src="asset.thumbnailUrl || asset.imageUrl" :alt="asset.nameZh" />
-          <span v-if="!unlocked(asset)" class="card-lock" aria-hidden="true">🔒</span>
+          <span class="material-card-image">
+            <img :src="asset.thumbnailUrl || asset.imageUrl" :alt="''" />
+            <span v-if="!unlocked(asset)" class="card-lock" aria-hidden="true">🔒</span>
+          </span>
           <span class="material-card-name">{{ asset.nameZh }}</span>
         </button>
         <p v-if="visibleAssets.length === 0" class="material-empty">这里还没有符合的素材，换个词或换个分类试试。</p>
@@ -214,20 +215,14 @@ function askSelection(): void {
 
 .sheet-search {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: 1fr auto;
   align-items: center;
   gap: 8px;
   padding: 6px 12px;
-  background: var(--wood-surface, #efe2c9);
+  background: #fffef8;
   border: 1px solid var(--wood-mid, #d9b98a);
   border-radius: var(--radius-pill, 999px);
   color: var(--color-text, #594738);
-}
-
-.sheet-search-label {
-  color: var(--color-text-soft, #8b7355);
-  font-size: 0.85rem;
-  white-space: nowrap;
 }
 
 .sheet-search input {
@@ -315,8 +310,8 @@ function askSelection(): void {
 .sheet-footer {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 6px;
-  padding: 10px 24px 14px;
+  gap: 4px;
+  padding: 8px 24px 12px;
   border-top: 1px solid rgba(89, 71, 56, 0.08);
   background: var(--wood-light, #f0e2c5);
   text-align: center;
@@ -326,22 +321,23 @@ function askSelection(): void {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 1px;
   line-height: 1.2;
 }
 
 .sheet-footer-name-zh {
   margin: 0;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--color-text, #594738);
 }
 
 .sheet-footer-name-en {
   margin: 0;
-  font-size: 12px;
-  color: var(--color-text-soft, #8b7355);
+  font-size: 10px;
+  color: var(--color-text-faint, #b8a48a);
   letter-spacing: 0.04em;
+  opacity: 0.85;
 }
 
 .sheet-footer-secondary {

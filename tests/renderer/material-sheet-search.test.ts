@@ -10,9 +10,14 @@ const categoryDisplay = readFileSync(resolve('src/renderer/src/catalog/category-
 
 describe('V4.6 Phase 2 MaterialSheet search and category filters', () => {
   it('renders a search input that filters by nameZh, nameEn, and keywords', () => {
-    expect(sheet).toContain('搜索素材')
-    expect(sheet).toContain('placeholder="搜索素材……"')
+    // The visible UI shows a single child-friendly placeholder; the
+    // descriptive label is kept on aria-label only so the toolbar does not
+    // repeat the words "搜索素材" twice.
+    expect(sheet).toContain('aria-label="搜索素材"')
+    expect(sheet).toContain('placeholder="找一找素材……"')
     expect(sheet).toContain('v-model="searchQuery"')
+    expect(sheet).not.toContain('class="sheet-search-label"')
+    expect(sheet).not.toContain('>搜索素材<')
     expect(categoryDisplay).toContain('filterAssetsByCategoryAndQuery')
     expect(categoryDisplay).toContain('asset.nameZh')
     expect(categoryDisplay).toContain('asset.nameEn')
@@ -67,13 +72,16 @@ describe('V4.6 Phase 2 MaterialSheet search and category filters', () => {
     expect(sheetScript).not.toContain('assetsForEditor')
   })
 
-  it('falls back to the raw category id for unknown categories so no material is hidden', () => {
+  it('falls back to a child-friendly generic label for unknown categories so no material is hidden', () => {
     expect(categoryDisplay).toContain('categoryDisplayName')
-    // The fallback path returns the raw id when a category is not in the
-    // known map, so the chip still renders with a stable label.
+    // The fallback path returns the generic "其他" label when a category is
+    // not in the known map. The internal id is still preserved on the
+    // DerivedCategory so filtering and chip selection continue to work.
     const displayBody = categoryDisplay.match(/function categoryDisplayName[\s\S]*?\n}/)?.[0] ?? ''
     expect(displayBody).toContain('categoryId')
     expect(displayBody).toContain('未分类')
+    expect(categoryDisplay).toContain('UNKNOWN_CATEGORY_DISPLAY')
+    expect(categoryDisplay).toContain("'其他'")
     // Unknown categories go into the second group (known first, unknown last).
     const deriveBody = categoryDisplay.match(/function deriveCategoriesFromAssets[\s\S]*?\n}/)?.[0] ?? ''
     expect(deriveBody).toContain('unknown.push(entry)')

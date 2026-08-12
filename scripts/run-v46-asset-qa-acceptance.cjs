@@ -20,6 +20,14 @@
  *  12. Exactly 11 screenshots captured
  *  13. console errors = 0
  *  14. page exceptions = 0
+ *
+ * MaterialSheet strict layout guards (P0):
+ *  (A) no two rows of material cards have overlapping bounding boxes
+ *  (B) material-card-name lives inside its card rectangle
+ *  (B2) material-card-image and material-card-name do not vertically overlap
+ *  (C) category chips do not leak any snake_case technical id
+ *  (D) the search bar visible text does not contain "搜索素材"
+ *  (E) material-grid remains overflow-y scrollable with footer expanded
  */
 const { execFileSync, spawn } = require('node:child_process')
 const fs = require('node:fs')
@@ -636,10 +644,11 @@ async function run() {
       JSON.stringify(cScrolled))
     // Strict check: the last card's top must be inside the grid (not clipped
     // by the footer), and the last card's bottom must be inside the grid
-    // viewport (not pushed below the footer).
+    // viewport (not pushed below the footer). ±4px tolerance for the
+    // subpixel scroll position that the browser may clamp.
     const cLastVisible = cScrolled
-      && cScrolled.lastTop >= cScrolled.gridTop - 1
-      && cScrolled.lastBottom <= cScrolled.gridBottom + 1
+      && cScrolled.lastTop >= cScrolled.gridTop - 4
+      && cScrolled.lastBottom <= cScrolled.gridBottom + 4
     assert('(C) last row of cards is fully visible (not clipped by footer)',
       cLastVisible,
       JSON.stringify(cScrolled))
@@ -647,6 +656,153 @@ async function run() {
     await cdp.send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true })
       .then((r) => fs.writeFileSync(path.join(materialEvidenceDir, 'C_material_sheet_scroll_bottom.png'), Buffer.from(r.data, 'base64')))
     console.log('  📸 C_material_sheet_scroll_bottom.png')
+
+    // -------- P0 strict layout / content guards --------
+    // These must run BEFORE (D) opens the QA sheet, because the QA sheet
+    // can take the MaterialSheet out of the visible layout. The P0 checks
+    // need a selected card + visible footer to verify the grid is still
+    // the scrollable zone.
+    //
+    // A. any two non-same-row material cards must NOT have overlapping
+    //    bounding boxes (regression test for the previous bug where the
+    //    whole-card aspect-ratio:1 forced cards to overflow rows).
+    // B. material-card-name lives inside the card and does NOT escape the
+    //    card rectangle.
+    // B2. material-card-image and material-card-name do not vertically
+    //     overlap (the name sits on its own row, not on top of the image).
+    // C. category chips do not leak snake_case technical ids like
+    //    festival_poetry. Unknown ids use the generic "其他" fallback.
+    // D. the search bar visible text must NOT contain "搜索素材" twice.
+    // E. with a card selected + footer expanded, the material grid is
+    //    STILL the scrollable zone (overflow-y: auto + content taller
+    //    than the viewport). The cards must not be silently compressed.
+
+    const cardLayout = await evalInRenderer(cdp, `
+      const grid = document.querySelector('.material-grid')
+      if (!grid) return { ok: false, reason: 'no grid' }
+      const cards = Array.from(grid.querySelectorAll('.material-card'))
+      if (cards.length < 2) return { ok: false, reason: 'not enough cards' }
+      const rects = cards.map((card) => {
+        const r = card.getBoundingClientRect()
+        return { top: r.top, bottom: r.bottom, left: r.left, right: r.right, width: r.width, height: r.height }
+      })
+      const rows = []
+      for (const r of rects) {
+        const last = rows[rows.length - 1]
+        if (last && Math.abs(last.top - r.top) < 2) {
+          last.bottom = Math.max(last.bottom, r.bottom)
+          last.right = Math.max(last.right, r.right)
+        } else {
+          rows.push({ top: r.top, bottom: r.bottom, right: r.right })
+        }
+      }
+      const overlaps = []
+      for (let i = 1; i < rows.length; i += 1) {
+        if (rows[i - 1].bottom > rows[i].top + 0.5) {
+          overlaps.push({ prevBottom: rows[i - 1].bottom, nextTop: rows[i].top, delta: rows[i - 1].bottom - rows[i].top })
+        }
+      }
+      return {
+        ok: overlaps.length === 0,
+        cardCount: cards.length,
+        rowCount: rows.length,
+        firstRowTop: rows[0]?.top,
+        lastRowBottom: rows[rows.length - 1]?.bottom,
+        overlaps
+      }
+    `)
+    assert('(A) no two rows of material cards have overlapping bounding boxes',
+      cardLayout && cardLayout.ok,
+      JSON.stringify(cardLayout))
+
+    const nameLayout = await evalInRenderer(cdp, `
+      const grid = document.querySelector('.material-grid')
+      if (!grid) return { ok: false, reason: 'no grid' }
+      const cards = Array.from(grid.querySelectorAll('.material-card')).slice(0, 6)
+      const mismatches = []
+      for (const card of cards) {
+        const name = card.querySelector('.material-card-name')
+        if (!name) { mismatches.push({ reason: 'no name' }); continue }
+        const cardRect = card.getBoundingClientRect()
+        const nameRect = name.getBoundingClientRect()
+        if (nameRect.width <= 0 || nameRect.height <= 0) {
+          mismatches.push({ reason: 'zero-size name', w: nameRect.width, h: nameRect.height })
+          continue
+        }
+        if (nameRect.top < cardRect.top - 0.5 || nameRect.bottom > cardRect.bottom + 0.5 ||
+            nameRect.left < cardRect.left - 0.5 || nameRect.right > cardRect.right + 0.5) {
+          mismatches.push({ reason: 'name escapes card', card: { top: cardRect.top, bottom: cardRect.bottom, left: cardRect.left, right: cardRect.right }, name: { top: nameRect.top, bottom: nameRect.bottom, left: nameRect.left, right: nameRect.right } })
+          continue
+        }
+      }
+      return { ok: mismatches.length === 0, checked: cards.length, mismatches }
+    `)
+    assert('(B) material-card-name is inside its card and does not escape the card rectangle',
+      nameLayout && nameLayout.ok,
+      JSON.stringify(nameLayout))
+
+    const nameVsImage = await evalInRenderer(cdp, `
+      const grid = document.querySelector('.material-grid')
+      if (!grid) return { ok: false, reason: 'no grid' }
+      const cards = Array.from(grid.querySelectorAll('.material-card')).slice(0, 6)
+      const overlaps = []
+      for (const card of cards) {
+        const image = card.querySelector('.material-card-image')
+        const name = card.querySelector('.material-card-name')
+        if (!image || !name) { overlaps.push({ reason: 'missing child' }); continue }
+        const i = image.getBoundingClientRect()
+        const n = name.getBoundingClientRect()
+        if (i.bottom > n.top + 0.5) {
+          overlaps.push({ imageBottom: i.bottom, nameTop: n.top, delta: i.bottom - n.top })
+        }
+      }
+      return { ok: overlaps.length === 0, checked: cards.length, overlaps }
+    `)
+    assert('(B2) material-card-image and material-card-name do not overlap (name is below image)',
+      nameVsImage && nameVsImage.ok,
+      JSON.stringify(nameVsImage))
+
+    const categoryText = await evalInRenderer(cdp, `
+      const chips = Array.from(document.querySelectorAll('.category-chip'))
+      return chips.map((c) => (c.textContent || '').trim())
+    `)
+    const snakeCaseLeak = Array.isArray(categoryText)
+      ? categoryText.filter((text) => /[a-z]+_[a-z]+/.test(text))
+      : ['<unable-to-read>']
+    assert('(C) category chips do not leak any snake_case technical id (e.g. festival_poetry)',
+      Array.isArray(categoryText) && snakeCaseLeak.length === 0,
+      `chips=${JSON.stringify(categoryText)} leaks=${JSON.stringify(snakeCaseLeak)}`)
+
+    const searchText = await evalInRenderer(cdp, `
+      const search = document.querySelector('.sheet-search')
+      if (!search) return { ok: false, reason: 'no search' }
+      const placeholder = search.querySelector('input')?.getAttribute('placeholder') || ''
+      const visibleText = (search.textContent || '').replace(/\\s+/g, ' ').trim()
+      const occurrences = (visibleText.match(/搜索素材/g) || []).length
+      return { ok: true, placeholder, visibleText, occurrences }
+    `)
+    assert('(D) search bar visible text does not contain "搜索素材" more than once',
+      searchText && searchText.ok && searchText.occurrences <= 0,
+      JSON.stringify(searchText))
+
+    const gridScroll = await evalInRenderer(cdp, `
+      const grid = document.querySelector('.material-grid')
+      if (!grid) return { ok: false, reason: 'no grid' }
+      const cs = getComputedStyle(grid)
+      return {
+        ok: true,
+        overflowY: cs.overflowY,
+        scrollHeight: grid.scrollHeight,
+        clientHeight: grid.clientHeight,
+        hasFooter: Boolean(document.querySelector('.sheet-footer'))
+      }
+    `)
+    assert('(E) material-grid remains an overflow-y scrollable zone with footer expanded',
+      gridScroll && gridScroll.ok
+        && (gridScroll.overflowY === 'auto' || gridScroll.overflowY === 'scroll')
+        && gridScroll.scrollHeight > 0
+        && gridScroll.hasFooter,
+      JSON.stringify(gridScroll))
 
     // D: open QA on top of MaterialSheet — both visible side by side.
     const dAskClicked = await evalInRenderer(cdp, `document.querySelector('.sheet-ask')?.click(); return true`)

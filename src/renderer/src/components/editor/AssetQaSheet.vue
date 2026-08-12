@@ -370,10 +370,8 @@ const loadingCopy = computed(() => {
 
 const inputPlaceholder = computed(() => {
   if (isMicStarting.value) return '准备听你说……'
-  if (isRecording.value) {
-    if (props.asset?.nameZh) return `${props.asset.nameZh}正在听你说……`
-    return '正在听你说……'
-  }
+  if (isRecording.value) return '说完点“停止”'
+  if (isAsrBusy.value) return '正在听你刚才说的……'
   if (props.asset?.nameZh) return `问${props.asset.nameZh}一个问题吧`
   return '问它一个问题吧'
 })
@@ -630,20 +628,21 @@ const inputPlaceholder = computed(() => {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  justify-content: flex-start;
 }
 
 .asset-qa-empty {
-  margin: auto 0;
-  padding: 16px 8px 0;
-  text-align: center;
+  margin: 4px 0 0;
+  padding: 12px 4px 0;
+  text-align: left;
   color: var(--color-text-soft, #8b7355);
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  font-size: 0.95rem;
+  gap: 4px;
+  font-size: 0.92rem;
   line-height: 1.5;
 }
-.asset-qa-empty-title { color: var(--color-text, #594738); font-weight: 600; }
+.asset-qa-empty-title { color: var(--color-text, #594738); font-weight: 700; font-size: 1.02rem; }
 
 .asset-qa-messages {
   list-style: none;
@@ -679,18 +678,6 @@ const inputPlaceholder = computed(() => {
   background: #fffef8;
   border-color: rgba(89, 71, 56, 0.12);
   border-bottom-left-radius: var(--radius-xs, 14px);
-}
-
-.asset-qa-bubble.is-assistant::before {
-  content: '';
-  display: inline-block;
-  width: 4px;
-  height: 4px;
-  margin-right: 6px;
-  border-radius: var(--radius-pill, 999px);
-  background: var(--color-primary, #e8a572);
-  vertical-align: middle;
-  transform: translateY(-2px);
 }
 
 .asset-qa-loading {
