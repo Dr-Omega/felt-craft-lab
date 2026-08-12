@@ -268,8 +268,7 @@ async function run() {
     cwd: root,
     env: {
       ...process.env,
-      VITE_ACCEPTANCE_UNLOCK_ALL_ASSETS: 'true',
-      VITE_ACCEPTANCE_ALL_THEMES_IN_EDITOR: 'true'
+      VITE_ACCEPTANCE_UNLOCK_ALL_ASSETS: 'true'
     }
   })
 
@@ -284,7 +283,6 @@ async function run() {
       ...process.env,
       ELECTRON_ENABLE_LOGGING: '1',
       VITE_ACCEPTANCE_UNLOCK_ALL_ASSETS: 'true',
-      VITE_ACCEPTANCE_ALL_THEMES_IN_EDITOR: 'true',
       AI_GATEWAY_BASE_URL: gatewayUrl
     },
     windowsHide: true,

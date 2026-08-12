@@ -82,22 +82,48 @@ describe('editor snapshot-scoped selection', () => {
     expect(isAssetUnlocked(undefined)).toBe(false)
   })
 
-  it('shows every theme from the acceptance Scene snapshot without crossing snapshot boundaries', () => {
-    const prepared = prepareNewWorkScene('全主题验收作品', 'all', { allowAllThemes: true })
+  it('round 8: assetsForEditor("all") returns every typed asset in the Scene snapshot', () => {
+    const stickers = assetsForEditor(catalog, 'sticker', 'all')
+    const backgrounds = assetsForEditor(catalog, 'background', 'all')
+    // "all" no longer reorders; the child sees every theme in catalog order.
+    expect(stickers.map((row) => row.assetId)).toEqual([
+      'sticker_spring_001',
+      'sticker_lantern_001'
+    ])
+    expect(backgrounds.map((row) => row.assetId)).toEqual([
+      'background_spring_001',
+      'background_lantern_001'
+    ])
+    // Cross-theme assets are still present in the result.
+    expect(new Set(stickers.map((asset) => asset.themeId))).toEqual(
+      new Set(['spring_festival', 'lantern_festival'])
+    )
+    expect(new Set(backgrounds.map((asset) => asset.themeId))).toEqual(
+      new Set(['spring_festival', 'lantern_festival'])
+    )
+  })
+
+  it('round 8: prepareNewWorkScene("all") produces a Scene with themeId literally = "all"', () => {
+    const prepared = prepareNewWorkScene('全主题作品', 'all')
     const scene = prepared.scene
+    expect(scene).toBeDefined()
+    expect(scene?.themeId).toBe('all')
     expect(scene?.assetSnapshotId).toBe(YWN_SNAPSHOT_ID)
-    expect(scene?.themeId).not.toBe('all')
 
     const snapshotAssets = getCatalogAssetsForSnapshot(scene!.assetSnapshotId)
     for (const type of ['background', 'sticker'] as const) {
       const options = assetsForEditor(snapshotAssets, type, scene!.themeId)
+      // Cross-theme set must include more than one theme.
       expect(new Set(options.map((asset) => asset.themeId)).size).toBeGreaterThan(1)
+      // Every returned asset must be in the Scene snapshot (no cross-snapshot leak).
       expect(options.every((asset) => snapshotAssets.some((row) => row.assetId === asset.assetId))).toBe(true)
     }
   })
 
-  it('combines all-theme selection with acceptance unlock-all access for both asset types', async () => {
-    const prepared = prepareNewWorkScene('全主题全解锁验收作品', 'all', { allowAllThemes: true })
+  it('round 8: persists "all" Scene + acceptance unlock-all access survives a save / reload round-trip', async () => {
+    const prepared = prepareNewWorkScene('全主题全解锁作品', 'all')
+    expect(prepared.scene?.themeId).toBe('all')
+
     const snapshotAssets = getCatalogAssetsForSnapshot(prepared.scene!.assetSnapshotId)
     const saved: AssetAccessState[] = []
     await seedAcceptanceUnlockedAccess(
@@ -117,5 +143,10 @@ describe('editor snapshot-scoped selection', () => {
       expect(options.length).toBeGreaterThan(1)
       expect(options.every((asset) => isAssetUnlocked(accessById.get(asset.assetId)))).toBe(true)
     }
+
+    // Reopen path: pretend we round-trip the Scene through storage and
+    // re-read it. The "all" themeId must remain literal.
+    const reopened: typeof prepared.scene = JSON.parse(JSON.stringify(prepared.scene))
+    expect(reopened?.themeId).toBe('all')
   })
 })

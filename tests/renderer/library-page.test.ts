@@ -16,10 +16,16 @@ describe('V4.6 Phase 1 Library 我的创作 surface', () => {
     expect(library).toContain('素材库')
   })
 
-  it('keeps the existing acceptance all-themes gate intact', () => {
-    expect(library).toContain('VITE_ACCEPTANCE_ALL_THEMES_IN_EDITOR')
-    expect(library).toContain('allowAllThemes: acceptanceAllThemesInEditor')
+  it('round 8: Library has no acceptance-only all-themes gate; "all" is a real first-class new-work theme', () => {
+    expect(library).not.toContain('VITE_ACCEPTANCE_ALL_THEMES_IN_EDITOR')
+    expect(library).not.toContain('allowAllThemes')
+    expect(library).not.toContain('isAcceptanceAllThemesInEditorEnabled')
+    // The dropdown still offers "全部" as the default and the only
+    // difference vs. specific themes is that the new-work Scene is
+    // created with themeId === 'all'.
     expect(library).toContain('<option value="all">全部</option>')
+    expect(library).toContain("themeFilter = ref<string>(ALL_THEMES_ID)")
+    expect(library).toContain('prepareNewWorkScene(newWorkName.value, themeFilter.value)')
   })
 
   it('uses the friendly-time helper for the user-facing updated copy', () => {

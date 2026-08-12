@@ -160,8 +160,7 @@ class Instance {
       env: {
         ...process.env,
         ELECTRON_ENABLE_LOGGING: '1',
-        VITE_ACCEPTANCE_UNLOCK_ALL_ASSETS: 'true',
-        VITE_ACCEPTANCE_ALL_THEMES_IN_EDITOR: 'true'
+        VITE_ACCEPTANCE_UNLOCK_ALL_ASSETS: 'true'
       },
       windowsHide: true,
       stdio: ['ignore', 'pipe', 'pipe']
@@ -428,6 +427,18 @@ async function runInProcessPhase1(instance) {
   const draftCardTitle = await i.waitFor(`(() => { const headings = Array.from(document.querySelectorAll('.creation-card-title')); const draftHeading = headings.find((node) => node.textContent.includes('我的第一件草稿')); return draftHeading ? draftHeading.textContent.trim() : null; })()`)
   check('Draft "我的第一件草稿" appears in 继续制作', Boolean(draftCardTitle))
 
+  // Round 8: persisted draft.scene.themeId must stay literal "all" since
+  // the Library default theme is now "全部". This is the core regression
+  // test for the "all is a real first-class new-work theme" fix.
+  const draftsAfterSave = await i.readPersistence()
+  const allDraft = draftsAfterSave.drafts?.find((d) => d.scene?.themeId === 'all')
+  check('(round 8) Persisted draft has scene.themeId === "all" (formal all-themes flow)',
+    Boolean(allDraft),
+    `themes=${JSON.stringify((draftsAfterSave.drafts || []).map((d) => d.scene?.themeId))}`)
+  check('(round 8) Persisted draft has a valid assetSnapshotId',
+    Boolean(allDraft?.scene?.assetSnapshotId),
+    `assetSnapshotId=${allDraft?.scene?.assetSnapshotId}`)
+
   const libraryText = await i.evaluate(`document.querySelector('.library')?.textContent || ''`)
   check('Library does not leak draftId', !libraryText.includes('draftId'))
   check('Library does not leak assetSnapshotId', !libraryText.includes('assetSnapshotId'))
@@ -529,6 +540,13 @@ async function runInProcessPhase1(instance) {
 
   const projectCardTitle = await i.waitFor(`(() => { const headings = Array.from(document.querySelectorAll('.creation-card-title')); const ph = headings.find((node) => node.textContent.includes('我的第一件草稿')); return ph ? ph.textContent.trim() : null; })()`)
   check('Project appears in 我的作品', Boolean(projectCardTitle))
+
+  // Round 8: persisted project.scene.themeId must stay literal "all".
+  const projectsAfterSave = await i.readPersistence()
+  const allProject = projectsAfterSave.projects?.find((p) => p.scene?.themeId === 'all')
+  check('(round 8) Persisted project has scene.themeId === "all"',
+    Boolean(allProject),
+    `themes=${JSON.stringify((projectsAfterSave.projects || []).map((p) => p.scene?.themeId))}`)
 
   const previewThumb = await i.waitFor('Boolean(document.querySelector(".creation-card-thumb"))')
   check('Project has a preview thumbnail', previewThumb)
@@ -650,6 +668,15 @@ async function runInProcessPhase2(instance) {
   const reopenedCanvas = await i.evaluate(`document.querySelectorAll('.canvas-wrap .canvas-container').length > 0`)
   check('Draft reopens after Electron process restart', reopenedCanvas)
 
+  // Round 8: reopened draft must still have scene.themeId === "all" after
+  // a full Electron process restart. The persistence layer must not
+  // rewrite "all" to a specific theme or to undefined.
+  const persistedDraftsAfterRestart = await i.readPersistence()
+  const reopenedAllDraft = persistedDraftsAfterRestart.drafts?.find((d) => d.scene?.themeId === 'all')
+  check('(round 8) Draft.themeId stays "all" after Electron process restart',
+    Boolean(reopenedAllDraft),
+    `themes=${JSON.stringify((persistedDraftsAfterRestart.drafts || []).map((d) => d.scene?.themeId))}`)
+
   // Now save as a Project so phase 3 can verify project persistence.
   await i.waitFor('!document.querySelector(".topbar-finish")?.disabled', 10000)
   await i.click('.topbar-finish')
@@ -723,6 +750,14 @@ async function runInProcessPhase3(instance) {
 
   const projectReopenedCanvas = await i.evaluate(`document.querySelectorAll('.canvas-wrap .canvas-container').length > 0`)
   check('Project reopens after Electron process restart', projectReopenedCanvas)
+
+  // Round 8: reopened project must still have scene.themeId === "all" after
+  // a full Electron process restart.
+  const persistedProjectsAfterRestart = await i.readPersistence()
+  const reopenedAllProject = persistedProjectsAfterRestart.projects?.find((p) => p.scene?.themeId === 'all')
+  check('(round 8) Project.themeId stays "all" after Electron process restart',
+    Boolean(reopenedAllProject),
+    `themes=${JSON.stringify((persistedProjectsAfterRestart.projects || []).map((p) => p.scene?.themeId))}`)
 
   recordPhaseEnd('post-restart #2: Project persistence + reopen', i)
 }

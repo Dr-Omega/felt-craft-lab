@@ -69,6 +69,14 @@ export function listCatalogThemes(): string[] {
 }
 
 /**
+ * Sentinel themeId that means "every theme at once" in the new-work flow.
+ * It is a real, persisted SceneDocument.themeId — Editor and persistence
+ * code must keep the literal string `all` instead of rewriting it to
+ * a specific theme or to `undefined`.
+ */
+export const ALL_THEMES_ID = 'all'
+
+/**
  * Read-only AssetRecord set for a specific snapshot.
  * Editor must use launch.scene.assetSnapshotId — never fall back to latest.
  */
@@ -115,9 +123,14 @@ export function createCatalogResolver(): FabricEditorAssetResolver {
   }
 }
 
-export function createBlankScene(workName: string, themeId?: string): SceneDocument {
+export function createBlankScene(workName: string, themeId: string): SceneDocument {
   const now = new Date().toISOString()
-  const theme = themeId ?? CATALOG_ASSETS[0]?.themeId ?? 'spring_festival'
+  // `all` is a real, persisted sentinel meaning "every theme". Any other
+  // empty / non-catalog id still falls back to the first theme so the
+  // Scene boots — but the all-themes flow never collapses silently.
+  const theme = themeId === ALL_THEMES_ID
+    ? ALL_THEMES_ID
+    : (themeId && themeId.length > 0 ? themeId : (CATALOG_ASSETS[0]?.themeId ?? 'spring_festival'))
   const name = workName.trim() || '我的新作品'
   return {
     schemaVersion: 1,

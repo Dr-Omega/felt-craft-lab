@@ -77,10 +77,11 @@ describe('V4.6 formal Editor UI contract', () => {
     expect(drawer).toContain('isAssetUnlocked')
   })
 
-  it('keeps the all-themes acceptance gate explicit without changing Scene semantics', () => {
+  it('round 8: "all" is a real first-class new-work theme — no acceptance gate', () => {
     const library = readFileSync(resolve('src/renderer/src/pages/LibraryPage.vue'), 'utf8')
-    expect(library).toContain('VITE_ACCEPTANCE_ALL_THEMES_IN_EDITOR')
-    expect(library).toContain('allowAllThemes: acceptanceAllThemesInEditor')
+    // The flag and the option are gone; "全部" stays as a real product option.
+    expect(library).not.toContain('VITE_ACCEPTANCE_ALL_THEMES_IN_EDITOR')
+    expect(library).not.toContain('allowAllThemes')
     expect(library).toContain('<option value="all">全部</option>')
   })
 

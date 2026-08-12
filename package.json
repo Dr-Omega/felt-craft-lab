@@ -24,6 +24,7 @@
     "test:electron-resource": "npm run build -- --mode test && node scripts/run-electron-resource-smoke.cjs",
     "test:electron-ai": "npm run build && node scripts/run-electron-ai-smoke.cjs",
     "test:product-closure": "node scripts/run-product-closure.cjs",
+    "test:new-work-all-themes": "node scripts/run-v46-new-work-all-themes.cjs",
     "build:assets": "python scripts/build-ywn-manifest.py",
     "dist:win": "npm run build && electron-builder --win --x64 --config.electronDist=node_modules/electron/dist",
     "dist:win:dir": "npm run build && electron-builder --win --x64 --dir --config.electronDist=node_modules/electron/dist",

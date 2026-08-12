@@ -2,16 +2,14 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import type { DraftRecord, ProjectRecord } from '@shared/contracts'
 import {
+  ALL_THEMES_ID,
   CATALOG_ASSETS,
   createUnlockedAccess,
   DEFAULT_USER_ID,
   isAssetUnlocked,
   listCatalogThemes
 } from '../catalog/ywn-catalog'
-import {
-  isAcceptanceAllThemesInEditorEnabled,
-  prepareNewWorkScene
-} from '../catalog/library-new-work'
+import { prepareNewWorkScene } from '../catalog/library-new-work'
 import { openEditor } from '../app-nav'
 import {
   AssetAccessStore,
@@ -30,11 +28,8 @@ const favorites = ref<string[]>([])
 const unlockedIds = ref<Set<string>>(new Set())
 const message = ref('')
 const busy = ref(false)
-const themeFilter = ref<string>('all')
+const themeFilter = ref<string>(ALL_THEMES_ID)
 const newWorkName = ref('我的新作品')
-const acceptanceAllThemesInEditor = isAcceptanceAllThemesInEditorEnabled(
-  import.meta.env.VITE_ACCEPTANCE_ALL_THEMES_IN_EDITOR
-)
 const confirmDelete = ref<
   | { kind: 'draft'; record: DraftRecord }
   | { kind: 'project'; record: ProjectRecord }
@@ -45,7 +40,7 @@ const previewOpen = ref(false)
 
 const themes = listCatalogThemes()
 const visibleAssets = computed(() => {
-  if (themeFilter.value === 'all') return CATALOG_ASSETS
+  if (themeFilter.value === ALL_THEMES_ID) return CATALOG_ASSETS
   return CATALOG_ASSETS.filter((asset) => asset.themeId === themeFilter.value)
 })
 
@@ -60,9 +55,7 @@ async function refreshLists(): Promise<void> {
 
 async function startNewWork(): Promise<void> {
   message.value = ''
-  const prepared = prepareNewWorkScene(newWorkName.value, themeFilter.value, {
-    allowAllThemes: acceptanceAllThemesInEditor
-  })
+  const prepared = prepareNewWorkScene(newWorkName.value, themeFilter.value)
   if (!prepared.scene) {
     message.value = prepared.message
     return
