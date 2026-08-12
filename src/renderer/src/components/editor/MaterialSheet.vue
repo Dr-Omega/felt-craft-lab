@@ -19,6 +19,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   select: [assetId: string]
   add: [asset: AssetRecord]
+  ask: [asset: AssetRecord]
   close: []
 }>()
 
@@ -83,6 +84,13 @@ function addSelection(): void {
   const asset = selectedAsset()
   if (!asset) return
   emit('add', asset)
+}
+
+function askSelection(): void {
+  const asset = selectedAsset()
+  if (!asset) return
+  if (!unlocked(asset)) return
+  emit('ask', asset)
 }
 </script>
 
@@ -162,6 +170,16 @@ function addSelection(): void {
       <div v-if="selectedAsset()" class="sheet-footer">
         <span class="sheet-selection">{{ selectedAsset()?.nameZh }}</span>
         <AssetAudioControls :asset="selectedAsset()" :active="open" />
+        <button
+          class="sheet-ask"
+          type="button"
+          :disabled="busy || !unlocked(selectedAsset()!)"
+          title="问问它"
+          aria-label="问问它"
+          @click="askSelection"
+        >
+          问问它
+        </button>
         <button
           class="sheet-add"
           type="button"

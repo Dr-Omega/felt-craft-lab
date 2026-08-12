@@ -36,6 +36,7 @@ import MaterialSheet from '../components/editor/MaterialSheet.vue'
 import ReturnSaveModal from '../components/editor/ReturnSaveModal.vue'
 import ObjectQuickTools from '../components/editor/ObjectQuickTools.vue'
 import RemoveToast from '../components/editor/RemoveToast.vue'
+import AssetQaSheet from '../components/editor/AssetQaSheet.vue'
 import { audioService } from '../services/audio.service'
 
 const launch = getEditorLaunch()
@@ -61,6 +62,8 @@ const oqtOpen = ref(false)
 const oqtPosition = ref({ left: 0, top: 0, below: false })
 const oqtElement = ref<{ $el: HTMLElement } | null>(null)
 const removeToastOpen = ref(false)
+const qaSheetOpen = ref(false)
+const qaSheetAsset = ref<AssetRecord | null>(null)
 
 let unsubscribe: (() => void) | undefined
 let selectionUnsubscribe: (() => void) | undefined
@@ -255,6 +258,19 @@ function closeMaterialSheet(): void {
   audioService.stop('primary')
   sheetOpen.value = false
   selectedStickerId.value = ''
+}
+
+function openAssetQa(asset: AssetRecord): void {
+  // Close the picker so it does not share focus with the QA sheet.
+  audioService.stop('primary')
+  closeTransientContexts()
+  qaSheetAsset.value = asset
+  qaSheetOpen.value = true
+}
+
+function closeAssetQa(): void {
+  qaSheetOpen.value = false
+  qaSheetAsset.value = null
 }
 
 function closeBackgroundDrawer(): void {
@@ -559,6 +575,7 @@ watch([oqtOpen, oqtSelection], () => { void nextTick(updateOqtPosition) })
       :busy="busy"
       @select="selectSticker"
       @add="addSticker"
+      @ask="openAssetQa"
       @close="closeMaterialSheet"
     />
 
@@ -584,6 +601,12 @@ watch([oqtOpen, oqtSelection], () => { void nextTick(updateOqtPosition) })
       @save="saveProgressAndBack"
       @discard="discardAndBack"
       @cancel="continueEditing"
+    />
+
+    <AssetQaSheet
+      :asset="qaSheetAsset"
+      :open="qaSheetOpen"
+      @close="closeAssetQa"
     />
   </section>
 </template>
@@ -794,8 +817,10 @@ body { margin: 0; overflow: hidden; }
 .material-card.is-selected { border-color: var(--color-primary); box-shadow: 0 4px 14px rgba(232, 165, 114, 0.3); }
 .material-card.is-locked { opacity: 0.55; }
 .material-card-name { position: absolute; right: 6px; bottom: 5px; left: 6px; overflow: hidden; color: var(--color-text); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
-.sheet-footer { display: grid; justify-items: center; gap: 10px; padding: 10px 30px 16px; }
-.sheet-selection { color: var(--color-text-soft); font-size: 13px; }
+.sheet-footer { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px; padding: 10px 30px 16px; }
+.sheet-selection { width: 100%; text-align: center; color: var(--color-text-soft); font-size: 13px; }
+.sheet-ask { min-height: 40px; padding: 0 18px; border: 1px solid var(--color-primary); border-radius: var(--radius-pill); background: #fff; color: var(--color-primary); font: inherit; font-weight: 700; cursor: pointer; }
+.sheet-ask:disabled { cursor: not-allowed; opacity: 0.46; }
 .sheet-add { min-height: 40px; padding: 0 22px; border: 0; border-radius: var(--radius-pill); background: var(--color-primary); color: var(--color-on-primary); font: inherit; font-weight: 700; cursor: pointer; }
 .sheet-add:disabled { cursor: not-allowed; opacity: 0.46; }
 
