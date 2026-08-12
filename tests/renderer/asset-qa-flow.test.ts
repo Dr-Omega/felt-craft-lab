@@ -2,7 +2,7 @@
 /**
  * V4.6 阶段 4: 素材「问问它」QA 链路测试
  *
- * 覆盖 11 个真实行为 + 2 个 voice stale 场景（不依赖 @vue/test-utils）：
+ * 覆盖 11 个真实行为 + 4 个 voice stale 场景 + 6 个新边界场景（不依赖 @vue/test-utils）：
  *  1. 第一问 → 第一答（追加 user + assistant）
  *  2. 第二问请求携带第一轮 history
  *  3. QA 失败不追加半轮 history，输入内容保留
@@ -14,13 +14,19 @@
  *  9. transcript 可修改后手动发送
  * 10. mic denied 后文字 QA 仍可用
  * 11. 关闭 / unmount 时停止 MediaStream tracks
- *  A. getUserMedia race：用户关闭 / 切素材 / unmount 时，旧 getUserMedia 后续
- *     resolve 不应启动 MediaRecorder，stream tracks 立即被 stop
- *  B. ASR late resolve：用户关闭 / 切素材 / unmount 时，旧 ASR 后续 resolve 不应
- *     写入 input，不应污染新会话
+ *  A. getUserMedia race：用户关闭 / unmount 时，旧 getUserMedia 后续 resolve
+ *     不应启动 MediaRecorder，stream tracks 立即被 stop
+ *  B. ASR late resolve：用户关闭 / unmount 时，旧 ASR 后续 resolve 不应写入
+ *     input，不应污染新会话
+ *  C1. 录音期间发送按钮 disabled（canSend=false）
+ *  C2. ASR 期间发送按钮 disabled（canSend=false）
+ *  C3. getUserMedia 迟到 reject（close 之后）不污染新会话、不显示 mic denied
+ *  C4. close 之后旧 recorder.onstop 不得重新进入 ASR busy
+ *  C5. 真的 asset prop 切换期间 getUserMedia 迟到 resolve（同一 mount 改 prop）
+ *  C6. 真的 asset prop 切换期间 ASR 迟到 resolve（同一 mount 改 prop）
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { createApp, defineComponent, h, nextTick, type App as VueApp } from 'vue'
+import { createApp, defineComponent, h, nextTick, ref, type App as VueApp } from 'vue'
 import {
   ASSET_QA_MAX_QUESTION,
   AssetQaController,
@@ -131,7 +137,7 @@ describe('AssetQaController', () => {
     expect(snap.input).toBe('问题')
     expect(snap.busy).toBe(false)
     // Friendly text only, never the raw error
-    expect(snap.errorMessage).toBe('刚刚没有回答成功，再试一次吧。')
+    expect(snap.errorMessage).toBe('刚刚没答出来，再试一次吧。')
     expect(snap.errorMessage).not.toMatch(/internal|IPC|Gateway|HTTP|provider|requestId|Invalid/i)
   })
 
@@ -260,7 +266,7 @@ describe('AssetQaController', () => {
     controller.failRecording('denied')
     const snap = controller.snapshot()
     expect(snap.micAvailability).toBe('unavailable')
-    expect(snap.micHint).toMatch(/直接打字/)
+    expect(snap.micHint).toMatch(/打字/)
     qaAsk.mockResolvedValueOnce({ answer: '在呢。' })
     controller.setInput('你在吗？')
     await controller.submitTextQuestion(sampleAsset)
@@ -360,6 +366,45 @@ function mountSheet(initialAsset = sampleAsset, initialOpen = true): MountHandle
   }
 }
 
+/**
+ * Like `mountSheet`, but the `asset` and `open` props are reactive refs.
+ * Calling `setAsset(...)` triggers a real prop update on the same mounted
+ * component — which in turn fires the AssetQaSheet's internal
+ * `watch(() => props.asset?.assetId)`. This is what real asset switching
+ * looks like, and is the only way to assert that the in-flight voice flow
+ * is correctly invalidated when the user picks a different material.
+ */
+function mountSheetReactive(initialAsset = sampleAsset, initialOpen = true): {
+  app: VueApp
+  root: HTMLElement
+  setAsset(asset: typeof sampleAsset): void
+  setOpen(open: boolean): void
+  unmount(): void
+} {
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const currentAsset = ref(initialAsset)
+  const currentOpen = ref(initialOpen)
+  const Wrapper = defineComponent({
+    setup() {
+      return () => h(AssetQaSheet, { asset: currentAsset.value, open: currentOpen.value })
+    }
+  })
+  const app = createApp(Wrapper)
+  const root = document.createElement('div')
+  app.mount(root)
+  return {
+    app,
+    root,
+    setAsset: (asset) => { currentAsset.value = asset },
+    setOpen: (open) => { currentOpen.value = open },
+    unmount() {
+      app.unmount()
+      container.remove()
+    }
+  }
+}
+
 async function flush(): Promise<void> {
   for (let i = 0; i < 5; i += 1) {
     await nextTick()
@@ -433,7 +478,7 @@ describe('AssetQaSheet — mounted voice flow', () => {
     await flush()
     await new Promise((r) => setTimeout(r, 20))
     const hint = mount.root.querySelector('.asset-qa-mic-hint') as HTMLElement | null
-    expect(hint?.textContent ?? '').toMatch(/直接打字/)
+    expect(hint?.textContent ?? '').toMatch(/打字/)
     const textarea = mount.root.querySelector('.asset-qa-input') as HTMLTextAreaElement | null
     expect(textarea).toBeTruthy()
     textarea!.value = '你能做什么？'
@@ -577,7 +622,137 @@ describe('AssetQaSheet — mounted voice flow', () => {
     expect(qaMock).not.toHaveBeenCalled()
   })
 
-  it('A2) getUserMedia late resolve after asset switch does not start a recorder', async () => {
+  // -----------------------------------------------------------------------
+  // C1: 录音期间 canSend=false（UI button disabled）
+  // -----------------------------------------------------------------------
+  it('C1) send button is disabled while isRecording is true', async () => {
+    const stopTrack = (globalThis as Record<string, unknown>).__stopTrack as ReturnType<typeof vi.fn>
+    const fakeStream = (globalThis as Record<string, unknown>).__fakeStream as MediaStream
+    defineMediaDevices({ getUserMedia: () => Promise.resolve(fakeStream) })
+    const asrMock = vi.fn().mockResolvedValue({ ok: true, result: { transcript: 'x' } })
+    const qaMock = vi.fn().mockResolvedValue({ ok: true, result: { answer: 'x' } })
+    vi.stubGlobal('window', { electronAPI: { ai: { asrTranscribe: asrMock, qaAsk: qaMock } } })
+
+    const mount = mountSheet()
+    await flush()
+    const textarea = mount.root.querySelector('.asset-qa-input') as HTMLTextAreaElement | null
+    expect(textarea).toBeTruthy()
+    // Set input first so canSend is normally true, then the recording gate is
+    // the only thing that should disable it.
+    textarea!.value = '问题'
+    textarea!.dispatchEvent(new Event('input'))
+    await flush()
+    const sendBefore = mount.root.querySelector('.asset-qa-send') as HTMLButtonElement | null
+    expect(sendBefore?.disabled).toBe(false)
+
+    const voiceBtn = mount.root.querySelector('.asset-qa-voice') as HTMLButtonElement | null
+    voiceBtn?.click()
+    await new Promise((r) => setTimeout(r, 30))
+    const sendDuring = mount.root.querySelector('.asset-qa-send') as HTMLButtonElement | null
+    expect(sendDuring?.disabled).toBe(true)
+
+    // stop recording so we don't leak
+    const recordingBtn = mount.root.querySelector('.asset-qa-voice.is-live') as HTMLButtonElement | null
+    recordingBtn?.click()
+    await new Promise((r) => setTimeout(r, 100))
+    expect(stopTrack).toHaveBeenCalled()
+    mount.unmount()
+  })
+
+  // -----------------------------------------------------------------------
+  // C2: ASR 期间 canSend=false（UI button disabled）
+  // -----------------------------------------------------------------------
+  it('C2) send button is disabled while isAsrBusy is true', async () => {
+    const stopTrack = (globalThis as Record<string, unknown>).__stopTrack as ReturnType<typeof vi.fn>
+    const fakeStream = (globalThis as Record<string, unknown>).__fakeStream as MediaStream
+    const asrGate = deferred<{ ok: true; result: { transcript: string } }>()
+    defineMediaDevices({ getUserMedia: () => Promise.resolve(fakeStream) })
+    const asrMock = vi.fn().mockReturnValueOnce(asrGate.promise)
+    const qaMock = vi.fn().mockResolvedValue({ ok: true, result: { answer: 'x' } })
+    vi.stubGlobal('window', { electronAPI: { ai: { asrTranscribe: asrMock, qaAsk: qaMock } } })
+
+    const mount = mountSheet()
+    await flush()
+    const voiceBtn = mount.root.querySelector('.asset-qa-voice') as HTMLButtonElement | null
+    voiceBtn?.click()
+    await new Promise((r) => setTimeout(r, 30))
+    const recordingBtn = mount.root.querySelector('.asset-qa-voice.is-live') as HTMLButtonElement | null
+    recordingBtn?.click()
+    await new Promise((r) => setTimeout(r, 100)) // wait for finishRecording + ASR call
+    expect(asrMock).toHaveBeenCalledTimes(1)
+
+    // While ASR is in flight (gate never resolves), isAsrBusy is true and the
+    // send button must be disabled even if the input has text from a prior
+    // session.
+    const sendDuringAsr = mount.root.querySelector('.asset-qa-send') as HTMLButtonElement | null
+    expect(sendDuringAsr?.disabled).toBe(true)
+    const ta = mount.root.querySelector('.asset-qa-input') as HTMLTextAreaElement | null
+    expect(ta?.disabled).toBe(true)
+
+    asrGate.resolve({ ok: true, result: { transcript: '小兔子' } })
+    await new Promise((r) => setTimeout(r, 30))
+    expect(stopTrack).toHaveBeenCalled()
+    mount.unmount()
+  })
+
+  // -----------------------------------------------------------------------
+  // C3: getUserMedia 迟到 reject（close 之后）不污染新会话、不显示 mic denied
+  // -----------------------------------------------------------------------
+  it('C3) getUserMedia late reject after close does not show mic denied and does not pollute state', async () => {
+    const gate = deferred<MediaStream>()
+    defineMediaDevices({ getUserMedia: () => gate.promise })
+    const asrMock = vi.fn()
+    const qaMock = vi.fn()
+    vi.stubGlobal('window', { electronAPI: { ai: { asrTranscribe: asrMock, qaAsk: qaMock } } })
+
+    const mount = mountSheet()
+    await flush()
+    const voiceBtn = mount.root.querySelector('.asset-qa-voice') as HTMLButtonElement | null
+    voiceBtn?.click()
+    await new Promise((r) => setTimeout(r, 10))
+    // Close (or unmount) before resolving. resetForClose bumps voiceGeneration,
+    // so the late reject lands in the voice-token guard and silently returns.
+    mount.unmount()
+    gate.reject(Object.assign(new Error('denied'), { name: 'NotAllowedError' }))
+    await new Promise((r) => setTimeout(r, 30))
+    // No QA, no ASR, no error, no state mutation. The most important property:
+    // qaAsk must never have been called.
+    expect(qaMock).not.toHaveBeenCalled()
+    expect(asrMock).not.toHaveBeenCalled()
+  })
+
+  // -----------------------------------------------------------------------
+  // C4: close 之后旧 recorder.onstop 不得重新进入 ASR busy
+  // -----------------------------------------------------------------------
+  it('C4) close before onstop fires does not call ASR and does not pollute state', async () => {
+    const stopTrack = (globalThis as Record<string, unknown>).__stopTrack as ReturnType<typeof vi.fn>
+    const fakeStream = (globalThis as Record<string, unknown>).__fakeStream as MediaStream
+    defineMediaDevices({ getUserMedia: () => Promise.resolve(fakeStream) })
+    const asrMock = vi.fn().mockResolvedValue({ ok: true, result: { transcript: 'should-not-fire' } })
+    const qaMock = vi.fn().mockResolvedValue({ ok: true, result: { answer: 'x' } })
+    vi.stubGlobal('window', { electronAPI: { ai: { asrTranscribe: asrMock, qaAsk: qaMock } } })
+
+    const mount = mountSheet()
+    await flush()
+    const voiceBtn = mount.root.querySelector('.asset-qa-voice') as HTMLButtonElement | null
+    voiceBtn?.click()
+    await new Promise((r) => setTimeout(r, 30))
+    const recordingBtn = mount.root.querySelector('.asset-qa-voice.is-live') as HTMLButtonElement | null
+    expect(recordingBtn).toBeTruthy()
+    recordingBtn?.click() // stopRecording → schedules onstop on next tick
+    // Immediately close BEFORE the async onstop fires. resetForClose bumps
+    // voiceGeneration; finishRecording checks the token first and bails.
+    mount.unmount()
+    // Wait long enough for the stale onstop to have fired.
+    await new Promise((r) => setTimeout(r, 100))
+    expect(asrMock).not.toHaveBeenCalled()
+    expect(stopTrack).toHaveBeenCalled()
+  })
+
+  // -----------------------------------------------------------------------
+  // C5: 真的 asset prop 切换（同一 mount 改 prop）期间 getUserMedia 迟到 resolve
+  // -----------------------------------------------------------------------
+  it('C5) real asset prop switch during getUserMedia wait does not start a recorder', async () => {
     const stopTrack = vi.fn()
     const pendingStream = {
       getTracks: () => [{ stop: stopTrack, kind: 'audio' }],
@@ -585,31 +760,68 @@ describe('AssetQaSheet — mounted voice flow', () => {
       getVideoTracks: () => []
     } as unknown as MediaStream
     const gate = deferred<MediaStream>()
-    defineMediaDevices({
-      getUserMedia: () => gate.promise
-    })
+    defineMediaDevices({ getUserMedia: () => gate.promise })
     const asrMock = vi.fn().mockResolvedValue({ ok: true, result: { transcript: 'should-not-leak' } })
     const qaMock = vi.fn().mockResolvedValue({ ok: true, result: { answer: 'should-not-leak' } })
-    vi.stubGlobal('window', {
-      electronAPI: { ai: { asrTranscribe: asrMock, qaAsk: qaMock } }
-    })
-    const mount = mountSheet()
-    await flush()
+    vi.stubGlobal('window', { electronAPI: { ai: { asrTranscribe: asrMock, qaAsk: qaMock } } })
 
+    const mount = mountSheetReactive(sampleAsset)
+    await flush()
     const voiceBtn = mount.root.querySelector('.asset-qa-voice') as HTMLButtonElement | null
     voiceBtn?.click()
-    await new Promise((r) => setTimeout(r, 5))
-    // Simulate an asset switch by updating the prop on the same mount.
-    const Wrapper = mount.app._instance
-    void Wrapper
-    // We rely on the component's `watch(() => props.asset?.assetId)` to bump
-    // voice generation; simulate that by re-rendering with a new asset.
-    mount.unmount()
-    // Re-mount with a different asset and re-issue the voice flow.
+    await new Promise((r) => setTimeout(r, 10))
+    expect(stopTrack).not.toHaveBeenCalled()
+    // Real asset prop switch on the same mounted component. The component's
+    // watch(() => props.asset?.assetId) fires, calls resetForAssetSwitch +
+    // releaseMicImmediate, which bumps voiceGeneration.
+    mount.setAsset(sampleAssetB)
+    await flush()
+    // Now the deferred getUserMedia resolves — its result must be discarded.
     gate.resolve(pendingStream)
-    await new Promise((r) => setTimeout(r, 30))
+    await new Promise((r) => setTimeout(r, 50))
     expect(stopTrack).toHaveBeenCalled()
     expect(qaMock).not.toHaveBeenCalled()
     expect(asrMock).not.toHaveBeenCalled()
+    mount.unmount()
+  })
+
+  // -----------------------------------------------------------------------
+  // C6: 真的 asset prop 切换（同一 mount 改 prop）期间 ASR 迟到 resolve
+  // -----------------------------------------------------------------------
+  it('C6) real asset prop switch during ASR wait does not write input or pollute new session', async () => {
+    const stopTrack = (globalThis as Record<string, unknown>).__stopTrack as ReturnType<typeof vi.fn>
+    const fakeStream = (globalThis as Record<string, unknown>).__fakeStream as MediaStream
+    const asrGate = deferred<{ ok: true; result: { transcript: string } }>()
+    defineMediaDevices({ getUserMedia: () => Promise.resolve(fakeStream) })
+    const asrMock = vi.fn().mockReturnValueOnce(asrGate.promise)
+    const qaMock = vi.fn().mockResolvedValue({ ok: true, result: { answer: 'x' } })
+    vi.stubGlobal('window', { electronAPI: { ai: { asrTranscribe: asrMock, qaAsk: qaMock } } })
+
+    const mount = mountSheetReactive(sampleAsset)
+    await flush()
+    const voiceBtn = mount.root.querySelector('.asset-qa-voice') as HTMLButtonElement | null
+    voiceBtn?.click()
+    await new Promise((r) => setTimeout(r, 30))
+    const recordingBtn = mount.root.querySelector('.asset-qa-voice.is-live') as HTMLButtonElement | null
+    recordingBtn?.click()
+    await new Promise((r) => setTimeout(r, 100))
+    expect(asrMock).toHaveBeenCalledTimes(1)
+    // Real asset prop switch while ASR is in flight. The watch fires, bumps
+    // voiceGeneration; the ASR late resolve is then dropped by the token
+    // check in finishRecording.
+    mount.setAsset(sampleAssetB)
+    await flush()
+    asrGate.resolve({ ok: true, result: { transcript: 'should-not-leak' } })
+    await new Promise((r) => setTimeout(r, 50))
+    // The leaked transcript must NEVER have been written into the new asset's
+    // input. After the asset switch the input is empty.
+    const ta = mount.root.querySelector('.asset-qa-input') as HTMLTextAreaElement | null
+    expect(ta?.value).not.toMatch(/should-not-leak/)
+    expect(ta?.value).toBe('')
+    // No manual send happened, so no qaAsk either.
+    expect(qaMock).not.toHaveBeenCalled()
+    expect(stopTrack).toHaveBeenCalled()
+    mount.unmount()
   })
 })
+

@@ -7,12 +7,20 @@
  *
  * 状态机：
  *  - controller 拥有 history / busy / input / errorMessage / mic 状态
- *  - 独立的 voiceGeneration token 覆盖 getUserMedia 等待 / 录音 / ASR 等待
+ *  - 独立的 voiceGeneration token 覆盖 getUserMedia 等待 / 录音 /
+ *    recorder.onstop 异步 / FileReader / ASR 等待 / 任何 controller 状态变更
  *    任一阶段的 stale
  *  - close / 切素材 / unmount 都 bump generation + voiceGeneration
  *
- * 错误文案：
- *  - 一律 friendly，不暴露 IPC / Gateway / HTTP / provider / requestId 等
+ * 发送保护（双层）：
+ *  - canSend (UI): QA busy / 录音中 / ASR 中 → false
+ *  - submitTextQuestion (controller): 同样的 gate，避免 button disabled 失效时
+ *    进入半轮状态
+ *
+ * 错误文案（统一友好，永不暴露 IPC / Gateway / provider / requestId）：
+ *  - QA 失败：刚刚没答出来，再试一次吧。
+ *  - ASR 失败：刚刚没听清，再说一次吧。
+ *  - mic denied：现在不能用麦克风，可以打字问我。
  */
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import type { AssetRecord } from '@shared/contracts'
@@ -20,7 +28,6 @@ import { aiClient } from '../../services/ai.client'
 import {
   ASSET_QA_MAX_QUESTION,
   AssetQaController,
-  friendlyAsrErrorMessage,
   type AssetQaSnapshot
 } from './asset-qa.controller'
 
@@ -41,8 +48,13 @@ const controller = new AssetQaController({
 const snapshot = ref<AssetQaSnapshot>(controller.snapshot())
 controller.subscribe((s) => { snapshot.value = s })
 
+const isBusy = computed(() => snapshot.value.busy)
+const isRecording = computed(() => snapshot.value.isRecording)
+const isAsrBusy = computed(() => snapshot.value.isAsrBusy)
+
+// UI guard: any of the three blocking states disables send.
 const canSend = computed(() => {
-  if (snapshot.value.busy) return false
+  if (isBusy.value || isRecording.value || isAsrBusy.value) return false
   const text = snapshot.value.input.trim()
   return text.length > 0 && text.length <= ASSET_QA_MAX_QUESTION
 })
@@ -73,6 +85,10 @@ function onClose(): void {
 
 async function sendTextQuestion(): Promise<void> {
   if (!props.asset) return
+  // Second-layer guard: never enter submitTextQuestion if any of the three
+  // blocking states is active. The controller also gates internally, but
+  // doing it here keeps the surface uniform with canSend.
+  if (isBusy.value || isRecording.value || isAsrBusy.value) return
   await controller.submitTextQuestion({
     assetId: props.asset.assetId,
     nameZh: props.asset.nameZh,
@@ -115,15 +131,20 @@ async function startRecording(): Promise<void> {
     return
   }
   // Capture a voice-generation token *before* any await. Anything that runs
-  // after a getUserMedia rejection / sheet close / asset switch / unmount
-  // must check this token against controller.captureVoiceGeneration().
+  // after a getUserMedia rejection / late reject / sheet close / asset switch
+  // / unmount must check this token against controller.captureVoiceGeneration().
   activeVoiceToken = controller.captureVoiceGeneration()
   controller.beginRecording()
   let stream: MediaStream | null = null
   try {
     stream = await navigator.mediaDevices.getUserMedia({ audio: true })
   } catch (err) {
-    // Stream is null on rejection; nothing to release.
+    // Late reject: the user may have closed the sheet / switched asset /
+    // unmounted while the mic prompt was open. The Promise then rejects
+    // *after* the controller has been reset, so we must NOT touch state.
+    if (!controller.isVoiceTokenCurrent(activeVoiceToken)) return
+    // Friendly: never expose the raw error. Distinguish denied vs other
+    // failures by the underlying error name only.
     const name = (err as { name?: string })?.name ?? ''
     if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
       controller.failRecording('denied')
@@ -185,10 +206,21 @@ function stopRecording(): void {
 }
 
 async function finishRecording(): Promise<void> {
+  // Stale guard FIRST. The recorder.onstop callback may fire after the user
+  // closed the sheet / switched asset / unmounted the component. We must
+  // never touch controller state in that case — not even beginTranscribing().
+  const myToken = activeVoiceToken
+  if (!controller.isVoiceTokenCurrent(myToken)) {
+    cleanupRecorder()
+    if (activeStream) {
+      stopStream(activeStream)
+      activeStream = null
+    }
+    return
+  }
   const streamAtStop = activeStream
   const chunks = activeChunks
   const recorder = activeRecorder
-  const myToken = activeVoiceToken
   cleanupRecorder()
   controller.beginTranscribing()
   if (!recorder || chunks.length === 0) {
@@ -201,16 +233,15 @@ async function finishRecording(): Promise<void> {
   if (streamAtStop) stopStream(streamAtStop)
   try {
     const base64 = await blobToBase64(blob)
-    // Stale guard: the sheet/asset might have changed during ASR. We still
-    // call the ASR endpoint so the in-flight work is not wasted, but the
-    // outcome is dropped if the controller has been invalidated.
+    // Stale guard: the sheet/asset might have changed during FileReader or ASR.
+    if (!controller.isVoiceTokenCurrent(myToken)) return
     const result = await aiClient.asrTranscribe({ audioBase64: base64, mimeType })
     if (!controller.isVoiceTokenCurrent(myToken)) return
     controller.applyTranscript(result.transcript)
   } catch (err) {
     if (!controller.isVoiceTokenCurrent(myToken)) return
     // Friendly text only — never surface the raw error.
-    void friendlyAsrErrorMessage(err)
+    void err
     controller.failTranscription()
   }
 }
@@ -267,27 +298,34 @@ function toggleRecording(): void {
   else void startRecording()
 }
 
-const isAsrBusy = computed(() => snapshot.value.isAsrBusy)
-const isRecording = computed(() => snapshot.value.isRecording)
-const isBusy = computed(() => snapshot.value.busy)
-
-// Loading copy in the asset's voice.
-const loadingCopy = computed(() => {
-  if (props.asset?.nameZh) return `${props.asset.nameZh}正在想一想…`
-  return '正在想一想…'
-})
-
-// Empty-state copy uses the asset's name to keep the conversation anchored on
-// the material, not on an "AI assistant".
-const emptyTitleCopy = computed(() => {
-  if (props.asset?.nameZh) return `想知道${props.asset.nameZh}的故事吗？`
-  return '想知道这个小物件的故事吗？'
-})
-
-// Mic button label flips between the two phases; we keep a small ● dot to
-// show recording state without using an emoji or a red alert.
 const voiceButtonLabel = computed(() => (isRecording.value ? '停止' : '说一说'))
 const voiceButtonAria = computed(() => (isRecording.value ? '停止录音' : '说一说'))
+
+// Voice bar copy anchored on the asset name.
+const voiceBarText = computed(() => {
+  if (isRecording.value) {
+    return props.asset?.nameZh
+      ? `${props.asset.nameZh}正在听你说……`
+      : '正在听你说……'
+  }
+  return '可以打字，也可以说给它听。'
+})
+
+const emptyTitleCopy = computed(() => {
+  if (props.asset?.nameZh) return `你想问${props.asset.nameZh}什么？`
+  return '你想问它什么？'
+})
+
+const loadingCopy = computed(() => {
+  if (props.asset?.nameZh) return `${props.asset.nameZh}正在想一想……`
+  return '正在想一想……'
+})
+
+const inputPlaceholder = computed(() => {
+  if (isRecording.value) return '玉兔正在听你说……'
+  if (props.asset?.nameZh) return `问${props.asset.nameZh}一个问题吧`
+  return '问它一个问题吧'
+})
 </script>
 
 <template>
@@ -324,19 +362,18 @@ const voiceButtonAria = computed(() => (isRecording.value ? '停止录音' : '�
 
     <p v-if="asset?.introZh" class="asset-qa-intro">{{ asset.introZh }}</p>
 
-    <div v-if="!snapshot.isRecording" class="asset-qa-voicebar" aria-hidden="true">
-      <span class="asset-qa-voicebar-dot"></span>
-      <span class="asset-qa-voicebar-text">可以打字，也可以说给它听</span>
-    </div>
-    <div v-else class="asset-qa-voicebar is-live" aria-live="polite">
-      <span class="asset-qa-voicebar-dot is-live"></span>
-      <span class="asset-qa-voicebar-text">正在听 {{ asset?.nameZh ?? '它' }} 说…</span>
+    <div
+      class="asset-qa-voicebar"
+      :class="{ 'is-live': isRecording }"
+      :aria-live="isRecording ? 'polite' : 'off'"
+    >
+      <span class="asset-qa-voicebar-dot" aria-hidden="true"></span>
+      <span class="asset-qa-voicebar-text">{{ voiceBarText }}</span>
     </div>
 
     <div class="asset-qa-thread" role="log" aria-live="polite">
       <p v-if="snapshot.history.length === 0" class="asset-qa-empty">
         <span class="asset-qa-empty-title">{{ emptyTitleCopy }}</span>
-        <span class="asset-qa-empty-sub">先问一个小问题试试看吧。</span>
       </p>
       <ul v-else class="asset-qa-messages">
         <li
@@ -368,8 +405,8 @@ const voiceButtonAria = computed(() => (isRecording.value ? '停止录音' : '�
         class="asset-qa-input"
         rows="2"
         :maxlength="ASSET_QA_MAX_QUESTION"
-        :placeholder="isRecording ? '正在听…' : (asset ? `问 ${asset.nameZh} 一个小问题吧` : '问它一个小问题吧')"
-        :disabled="isBusy || isAsrBusy"
+        :placeholder="inputPlaceholder"
+        :disabled="isBusy || isRecording || isAsrBusy"
         aria-label="问问它的问题"
         @input="(event) => controller.setInput((event.target as HTMLTextAreaElement).value)"
       ></textarea>
@@ -523,7 +560,7 @@ const voiceButtonAria = computed(() => (isRecording.value ? '停止录音' : '�
   background: var(--wood-mid, #d9b98a);
   display: inline-block;
 }
-.asset-qa-voicebar.is-live .asset-qa-voicebar-dot.is-live {
+.asset-qa-voicebar.is-live .asset-qa-voicebar-dot {
   background: var(--color-primary, #e8a572);
   animation: asset-qa-pulse 1.2s ease-in-out infinite;
 }
@@ -556,7 +593,6 @@ const voiceButtonAria = computed(() => (isRecording.value ? '停止录音' : '�
   line-height: 1.5;
 }
 .asset-qa-empty-title { color: var(--color-text, #594738); font-weight: 600; }
-.asset-qa-empty-sub { font-size: 0.85rem; }
 
 .asset-qa-messages {
   list-style: none;

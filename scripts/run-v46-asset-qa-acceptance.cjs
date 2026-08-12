@@ -481,7 +481,7 @@ async function run() {
       micHintText = (await evalInRenderer(cdp, `document.querySelector('.asset-qa-mic-hint')?.textContent ?? ''`)) || ''
       if (micHintText.length > 0) break
     }
-    assert('(9) mic denied shows the friendly hint', /直接打字/.test(micHintText),
+    assert('(9) mic denied shows the friendly hint', /打字/.test(micHintText),
       `hint=${JSON.stringify(micHintText)}`)
     await snapshot(cdp, '11_microphone_denied.png')
 

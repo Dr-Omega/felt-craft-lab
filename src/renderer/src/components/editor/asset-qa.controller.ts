@@ -43,10 +43,11 @@ export type AssetQaListener = (snapshot: AssetQaSnapshot) => void
 
 const ASSET_QA_MAX_QUESTION = 500
 
-const QA_ERROR_TEXT = '刚刚没有回答成功，再试一次吧。'
-const MIC_DENIED_TEXT = '暂时不能使用麦克风，可以直接打字问我。'
-const MIC_UNAVAILABLE_TEXT = '暂时不能使用麦克风，可以直接打字问我。'
-const TRANSCRIPT_FAIL_TEXT = '刚刚没有听清楚，再说一次试试。'
+// 错误文案统一为儿童版短句：2-4 字段、围绕素材说话、不暴露 IPC / Gateway / provider。
+const QA_ERROR_TEXT = '刚刚没答出来，再试一次吧。'
+const MIC_DENIED_TEXT = '现在不能用麦克风，可以打字问我。'
+const MIC_UNAVAILABLE_TEXT = '现在不能用麦克风，可以打字问我。'
+const TRANSCRIPT_FAIL_TEXT = '刚刚没听清，再说一次吧。'
 
 function defaultSnapshot(partial: Partial<AssetQaSnapshot> = {}): AssetQaSnapshot {
   return {
