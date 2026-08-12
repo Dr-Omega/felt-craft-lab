@@ -1,16 +1,25 @@
 /**
- * V4.6 phase 4: AssetQaSheet end-to-end acceptance.
+ * V4.6 phase 4: AssetQaSheet end-to-end acceptance — STRICT.
  *
  * Drives the Editor through the "问问它" multi-turn flow on a real Electron
- * renderer with the local mock AI Gateway. Captures the 11 screenshots
- * required by the V4.6 phase 4 acceptance contract and asserts that no
- * unexpected console errors / page exceptions appear during the run.
+ * renderer with the local mock AI Gateway. Every required state transition
+ * is asserted; any failure aborts with a non-zero exit code.
  *
- * Usage:
- *   npm run build
- *   node scripts/run-v46-asset-qa-acceptance.cjs
- *
- * Screenshots go to felt-craft-lab-e2e-evidence/v46-asset-qa/.
+ * Required assertions:
+ *   1. "问问它" entry exists
+ *   2. QA Sheet opens after clicking the entry
+ *   3. First question: assistant count goes from 0 → 1
+ *   4. Second question: assistant count goes from 1 → 2
+ *   5. ASR transcript lands in input EXACTLY equal to the mock transcript
+ *   6. ASR must not auto-fire QA: assistant count unchanged after ASR
+ *   7. After user edits the transcript, input is EXACTLY equal to the edit
+ *   8. After manual send, assistant count goes up by 1
+ *   9. mic denied: hint is shown
+ *  10. mic denied: text input is still usable
+ *  11. MediaStream track.stop() actually called after voice cycle
+ *  12. Exactly 11 screenshots captured
+ *  13. console errors = 0
+ *  14. page exceptions = 0
  */
 const { execFileSync, spawn } = require('node:child_process')
 const fs = require('node:fs')
@@ -24,6 +33,29 @@ const profileDir = path.join(root, '.tmp-v46-asset-qa-profile')
 const debugPort = 9350
 const electronExe = path.join(root, 'node_modules', 'electron', 'dist', 'electron.exe')
 const CDP_STARTUP_STABILIZATION_MS = 750
+const REQUIRED_SCREENSHOTS = [
+  '01_qa_entry.png',
+  '02_qa_sheet_empty.png',
+  '03_first_question.png',
+  '04_first_answer.png',
+  '05_follow_up_question.png',
+  '06_follow_up_answer.png',
+  '07_recording.png',
+  '08_asr_transcript.png',
+  '09_asr_modified.png',
+  '10_voice_follow_up_answer.png',
+  '11_microphone_denied.png'
+]
+
+const failures = []
+function assert(label, condition, detail) {
+  if (condition) {
+    console.log(`  ✓ ${label}`)
+  } else {
+    console.error(`  ✗ ${label}${detail ? ' — ' + detail : ''}`)
+    failures.push(label + (detail ? ': ' + detail : ''))
+  }
+}
 
 fs.rmSync(evidenceDir, { recursive: true, force: true })
 fs.mkdirSync(evidenceDir, { recursive: true })
@@ -107,14 +139,19 @@ function snapshot(cdp, name) {
     .then((result) => {
       const file = path.join(evidenceDir, name)
       fs.writeFileSync(file, Buffer.from(result.data, 'base64'))
-      // eslint-disable-next-line no-console
       console.log('  📸', name)
     })
 }
 
 async function evalInRenderer(cdp, expression) {
+  // Use a function body that always returns the last expression, so callers
+  // can write either a bare expression (`Boolean(x)`) or a multi-statement
+  // block ending with `return ...`. The leading `return ` would itself be
+  // invalid for declarations, so we use a comma-conditional pattern:
+  // `(0, function() { ... })()` keeps the call-site simple.
+  const wrapped = `(function() { ${expression.includes('return ') ? expression : `return (${expression})`} })()`
   const result = await cdp.send('Runtime.evaluate', {
-    expression: `(() => { ${expression} })()`,
+    expression: wrapped,
     returnByValue: true,
     awaitPromise: true
   })
@@ -147,14 +184,64 @@ function startMockGateway() {
   })
 }
 
+async function installVoiceStubs(cdp) {
+  await evalInRenderer(cdp, `
+    window.__testTracksStopped = 0
+    class StubMediaRecorder {
+      constructor(stream, opts) {
+        this.stream = stream
+        this.mimeType = (opts && opts.mimeType) || 'audio/webm'
+        this.state = 'inactive'
+        this.ondataavailable = null
+        this.onstop = null
+        this.onerror = null
+      }
+      start() {
+        this.state = 'recording'
+        setTimeout(() => {
+          if (this.ondataavailable) {
+            this.ondataavailable({ data: new Blob(['x'.repeat(64)], { type: this.mimeType }) })
+          }
+        }, 5)
+      }
+      stop() {
+        this.state = 'inactive'
+        setTimeout(() => { if (this.onstop) this.onstop() }, 5)
+      }
+      static isTypeSupported(m) { return m === 'audio/webm;codecs=opus' || m === 'audio/webm' }
+    }
+    window.MediaRecorder = StubMediaRecorder
+    const streamTracks = [{
+      stop: () => { window.__testTracksStopped = (window.__testTracksStopped || 0) + 1 },
+      kind: 'audio'
+    }]
+    const stream = {
+      getTracks: () => streamTracks,
+      getAudioTracks: () => streamTracks,
+      getVideoTracks: () => []
+    }
+    Object.defineProperty(navigator, 'mediaDevices', {
+      configurable: true,
+      value: { getUserMedia: () => Promise.resolve(stream) }
+    })
+    class StubFileReader {
+      readAsDataURL(_blob) {
+        this.result = 'data:audio/webm;base64,ZmFrZS1hdWRpbw=='
+        setTimeout(() => { if (this.onload) this.onload() }, 5)
+      }
+    }
+    window.FileReader = StubFileReader
+    window.__testTracksStopped = 0
+    return true
+  `)
+}
+
 async function run() {
+  console.log('[asset-qa] starting mock gateway…')
   const { child: gateway, port: gatewayPort } = await startMockGateway()
-  // eslint-disable-next-line no-console
   console.log('[asset-qa] mock gateway on port', gatewayPort)
   const gatewayUrl = `http://127.0.0.1:${gatewayPort}`
 
-  // Build with acceptance flags so all assets are unlocked.
-  // eslint-disable-next-line no-console
   console.log('[asset-qa] building renderer with acceptance flags…')
   execFileSync(process.execPath, [
     path.join(path.dirname(process.execPath), 'node_modules', 'npm', 'bin', 'npm-cli.js'),
@@ -169,7 +256,6 @@ async function run() {
     }
   })
 
-  // Launch Electron with CDP
   const child = spawn(electronExe, [
     '.',
     `--remote-debugging-port=${debugPort}`,
@@ -214,219 +300,159 @@ async function run() {
       }
     }, 25)
 
-    // Open Editor by clicking "新建作品" in the library.
+    // Open Editor
     await sleep(800)
-    const navigated = await evalInRenderer(cdp, `
+    await evalInRenderer(cdp, `
       const btn = document.querySelector('.new-work-button')
-      if (btn) { btn.click(); return 'clicked-new-work' }
-      return 'no-new-work-button'
+      if (btn) btn.click()
+      return Boolean(btn)
     `)
-    if (!navigated || navigated === 'no-new-work-button') {
-      throw new Error('Could not find a "新建作品" button on the library page.')
-    }
     await sleep(2000)
 
-    // 01_qa_entry: open Material Sheet, select sticker
-    await evalInRenderer(cdp, `
-      const dock = document.querySelector('.dock-material')
-      if (dock) dock.click()
-      return Boolean(dock)
-    `)
+    // Install voice stubs BEFORE the first voice click
+    await installVoiceStubs(cdp)
+
+    // Open material sheet and select a sticker
+    await evalInRenderer(cdp, `document.querySelector('.dock-material')?.click(); return true`)
     await sleep(800)
-    // Click first unlocked sticker
     await evalInRenderer(cdp, `
       const sticker = document.querySelector('.material-card:not(.is-locked)')
       if (sticker) sticker.click()
       return Boolean(sticker)
     `)
     await sleep(500)
+
+    // -------- 01_qa_entry.png + assertion #1: 问问它 entry exists --------
+    const entryVisible = await evalInRenderer(cdp, `Boolean(document.querySelector('.sheet-ask'))`)
+    assert('(1) 问问它 entry exists in MaterialSheet footer', entryVisible)
     await snapshot(cdp, '01_qa_entry.png')
 
-    // Click 问问它
-    await evalInRenderer(cdp, `
-      const btn = document.querySelector('.sheet-ask')
-      if (btn) btn.click()
-      return Boolean(btn)
-    `)
-    await sleep(600)
-    // 02_qa_sheet_empty
+    await evalInRenderer(cdp, `document.querySelector('.sheet-ask')?.click(); return true`)
+    await sleep(700)
+    // -------- 02_qa_sheet_empty.png + assertion #2: QA Sheet open --------
+    const sheetOpen = await evalInRenderer(cdp, `Boolean(document.querySelector('.asset-qa-sheet'))`)
+    assert('(2) QA Sheet opens after click', sheetOpen)
+    const emptyShown = await evalInRenderer(cdp, `Boolean(document.querySelector('.asset-qa-empty-title'))`)
+    assert('(2b) Empty-state copy shown', emptyShown)
     await snapshot(cdp, '02_qa_sheet_empty.png')
 
-    // 03_first_question
-    await evalInRenderer(cdp, `
-      const ta = document.querySelector('.asset-qa-input')
-      if (!ta) return false
-      const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set
-      setter.call(ta, '你叫什么名字？')
-      ta.dispatchEvent(new Event('input', { bubbles: true }))
-      return true
-    `)
-    await sleep(300)
+    async function setInput(text) {
+      return evalInRenderer(cdp, `
+        const ta = document.querySelector('.asset-qa-input')
+        if (!ta) return false
+        const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set
+        setter.call(ta, ${JSON.stringify(text)})
+        ta.dispatchEvent(new Event('input', { bubbles: true }))
+        return ta.value
+      `)
+    }
+
+    async function submit() {
+      return evalInRenderer(cdp, `
+        const form = document.querySelector('.asset-qa-form')
+        if (form) form.requestSubmit()
+        return Boolean(form)
+      `)
+    }
+
+    async function assistantCount() {
+      return evalInRenderer(cdp, `document.querySelectorAll('.asset-qa-bubble.is-assistant').length`)
+    }
+
+    // -------- 03_first_question.png --------
+    await setInput('你叫什么名字？')
+    await sleep(200)
     await snapshot(cdp, '03_first_question.png')
 
-    // 04_first_answer
-    await evalInRenderer(cdp, `
-      const form = document.querySelector('.asset-qa-form')
-      if (form) form.requestSubmit()
-      return Boolean(form)
-    `)
-    // Wait for either the assistant bubble to appear OR the error to show up
-    let answered = false
-    for (let i = 0; i < 40; i += 1) {
-      await sleep(200)
-      const status = await evalInRenderer(cdp, `
-        const assistants = document.querySelectorAll('.asset-qa-bubble.is-assistant').length
-        const error = document.querySelector('.asset-qa-error') ? 'err' : 'no-err'
-        return assistants + '|' + error
-      `)
-      if (typeof status === 'string' && (status.startsWith('1|') || status.startsWith('0|err'))) {
-        answered = true
-        break
-      }
+    // -------- 04_first_answer.png + assertion #3 --------
+    const beforeFirst = await assistantCount()
+    await submit()
+    let afterFirst = beforeFirst
+    for (let i = 0; i < 60; i += 1) {
+      await sleep(150)
+      afterFirst = await assistantCount()
+      if (afterFirst > beforeFirst) break
     }
-    await sleep(300)
+    assert('(3) first question produces an assistant answer', afterFirst === beforeFirst + 1,
+      `before=${beforeFirst} after=${afterFirst}`)
     await snapshot(cdp, '04_first_answer.png')
-    const hasAssistant1 = await evalInRenderer(cdp, `document.querySelectorAll('.asset-qa-bubble.is-assistant').length`)
-    if (hasAssistant1 < 1) {
-      // eslint-disable-next-line no-console
-      console.warn('[asset-qa] WARN: first answer did not produce an assistant bubble; main process log tail:')
-      console.warn(mainLog.join('').slice(-2000))
-    }
 
-    // 05_follow_up_question
-    await evalInRenderer(cdp, `
-      const ta = document.querySelector('.asset-qa-input')
-      const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set
-      setter.call(ta, '你最喜欢什么？')
-      ta.dispatchEvent(new Event('input', { bubbles: true }))
-      return true
-    `)
-    await sleep(300)
+    // -------- 05_follow_up_question.png --------
+    await setInput('你最喜欢什么？')
+    await sleep(200)
     await snapshot(cdp, '05_follow_up_question.png')
 
-    // 06_follow_up_answer
-    await evalInRenderer(cdp, `
-      const form = document.querySelector('.asset-qa-form')
-      if (form) form.requestSubmit()
-      return Boolean(form)
-    `)
-    const beforeCount = await evalInRenderer(cdp, `document.querySelectorAll('.asset-qa-bubble.is-assistant').length`)
-    for (let i = 0; i < 40; i += 1) {
-      await sleep(200)
-      const has = await evalInRenderer(cdp, `document.querySelectorAll('.asset-qa-bubble.is-assistant').length`)
-      if (has > beforeCount) break
+    // -------- 06_follow_up_answer.png + assertion #4 --------
+    const beforeSecond = await assistantCount()
+    await submit()
+    let afterSecond = beforeSecond
+    for (let i = 0; i < 60; i += 1) {
+      await sleep(150)
+      afterSecond = await assistantCount()
+      if (afterSecond > beforeSecond) break
     }
-    await sleep(300)
+    assert('(4) second question produces another assistant answer', afterSecond === beforeSecond + 1,
+      `before=${beforeSecond} after=${afterSecond}`)
     await snapshot(cdp, '06_follow_up_answer.png')
 
-    // 07_recording — pre-stub the renderer to give us a deterministic MediaRecorder
-    // and a fake stream. We override MediaRecorder + getUserMedia to a stub that
-    // reports a single small chunk and immediately fires ondataavailable + onstop.
-    await evalInRenderer(cdp, `
-      window.__testChunks = []
-      class StubMediaRecorder {
-        constructor(stream, opts) {
-          this.stream = stream
-          this.mimeType = (opts && opts.mimeType) || 'audio/webm'
-          this.state = 'inactive'
-          this.ondataavailable = null
-          this.onstop = null
-          this.onerror = null
-        }
-        start() {
-          this.state = 'recording'
-          setTimeout(() => {
-            if (this.ondataavailable) {
-              this.ondataavailable({ data: new Blob(['x'.repeat(64)], { type: this.mimeType }) })
-            }
-          }, 5)
-        }
-        stop() {
-          this.state = 'inactive'
-          setTimeout(() => { if (this.onstop) this.onstop() }, 5)
-        }
-        static isTypeSupported(m) { return m === 'audio/webm;codecs=opus' || m === 'audio/webm' }
-      }
-      window.MediaRecorder = StubMediaRecorder
-      const streamTracks = [{ stop: () => window.__testTracksStopped = (window.__testTracksStopped || 0) + 1, kind: 'audio' }]
-      const stream = { getTracks: () => streamTracks, getAudioTracks: () => streamTracks, getVideoTracks: () => [] }
-      Object.defineProperty(navigator, 'mediaDevices', {
-        configurable: true,
-        value: { getUserMedia: () => Promise.resolve(stream) }
-      })
-      // Stub FileReader to read blobs as deterministic base64
-      class StubFileReader {
-        readAsDataURL(blob) {
-          this.result = 'data:audio/webm;base64,ZmFrZS1hdWRpbw=='
-          setTimeout(() => { if (this.onload) this.onload() }, 5)
-        }
-      }
-      window.FileReader = StubFileReader
-      window.__testTracksStopped = 0
-      return true
-    `)
-    // Click voice button to start recording
-    await evalInRenderer(cdp, `
-      const btn = document.querySelector('.asset-qa-voice')
-      if (btn) btn.click()
-      return Boolean(btn)
-    `)
-    await sleep(200)
+    // -------- 07_recording.png + 08_asr_transcript.png + assertion #5/6/11 --------
+    // Re-install voice stubs in case anything cleared them
+    await installVoiceStubs(cdp)
+    await evalInRenderer(cdp, `document.querySelector('.asset-qa-voice')?.click(); return true`)
+    await sleep(120)
+    const isLive = await evalInRenderer(cdp, `Boolean(document.querySelector('.asset-qa-voice.is-live'))`)
+    assert('(7-rec) voice button enters is-live state', isLive)
     await snapshot(cdp, '07_recording.png')
 
-    // Stop recording → onstop → asrTranscribe → applyTranscript
-    await evalInRenderer(cdp, `
-      const btn = document.querySelector('.asset-qa-voice.is-recording')
-      if (btn) btn.click()
-      return Boolean(btn)
-    `)
-    // Wait for transcript to land in input
-    for (let i = 0; i < 40; i += 1) {
-      await sleep(200)
-      const v = await evalInRenderer(cdp, `
-        const ta = document.querySelector('.asset-qa-input')
-        return ta ? ta.value : null
-      `)
-      if (v === '小兔子') break
+    const beforeAsrAssistants = await assistantCount()
+    await evalInRenderer(cdp, `document.querySelector('.asset-qa-voice.is-live')?.click(); return true`)
+    // Wait for ASR transcript to land in the input
+    let transcriptValue = ''
+    for (let i = 0; i < 60; i += 1) {
+      await sleep(150)
+      transcriptValue = (await evalInRenderer(cdp, `document.querySelector('.asset-qa-input')?.value ?? ''`)) || ''
+      if (transcriptValue === '小兔子') break
     }
-    await sleep(300)
+    assert('(5) ASR transcript lands in input EXACTLY equal to mock transcript',
+      transcriptValue === '小兔子', `actual=${JSON.stringify(transcriptValue)}`)
     await snapshot(cdp, '08_asr_transcript.png')
 
-    // 09_asr_modified
-    await evalInRenderer(cdp, `
-      const ta = document.querySelector('.asset-qa-input')
-      const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set
-      setter.call(ta, '小兔子住在哪里？')
-      ta.dispatchEvent(new Event('input', { bubbles: true }))
-      return ta.value
-    `)
-    await sleep(200)
+    // Assertion #6: ASR must not have auto-fired QA
+    const afterAsrAssistants = await assistantCount()
+    assert('(6) ASR did NOT auto-fire QA (assistant count unchanged)',
+      afterAsrAssistants === beforeAsrAssistants,
+      `before=${beforeAsrAssistants} after=${afterAsrAssistants}`)
+
+    // -------- 09_asr_modified.png + assertion #7 --------
+    await setInput('小兔子住在哪里？')
+    const editedValue = await evalInRenderer(cdp, `document.querySelector('.asset-qa-input')?.value ?? ''`)
+    assert('(7) user-edited input is EXACTLY equal to the edit',
+      editedValue === '小兔子住在哪里？', `actual=${JSON.stringify(editedValue)}`)
     await snapshot(cdp, '09_asr_modified.png')
 
-    // 10_voice_follow_up_answer
-    await evalInRenderer(cdp, `
-      const form = document.querySelector('.asset-qa-form')
-      if (form) form.requestSubmit()
-      return Boolean(form)
-    `)
-    const before10 = await evalInRenderer(cdp, `document.querySelectorAll('.asset-qa-bubble.is-assistant').length`)
-    for (let i = 0; i < 40; i += 1) {
-      await sleep(200)
-      const has = await evalInRenderer(cdp, `document.querySelectorAll('.asset-qa-bubble.is-assistant').length`)
-      if (has > before10) break
+    // -------- 10_voice_follow_up_answer.png + assertion #8 --------
+    const beforeVoiceSend = await assistantCount()
+    await submit()
+    let afterVoiceSend = beforeVoiceSend
+    for (let i = 0; i < 60; i += 1) {
+      await sleep(150)
+      afterVoiceSend = await assistantCount()
+      if (afterVoiceSend > beforeVoiceSend) break
     }
-    await sleep(300)
+    assert('(8) manual send after ASR edit produces a new assistant answer',
+      afterVoiceSend === beforeVoiceSend + 1,
+      `before=${beforeVoiceSend} after=${afterVoiceSend}`)
     await snapshot(cdp, '10_voice_follow_up_answer.png')
 
-    // 11_microphone_denied: close current sheet, reopen, override getUserMedia to reject
-    await evalInRenderer(cdp, `
-      // Close sheet
-      const closeBtn = document.querySelector('.asset-qa-close')
-      if (closeBtn) closeBtn.click()
-      return Boolean(closeBtn)
-    `)
+    // Assertion #11: track.stop was called
+    const trackStops = await evalInRenderer(cdp, `window.__testTracksStopped || 0`)
+    assert('(11) MediaStream track.stop() was actually called', trackStops >= 1,
+      `stops=${trackStops}`)
+
+    // -------- 11_microphone_denied.png + assertion #9/10 --------
+    // Close current sheet, reopen, override getUserMedia to reject
+    await evalInRenderer(cdp, `document.querySelector('.asset-qa-close')?.click(); return true`)
     await sleep(400)
-    // Reopen via sheet-ask
     await evalInRenderer(cdp, `
       const dock = document.querySelector('.dock-material')
       if (dock) dock.click()
@@ -439,7 +465,6 @@ async function run() {
       return true
     `)
     await sleep(400)
-    // Override getUserMedia to reject with NotAllowedError
     await evalInRenderer(cdp, `
       Object.defineProperty(navigator, 'mediaDevices', {
         configurable: true,
@@ -447,25 +472,29 @@ async function run() {
       })
       return true
     `)
-    await evalInRenderer(cdp, `
-      const ask = document.querySelector('.sheet-ask')
-      if (ask) ask.click()
-      return Boolean(ask)
-    `)
+    await evalInRenderer(cdp, `document.querySelector('.sheet-ask')?.click(); return true`)
     await sleep(500)
-    await evalInRenderer(cdp, `
-      const btn = document.querySelector('.asset-qa-voice')
-      if (btn) btn.click()
-      return Boolean(btn)
-    `)
-    // Wait for mic hint to appear
-    for (let i = 0; i < 20; i += 1) {
+    await evalInRenderer(cdp, `document.querySelector('.asset-qa-voice')?.click(); return true`)
+    let micHintText = ''
+    for (let i = 0; i < 40; i += 1) {
       await sleep(150)
-      const has = await evalInRenderer(cdp, `Boolean(document.querySelector('.asset-qa-mic-hint'))`)
-      if (has) break
+      micHintText = (await evalInRenderer(cdp, `document.querySelector('.asset-qa-mic-hint')?.textContent ?? ''`)) || ''
+      if (micHintText.length > 0) break
     }
-    await sleep(200)
+    assert('(9) mic denied shows the friendly hint', /直接打字/.test(micHintText),
+      `hint=${JSON.stringify(micHintText)}`)
     await snapshot(cdp, '11_microphone_denied.png')
+
+    // Assertion #10: text input still usable after mic denied
+    const textUsable = await evalInRenderer(cdp, `
+      const ta = document.querySelector('.asset-qa-input')
+      if (!ta) return false
+      const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set
+      setter.call(ta, '还能问问题吗？')
+      ta.dispatchEvent(new Event('input', { bubbles: true }))
+      return ta.value === '还能问问题吗？' && !ta.disabled
+    `)
+    assert('(10) text input is still usable after mic denied', textUsable === true)
 
     clearInterval(watchEvents)
     cdp.close()
@@ -474,25 +503,39 @@ async function run() {
     killProcessTree(gateway)
   }
 
-  // eslint-disable-next-line no-console
-  console.log('\n[asset-qa] console errors:', consoleErrors.length)
+  // -------- Assertion #12: exactly 11 screenshots --------
+  const files = fs.readdirSync(evidenceDir).filter((f) => f.endsWith('.png')).sort()
+  const missing = REQUIRED_SCREENSHOTS.filter((n) => !files.includes(n))
+  const extras = files.filter((f) => !REQUIRED_SCREENSHOTS.includes(f))
+  assert('(12) exactly 11 required screenshots present',
+    files.length === REQUIRED_SCREENSHOTS.length && missing.length === 0 && extras.length === 0,
+    `present=${files.length} missing=${missing.join(',')} extras=${extras.join(',')}`)
+
+  // -------- Assertion #13/14: console + page errors --------
+  assert('(13) console errors = 0', consoleErrors.length === 0,
+    consoleErrors.length ? consoleErrors.slice(0, 3).join(' | ') : '')
+  assert('(14) page exceptions = 0', pageErrors.length === 0,
+    pageErrors.length ? pageErrors.slice(0, 3).join(' | ') : '')
+
+  console.log('')
+  console.log('[asset-qa] console errors:', consoleErrors.length)
   for (const err of consoleErrors) console.log('  -', err)
-  // eslint-disable-next-line no-console
   console.log('[asset-qa] page errors:', pageErrors.length)
   for (const err of pageErrors) console.log('  -', err)
 
-  const fs2 = require('node:fs')
-  const files = fs2.readdirSync(evidenceDir).filter((f) => f.endsWith('.png'))
-  // eslint-disable-next-line no-console
-  console.log(`\n[asset-qa] screenshots captured: ${files.length}`)
-  for (const f of files.sort()) console.log('  -', f)
+  console.log('')
+  console.log('[asset-qa] screenshots:')
+  for (const f of files) console.log('  -', f)
 
-  if (consoleErrors.length || pageErrors.length) {
+  if (failures.length) {
+    console.error('\n[asset-qa] FAILED', failures.length, 'assertion(s):')
+    for (const f of failures) console.error('  - ' + f)
     process.exit(2)
   }
+  console.log('\n[asset-qa] all assertions passed')
 }
 
 run().catch((err) => {
-  console.error('[asset-qa] FAIL:', err)
+  console.error('[asset-qa] FATAL:', err)
   process.exit(1)
 })

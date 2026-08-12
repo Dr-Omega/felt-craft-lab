@@ -2,14 +2,17 @@
 /**
  * V4.6 阶段 4: 素材「问问它」侧拉面板
  *
- * UI 调度：所有状态在 AssetQaController 里管理，本组件只负责渲染 + 派发。
+ * 视觉对齐 EditorPage 的工作台语言（木质 + 暖橙杏 + 纸张白），
+ * 不引入新的色系、不做 ChatGPT/客服/技术 Dashboard 风格。
  *
- * - 文本问答：调用 aiClient.qaAsk，UI 中只展示 QaResult.answer（safetyAction 一律不显示）
- * - 语音输入：MediaRecorder → base64 → aiClient.asrTranscribe → 把 transcript 写入输入框
- *   **绝不自动 qaAsk**，必须由用户手动点发送
- * - 关闭 Sheet / 切换素材 / 卸载：controller.resetForClose() 丢弃任何未完成的响应
- * - 失败不写入半轮 history；输入内容保留
- * - 麦克风被拒/不可用：展示温和提示，文字问答继续可用
+ * 状态机：
+ *  - controller 拥有 history / busy / input / errorMessage / mic 状态
+ *  - 独立的 voiceGeneration token 覆盖 getUserMedia 等待 / 录音 / ASR 等待
+ *    任一阶段的 stale
+ *  - close / 切素材 / unmount 都 bump generation + voiceGeneration
+ *
+ * 错误文案：
+ *  - 一律 friendly，不暴露 IPC / Gateway / HTTP / provider / requestId 等
  */
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import type { AssetRecord } from '@shared/contracts'
@@ -17,6 +20,7 @@ import { aiClient } from '../../services/ai.client'
 import {
   ASSET_QA_MAX_QUESTION,
   AssetQaController,
+  friendlyAsrErrorMessage,
   type AssetQaSnapshot
 } from './asset-qa.controller'
 
@@ -48,7 +52,6 @@ watch(
   (next, prev) => {
     if (prev !== undefined && prev !== next) {
       controller.resetForAssetSwitch()
-      // Forcefully stop any in-flight recording tied to the previous asset.
       releaseMicImmediate()
     }
   }
@@ -83,6 +86,7 @@ async function sendTextQuestion(): Promise<void> {
 let activeStream: MediaStream | null = null
 let activeRecorder: MediaRecorder | null = null
 let activeChunks: Blob[] = []
+let activeVoiceToken = 0
 
 function pickRecorderMimeType(): string {
   const candidates = [
@@ -110,35 +114,63 @@ async function startRecording(): Promise<void> {
     controller.failRecording('unavailable')
     return
   }
+  // Capture a voice-generation token *before* any await. Anything that runs
+  // after a getUserMedia rejection / sheet close / asset switch / unmount
+  // must check this token against controller.captureVoiceGeneration().
+  activeVoiceToken = controller.captureVoiceGeneration()
   controller.beginRecording()
+  let stream: MediaStream | null = null
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-    activeStream = stream
-    const mimeType = pickRecorderMimeType()
-    const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream)
-    activeRecorder = recorder
-    activeChunks = []
-    recorder.ondataavailable = (event) => {
-      if (event.data && event.data.size > 0) activeChunks.push(event.data)
-    }
-    recorder.onstop = () => {
-      void finishRecording()
-    }
-    recorder.onerror = () => {
-      controller.failRecording('unavailable')
-      cleanupRecorder()
-    }
-    recorder.start()
-    controller.startRecordingSucceeded()
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true })
   } catch (err) {
-    cleanupRecorder()
+    // Stream is null on rejection; nothing to release.
     const name = (err as { name?: string })?.name ?? ''
     if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
       controller.failRecording('denied')
     } else {
       controller.failRecording('unavailable')
     }
+    return
   }
+  // Stale guard: if the sheet closed, asset switched, or component unmounted
+  // while we waited on the mic permission prompt, drop the stream immediately
+  // and never start a MediaRecorder.
+  if (!controller.isVoiceTokenCurrent(activeVoiceToken)) {
+    stopStream(stream)
+    return
+  }
+  activeStream = stream
+  const mimeType = pickRecorderMimeType()
+  const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream)
+  activeRecorder = recorder
+  activeChunks = []
+  recorder.ondataavailable = (event) => {
+    if (event.data && event.data.size > 0) activeChunks.push(event.data)
+  }
+  recorder.onstop = () => {
+    void finishRecording()
+  }
+  recorder.onerror = () => {
+    if (!controller.isVoiceTokenCurrent(activeVoiceToken)) return
+    controller.failRecording('unavailable')
+    cleanupRecorder()
+  }
+  // One more stale check right before start() — a race between the previous
+  // check and the construction above is unlikely but cheap to verify.
+  if (!controller.isVoiceTokenCurrent(activeVoiceToken)) {
+    stopStream(stream)
+    activeStream = null
+    activeRecorder = null
+    return
+  }
+  try {
+    recorder.start()
+  } catch {
+    cleanupRecorder()
+    controller.failRecording('unavailable')
+    return
+  }
+  controller.startRecordingSucceeded()
 }
 
 function stopRecording(): void {
@@ -156,6 +188,7 @@ async function finishRecording(): Promise<void> {
   const streamAtStop = activeStream
   const chunks = activeChunks
   const recorder = activeRecorder
+  const myToken = activeVoiceToken
   cleanupRecorder()
   controller.beginTranscribing()
   if (!recorder || chunks.length === 0) {
@@ -168,12 +201,16 @@ async function finishRecording(): Promise<void> {
   if (streamAtStop) stopStream(streamAtStop)
   try {
     const base64 = await blobToBase64(blob)
-    // If user closed the sheet / switched asset during ASR, controller already
-    // bumped its generation; the transcript result must not leak into a new
-    // session. We still call the API for evidence, but discard the outcome.
+    // Stale guard: the sheet/asset might have changed during ASR. We still
+    // call the ASR endpoint so the in-flight work is not wasted, but the
+    // outcome is dropped if the controller has been invalidated.
     const result = await aiClient.asrTranscribe({ audioBase64: base64, mimeType })
+    if (!controller.isVoiceTokenCurrent(myToken)) return
     controller.applyTranscript(result.transcript)
-  } catch {
+  } catch (err) {
+    if (!controller.isVoiceTokenCurrent(myToken)) return
+    // Friendly text only — never surface the raw error.
+    void friendlyAsrErrorMessage(err)
     controller.failTranscription()
   }
 }
@@ -215,6 +252,7 @@ function releaseMicImmediate(): void {
     try { activeRecorder.stop() } catch { /* ignore */ }
   }
   cleanupRecorder()
+  controller.bumpVoiceGeneration()
   controller.releaseMic()
 }
 
@@ -228,6 +266,28 @@ function toggleRecording(): void {
   if (snapshot.value.isRecording) stopRecording()
   else void startRecording()
 }
+
+const isAsrBusy = computed(() => snapshot.value.isAsrBusy)
+const isRecording = computed(() => snapshot.value.isRecording)
+const isBusy = computed(() => snapshot.value.busy)
+
+// Loading copy in the asset's voice.
+const loadingCopy = computed(() => {
+  if (props.asset?.nameZh) return `${props.asset.nameZh}正在想一想…`
+  return '正在想一想…'
+})
+
+// Empty-state copy uses the asset's name to keep the conversation anchored on
+// the material, not on an "AI assistant".
+const emptyTitleCopy = computed(() => {
+  if (props.asset?.nameZh) return `想知道${props.asset.nameZh}的故事吗？`
+  return '想知道这个小物件的故事吗？'
+})
+
+// Mic button label flips between the two phases; we keep a small ● dot to
+// show recording state without using an emoji or a red alert.
+const voiceButtonLabel = computed(() => (isRecording.value ? '停止' : '说一说'))
+const voiceButtonAria = computed(() => (isRecording.value ? '停止录音' : '说一说'))
 </script>
 
 <template>
@@ -242,7 +302,7 @@ function toggleRecording(): void {
     v-if="open"
     class="asset-qa-sheet"
     :class="{ 'is-open': open }"
-    role="dialog"
+    role="complementary"
     aria-label="问问它"
   >
     <header class="asset-qa-header">
@@ -250,9 +310,9 @@ function toggleRecording(): void {
         <img v-if="asset" :src="asset.thumbnailUrl || asset.imageUrl" :alt="''" />
         <span v-else>?</span>
       </div>
-      <div class="asset-qa-title">
+      <div class="asset-qa-titles">
         <p class="asset-qa-eyebrow">问问它</p>
-        <h2>{{ asset?.nameZh ?? '素材' }}</h2>
+        <h2 class="asset-qa-name">{{ asset?.nameZh ?? '素材' }}</h2>
       </div>
       <button
         class="asset-qa-close"
@@ -264,9 +324,19 @@ function toggleRecording(): void {
 
     <p v-if="asset?.introZh" class="asset-qa-intro">{{ asset.introZh }}</p>
 
+    <div v-if="!snapshot.isRecording" class="asset-qa-voicebar" aria-hidden="true">
+      <span class="asset-qa-voicebar-dot"></span>
+      <span class="asset-qa-voicebar-text">可以打字，也可以说给它听</span>
+    </div>
+    <div v-else class="asset-qa-voicebar is-live" aria-live="polite">
+      <span class="asset-qa-voicebar-dot is-live"></span>
+      <span class="asset-qa-voicebar-text">正在听 {{ asset?.nameZh ?? '它' }} 说…</span>
+    </div>
+
     <div class="asset-qa-thread" role="log" aria-live="polite">
       <p v-if="snapshot.history.length === 0" class="asset-qa-empty">
-        想知道这个小物件的故事吗？用文字或者声音问它吧。
+        <span class="asset-qa-empty-title">{{ emptyTitleCopy }}</span>
+        <span class="asset-qa-empty-sub">先问一个小问题试试看吧。</span>
       </p>
       <ul v-else class="asset-qa-messages">
         <li
@@ -278,7 +348,12 @@ function toggleRecording(): void {
           <span class="asset-qa-bubble-text">{{ message.content }}</span>
         </li>
       </ul>
-      <p v-if="snapshot.busy" class="asset-qa-loading" role="status">正在想…</p>
+      <p v-if="isBusy" class="asset-qa-loading" role="status">
+        <span class="asset-qa-loading-dots" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </span>
+        {{ loadingCopy }}
+      </p>
     </div>
 
     <p v-if="snapshot.errorMessage" class="asset-qa-error" role="alert">{{ snapshot.errorMessage }}</p>
@@ -293,8 +368,8 @@ function toggleRecording(): void {
         class="asset-qa-input"
         rows="2"
         :maxlength="ASSET_QA_MAX_QUESTION"
-        :placeholder="snapshot.isRecording ? '正在录音…' : '问它一个问题吧'"
-        :disabled="snapshot.busy || snapshot.isAsrBusy"
+        :placeholder="isRecording ? '正在听…' : (asset ? `问 ${asset.nameZh} 一个小问题吧` : '问它一个小问题吧')"
+        :disabled="isBusy || isAsrBusy"
         aria-label="问问它的问题"
         @input="(event) => controller.setInput((event.target as HTMLTextAreaElement).value)"
       ></textarea>
@@ -302,15 +377,15 @@ function toggleRecording(): void {
         <button
           type="button"
           class="asset-qa-voice"
-          :class="{ 'is-recording': snapshot.isRecording }"
-          :aria-pressed="snapshot.isRecording"
-          :disabled="snapshot.busy || snapshot.isAsrBusy"
-          :title="snapshot.isRecording ? '停止录音' : '说一说'"
-          aria-label="说一说"
+          :class="{ 'is-live': isRecording }"
+          :aria-pressed="isRecording"
+          :disabled="isBusy || isAsrBusy"
+          :aria-label="voiceButtonAria"
+          :title="voiceButtonAria"
           @click="toggleRecording"
         >
-          <span aria-hidden="true">{{ snapshot.isRecording ? '◉' : '🎤' }}</span>
-          <span class="asset-qa-voice-label">{{ snapshot.isRecording ? '停止' : '说一说' }}</span>
+          <span class="asset-qa-voice-dot" aria-hidden="true"></span>
+          <span class="asset-qa-voice-label">{{ voiceButtonLabel }}</span>
         </button>
         <button
           type="submit"
@@ -326,11 +401,12 @@ function toggleRecording(): void {
 </template>
 
 <style scoped>
+/* Visuals are aligned with the EditorPage wood/apricot design tokens. */
 .asset-qa-backdrop {
   position: fixed;
   inset: 0;
   z-index: 60;
-  background: rgba(22, 48, 43, 0.18);
+  background: rgba(89, 71, 56, 0.18);
   border: 0;
   padding: 0;
   margin: 0;
@@ -340,18 +416,21 @@ function toggleRecording(): void {
 .asset-qa-sheet {
   position: fixed;
   z-index: 61;
-  top: 0;
-  right: 0;
-  bottom: 0;
+  top: 16px;
+  right: 16px;
+  bottom: 16px;
   width: min(420px, 92vw);
-  background: var(--panel, #ffffff);
-  border-left: 1px solid var(--line, #c5d5d0);
-  box-shadow: -8px 0 24px rgba(89, 71, 56, 0.18);
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 20px 20px 16px;
-  color: var(--ink, #16302b);
+  padding: 18px 18px 16px;
+  border-radius: var(--radius-lg, 24px);
+  border: 1px solid rgba(89, 71, 56, 0.16);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.32), rgba(255, 255, 255, 0) 36%),
+    var(--wood-light, #f0e2c5);
+  box-shadow: var(--shadow-canvas, 0 8px 28px rgba(89, 71, 56, 0.18));
+  color: var(--color-text, #594738);
   font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
   transform: translateX(0);
 }
@@ -366,14 +445,15 @@ function toggleRecording(): void {
 .asset-qa-avatar {
   width: 56px;
   height: 56px;
-  border-radius: 16px;
-  background: var(--paper, #eef4f2);
-  border: 1px solid var(--line, #c5d5d0);
+  border-radius: var(--radius-md, 20px);
+  background: #fffef8;
+  border: 1px solid rgba(89, 71, 56, 0.18);
   display: grid;
   place-items: center;
   overflow: hidden;
   font-size: 1.4rem;
-  color: var(--muted, #4d6460);
+  color: var(--color-text-soft, #8b7355);
+  box-shadow: var(--shadow-soft, 0 2px 8px rgba(89, 71, 56, 0.08));
 }
 
 .asset-qa-avatar img {
@@ -383,60 +463,100 @@ function toggleRecording(): void {
   display: block;
 }
 
-.asset-qa-title h2 {
-  margin: 2px 0 0;
-  font-size: 1.2rem;
-  color: var(--ink, #16302b);
-}
-
+.asset-qa-titles { min-width: 0; }
 .asset-qa-eyebrow {
   margin: 0;
-  color: var(--accent, #1f6f63);
   font-weight: 600;
   font-size: 0.75rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+  color: var(--color-text-soft, #8b7355);
+}
+.asset-qa-name {
+  margin: 2px 0 0;
+  font-size: 1.15rem;
+  font-weight: 650;
+  color: var(--color-text, #594738);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .asset-qa-close {
   appearance: none;
-  border: 1px solid var(--line, #c5d5d0);
-  background: #fff;
-  color: var(--muted, #4d6460);
-  border-radius: 999px;
+  border: 1px solid rgba(89, 71, 56, 0.18);
+  background: #fffef8;
+  color: var(--color-text-soft, #8b7355);
+  border-radius: var(--radius-pill, 999px);
   width: 32px;
   height: 32px;
   font-size: 1.2rem;
   line-height: 1;
   cursor: pointer;
 }
+.asset-qa-close:hover { background: var(--wood-surface, #efe2c9); }
 
 .asset-qa-intro {
   margin: 0;
-  color: var(--muted, #4d6460);
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   line-height: 1.5;
   padding: 8px 12px;
-  background: var(--paper, #eef4f2);
-  border-radius: 12px;
-  border: 1px solid var(--line, #c5d5d0);
+  border-radius: var(--radius-sm, 16px);
+  background: rgba(255, 254, 248, 0.7);
+  border: 1px dashed rgba(89, 71, 56, 0.18);
+  color: var(--color-text-soft, #8b7355);
+  font-style: italic;
+}
+
+.asset-qa-voicebar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 4px;
+  font-size: 0.78rem;
+  color: var(--color-text-soft, #8b7355);
+}
+.asset-qa-voicebar-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-pill, 999px);
+  background: var(--wood-mid, #d9b98a);
+  display: inline-block;
+}
+.asset-qa-voicebar.is-live .asset-qa-voicebar-dot.is-live {
+  background: var(--color-primary, #e8a572);
+  animation: asset-qa-pulse 1.2s ease-in-out infinite;
+}
+.asset-qa-voicebar.is-live { color: var(--color-text, #594738); }
+
+@keyframes asset-qa-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.4); opacity: 0.55; }
 }
 
 .asset-qa-thread {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
-  padding: 8px 0;
+  padding: 4px 4px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .asset-qa-empty {
-  margin: 0;
-  padding: 24px 12px;
+  margin: auto 0;
+  padding: 16px 8px 0;
   text-align: center;
-  color: var(--muted, #4d6460);
+  color: var(--color-text-soft, #8b7355);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   font-size: 0.95rem;
   line-height: 1.5;
 }
+.asset-qa-empty-title { color: var(--color-text, #594738); font-weight: 600; }
+.asset-qa-empty-sub { font-size: 0.85rem; }
 
 .asset-qa-messages {
   list-style: none;
@@ -448,55 +568,87 @@ function toggleRecording(): void {
 }
 
 .asset-qa-bubble {
-  max-width: 85%;
+  max-width: 88%;
   padding: 10px 14px;
-  border-radius: 18px;
+  border-radius: var(--radius-md, 20px);
   font-size: 0.95rem;
-  line-height: 1.45;
-  border: 1px solid var(--line, #c5d5d0);
-  background: var(--paper, #eef4f2);
-  color: var(--ink, #16302b);
+  line-height: 1.5;
+  border: 1px solid rgba(89, 71, 56, 0.12);
+  background: #fffef8;
+  color: var(--color-text, #594738);
   word-break: break-word;
+  box-shadow: var(--shadow-soft, 0 2px 8px rgba(89, 71, 56, 0.08));
 }
 
 .asset-qa-bubble.is-user {
   align-self: flex-end;
-  background: var(--accent, #1f6f63);
-  color: #fff;
-  border-color: var(--accent, #1f6f63);
-  border-bottom-right-radius: 6px;
+  background: var(--color-primary-soft, #f4c9a4);
+  border-color: rgba(89, 71, 56, 0.16);
+  border-bottom-right-radius: var(--radius-xs, 14px);
 }
 
 .asset-qa-bubble.is-assistant {
   align-self: flex-start;
-  border-bottom-left-radius: 6px;
+  background: #fffef8;
+  border-color: rgba(89, 71, 56, 0.12);
+  border-bottom-left-radius: var(--radius-xs, 14px);
+}
+
+.asset-qa-bubble.is-assistant::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  margin-right: 6px;
+  border-radius: var(--radius-pill, 999px);
+  background: var(--color-primary, #e8a572);
+  vertical-align: middle;
+  transform: translateY(-2px);
 }
 
 .asset-qa-loading {
-  margin: 8px 0 0;
-  color: var(--muted, #4d6460);
-  font-size: 0.9rem;
+  margin: 4px 0 0;
+  color: var(--color-text-soft, #8b7355);
+  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.asset-qa-loading-dots {
+  display: inline-flex;
+  gap: 3px;
+}
+.asset-qa-loading-dots span {
+  width: 4px;
+  height: 4px;
+  border-radius: var(--radius-pill, 999px);
+  background: var(--color-text-soft, #8b7355);
+  animation: asset-qa-bounce 1.1s ease-in-out infinite;
+}
+.asset-qa-loading-dots span:nth-child(2) { animation-delay: 0.15s; }
+.asset-qa-loading-dots span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes asset-qa-bounce {
+  0%, 100% { transform: translateY(0); opacity: 0.55; }
+  50% { transform: translateY(-3px); opacity: 1; }
 }
 
 .asset-qa-error,
 .asset-qa-mic-hint {
   margin: 0;
   padding: 8px 12px;
-  border-radius: 12px;
+  border-radius: var(--radius-sm, 16px);
   font-size: 0.85rem;
   line-height: 1.4;
 }
-
 .asset-qa-error {
-  background: #fdecec;
-  border: 1px solid #f3b3b3;
-  color: var(--danger, #9b2c2c);
+  background: rgba(244, 213, 192, 0.7);
+  border: 1px solid rgba(168, 112, 76, 0.32);
+  color: var(--wood-deeper, #7e6244);
 }
-
 .asset-qa-mic-hint {
-  background: var(--paper, #eef4f2);
-  border: 1px solid var(--line, #c5d5d0);
-  color: var(--muted, #4d6460);
+  background: rgba(255, 254, 248, 0.78);
+  border: 1px solid rgba(89, 71, 56, 0.14);
+  color: var(--color-text-soft, #8b7355);
 }
 
 .asset-qa-form {
@@ -504,24 +656,29 @@ function toggleRecording(): void {
   flex-direction: column;
   gap: 8px;
   padding-top: 8px;
-  border-top: 1px solid var(--line, #c5d5d0);
+  border-top: 1px solid rgba(89, 71, 56, 0.16);
 }
 
 .asset-qa-input {
   width: 100%;
-  border: 1px solid var(--line, #c5d5d0);
-  border-radius: 12px;
-  padding: 10px 12px;
-  background: #fff;
-  color: var(--ink, #16302b);
+  border: 1px solid rgba(89, 71, 56, 0.2);
+  border-radius: var(--radius-md, 20px);
+  padding: 10px 14px;
+  background: #fffef8;
+  color: var(--color-text, #594738);
   font: inherit;
   resize: none;
   outline: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
 .asset-qa-input:focus {
-  border-color: var(--accent, #1f6f63);
-  box-shadow: 0 0 0 3px rgba(31, 111, 99, 0.18);
+  border-color: var(--color-primary, #e8a572);
+  box-shadow: 0 0 0 3px rgba(232, 165, 114, 0.22);
+}
+.asset-qa-input:disabled {
+  background: rgba(255, 254, 248, 0.5);
+  color: var(--color-text-soft, #8b7355);
 }
 
 .asset-qa-actions {
@@ -535,27 +692,37 @@ function toggleRecording(): void {
 .asset-qa-send {
   appearance: none;
   font: inherit;
-  border-radius: 999px;
-  padding: 8px 16px;
+  border-radius: var(--radius-pill, 999px);
+  padding: 8px 18px;
   cursor: pointer;
-  border: 1px solid var(--line, #c5d5d0);
-  background: #fff;
-  color: var(--ink, #16302b);
 }
 
 .asset-qa-voice {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   padding: 8px 14px;
+  border: 1px solid rgba(89, 71, 56, 0.22);
+  background: #fffef8;
+  color: var(--color-text, #594738);
+  font-weight: 600;
 }
-
-.asset-qa-voice.is-recording {
-  background: var(--danger, #9b2c2c);
-  border-color: var(--danger, #9b2c2c);
-  color: #fff;
+.asset-qa-voice:hover { background: var(--wood-surface, #efe2c9); }
+.asset-qa-voice.is-live {
+  background: var(--color-primary, #e8a572);
+  border-color: var(--color-primary, #e8a572);
+  color: var(--color-on-primary, #fff);
 }
-
+.asset-qa-voice-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-pill, 999px);
+  background: var(--color-text-soft, #8b7355);
+}
+.asset-qa-voice.is-live .asset-qa-voice-dot {
+  background: var(--color-on-primary, #fff);
+  animation: asset-qa-pulse 1.2s ease-in-out infinite;
+}
 .asset-qa-voice:disabled,
 .asset-qa-send:disabled {
   opacity: 0.5;
@@ -563,15 +730,16 @@ function toggleRecording(): void {
 }
 
 .asset-qa-send {
-  background: var(--accent, #1f6f63);
-  border-color: var(--accent, #1f6f63);
-  color: #fff;
-  padding: 8px 20px;
-  font-weight: 600;
+  background: var(--color-primary, #e8a572);
+  border: 0;
+  color: var(--color-on-primary, #fff);
+  padding: 9px 22px;
+  font-weight: 700;
+  box-shadow: var(--shadow-soft, 0 2px 8px rgba(89, 71, 56, 0.08));
 }
-
 .asset-qa-send:disabled {
-  background: var(--muted, #4d6460);
-  border-color: var(--muted, #4d6460);
+  background: var(--wood-mid, #d9b98a);
+  color: var(--color-on-primary, #fff);
+  opacity: 0.65;
 }
 </style>
