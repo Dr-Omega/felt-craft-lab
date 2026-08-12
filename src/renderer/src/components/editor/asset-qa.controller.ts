@@ -227,6 +227,14 @@ export class AssetQaController {
     introZh: string
     themeId: string
   }): Promise<void> {
+    // Double-layer guard: the UI also gates on these via canSend / the
+    // disabled attribute, but if a programmatic call slips through (a stray
+    // keyboard shortcut, a future codepath, a component bug) we still must
+    // never enter a half-turn or fire qaAsk while the voice flow is busy.
+    if (this.busy) return
+    if (this.isRecording) return
+    if (this.isAsrBusy) return
+    if (this.isMicStarting) return
     const text = this.input.trim()
     if (!text) return
     if (text.length > ASSET_QA_MAX_QUESTION) {
@@ -234,7 +242,6 @@ export class AssetQaController {
       this.emit()
       return
     }
-    if (this.busy) return
     this.errorMessage = ''
     const myGen = ++this.generation
     this.inflight = { generation: myGen, sentAt: text }

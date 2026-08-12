@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { AssetRecord } from '../../src/shared/contracts'
 import {
+  UNKNOWN_CATEGORY_DISPLAY,
   categoryDisplayName,
   deriveCategoriesFromAssets,
   filterAssetsByCategoryAndQuery
@@ -25,12 +26,51 @@ describe('categoryDisplayName', () => {
     expect(categoryDisplayName('festival_decoration')).toBe('装饰')
     expect(categoryDisplayName('festival_food')).toBe('食物')
     expect(categoryDisplayName('festival_story')).toBe('故事角色')
+    expect(categoryDisplayName('festival_poetry')).toBe('诗词')
     expect(categoryDisplayName('festival_custom')).toBe('习俗')
   })
 
-  it('returns the raw id as a fallback for unknown categories so no material disappears', () => {
-    expect(categoryDisplayName('galaxy_nebula')).toBe('galaxy_nebula')
+  it('accepts the short-form aliases used by older snapshots', () => {
+    expect(categoryDisplayName('scene')).toBe('场景')
+    expect(categoryDisplayName('decoration')).toBe('装饰')
+    expect(categoryDisplayName('food')).toBe('食物')
+    expect(categoryDisplayName('story')).toBe('故事角色')
+    expect(categoryDisplayName('poetry')).toBe('诗词')
+    expect(categoryDisplayName('custom')).toBe('习俗')
+  })
+
+  it('falls back to the generic "其他" label for any unknown id so a child never sees a raw snake_case id', () => {
+    expect(categoryDisplayName('galaxy_nebula')).toBe('其他')
+    expect(categoryDisplayName('foo_bar')).toBe('其他')
+    expect(categoryDisplayName('test_category')).toBe('其他')
+    expect(categoryDisplayName('festival_poetry_extra')).toBe('其他')
+  })
+
+  it('exposes UNKNOWN_CATEGORY_DISPLAY as the pin-able generic label', () => {
+    expect(UNKNOWN_CATEGORY_DISPLAY).toBe('其他')
+  })
+
+  it('returns "未分类" only when the input is empty or not a string', () => {
     expect(categoryDisplayName('')).toBe('未分类')
+    // @ts-expect-error — exercising the runtime guard, not the TS contract.
+    expect(categoryDisplayName(undefined)).toBe('未分类')
+    // @ts-expect-error — exercising the runtime guard, not the TS contract.
+    expect(categoryDisplayName(null)).toBe('未分类')
+  })
+
+  it('never returns a display name that still contains snake_case underscores for any known or unknown id', () => {
+    const samples = [
+      'festival_scene', 'festival_decoration', 'festival_food', 'festival_story',
+      'festival_poetry', 'festival_custom',
+      'scene', 'decoration', 'food', 'story', 'poetry', 'custom',
+      'galaxy_nebula', 'foo_bar', 'test_category',
+      'festival_poetry_extra', 'mystery', 'A', ''
+    ]
+    for (const id of samples) {
+      const display = categoryDisplayName(id)
+      if (display === '未分类') continue
+      expect(display, `id=${id} → display=${display}`).not.toMatch(/_/)
+    }
   })
 })
 

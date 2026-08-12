@@ -336,19 +336,19 @@ function toggleRecording(): void {
 
 const voiceButtonLabel = computed(() => {
   if (isRecording.value) return '停止'
-  if (isMicStarting.value) return '正在打开麦克风…'
+  if (isMicStarting.value) return '等一下'
   return '说一说'
 })
 const voiceButtonAria = computed(() => {
   if (isRecording.value) return '停止录音'
-  if (isMicStarting.value) return '正在打开麦克风'
+  if (isMicStarting.value) return '等一下'
   return '说一说'
 })
 
 // Voice bar copy anchored on the asset name.
 const voiceBarText = computed(() => {
   if (isMicStarting.value) {
-    return '正在打开麦克风……'
+    return '准备听你说……'
   }
   if (isRecording.value) {
     return props.asset?.nameZh
@@ -369,7 +369,7 @@ const loadingCopy = computed(() => {
 })
 
 const inputPlaceholder = computed(() => {
-  if (isMicStarting.value) return '正在打开麦克风……'
+  if (isMicStarting.value) return '准备听你说……'
   if (isRecording.value) {
     if (props.asset?.nameZh) return `${props.asset.nameZh}正在听你说……`
     return '正在听你说……'

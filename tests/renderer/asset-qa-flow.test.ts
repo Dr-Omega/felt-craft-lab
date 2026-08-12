@@ -2,7 +2,8 @@
 /**
  * V4.6 阶段 4: 素材「问问它」QA 链路测试
  *
- * 覆盖 11 个真实行为 + 4 个 voice stale 场景 + 6 个新边界场景（不依赖 @vue/test-utils）：
+ * 覆盖 11 个真实行为 + 4 个 voice stale 场景 + 6 个新边界场景 + 4 个 controller
+ * 内部 guard 场景（不依赖 @vue/test-utils）：
  *  1. 第一问 → 第一答（追加 user + assistant）
  *  2. 第二问请求携带第一轮 history
  *  3. QA 失败不追加半轮 history，输入内容保留
@@ -24,6 +25,12 @@
  *  C4. close 之后旧 recorder.onstop 不得重新进入 ASR busy
  *  C5. 真的 asset prop 切换期间 getUserMedia 迟到 resolve（同一 mount 改 prop）
  *  C6. 真的 asset prop 切换期间 ASR 迟到 resolve（同一 mount 改 prop）
+ *  D1. getUserMedia pending 时连点说一说不会产生第二次请求（isMicStarting）
+ *  D2. close / 切素材 during getUserMedia pending → isMicStarting 被清
+ *  E1. controller 内部 guard：busy=true 时 submitTextQuestion 不再调 qaAsk
+ *  E2. controller 内部 guard：isRecording=true 时 submitTextQuestion 不再调 qaAsk
+ *  E3. controller 内部 guard：isAsrBusy=true 时 submitTextQuestion 不再调 qaAsk
+ *  E4. controller 内部 guard：isMicStarting=true 时 submitTextQuestion 不再调 qaAsk
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createApp, defineComponent, h, nextTick, ref, type App as VueApp } from 'vue'
@@ -332,6 +339,78 @@ describe('AssetQaController', () => {
     controller.bumpVoiceGeneration()
     expect(controller.snapshot().isRecording).toBe(false)
     expect(controller.snapshot().isAsrBusy).toBe(false)
+  })
+
+  // Double-layer send guard: the UI also gates via canSend / disabled, but
+  // the controller must independently refuse to fire qaAsk while ANY of the
+  // four busy states is true. A stray keyboard shortcut, a programmatic call,
+  // or a future codepath must never enter a half-turn.
+
+  it('E1) submitTextQuestion is a no-op while busy=true (in-flight qaAsk)', async () => {
+    const { client, qaAsk } = makeClient()
+    const gate = deferred<{ answer: string }>()
+    qaAsk.mockReturnValueOnce(gate.promise)
+    const controller = new AssetQaController(client)
+    controller.setInput('第一问')
+    const first = controller.submitTextQuestion(sampleAsset)
+    // While the first qaAsk is still pending, busy is true. A second
+    // programmatic submit must not call qaAsk again.
+    expect(controller.snapshot().busy).toBe(true)
+    controller.setInput('第二问')
+    await controller.submitTextQuestion(sampleAsset)
+    expect(qaAsk).toHaveBeenCalledTimes(1)
+    expect(controller.snapshot().input).toBe('第二问') // input preserved for retry
+    gate.resolve({ answer: '首答' })
+    await first
+    expect(controller.snapshot().history).toEqual([
+      { role: 'user', content: '第一问' },
+      { role: 'assistant', content: '首答' }
+    ])
+  })
+
+  it('E2) submitTextQuestion is a no-op while isRecording=true', async () => {
+    const { client, qaAsk } = makeClient()
+    qaAsk.mockResolvedValueOnce({ answer: '不会到这里' })
+    const controller = new AssetQaController(client)
+    controller.beginRecording()
+    controller.startRecordingSucceeded()
+    expect(controller.snapshot().isRecording).toBe(true)
+    controller.setInput('录音时打字')
+    await controller.submitTextQuestion(sampleAsset)
+    expect(qaAsk).not.toHaveBeenCalled()
+    expect(controller.snapshot().input).toBe('录音时打字')
+    expect(controller.snapshot().history).toEqual([])
+  })
+
+  it('E3) submitTextQuestion is a no-op while isAsrBusy=true', async () => {
+    const { client, qaAsk } = makeClient()
+    qaAsk.mockResolvedValueOnce({ answer: '不会到这里' })
+    const controller = new AssetQaController(client)
+    controller.beginRecording()
+    controller.startRecordingSucceeded()
+    controller.beginTranscribing()
+    expect(controller.snapshot().isAsrBusy).toBe(true)
+    controller.setInput('ASR 时打字')
+    await controller.submitTextQuestion(sampleAsset)
+    expect(qaAsk).not.toHaveBeenCalled()
+    expect(controller.snapshot().input).toBe('ASR 时打字')
+    expect(controller.snapshot().history).toEqual([])
+  })
+
+  it('E4) submitTextQuestion is a no-op while isMicStarting=true', async () => {
+    const { client, qaAsk } = makeClient()
+    qaAsk.mockResolvedValueOnce({ answer: '不会到这里' })
+    const controller = new AssetQaController(client)
+    // beginRecording sets isMicStarting=true; we deliberately do NOT call
+    // startRecordingSucceeded, so isMicStarting stays true to simulate a
+    // getUserMedia promise still pending.
+    controller.beginRecording()
+    expect(controller.snapshot().isMicStarting).toBe(true)
+    controller.setInput('等麦克风时打字')
+    await controller.submitTextQuestion(sampleAsset)
+    expect(qaAsk).not.toHaveBeenCalled()
+    expect(controller.snapshot().input).toBe('等麦克风时打字')
+    expect(controller.snapshot().history).toEqual([])
   })
 })
 
