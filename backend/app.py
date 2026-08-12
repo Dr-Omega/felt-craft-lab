@@ -31,7 +31,7 @@ from services.guards import (
     asr_provider_allowed,
     check_audio_mime,
     check_audio_size,
-    check_qa_text,
+    validate_qa_request,
     check_tts_text,
     is_dev_mode,
     qa_provider_allowed,
@@ -92,7 +92,7 @@ def _client_bucket() -> str:
 
 
 def _json_fail(code: str, http_status: int = 400):
-    body = fail(code=code)
+    body = fail(code=code, retryable=False if code == "INVALID_ARGUMENT" else None)
     return jsonify(body), http_status
 
 
@@ -368,13 +368,16 @@ def qa_ask():
     claims, err = _require_session(apply_install_rate=False)
     if err:
         return err
-    data = request.get_json(silent=True) or {}
-    question = data.get("question") or ""
-    asset = data.get("asset") or {}
-    provider = data.get("provider")
-    text_err = check_qa_text(question)
-    if text_err:
-        return _json_fail(text_err)
+    data = request.get_json(silent=True)
+    payload, validation_error = validate_qa_request(data)
+    if validation_error:
+        return _json_fail(validation_error)
+    if payload is None:
+        return _json_fail("INVALID_ARGUMENT")
+    question = payload["question"]
+    asset = payload["asset"]
+    history = payload.get("history")
+    provider = payload.get("provider")
     resolved_name = (provider or os.getenv("QA_PROVIDER") or "deepseek").strip()
     if not qa_provider_allowed(resolved_name):
         return _json_fail("INVALID_PROVIDER")
@@ -390,7 +393,7 @@ def qa_ask():
                 if fuse_err:
                     return fuse_err
             service = QaService(resolved_name)
-            result = service.ask(question=question, asset=asset)
+            result = service.ask(question=question, asset=asset, history=history)
             status = 200 if result.get("ok") else 502
             return jsonify(result), status
     except UnknownQaProvider:
@@ -436,6 +439,13 @@ def qa_contract():
             "ok": True,
             "contract": {
                 "resultContract": "src/shared/contracts/ai.ts QaResult",
+                "requestContract": "src/shared/contracts/ai.ts QaAskInput",
+                "history": {
+                    "maxMessages": 12,
+                    "maxTurns": 6,
+                    "maxMessageChars": 500,
+                    "roles": ["user", "assistant"],
+                },
                 "errorContract": "src/shared/contracts/error.ts SharedError",
             },
             "errorCodes": QA_ERROR_CODES,

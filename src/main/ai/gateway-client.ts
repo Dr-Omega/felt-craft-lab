@@ -1,4 +1,5 @@
 import { toSharedError, type SharedError } from '@shared/contracts/error'
+import type { QaAssetContext, QaHistoryMessage } from '@shared/contracts/ai'
 import { resolveAiGatewayBaseUrlResult } from './gateway-config'
 import { readResponseTextBounded } from './read-response-bounded'
 
@@ -228,7 +229,8 @@ export async function gatewayAsrMultipart(input: {
 
 export async function gatewayQaAsk(input: {
   question: string
-  asset?: Record<string, unknown>
+  asset?: QaAssetContext
+  history?: readonly QaHistoryMessage[]
   provider?: string
   signal?: AbortSignal
   isPackaged?: boolean
@@ -240,6 +242,7 @@ export async function gatewayQaAsk(input: {
     body: JSON.stringify({
       question: input.question,
       asset: input.asset || {},
+      ...(input.history && input.history.length ? { history: input.history } : {}),
       ...(input.provider ? { provider: input.provider } : {})
     }),
     signal: input.signal,

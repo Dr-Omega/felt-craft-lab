@@ -95,7 +95,18 @@ const server = http.createServer(async (req, res) => {
           error: { code: 'INVALID_ARGUMENT', message: '会话无效', retryable: true }
         })
       }
-      await readBody(req)
+      const raw = await readBody(req)
+      const data = JSON.parse(raw.toString('utf8') || '{}')
+      const history = Array.isArray(data.history) ? data.history : []
+      const validHistory = history.every((entry) =>
+        entry && (entry.role === 'user' || entry.role === 'assistant') && typeof entry.content === 'string'
+      )
+      if (!validHistory || history.length > 12) {
+        return send(res, 400, {
+          ok: false,
+          error: { code: 'INVALID_ARGUMENT', message: 'bad history', retryable: false }
+        })
+      }
       return send(res, 200, {
         ok: true,
         result: {

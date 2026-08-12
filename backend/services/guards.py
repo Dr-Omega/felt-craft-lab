@@ -6,11 +6,13 @@ import os
 import threading
 import time
 from collections import defaultdict, deque
-from typing import Optional
+from typing import Any, Optional
 
 # 上传与文本上限
 MAX_AUDIO_BYTES = int(os.getenv("AI_MAX_AUDIO_BYTES", str(5 * 1024 * 1024)))
 MAX_QA_QUESTION_CHARS = int(os.getenv("AI_MAX_QA_CHARS", "500"))
+MAX_QA_HISTORY_MESSAGES = 12
+MAX_QA_HISTORY_MESSAGE_CHARS = 500
 MAX_TTS_TEXT_CHARS = int(os.getenv("AI_MAX_TTS_CHARS", "500"))
 
 ALLOWED_AUDIO_MIME = frozenset(
@@ -105,6 +107,64 @@ def check_qa_text(text: str) -> Optional[str]:
     if len(text) > MAX_QA_QUESTION_CHARS:
         return "TEXT_TOO_LONG"
     return None
+
+
+def validate_qa_request(data: Any) -> tuple[Optional[dict[str, Any]], Optional[str]]:
+    """Authoritative defensive validation and projection for QA requests."""
+    if not isinstance(data, dict):
+        return None, "INVALID_ARGUMENT"
+    question = data.get("question")
+    if not isinstance(question, str):
+        return None, "INVALID_ARGUMENT"
+    question = question.strip()
+    text_err = check_qa_text(question)
+    if text_err:
+        return None, text_err
+
+    projected_asset: dict[str, str] = {}
+    asset = data.get("asset", {})
+    if asset is None:
+        asset = {}
+    if not isinstance(asset, dict):
+        return None, "INVALID_ARGUMENT"
+    for key, limit in (("assetId", 128), ("nameZh", 80), ("introZh", 500), ("themeId", 80)):
+        if key not in asset:
+            continue
+        value = asset[key]
+        if not isinstance(value, str):
+            return None, "INVALID_ARGUMENT"
+        value = value.strip()
+        if len(value) > limit:
+            return None, "TEXT_TOO_LONG"
+        if value:
+            projected_asset[key] = value
+
+    history = data.get("history")
+    projected_history: list[dict[str, str]] = []
+    if history is not None:
+        if not isinstance(history, list) or len(history) > MAX_QA_HISTORY_MESSAGES:
+            return None, "INVALID_ARGUMENT"
+        for index, item in enumerate(history):
+            if not isinstance(item, dict) or set(item.keys()) - {"role", "content"}:
+                return None, "INVALID_ARGUMENT"
+            role = item.get("role")
+            content = item.get("content")
+            if role not in {"user", "assistant"} or not isinstance(content, str):
+                return None, "INVALID_ARGUMENT"
+            content = content.strip()
+            if not content or len(content) > MAX_QA_HISTORY_MESSAGE_CHARS:
+                return None, "INVALID_ARGUMENT"
+            projected_history.append({"role": role, "content": content})
+
+    provider = data.get("provider")
+    if provider is not None and (not isinstance(provider, str) or not provider.strip()):
+        return None, "INVALID_ARGUMENT"
+    result: dict[str, Any] = {"question": question, "asset": projected_asset}
+    if projected_history:
+        result["history"] = projected_history
+    if isinstance(provider, str) and provider.strip():
+        result["provider"] = provider.strip()
+    return result, None
 
 
 def check_tts_text(text: str) -> Optional[str]:

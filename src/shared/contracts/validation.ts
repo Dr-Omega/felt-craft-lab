@@ -1,6 +1,16 @@
 import { ASR_PROVIDERS, ASSET_RUNTIME_STATUSES, ASSET_TYPES, SCHEMA_VERSION } from './common'
 import type { AssetAccessState, AssetRecord } from './asset'
-import type { AsrResult, QaResult, TtsResult } from './ai'
+import {
+  QA_MAX_HISTORY_MESSAGE_CHARS,
+  QA_MAX_HISTORY_MESSAGES,
+  QA_MAX_QUESTION_CHARS,
+  type AsrResult,
+  type QaAskInput,
+  type QaAssetContext,
+  type QaHistoryMessage,
+  type QaResult,
+  type TtsResult
+} from './ai'
 import { SHARED_ERROR_CODES } from './error'
 import type { SharedError } from './error'
 import { PROJECT_SYNC_STATUSES } from './project'
@@ -88,6 +98,91 @@ function requireString(value: unknown, path: string, errors: ValidationIssue[], 
 
 function requireOptionalString(value: unknown, path: string, errors: ValidationIssue[]): value is string | undefined {
   return value === undefined || requireString(value, path, errors)
+}
+
+function codePointLength(value: string): number {
+  return Array.from(value).length
+}
+
+function validateQaHistoryInternal(raw: unknown, errors: ValidationIssue[]): QaHistoryMessage[] | undefined {
+  if (raw === undefined) return undefined
+  if (!Array.isArray(raw)) {
+    errors.push({ path: 'history', message: 'history 必须是数组。' })
+    return undefined
+  }
+  if (raw.length > QA_MAX_HISTORY_MESSAGES) {
+    errors.push({ path: 'history', message: `history 不能超过 ${QA_MAX_HISTORY_MESSAGES} 条消息。` })
+  }
+
+  const history: QaHistoryMessage[] = []
+  raw.forEach((item, index) => {
+    const path = `history[${index}]`
+    const entry = requireObject(item, path, errors)
+    if (!entry) return
+    hasOnlyKeys(entry, ['role', 'content'], path, errors)
+    const role = entry.role
+    if (role !== 'user' && role !== 'assistant') {
+      errors.push({ path: `${path}.role`, message: 'role 只能是 user 或 assistant。' })
+    }
+    if (typeof entry.content !== 'string') {
+      errors.push({ path: `${path}.content`, message: 'content 必须是字符串。' })
+      return
+    }
+    const content = entry.content.trim()
+    if (!content) errors.push({ path: `${path}.content`, message: 'content 不能为空。' })
+    if (codePointLength(content) > QA_MAX_HISTORY_MESSAGE_CHARS) {
+      errors.push({ path: `${path}.content`, message: `单条 history 不能超过 ${QA_MAX_HISTORY_MESSAGE_CHARS} 个字符。` })
+    }
+    if (role === 'user' || role === 'assistant') history.push({ role, content })
+  })
+  return history
+}
+
+/** Shared runtime guard for QA request payloads crossing a trust boundary. */
+export function validateQaAskInput(raw: unknown): ValidationResult<QaAskInput> {
+  const errors: ValidationIssue[] = []
+  const value = requireObject(raw, 'qa', errors)
+  if (!value) return failure(errors)
+
+  if (typeof value.question !== 'string' || !value.question.trim()) {
+    errors.push({ path: 'qa.question', message: 'question 不能为空。' })
+  } else if (codePointLength(value.question.trim()) > QA_MAX_QUESTION_CHARS) {
+    errors.push({ path: 'qa.question', message: `question 不能超过 ${QA_MAX_QUESTION_CHARS} 个字符。` })
+  }
+
+  let asset: QaAssetContext | undefined
+  if (value.asset !== undefined) {
+    const rawAsset = requireObject(value.asset, 'qa.asset', errors)
+    if (rawAsset) {
+      asset = {}
+      for (const key of ['assetId', 'nameZh', 'introZh', 'themeId'] as const) {
+        const field = rawAsset[key]
+        if (field !== undefined) {
+          if (typeof field !== 'string') errors.push({ path: `qa.asset.${key}`, message: '素材上下文字段必须是字符串。' })
+          else asset[key] = field
+        }
+      }
+    }
+  }
+
+  const history = validateQaHistoryInternal(value.history, errors)
+  if (value.provider !== undefined && (typeof value.provider !== 'string' || !value.provider.trim())) {
+    errors.push({ path: 'qa.provider', message: 'provider 必须是非空字符串。' })
+  }
+
+  if (errors.length) return failure(errors)
+  return success({
+    question: (value.question as string).trim(),
+    ...(asset ? { asset } : {}),
+    ...(history && history.length ? { history } : {}),
+    ...(typeof value.provider === 'string' ? { provider: value.provider.trim() } : {})
+  })
+}
+
+export function validateQaHistory(raw: unknown): ValidationResult<readonly QaHistoryMessage[]> {
+  const errors: ValidationIssue[] = []
+  const history = validateQaHistoryInternal(raw, errors)
+  return errors.length ? failure(errors) : success(history ?? [])
 }
 
 function requireFiniteNumber(value: unknown, path: string, errors: ValidationIssue[]): value is number {

@@ -15,5 +15,6 @@ class QaProvider(ABC):
         *,
         question: str,
         asset: dict[str, Any],
+        history: list[dict[str, str]] | None = None,
     ) -> dict[str, Any]:
         raise NotImplementedError

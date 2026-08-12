@@ -12,10 +12,17 @@ from unittest import mock
 BACKEND = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(BACKEND))
 
-from providers.qa.deepseek_provider import postprocess_model_content  # noqa: E402
+from providers.qa.deepseek_provider import build_messages, postprocess_model_content  # noqa: E402
 from services.asr_metrics import record_asr_event, session_bucket, metrics_log_path  # noqa: E402
 from services.asr_types import ok_asr, err_asr  # noqa: E402
-from services.guards import asr_provider_allowed, check_audio_size, MAX_AUDIO_BYTES  # noqa: E402
+from services.guards import (
+    MAX_AUDIO_BYTES,
+    MAX_QA_HISTORY_MESSAGES,
+    asr_provider_allowed,
+    check_audio_size,
+    validate_qa_request,
+)  # noqa: E402
+from providers.qa.mock_provider import MockQaProvider  # noqa: E402
 from services.qa_types import ok_qa  # noqa: E402
 from services.tts_types import ok_tts, ok_tts_bytes  # noqa: E402
 
@@ -88,6 +95,29 @@ class QaSafetyTests(unittest.TestCase):
         answer, safety = postprocess_model_content(raw, {"nameZh": "兔子"})
         self.assertEqual(safety, "reject")
 
+    def test_deepseek_sends_history_as_separate_messages(self):
+        from providers.qa.deepseek_provider import DeepSeekQaProvider
+
+        response = mock.Mock(status_code=200)
+        response.json.return_value = {
+            "id": "req-1",
+            "choices": [{"message": {"content": '{"answer":"好的","safetyAction":"allow"}'}}],
+        }
+        with mock.patch.dict(os.environ, {"DEEPSEEK_API_KEY": "test-key"}, clear=False):
+            with mock.patch("providers.qa.deepseek_provider.requests.post", return_value=response) as post:
+                result = DeepSeekQaProvider().ask(
+                    question="第二问",
+                    asset={"nameZh": "玉兔"},
+                    history=[
+                        {"role": "user", "content": "第一问"},
+                        {"role": "assistant", "content": "第一答"},
+                    ],
+                )
+        self.assertTrue(result["ok"])
+        messages = post.call_args.kwargs["json"]["messages"]
+        self.assertEqual([item["role"] for item in messages], ["system", "user", "assistant", "user"])
+        self.assertEqual(messages[-1]["content"], "第二问")
+
 
 class ProviderGuardTests(unittest.TestCase):
     def test_unknown_asr_provider_rejected(self):
@@ -100,6 +130,55 @@ class ProviderGuardTests(unittest.TestCase):
     def test_audio_size_limit(self):
         self.assertEqual(check_audio_size(MAX_AUDIO_BYTES + 1), "PAYLOAD_TOO_LARGE")
         self.assertIsNone(check_audio_size(16))
+
+    def test_qa_history_validation_and_asset_projection(self):
+        history = [
+            {"role": "user", "content": "第一问"},
+            {"role": "assistant", "content": "第一答"},
+        ]
+        payload, error = validate_qa_request(
+            {
+                "question": "第二问",
+                "asset": {"assetId": "rabbit", "nameZh": "玉兔", "ignored": "drop"},
+                "history": history,
+                "provider": "mock",
+            }
+        )
+        self.assertIsNone(error)
+        self.assertEqual(payload["asset"], {"assetId": "rabbit", "nameZh": "玉兔"})
+        self.assertEqual(payload["history"], history)
+
+        too_many = history * (MAX_QA_HISTORY_MESSAGES // 2 + 1)
+        _, error = validate_qa_request({"question": "x", "history": too_many})
+        self.assertEqual(error, "INVALID_ARGUMENT")
+        _, error = validate_qa_request({"question": "x", "history": [{"role": "system", "content": "x"}]})
+        self.assertEqual(error, "INVALID_ARGUMENT")
+        _, error = validate_qa_request({"question": "x", "asset": []})
+        self.assertEqual(error, "INVALID_ARGUMENT")
+
+    def test_deepseek_message_order_is_structured(self):
+        messages = build_messages(
+            question="第二问",
+            asset={"nameZh": "玉兔"},
+            history=[
+                {"role": "user", "content": "第一问"},
+                {"role": "assistant", "content": "第一答"},
+            ],
+        )
+        self.assertEqual([item["role"] for item in messages], ["system", "user", "assistant", "user"])
+        self.assertEqual(messages[-1]["content"], "第二问")
+        self.assertEqual(sum(item["content"] == "第二问" for item in messages), 1)
+
+    def test_mock_provider_is_deterministic_across_turns(self):
+        provider = MockQaProvider()
+        one = provider.ask(question="x", asset={"nameZh": "玉兔"}, history=[])
+        two = provider.ask(
+            question="y",
+            asset={"nameZh": "玉兔"},
+            history=[{"role": "user", "content": "x"}, {"role": "assistant", "content": "a"}],
+        )
+        self.assertIn("第1轮", one["result"]["answer"])
+        self.assertIn("第2轮", two["result"]["answer"])
 
 
 class MetricsPrivacyTests(unittest.TestCase):
@@ -186,6 +265,28 @@ class FlaskGuardIntegrationTests(unittest.TestCase):
         from app import app
 
         self.assertGreater(app.config["MAX_CONTENT_LENGTH"], MAX_AUDIO_BYTES)
+
+    def test_qa_history_round_trip_and_invalid_shape(self):
+        headers = self._auth_headers()
+        history = [
+            {"role": "user", "content": "第一问"},
+            {"role": "assistant", "content": "第一答"},
+        ]
+        result = self.client.post(
+            "/api/qa/ask",
+            json={"question": "第二问", "asset": {"nameZh": "玉兔"}, "history": history, "provider": "mock"},
+            headers=headers,
+        )
+        self.assertEqual(result.status_code, 200)
+        self.assertTrue(result.get_json().get("ok"))
+
+        invalid = self.client.post(
+            "/api/qa/ask",
+            json={"question": "x", "asset": [], "provider": "mock"},
+            headers=headers,
+        )
+        self.assertEqual(invalid.status_code, 400)
+        self.assertEqual(invalid.get_json()["error"]["code"], "INVALID_ARGUMENT")
 
 
 if __name__ == "__main__":

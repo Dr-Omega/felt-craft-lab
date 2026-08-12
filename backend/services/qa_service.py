@@ -25,12 +25,12 @@ class QaService:
         else:
             self.provider = DeepSeekQaProvider()
 
-    def ask(self, *, question: str, asset: dict) -> dict:
+    def ask(self, *, question: str, asset: dict, history: Optional[list[dict]] = None) -> dict:
         asset = asset or {}
         if getattr(self.provider, "name", "") != "mock":
             if not (asset.get("assetId") or asset.get("nameZh")):
                 return err_qa(code="QA_MISSING_ASSET")
         try:
-            return self.provider.ask(question=question, asset=asset)
+            return self.provider.ask(question=question, asset=asset, history=history or [])
         except Exception:  # noqa: BLE001
             return err_qa(code="QA_UPSTREAM_ERROR")

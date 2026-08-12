@@ -73,6 +73,19 @@ export async function runAiSmoke(): Promise<void> {
           throw new Error('qa failed: ' + JSON.stringify(qa))
         }
 
+        const qaFollowUp = await api.ai.qaAsk({
+          question: '它每天都做什么？',
+          asset: { nameZh: '小兔子' },
+          history: [
+            { role: 'user', content: '它为什么住在月亮上？' },
+            { role: 'assistant', content: qa.result.answer }
+          ],
+          provider: 'mock'
+        })
+        if (!qaFollowUp || qaFollowUp.ok !== true || !qaFollowUp.result || !qaFollowUp.result.answer) {
+          throw new Error('qa follow-up failed: ' + JSON.stringify(qaFollowUp))
+        }
+
         const tts = await api.ai.ttsSynthesize({
           text: qa.result.answer,
           voicePurpose: 'qa_answer',

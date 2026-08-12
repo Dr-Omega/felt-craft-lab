@@ -64,10 +64,28 @@ def _build_system_prompt(asset: dict[str, Any]) -> str:
 """
 
 
+def build_messages(
+    *, question: str, asset: dict[str, Any], history: list[dict[str, str]] | None = None
+) -> list[dict[str, str]]:
+    messages: list[dict[str, str]] = [
+        {"role": "system", "content": _build_system_prompt(asset or {})}
+    ]
+    for entry in history or []:
+        messages.append({"role": entry["role"], "content": entry["content"]})
+    messages.append({"role": "user", "content": (question or "").strip()[:500]})
+    return messages
+
+
 class DeepSeekQaProvider(QaProvider):
     name = "deepseek"
 
-    def ask(self, *, question: str, asset: dict[str, Any]) -> dict[str, Any]:
+    def ask(
+        self,
+        *,
+        question: str,
+        asset: dict[str, Any],
+        history: list[dict[str, str]] | None = None,
+    ) -> dict[str, Any]:
         key = os.getenv("DEEPSEEK_API_KEY", "").strip()
         if not key:
             return err_qa(code="QA_MISSING_API_KEY")
@@ -87,10 +105,7 @@ class DeepSeekQaProvider(QaProvider):
         url = f"{base}/chat/completions"
         payload = {
             "model": MODEL,
-            "messages": [
-                {"role": "system", "content": _build_system_prompt(asset or {})},
-                {"role": "user", "content": q[:500]},
-            ],
+            "messages": build_messages(question=q, asset=asset or {}, history=history),
             "temperature": 0.6,
             "max_tokens": 300,
         }

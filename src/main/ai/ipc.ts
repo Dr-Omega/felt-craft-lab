@@ -12,7 +12,7 @@ import {
   type GatewayAuth,
   type GatewayJsonResult
 } from './gateway-client'
-import { validateAsrIpcInput, validateQaIpcInput, validateTtsIpcInput, withValidatedIpcInput } from './input-guards'
+import { validateAsrIpcInput, validateQaIpcPayload, validateTtsIpcInput, withValidatedIpcInput } from './input-guards'
 import { materializeGatewayTts } from './materialize-tts'
 import {
   normalizeAsrEnvelope,
@@ -136,17 +136,17 @@ export function registerAiIpc(): void {
 
   ipcMain.handle(IPC_CHANNELS.AI_QA_ASK, async (event, raw: unknown) => {
     if (!isTrustedIpcEvent(event)) return deny()
-    const input = asRecord(raw)
-    const question = typeof input.question === 'string' ? input.question : ''
-    const guarded = validateQaIpcInput(question)
+    const guarded = validateQaIpcPayload(raw)
+    if (!guarded.ok) return guarded
     return withValidatedIpcInput(guarded, () =>
       withPaidAuth(
         packaged,
         (auth) =>
           gatewayQaAsk({
-            question,
-            asset: asRecord(input.asset),
-            provider: typeof input.provider === 'string' ? input.provider : undefined,
+            question: guarded.input.question,
+            asset: guarded.input.asset,
+            history: guarded.input.history,
+            provider: guarded.input.provider,
             isPackaged: packaged,
             auth
           }),

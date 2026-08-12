@@ -1,9 +1,10 @@
 import { toSharedError, type SharedError } from '@shared/contracts/error'
+import { QA_MAX_QUESTION_CHARS, validateQaAskInput, type QaAskInput } from '@shared/contracts'
 
 /** Keep in sync with backend guards (or more conservative). */
 export const MAX_ASR_AUDIO_BYTES = 5 * 1024 * 1024
 export const MAX_ASR_AUDIO_BASE64_CHARS = Math.ceil((MAX_ASR_AUDIO_BYTES * 4) / 3) + 8
-export const MAX_QA_CHARS = 500
+export const MAX_QA_CHARS = QA_MAX_QUESTION_CHARS
 export const MAX_TTS_CHARS = 500
 
 export const ALLOWED_ASR_MIME = new Set([
@@ -22,6 +23,10 @@ export const ALLOWED_ASR_MIME = new Set([
 
 export type IpcGuardResult =
   | { ok: true }
+  | { ok: false; error: SharedError }
+
+export type QaIpcGuardResult =
+  | { ok: true; input: QaAskInput }
   | { ok: false; error: SharedError }
 
 function invalid(message: string): IpcGuardResult {
@@ -65,6 +70,16 @@ export function validateQaIpcInput(question: string): IpcGuardResult {
   if (!text.trim()) return invalid('问题不能为空。')
   if (text.length > MAX_QA_CHARS) return invalid('文本过长。')
   return { ok: true }
+}
+
+function invalidError(message: string): SharedError {
+  return toSharedError({ code: 'INVALID_ARGUMENT', message, retryable: false }, 'INVALID_ARGUMENT')
+}
+
+export function validateQaIpcPayload(raw: unknown): QaIpcGuardResult {
+  const validated = validateQaAskInput(raw)
+  if (validated.ok) return { ok: true, input: validated.value }
+  return { ok: false, error: invalidError(validated.errors.map((issue) => `${issue.path}: ${issue.message}`).join('；')) }
 }
 
 export function validateTtsIpcInput(text: string): IpcGuardResult {

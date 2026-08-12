@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer } from 'electron'
 import { IPC_CHANNELS, type BootstrapPingResult } from '@shared/constants/app'
 import type { ResourceRef, SharedError } from '@shared/contracts'
 import type { ResourceInspectResult } from '@shared/resource'
+import type { QaAskInput } from '@shared/contracts/ai'
 
 type PreviewSaveIpcResult = { ok: true; ref: ResourceRef } | { ok: false; error: SharedError }
 type PreviewDeleteIpcResult = { ok: true } | { ok: false; error: SharedError }
@@ -62,11 +63,7 @@ const electronAPI = {
       sessionId?: string
       provider?: string
     }): Promise<unknown> => ipcRenderer.invoke(IPC_CHANNELS.AI_ASR_TRANSCRIBE, input),
-    qaAsk: (input: {
-      question: string
-      asset?: Record<string, unknown>
-      provider?: string
-    }): Promise<unknown> => ipcRenderer.invoke(IPC_CHANNELS.AI_QA_ASK, input),
+    qaAsk: (input: QaAskInput): Promise<unknown> => ipcRenderer.invoke(IPC_CHANNELS.AI_QA_ASK, input),
     ttsSynthesize: (input: {
       text: string
       voicePurpose?: string
