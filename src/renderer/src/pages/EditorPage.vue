@@ -801,28 +801,25 @@ body { margin: 0; overflow: hidden; }
 
 .sheet-backdrop { position: fixed; inset: 0; z-index: 90; border: 0; background: rgba(89, 71, 56, 0.28); opacity: 0; pointer-events: none; transition: opacity 220ms ease; }
 .sheet-backdrop.is-open { opacity: 1; pointer-events: auto; }
-.material-sheet { position: fixed; left: 50%; bottom: 20px; z-index: 91; display: flex; flex-direction: column; width: calc(100% - 80px); max-width: 1280px; max-height: 60vh; overflow: hidden; border-radius: var(--radius-xl); background: var(--bg-app); box-shadow: var(--shadow-lift); transform: translate(-50%, calc(100% + 24px)); transition: transform 280ms cubic-bezier(0.4, 0, 0.2, 1); }
+/* MaterialSheet layout: fixed bottom drawer, flex column so the asset list
+   is the only flex region and the footer (selection + actions) is anchored
+   below. The grid uses flex: 1 + min-height: 0 so it shrinks to the
+   remaining vertical space and becomes scrollable when content overflows,
+   instead of pushing the footer off-screen. */
+.material-sheet { position: fixed; left: 50%; bottom: 20px; z-index: 91; display: flex; flex-direction: column; width: calc(100% - 80px); max-width: 1280px; max-height: 70vh; min-height: 360px; overflow: hidden; border-radius: var(--radius-xl); background: var(--bg-app); box-shadow: var(--shadow-lift); transform: translate(-50%, calc(100% + 24px)); transition: transform 280ms cubic-bezier(0.4, 0, 0.2, 1); }
 .material-sheet.is-open { transform: translate(-50%, 0); }
-.sheet-handle { width: 48px; height: 5px; margin: 10px auto 4px; padding: 0; border: 0; border-radius: var(--radius-pill); background: var(--wood-mid); cursor: pointer; opacity: 0.75; }
-.sheet-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 20px 10px; border-bottom: 1px solid rgba(89, 71, 56, 0.08); }
+.sheet-handle { width: 48px; height: 5px; margin: 10px auto 4px; padding: 0; border: 0; border-radius: var(--radius-pill); background: var(--wood-mid); cursor: pointer; opacity: 0.75; flex: 0 0 auto; }
+.sheet-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 20px 10px; border-bottom: 1px solid rgba(89, 71, 56, 0.08); flex: 0 0 auto; }
 .sheet-header h2 { margin: 0; font-size: 16px; font-weight: 700; }
 .sheet-close { width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--color-text-soft); font-size: 26px; cursor: pointer; }
 .sheet-category { display: flex; gap: 8px; padding: 10px 30px 4px; }
-.category-chip { min-height: 30px; padding: 0 14px; border: 1px solid var(--wood-mid); border-radius: var(--radius-pill); background: transparent; color: var(--color-text-soft); font: inherit; font-size: 12px; }
-.category-chip.is-selected { border-color: var(--color-primary); background: var(--color-primary); color: var(--color-on-primary); }
-.material-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 14px; max-width: 1210px; width: 100%; margin: 0 auto; padding: 4px 30px 12px; overflow-y: auto; }
+.material-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 14px; max-width: 1210px; width: 100%; margin: 0 auto; padding: 4px 30px 12px; flex: 1 1 auto; min-height: 180px; overflow-y: auto; align-content: start; }
 .material-card { position: relative; aspect-ratio: 1; overflow: hidden; padding: 0; border: 2px solid transparent; border-radius: var(--radius-xs); background: #fffef8; cursor: pointer; box-shadow: var(--shadow-soft); }
 .material-card img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .material-card:hover:not(.is-locked) { transform: translateY(-2px); }
 .material-card.is-selected { border-color: var(--color-primary); box-shadow: 0 4px 14px rgba(232, 165, 114, 0.3); }
 .material-card.is-locked { opacity: 0.55; }
 .material-card-name { position: absolute; right: 6px; bottom: 5px; left: 6px; overflow: hidden; color: var(--color-text); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
-.sheet-footer { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px; padding: 10px 30px 16px; }
-.sheet-selection { width: 100%; text-align: center; color: var(--color-text-soft); font-size: 13px; }
-.sheet-ask { min-height: 40px; padding: 0 18px; border: 1px solid var(--color-primary); border-radius: var(--radius-pill); background: #fff; color: var(--color-primary); font: inherit; font-weight: 700; cursor: pointer; }
-.sheet-ask:disabled { cursor: not-allowed; opacity: 0.46; }
-.sheet-add { min-height: 40px; padding: 0 22px; border: 0; border-radius: var(--radius-pill); background: var(--color-primary); color: var(--color-on-primary); font: inherit; font-weight: 700; cursor: pointer; }
-.sheet-add:disabled { cursor: not-allowed; opacity: 0.46; }
 
 .editor-state-banner { position: absolute; top: 74px; left: 50%; z-index: 40; margin: 0; padding: 8px 16px; border-radius: var(--radius-pill); background: rgba(244, 213, 192, 0.92); color: var(--wood-deeper); font-size: 13px; transform: translateX(-50%); }
 .editor-feedback { position: absolute; bottom: 18px; left: 50%; z-index: 120; margin: 0; padding: 10px 18px; border-radius: var(--radius-pill); background: #fffef8; color: var(--color-text); box-shadow: var(--shadow-lift); font-size: 13px; transform: translateX(-50%); }

@@ -965,5 +965,134 @@ describe('AssetQaSheet — mounted voice flow', () => {
     await new Promise((r) => setTimeout(r, 50))
     mount.unmount()
   })
+
+  // -----------------------------------------------------------------------
+  // D1: 同素材连续点 "说一说" → getUserMedia 只能被调用一次
+  // -----------------------------------------------------------------------
+  it('D1) repeated clicks on voice while getUserMedia pending do not spawn a second request', async () => {
+    let getUserMediaCalls = 0
+    const gate = deferred<MediaStream>()
+    defineMediaDevices({
+      getUserMedia: () => {
+        getUserMediaCalls += 1
+        return gate.promise
+      }
+    })
+    const asrMock = vi.fn()
+    const qaMock = vi.fn()
+    vi.stubGlobal('window', { electronAPI: { ai: { asrTranscribe: asrMock, qaAsk: qaMock } } })
+
+    const mount = mountSheet()
+    await flush()
+    const voiceBtn = mount.root.querySelector('.asset-qa-voice') as HTMLButtonElement | null
+    expect(voiceBtn).toBeTruthy()
+    // First click — getUserMedia invoked, returns pending promise.
+    voiceBtn?.click()
+    await new Promise((r) => setTimeout(r, 10))
+    expect(getUserMediaCalls).toBe(1)
+
+    // Second click while pending — must be silently dropped.
+    voiceBtn?.click()
+    await new Promise((r) => setTimeout(r, 10))
+    expect(getUserMediaCalls).toBe(1)
+
+    // Third click — also dropped.
+    voiceBtn?.click()
+    await new Promise((r) => setTimeout(r, 10))
+    expect(getUserMediaCalls).toBe(1)
+
+    // The voice button is disabled during micStarting so the user can't
+    // even attempt a third click via real input.
+    expect(voiceBtn?.disabled).toBe(true)
+
+    // Cleanup: resolve the pending request so the recording state is
+    // unwound before unmount.
+    const stopTrack = vi.fn()
+    gate.resolve({
+      getTracks: () => [{ stop: stopTrack, kind: 'audio' }],
+      getAudioTracks: () => [{ stop: stopTrack, kind: 'audio' }],
+      getVideoTracks: () => []
+    } as unknown as MediaStream)
+    await new Promise((r) => setTimeout(r, 60))
+    mount.unmount()
+  })
+
+  // -----------------------------------------------------------------------
+  // D2: getUserMedia pending → close / 切素材 → isMicStarting 必须被清，
+  //     新素材可以正常重新启动 Voice。
+  // -----------------------------------------------------------------------
+  it('D2) close / asset switch during getUserMedia pending clears isMicStarting; new sheet can start voice again', async () => {
+    let getUserMediaCalls = 0
+    const gateA = deferred<MediaStream>()
+    const gateB = deferred<MediaStream>()
+    const gates: Deferred<MediaStream>[] = []
+    defineMediaDevices({
+      getUserMedia: () => {
+        getUserMediaCalls += 1
+        const d = deferred<MediaStream>()
+        gates.push(d)
+        if (gates.length === 1) Object.assign(d, gateA)
+        else Object.assign(d, gateB)
+        return d.promise
+      }
+    })
+    const asrMock = vi.fn()
+    const qaMock = vi.fn()
+    vi.stubGlobal('window', { electronAPI: { ai: { asrTranscribe: asrMock, qaAsk: qaMock } } })
+
+    // A) Click voice on asset A; getUserMedia is pending (deferred).
+    const mountA = mountSheetReactive(sampleAsset)
+    await flush()
+    const voiceA = mountA.root.querySelector('.asset-qa-voice') as HTMLButtonElement | null
+    voiceA?.click()
+    await new Promise((r) => setTimeout(r, 10))
+    expect(getUserMediaCalls).toBe(1)
+
+    // B) Asset switch while pending. Watcher fires resetForAssetSwitch +
+    //    releaseMicImmediate, which bumps voiceGen AND clears isMicStarting.
+    mountA.setAsset(sampleAssetB)
+    await flush()
+    // gate A never resolves — its late resolve must be silently dropped.
+    // We resolve it now to prove the late-resolve path is also safe.
+    const stopTrack = vi.fn()
+    gateA.resolve({
+      getTracks: () => [{ stop: stopTrack, kind: 'audio' }],
+      getAudioTracks: () => [{ stop: stopTrack, kind: 'audio' }],
+      getVideoTracks: () => []
+    } as unknown as MediaStream)
+    await new Promise((r) => setTimeout(r, 50))
+    expect(stopTrack).toHaveBeenCalled() // A's late stream is dropped
+
+    // C) Click voice on the new asset B; getUserMedia is invoked again.
+    const voiceB = mountA.root.querySelector('.asset-qa-voice') as HTMLButtonElement | null
+    voiceB?.click()
+    await new Promise((r) => setTimeout(r, 10))
+    expect(getUserMediaCalls).toBe(2)
+    expect(voiceB?.disabled).toBe(true) // isMicStarting gates real input
+
+    // D) Close the sheet entirely while B is still pending. After close
+    //    the new sheet must allow voice to start again with no leftover
+    //    isMicStarting state.
+    mountA.unmount()
+
+    // E) Fresh mount — voice button must be enabled, getUserMedia must
+    //    be invokable exactly once for the new flow.
+    const mountC = mountSheet()
+    await flush()
+    const voiceC = mountC.root.querySelector('.asset-qa-voice') as HTMLButtonElement | null
+    expect(voiceC?.disabled).toBe(false)
+    voiceC?.click()
+    await new Promise((r) => setTimeout(r, 10))
+    expect(getUserMediaCalls).toBe(3)
+
+    // Cleanup
+    gateB.resolve({
+      getTracks: () => [{ stop: vi.fn(), kind: 'audio' }],
+      getAudioTracks: () => [{ stop: vi.fn(), kind: 'audio' }],
+      getVideoTracks: () => []
+    } as unknown as MediaStream)
+    await new Promise((r) => setTimeout(r, 30))
+    mountC.unmount()
+  })
 })
 

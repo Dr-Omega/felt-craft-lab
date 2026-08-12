@@ -37,6 +37,13 @@ export interface AssetQaSnapshot {
   input: string
   isRecording: boolean
   isAsrBusy: boolean
+  /**
+   * True while the user has clicked "说一说" and the browser is still
+   * resolving getUserMedia. Used by the UI to disable the voice button
+   * (and to short-circuit any second click) so a kid can't spawn two
+   * concurrent microphone prompts.
+   */
+  isMicStarting: boolean
 }
 
 export type AssetQaListener = (snapshot: AssetQaSnapshot) => void
@@ -59,6 +66,7 @@ function defaultSnapshot(partial: Partial<AssetQaSnapshot> = {}): AssetQaSnapsho
     input: '',
     isRecording: false,
     isAsrBusy: false,
+    isMicStarting: false,
     ...partial
   }
 }
@@ -87,6 +95,7 @@ export class AssetQaController {
   private micHint = ''
   private isRecording = false
   private isAsrBusy = false
+  private isMicStarting = false
   private generation = 0
   private inflight: { generation: number; sentAt: string } | null = null
   private voiceGeneration = 0
@@ -109,7 +118,8 @@ export class AssetQaController {
       micHint: this.micHint,
       input: this.input,
       isRecording: this.isRecording,
-      isAsrBusy: this.isAsrBusy
+      isAsrBusy: this.isAsrBusy,
+      isMicStarting: this.isMicStarting
     }
   }
 
@@ -128,6 +138,7 @@ export class AssetQaController {
     this.errorMessage = ''
     this.isRecording = false
     this.isAsrBusy = false
+    this.isMicStarting = false
     this.emit()
   }
 
@@ -148,6 +159,7 @@ export class AssetQaController {
       this.isRecording = false
       this.isAsrBusy = false
     }
+    this.isMicStarting = false
     this.emit()
   }
 
@@ -159,11 +171,13 @@ export class AssetQaController {
   releaseMic(): void {
     this.isRecording = false
     this.isAsrBusy = false
+    this.isMicStarting = false
     this.emit()
   }
 
   beginRecording(): void {
     this.micHint = ''
+    this.isMicStarting = true
     this.emit()
   }
 
@@ -171,12 +185,14 @@ export class AssetQaController {
     this.micAvailability = 'unavailable'
     this.micHint = reason === 'denied' ? MIC_DENIED_TEXT : MIC_UNAVAILABLE_TEXT
     this.isRecording = false
+    this.isMicStarting = false
     this.emit()
   }
 
   startRecordingSucceeded(): void {
     this.micAvailability = 'available'
     this.isRecording = true
+    this.isMicStarting = false
     this.errorMessage = ''
     this.emit()
   }

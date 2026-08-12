@@ -7,6 +7,11 @@ const crypto = require('node:crypto')
 
 const PORT = Number(process.env.MOCK_AI_GATEWAY_PORT || 0)
 
+// In-memory record of the last 16 QA /api/qa/ask calls. Used by the
+// acceptance script to assert that the second / third calls actually
+// carried the previous turns as history (not just an empty array).
+const qaCallLog = []
+
 function b64url(buf) {
   return Buffer.from(buf)
     .toString('base64')
@@ -54,6 +59,12 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'GET' && url.pathname === '/api/health') {
       return send(res, 200, { ok: true, service: 'mock-ai-gateway' })
     }
+    if (req.method === 'GET' && url.pathname === '/api/_mock/qa-calls') {
+      // Debug endpoint: returns the last QA calls (with question + history).
+      // Used only by the acceptance script to verify that history is
+      // actually flowing through the chain — not part of any real protocol.
+      return send(res, 200, { ok: true, calls: qaCallLog.slice() })
+    }
     if (req.method === 'POST' && url.pathname === '/api/session/token') {
       const raw = await readBody(req)
       const data = JSON.parse(raw.toString('utf8') || '{}')
@@ -81,7 +92,7 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, {
         ok: true,
         result: {
-          transcript: '小兔子',
+          transcript: '晚上会亮吗？',
           provider: 'qwen_cloud_http',
           durationMs: 12,
           requestId: 'mock-asr'
@@ -97,6 +108,7 @@ const server = http.createServer(async (req, res) => {
       }
       const raw = await readBody(req)
       const data = JSON.parse(raw.toString('utf8') || '{}')
+      const question = typeof data.question === 'string' ? data.question.trim() : ''
       const history = Array.isArray(data.history) ? data.history : []
       const validHistory = history.every((entry) =>
         entry && (entry.role === 'user' || entry.role === 'assistant') && typeof entry.content === 'string'
@@ -107,10 +119,21 @@ const server = http.createServer(async (req, res) => {
           error: { code: 'INVALID_ARGUMENT', message: 'bad history', retryable: false }
         })
       }
+      // Branched deterministic answers. The acceptance script uses these
+      // exact question strings to drive a coherent multi-turn conversation
+      // (so the screenshots stop looking like a broken product).
+      const answer = (() => {
+        if (question === '你叫什么名字？') return '我叫莲花河灯呀！'
+        if (question === '那你平时会在哪里？') return '我会漂在水面上，晚上亮起来很好看。'
+        if (question === '你晚上会亮吗？') return '会呀，点亮以后我会在水面上发光。'
+        return '我在这里呢。'
+      })()
+      qaCallLog.push({ question, historyLength: history.length, history: history.slice(), answer, at: Date.now() })
+      if (qaCallLog.length > 16) qaCallLog.shift()
       return send(res, 200, {
         ok: true,
         result: {
-          answer: '可以贴在草地上。',
+          answer,
           safetyAction: 'allow',
           requestId: 'mock-qa'
         }

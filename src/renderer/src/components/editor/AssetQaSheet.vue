@@ -51,10 +51,11 @@ controller.subscribe((s) => { snapshot.value = s })
 const isBusy = computed(() => snapshot.value.busy)
 const isRecording = computed(() => snapshot.value.isRecording)
 const isAsrBusy = computed(() => snapshot.value.isAsrBusy)
+const isMicStarting = computed(() => snapshot.value.isMicStarting)
 
-// UI guard: any of the three blocking states disables send.
+// UI guard: any of the four blocking states disables send.
 const canSend = computed(() => {
-  if (isBusy.value || isRecording.value || isAsrBusy.value) return false
+  if (isBusy.value || isRecording.value || isAsrBusy.value || isMicStarting.value) return false
   const text = snapshot.value.input.trim()
   return text.length > 0 && text.length <= ASSET_QA_MAX_QUESTION
 })
@@ -85,10 +86,10 @@ function onClose(): void {
 
 async function sendTextQuestion(): Promise<void> {
   if (!props.asset) return
-  // Second-layer guard: never enter submitTextQuestion if any of the three
+  // Second-layer guard: never enter submitTextQuestion if any of the four
   // blocking states is active. The controller also gates internally, but
   // doing it here keeps the surface uniform with canSend.
-  if (isBusy.value || isRecording.value || isAsrBusy.value) return
+  if (isBusy.value || isRecording.value || isAsrBusy.value || isMicStarting.value) return
   await controller.submitTextQuestion({
     assetId: props.asset.assetId,
     nameZh: props.asset.nameZh,
@@ -148,7 +149,7 @@ function pickRecorderMimeType(): string {
 }
 
 async function startRecording(): Promise<void> {
-  if (snapshot.value.isRecording || snapshot.value.isAsrBusy) return
+  if (snapshot.value.isRecording || snapshot.value.isAsrBusy || snapshot.value.isMicStarting) return
   if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
     controller.failRecording('unavailable')
     return
@@ -328,15 +329,27 @@ onBeforeUnmount(() => {
 
 function toggleRecording(): void {
   if (snapshot.value.busy) return
+  if (snapshot.value.isMicStarting) return // second click is silently ignored
   if (snapshot.value.isRecording) stopRecording()
   else void startRecording()
 }
 
-const voiceButtonLabel = computed(() => (isRecording.value ? '停止' : '说一说'))
-const voiceButtonAria = computed(() => (isRecording.value ? '停止录音' : '说一说'))
+const voiceButtonLabel = computed(() => {
+  if (isRecording.value) return '停止'
+  if (isMicStarting.value) return '正在打开麦克风…'
+  return '说一说'
+})
+const voiceButtonAria = computed(() => {
+  if (isRecording.value) return '停止录音'
+  if (isMicStarting.value) return '正在打开麦克风'
+  return '说一说'
+})
 
 // Voice bar copy anchored on the asset name.
 const voiceBarText = computed(() => {
+  if (isMicStarting.value) {
+    return '正在打开麦克风……'
+  }
   if (isRecording.value) {
     return props.asset?.nameZh
       ? `${props.asset.nameZh}正在听你说……`
@@ -356,6 +369,7 @@ const loadingCopy = computed(() => {
 })
 
 const inputPlaceholder = computed(() => {
+  if (isMicStarting.value) return '正在打开麦克风……'
   if (isRecording.value) {
     if (props.asset?.nameZh) return `${props.asset.nameZh}正在听你说……`
     return '正在听你说……'
@@ -401,8 +415,8 @@ const inputPlaceholder = computed(() => {
 
     <div
       class="asset-qa-voicebar"
-      :class="{ 'is-live': isRecording }"
-      :aria-live="isRecording ? 'polite' : 'off'"
+      :class="{ 'is-live': isRecording, 'is-starting': isMicStarting && !isRecording }"
+      :aria-live="(isRecording || isMicStarting) ? 'polite' : 'off'"
     >
       <span class="asset-qa-voicebar-dot" aria-hidden="true"></span>
       <span class="asset-qa-voicebar-text">{{ voiceBarText }}</span>
@@ -443,7 +457,7 @@ const inputPlaceholder = computed(() => {
         rows="2"
         :maxlength="ASSET_QA_MAX_QUESTION"
         :placeholder="inputPlaceholder"
-        :disabled="isBusy || isRecording || isAsrBusy"
+        :disabled="isBusy || isRecording || isAsrBusy || isMicStarting"
         aria-label="问问它的问题"
         @input="(event) => controller.setInput((event.target as HTMLTextAreaElement).value)"
       ></textarea>
@@ -451,9 +465,9 @@ const inputPlaceholder = computed(() => {
         <button
           type="button"
           class="asset-qa-voice"
-          :class="{ 'is-live': isRecording }"
+          :class="{ 'is-live': isRecording, 'is-starting': isMicStarting }"
           :aria-pressed="isRecording"
-          :disabled="isBusy || isAsrBusy"
+          :disabled="isBusy || isAsrBusy || isMicStarting"
           :aria-label="voiceButtonAria"
           :title="voiceButtonAria"
           @click="toggleRecording"

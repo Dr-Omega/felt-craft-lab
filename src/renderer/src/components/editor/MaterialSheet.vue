@@ -168,37 +168,48 @@ function askSelection(): void {
         <p v-if="visibleAssets.length === 0" class="material-empty">这里还没有符合的素材，换个词或换个分类试试。</p>
       </div>
       <div v-if="selectedAsset()" class="sheet-footer">
-        <span class="sheet-selection">{{ selectedAsset()?.nameZh }}</span>
-        <AssetAudioControls :asset="selectedAsset()" :active="open" />
-        <button
-          class="sheet-ask"
-          type="button"
-          :disabled="busy || !unlocked(selectedAsset()!)"
-          title="问问它"
-          aria-label="问问它"
-          @click="askSelection"
-        >
-          问问它
-        </button>
-        <button
-          class="sheet-add"
-          type="button"
-          :disabled="busy || !unlocked(selectedAsset()!)"
-          @click="addSelection"
-        >
-          放进作品
-        </button>
+        <div class="sheet-footer-name">
+          <p class="sheet-footer-name-zh">{{ selectedAsset()?.nameZh }}</p>
+          <p v-if="selectedAsset()?.nameEn" class="sheet-footer-name-en">{{ selectedAsset()?.nameEn }}</p>
+        </div>
+        <div class="sheet-footer-secondary">
+          <AssetAudioControls :asset="selectedAsset()" :active="open" />
+        </div>
+        <div class="sheet-footer-primary">
+          <button
+            class="sheet-ask"
+            type="button"
+            :disabled="busy || !unlocked(selectedAsset()!)"
+            title="问问它"
+            aria-label="问问它"
+            @click="askSelection"
+          >
+            问问它
+          </button>
+          <button
+            class="sheet-add"
+            type="button"
+            :disabled="busy || !unlocked(selectedAsset()!)"
+            @click="addSelection"
+          >
+            放进作品
+          </button>
+        </div>
       </div>
     </aside>
 </template>
 
 <style scoped>
+/* MaterialSheet — visuals aligned with EditorPage wood/apricot tokens. The
+   parent sheet layout (max-height, flex/grid shell, footer position) lives
+   in EditorPage.vue so the bottom action bar can be the only fixed-height
+   zone while the asset list is the only scrollable zone. */
 .sheet-toolbar {
   display: flex;
   flex-direction: column;
   gap: 8px;
   padding: 12px 24px 4px;
-  border-bottom: 1px solid var(--line, #c5d5d0);
+  border-bottom: 1px solid rgba(89, 71, 56, 0.08);
 }
 
 .sheet-search {
@@ -206,14 +217,15 @@ function askSelection(): void {
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 8px;
-  padding: 6px 10px;
-  background: var(--paper, #eef4f2);
-  border: 1px solid var(--line, #c5d5d0);
-  border-radius: 12px;
+  padding: 6px 12px;
+  background: var(--wood-surface, #efe2c9);
+  border: 1px solid var(--wood-mid, #d9b98a);
+  border-radius: var(--radius-pill, 999px);
+  color: var(--color-text, #594738);
 }
 
 .sheet-search-label {
-  color: var(--muted, #4d6460);
+  color: var(--color-text-soft, #8b7355);
   font-size: 0.85rem;
   white-space: nowrap;
 }
@@ -228,11 +240,15 @@ function askSelection(): void {
   padding: 0;
 }
 
+.sheet-search input::placeholder {
+  color: var(--color-text-faint, #b8a48a);
+}
+
 .sheet-search-clear {
   appearance: none;
   border: 0;
   background: transparent;
-  color: var(--muted, #4d6460);
+  color: var(--color-text-soft, #8b7355);
   cursor: pointer;
   font-size: 1.1rem;
   line-height: 1;
@@ -252,11 +268,12 @@ function askSelection(): void {
   align-items: center;
   gap: 6px;
   padding: 4px 12px;
-  border-radius: 999px;
-  background: #fff;
-  border: 1px solid var(--line, #c5d5d0);
-  color: var(--ink, #16302b);
+  border-radius: var(--radius-pill, 999px);
+  background: #fffef8;
+  border: 1px solid var(--wood-mid, #d9b98a);
+  color: var(--color-text, #594738);
   cursor: pointer;
+  font: inherit;
   font-size: 0.85rem;
 }
 
@@ -265,20 +282,21 @@ function askSelection(): void {
   min-width: 1.5em;
   text-align: center;
   font-size: 0.75rem;
-  color: var(--muted, #4d6460);
-  background: var(--paper, #eef4f2);
-  border-radius: 999px;
+  color: var(--color-text-soft, #8b7355);
+  background: var(--wood-surface, #efe2c9);
+  border-radius: var(--radius-pill, 999px);
   padding: 0 6px;
 }
 
 .category-chip.is-selected {
-  background: var(--accent, #1f6f63);
-  border-color: var(--accent, #1f6f63);
-  color: #fff;
+  background: var(--color-primary, #e8a572);
+  border-color: var(--color-primary, #e8a572);
+  color: var(--color-on-primary, #fff);
+  font-weight: 600;
 }
 
 .category-chip.is-selected .category-chip-count {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.22);
   color: #fff;
 }
 
@@ -286,8 +304,96 @@ function askSelection(): void {
   margin: auto;
   padding: 32px 16px;
   text-align: center;
-  color: var(--muted, #4d6460);
+  color: var(--color-text-soft, #8b7355);
   font-size: 0.95rem;
   grid-column: 1 / -1;
+}
+
+/* Footer three-layer layout: name (info) / secondary (audio) / primary
+   (ask + add). The primary row carries the visual weight; the others
+   are intentionally low-emphasis to keep the action hierarchy obvious. */
+.sheet-footer {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  padding: 10px 24px 14px;
+  border-top: 1px solid rgba(89, 71, 56, 0.08);
+  background: var(--wood-light, #f0e2c5);
+  text-align: center;
+}
+
+.sheet-footer-name {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  line-height: 1.2;
+}
+
+.sheet-footer-name-zh {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text, #594738);
+}
+
+.sheet-footer-name-en {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-text-soft, #8b7355);
+  letter-spacing: 0.04em;
+}
+
+.sheet-footer-secondary {
+  display: flex;
+  justify-content: center;
+}
+
+.sheet-footer-primary {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+.sheet-ask,
+.sheet-add {
+  min-height: 40px;
+  padding: 0 22px;
+  border-radius: var(--radius-pill, 999px);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.sheet-ask {
+  border: 1px solid var(--color-primary, #e8a572);
+  background: #fffef8;
+  color: var(--color-primary, #e8a572);
+}
+
+.sheet-ask:hover:not(:disabled) {
+  background: var(--color-primary-soft, #f4c9a4);
+}
+
+.sheet-add {
+  border: 0;
+  background: var(--color-primary, #e8a572);
+  color: var(--color-on-primary, #fff);
+  box-shadow: 0 4px 12px rgba(232, 165, 114, 0.32);
+}
+
+.sheet-add:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(232, 165, 114, 0.42);
+}
+
+.sheet-ask:disabled,
+.sheet-add:disabled {
+  cursor: not-allowed;
+  opacity: 0.46;
+  box-shadow: none;
+  transform: none;
 }
 </style>
