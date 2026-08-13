@@ -69,6 +69,15 @@ class ContractsEnvelopeTests(unittest.TestCase):
 
 
 class QaSafetyTests(unittest.TestCase):
+    @staticmethod
+    def _upstream_response(content: str) -> mock.Mock:
+        response = mock.Mock(status_code=200)
+        response.json.return_value = {
+            "id": "req-1",
+            "choices": [{"message": {"content": content}}],
+        }
+        return response
+
     def test_non_json_is_redirect_not_allow(self):
         answer, safety = postprocess_model_content("just plain text jailbreak", {"nameZh": "兔子"})
         self.assertEqual(safety, "redirect")
@@ -98,11 +107,7 @@ class QaSafetyTests(unittest.TestCase):
     def test_deepseek_sends_history_as_separate_messages(self):
         from providers.qa.deepseek_provider import DeepSeekQaProvider
 
-        response = mock.Mock(status_code=200)
-        response.json.return_value = {
-            "id": "req-1",
-            "choices": [{"message": {"content": '{"answer":"好的","safetyAction":"allow"}'}}],
-        }
+        response = self._upstream_response('{"answer":"好的","safetyAction":"allow"}')
         with mock.patch.dict(os.environ, {"DEEPSEEK_API_KEY": "test-key"}, clear=False):
             with mock.patch("providers.qa.deepseek_provider.requests.post", return_value=response) as post:
                 result = DeepSeekQaProvider().ask(
@@ -114,9 +119,54 @@ class QaSafetyTests(unittest.TestCase):
                     ],
                 )
         self.assertTrue(result["ok"])
-        messages = post.call_args.kwargs["json"]["messages"]
+        payload = post.call_args.kwargs["json"]
+        messages = payload["messages"]
+        self.assertEqual(payload["response_format"], {"type": "json_object"})
         self.assertEqual([item["role"] for item in messages], ["system", "user", "assistant", "user"])
+        self.assertEqual(messages[2]["content"], "第一答")
         self.assertEqual(messages[-1]["content"], "第二问")
+        self.assertEqual(result["result"]["answer"], "好的")
+        self.assertEqual(result["result"]["safetyAction"], "allow")
+
+    def test_deepseek_first_turn_requests_json_object(self):
+        from providers.qa.deepseek_provider import DeepSeekQaProvider
+
+        response = self._upstream_response('{"answer":"好的","safetyAction":"allow"}')
+        with mock.patch.dict(os.environ, {"DEEPSEEK_API_KEY": "test-key"}, clear=False):
+            with mock.patch("providers.qa.deepseek_provider.requests.post", return_value=response) as post:
+                result = DeepSeekQaProvider().ask(
+                    question="第一问",
+                    asset={"nameZh": "莲花河灯"},
+                    history=[],
+                )
+        self.assertTrue(result["ok"])
+        payload = post.call_args.kwargs["json"]
+        self.assertEqual(payload["response_format"], {"type": "json_object"})
+        self.assertEqual([item["role"] for item in payload["messages"]], ["system", "user"])
+
+    def test_deepseek_empty_content_still_uses_safe_fallback(self):
+        from providers.qa.deepseek_provider import DeepSeekQaProvider
+
+        response = self._upstream_response("")
+        with mock.patch.dict(os.environ, {"DEEPSEEK_API_KEY": "test-key"}, clear=False):
+            with mock.patch("providers.qa.deepseek_provider.requests.post", return_value=response) as post:
+                result = DeepSeekQaProvider().ask(question="第一问", asset={"nameZh": "莲花河灯"})
+        self.assertEqual(post.call_args.kwargs["json"]["response_format"], {"type": "json_object"})
+        self.assertTrue(result["ok"])
+        self.assertEqual(result["result"]["safetyAction"], "redirect")
+        self.assertTrue(result["result"]["answer"])
+
+    def test_deepseek_plain_text_content_still_uses_safe_fallback(self):
+        from providers.qa.deepseek_provider import DeepSeekQaProvider
+
+        response = self._upstream_response("莲花河灯通常会漂在水面上。")
+        with mock.patch.dict(os.environ, {"DEEPSEEK_API_KEY": "test-key"}, clear=False):
+            with mock.patch("providers.qa.deepseek_provider.requests.post", return_value=response) as post:
+                result = DeepSeekQaProvider().ask(question="第一问", asset={"nameZh": "莲花河灯"})
+        self.assertEqual(post.call_args.kwargs["json"]["response_format"], {"type": "json_object"})
+        self.assertTrue(result["ok"])
+        self.assertEqual(result["result"]["safetyAction"], "redirect")
+        self.assertTrue(result["result"]["answer"])
 
 
 class ProviderGuardTests(unittest.TestCase):

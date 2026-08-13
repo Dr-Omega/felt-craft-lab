@@ -108,6 +108,7 @@ class DeepSeekQaProvider(QaProvider):
             "messages": build_messages(question=q, asset=asset or {}, history=history),
             "temperature": 0.6,
             "max_tokens": 300,
+            "response_format": {"type": "json_object"},
         }
         headers = {
             "Authorization": f"Bearer {key}",
