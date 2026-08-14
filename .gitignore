@@ -68,3 +68,6 @@ backend/cache/
 backend/data/generated/
 backend/data/logs/
 backend/data/*.jsonl
+# Explicit real-provider Probe response captures; these are local review inputs.
+backend/scripts/probe-*.json
+probe-*.json
