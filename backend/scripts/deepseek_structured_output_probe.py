@@ -29,6 +29,7 @@ from dotenv import load_dotenv
 
 DEFAULT_BASE_URL = "https://api.deepseek.com"
 DEFAULT_TIMEOUT_SECONDS = 45
+QA_MAX_HISTORY_MESSAGES = 12
 ALLOWED_SAFETY_ACTIONS = frozenset({"allow", "redirect", "reject"})
 EXPECTED_TOOL_NAME = "submit_qa_response"
 
@@ -139,9 +140,11 @@ def build_system_prompt(asset: dict[str, Any], *, mode: str) -> str:
 
 
 def build_messages(question: str, asset: dict[str, Any], history: list[dict[str, str]], *, mode: str) -> list[dict[str, str]]:
-    """Copy history into provider messages so the caller's list is never mutated."""
+    """Copy only the Renderer-equivalent recent history window without mutation."""
+    start = max(0, len(history) - QA_MAX_HISTORY_MESSAGES)
+    request_history = history[start:]
     messages = [{"role": "system", "content": build_system_prompt(asset, mode=mode)}]
-    messages.extend({"role": item["role"], "content": item["content"]} for item in history)
+    messages.extend({"role": item["role"], "content": item["content"]} for item in request_history)
     messages.append({"role": "user", "content": question})
     return messages
 

@@ -135,7 +135,7 @@ class DeepSeekStructuredOutputProbeTests(unittest.TestCase):
             base_url="https://example.invalid", timeout_seconds=1, post=post,
         )
         self.assertEqual(len(records), 10)
-        self.assertEqual([len(payload["messages"]) - 2 for payload in payloads], list(range(0, 20, 2)))
+        self.assertEqual([len(payload["messages"]) - 2 for payload in payloads], [0, 2, 4, 6, 8, 10, 12, 12, 12, 12])
         self.assertEqual(payloads[1]["messages"][-2:], [{"role": "assistant", "content": "第1答"}, {"role": "user", "content": CASES["lantern"]["questions"][1]}])
 
     def test_PROBE_HISTORY_01_success_adds_complete_pair(self):
@@ -227,6 +227,101 @@ class DeepSeekStructuredOutputProbeTests(unittest.TestCase):
             history = payload["messages"][1:-1]
             self.assertEqual(len(history) % 2, 0)
             self.assertEqual([message["role"] for message in history], [role for _ in range(len(history) // 2) for role in ("user", "assistant")])
+
+    def test_PROBE_WINDOW_01_six_successful_turns_send_twelve_history_messages_on_round_seven(self):
+        payloads: list[dict[str, object]] = []
+
+        def post(*args, **kwargs):
+            payloads.append(copy.deepcopy(kwargs["json"]))
+            return json_response('{"answer":"回答。","safetyAction":"allow"}')
+
+        run_case(
+            mode="json", model="deepseek-chat", case_name="lantern", api_key="test-key",
+            base_url="https://example.invalid", timeout_seconds=1, post=post,
+        )
+        self.assertEqual(len(payloads[6]["messages"][1:-1]), 12)
+
+    def test_PROBE_WINDOW_02_seven_successful_turns_evict_oldest_pair_on_round_eight(self):
+        payloads: list[dict[str, object]] = []
+
+        def post(*args, **kwargs):
+            payloads.append(copy.deepcopy(kwargs["json"]))
+            answer = f"第{len(payloads)}答。"
+            return json_response(json.dumps({"answer": answer, "safetyAction": "allow"}, ensure_ascii=False))
+
+        run_case(
+            mode="json", model="deepseek-chat", case_name="lantern", api_key="test-key",
+            base_url="https://example.invalid", timeout_seconds=1, post=post,
+        )
+        round_eight_history = payloads[7]["messages"][1:-1]
+        self.assertEqual(len(round_eight_history), 12)
+        self.assertEqual(round_eight_history[0], {"role": "user", "content": CASES["lantern"]["questions"][1]})
+        self.assertEqual(round_eight_history[1], {"role": "assistant", "content": "第2答。"})
+        self.assertNotIn({"role": "user", "content": CASES["lantern"]["questions"][0]}, round_eight_history)
+
+    def test_PROBE_WINDOW_03_no_provider_request_exceeds_twelve_history_messages(self):
+        payloads: list[dict[str, object]] = []
+
+        def post(*args, **kwargs):
+            payloads.append(copy.deepcopy(kwargs["json"]))
+            return json_response('{"answer":"回答。","safetyAction":"allow"}')
+
+        run_case(
+            mode="json", model="deepseek-chat", case_name="lantern", api_key="test-key",
+            base_url="https://example.invalid", timeout_seconds=1, post=post,
+        )
+        self.assertEqual(len(payloads), 10)
+        self.assertTrue(all(len(payload["messages"][1:-1]) <= 12 for payload in payloads))
+
+    def test_PROBE_WINDOW_04_failed_question_never_enters_success_history_window(self):
+        payloads: list[dict[str, object]] = []
+        outcomes = iter(["第一答。", None, "第三答。"])
+
+        def post(*args, **kwargs):
+            payloads.append(copy.deepcopy(kwargs["json"]))
+            try:
+                answer = next(outcomes)
+            except StopIteration:
+                answer = "后续答。"
+            return json_response(" " if answer is None else json.dumps({"answer": answer, "safetyAction": "allow"}, ensure_ascii=False))
+
+        run_case(
+            mode="json", model="deepseek-chat", case_name="lantern", api_key="test-key",
+            base_url="https://example.invalid", timeout_seconds=1, post=post,
+        )
+        third_turn_history = payloads[2]["messages"][1:-1]
+        self.assertEqual(third_turn_history, [{"role": "user", "content": CASES["lantern"]["questions"][0]}, {"role": "assistant", "content": "第一答。"}])
+        self.assertNotIn({"role": "user", "content": CASES["lantern"]["questions"][1]}, third_turn_history)
+
+    def test_PROBE_WINDOW_05_json_and_strict_use_the_same_window(self):
+        json_payloads: list[dict[str, object]] = []
+        strict_payloads: list[dict[str, object]] = []
+
+        def json_post(*args, **kwargs):
+            json_payloads.append(copy.deepcopy(kwargs["json"]))
+            return json_response('{"answer":"回答。","safetyAction":"allow"}')
+
+        def strict_post(*args, **kwargs):
+            strict_payloads.append(copy.deepcopy(kwargs["json"]))
+            return strict_response([expected_tool('{"answer":"回答。","safetyAction":"allow"}')])
+
+        common = {"case_name": "lantern", "api_key": "test-key", "base_url": "https://example.invalid", "timeout_seconds": 1}
+        run_case(mode="json", model="deepseek-chat", post=json_post, **common)
+        run_case(mode="strict", model="deepseek-v4-flash", post=strict_post, **common)
+        self.assertEqual(json_payloads[7]["messages"][1:-1], strict_payloads[7]["messages"][1:-1])
+        self.assertEqual(len(strict_payloads[7]["messages"][1:-1]), 12)
+
+    def test_PROBE_WINDOW_06_truncation_does_not_mutate_caller_history(self):
+        history = [
+            {"role": role, "content": f"{role}-{turn}"}
+            for turn in range(7)
+            for role in ("user", "assistant")
+        ]
+        original = copy.deepcopy(history)
+        messages = build_messages("当前问题", CASES["lantern"]["asset"], history, mode="json")
+        self.assertEqual(history, original)
+        self.assertEqual(messages[1:-1], original[2:])
+        self.assertEqual(len(messages[1:-1]), 12)
 
     def test_PROBE_13_input_history_is_not_mutated(self):
         history = [{"role": "user", "content": "第一问"}, {"role": "assistant", "content": "第一答"}]
