@@ -74,7 +74,7 @@ class QaSafetyTests(unittest.TestCase):
         response = mock.Mock(status_code=200)
         response.json.return_value = {
             "id": "req-1",
-            "choices": [{"message": {"content": content}}],
+            "choices": [{"message": {"content": content}, "finish_reason": "stop"}],
         }
         return response
 
