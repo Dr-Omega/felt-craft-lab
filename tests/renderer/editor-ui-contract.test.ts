@@ -15,8 +15,9 @@ const selectionTypes = readFileSync(resolve('src/renderer/src/editor/editor-sele
 describe('V4.6 formal Editor UI contract', () => {
   it('uses runtime dirty state for the return gate and explicit persistence baselines', () => {
     expect(page).toContain('sessionState.value?.isDirty === false')
-    expect(page).toContain("launch.mode === 'draft' || launch.mode === 'project'")
+    expect(page).toContain('DraftAutosaveController')
     expect(page).toContain('service.markSaved()')
+    expect(page).toContain('if (launch.scene.workName !== workName.value) service.setWorkName(workName.value)')
     expect(page).toContain('session.value.markSaved()')
   })
 
@@ -63,8 +64,10 @@ describe('V4.6 formal Editor UI contract', () => {
     expect(page).toContain('session.value.undo()')
     expect(page).toContain('session.value.redo()')
     expect(page).toContain('session.value.prepareProjectSave()')
-    expect(page).toContain('session.value.prepareDraftSave()')
-    expect(page).toContain('saveDraftFromPreparedScene')
+    expect(page).toContain('autosave?.flush(true)')
+    expect(page).toContain('session: service')
+    expect(page).toContain('session.value.setWorkName(nextWorkName)')
+    expect(page).toContain('<WorkNameModal')
     expect(page).toContain(':can-undo="canUndo"')
     expect(page).toContain(':can-redo="canRedo"')
   })

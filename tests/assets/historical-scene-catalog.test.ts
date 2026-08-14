@@ -76,6 +76,7 @@ class RecoveryStubAdapter implements EditorSessionAdapter {
   sendSelectedBackward(): void {}
   bringSelectedToFront(): void {}
   sendSelectedToBack(): void {}
+  setWorkName(): void {}
   async undo(): Promise<boolean> {
     return false
   }

@@ -23,9 +23,10 @@ import {
 import { getEditorLaunch, openLibrary } from '../app-nav'
 import {
   AssetAccessStore,
+  DraftAutosaveController,
   ProjectStore,
   getFeltCraftDatabase,
-  saveDraftFromPreparedScene,
+  normalizeWorkName,
   saveNewProject,
   updateExistingProject
 } from '../persistence'
@@ -34,6 +35,7 @@ import BottomActionDock from '../components/editor/BottomActionDock.vue'
 import BackgroundDrawer from '../components/editor/BackgroundDrawer.vue'
 import MaterialSheet from '../components/editor/MaterialSheet.vue'
 import ReturnSaveModal from '../components/editor/ReturnSaveModal.vue'
+import WorkNameModal from '../components/editor/WorkNameModal.vue'
 import ObjectQuickTools from '../components/editor/ObjectQuickTools.vue'
 import RemoveToast from '../components/editor/RemoveToast.vue'
 import AssetQaSheet from '../components/editor/AssetQaSheet.vue'
@@ -53,6 +55,8 @@ const feedback = ref('')
 const feedbackKind = ref<'success' | 'error' | 'info'>('info')
 const returnModalOpen = ref(false)
 const returnModalError = ref('')
+const workNameModalOpen = ref(false)
+const workNameModalError = ref('')
 const sheetOpen = ref(false)
 const backgroundDrawerOpen = ref(false)
 const sceneSnapshotMissing = ref(false)
@@ -64,12 +68,14 @@ const oqtElement = ref<{ $el: HTMLElement } | null>(null)
 const removeToastOpen = ref(false)
 const qaSheetOpen = ref(false)
 const qaSheetAsset = ref<AssetRecord | null>(null)
+const workName = ref(normalizeWorkName(launch?.scene.workName))
 
 let unsubscribe: (() => void) | undefined
 let selectionUnsubscribe: (() => void) | undefined
 let removeToastTimer: number | undefined
 let draftId = launch?.draftId
 let projectId = launch?.projectId
+let autosave: DraftAutosaveController | undefined
 
 const editorCatalog = launch
   ? resolveEditorCatalogForSnapshot(launch.scene.assetSnapshotId)
@@ -233,15 +239,27 @@ async function boot(): Promise<void> {
     createAdapter: () => new FabricEditorAdapter({ allowTestAssets: false, snapshotContext: YWN_SNAPSHOT_CONTEXT })
   })
   session.value = service
+  autosave = new DraftAutosaveController({
+    session: service,
+    draftId,
+    onSaved: (draft) => { draftId = draft.draftId },
+    onError: (error) => showFeedback(friendlyError(error), 'error')
+  })
   unsubscribe = service.subscribe((state) => {
     sessionState.value = state
+    autosave?.notify(state)
     if (state.status === 'recovery' || editorCatalog.snapshotMissing) {
       showFeedback('有些以前用过的素材暂时找不到啦，这件作品先不能继续保存。', 'error')
     }
   })
   try {
     await service.open(canvasEl.value, launch.scene, createCatalogResolver())
-    if (launch.mode === 'draft' || launch.mode === 'project') service.markSaved()
+    // Older/imported Scenes may have an empty workName. Normalize it before
+    // the first revision baseline so every later autosaved Draft is named.
+    if (launch.scene.workName !== workName.value) service.setWorkName(workName.value)
+    // Opening an existing or blank Scene is not itself an edit. Subsequent
+    // history revisions alone drive autosave.
+    service.markSaved()
     selectionUnsubscribe = service.subscribeSelection(handleSelectionEvent)
   } catch (error) {
     showFeedback(friendlyError(error), 'error')
@@ -355,11 +373,22 @@ async function redo(): Promise<void> {
   try { await session.value.redo() } catch (error) { showFeedback(friendlyError(error), 'error') }
 }
 
-async function finish(): Promise<void> {
+function requestFinish(): void {
+  if (!session.value) return
+  closeOqt()
+  workNameModalError.value = ''
+  workNameModalOpen.value = true
+}
+
+async function finish(workNameInput: string): Promise<void> {
   if (!session.value) return
   closeOqt()
   busy.value = true
+  workNameModalError.value = ''
   try {
+    const nextWorkName = normalizeWorkName(workNameInput)
+    session.value.setWorkName(nextWorkName)
+    workName.value = nextWorkName
     const prepared = await session.value.prepareProjectSave()
     if (projectId) {
       const existing = await new ProjectStore(getFeltCraftDatabase()).get(projectId)
@@ -370,9 +399,10 @@ async function finish(): Promise<void> {
       projectId = saved.projectId
     }
     session.value.markSaved()
+    workNameModalOpen.value = false
     showFeedback('作品收好啦！', 'success')
   } catch (error) {
-    showFeedback(friendlyError(error), 'error')
+    workNameModalError.value = friendlyError(error)
   } finally {
     busy.value = false
   }
@@ -463,10 +493,8 @@ async function saveProgressAndBack(): Promise<void> {
   busy.value = true
   returnModalError.value = ''
   try {
-    const preparedScene = session.value.prepareDraftSave()
-    const saved = await saveDraftFromPreparedScene(preparedScene, { draftId })
-    draftId = saved.draftId
-    session.value.markSaved()
+    await autosave?.flush(true)
+    draftId = autosave?.getDraftId() ?? draftId
     audioService.stop('primary')
     returnModalOpen.value = false
     openLibrary()
@@ -496,6 +524,7 @@ onMounted(async () => {
 onUnmounted(() => {
   unsubscribe?.()
   selectionUnsubscribe?.()
+  autosave?.dispose()
   hideRemoveToast()
   window.removeEventListener('resize', updateOqtPosition)
   session.value?.dispose()
@@ -508,11 +537,11 @@ watch([oqtOpen, oqtSelection], () => { void nextTick(updateOqtPosition) })
 <template>
   <section class="editor-stage">
     <EditorTopbar
-      :work-name="launch?.scene.workName ?? '我的新作品'"
+      :work-name="workName"
       :busy="busy"
       :can-finish="canFinish"
       @back="requestBack"
-      @finish="finish"
+      @finish="requestFinish"
     />
 
     <main class="editor-workspace">
@@ -601,6 +630,15 @@ watch([oqtOpen, oqtSelection], () => { void nextTick(updateOqtPosition) })
       @save="saveProgressAndBack"
       @discard="discardAndBack"
       @cancel="continueEditing"
+    />
+
+    <WorkNameModal
+      :open="workNameModalOpen"
+      :initial-name="workName"
+      :busy="busy"
+      :error-message="workNameModalError"
+      @save="finish"
+      @cancel="workNameModalOpen = false"
     />
 
     <AssetQaSheet
@@ -866,6 +904,8 @@ body { margin: 0; overflow: hidden; }
 .return-discard { border: 1px solid var(--wood-mid); background: transparent; color: var(--wood-deeper); }
 .return-cancel { border: 0; background: var(--wood-surface); color: var(--color-text); }
 .return-modal-actions button:disabled { cursor: not-allowed; opacity: 0.5; }
+.work-name-field { display: grid; gap: 6px; margin-top: 18px; color: var(--color-text); font-size: 13px; font-weight: 700; text-align: left; }
+.work-name-field input { min-height: 42px; padding: 0 13px; border: 1px solid var(--wood-mid); border-radius: var(--radius-pill); background: #fff; color: var(--color-text); font: inherit; font-weight: 400; }
 
 @media (max-width: 1439px) { .material-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
 @media (min-width: 1920px) { .material-grid { grid-template-columns: repeat(8, minmax(0, 1fr)); } }

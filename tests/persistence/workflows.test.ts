@@ -6,6 +6,8 @@ import {
   DraftStore,
   PersistenceError,
   ProjectStore,
+  DEFAULT_WORK_NAME,
+  normalizeWorkName,
   saveDraftFromPreparedScene,
   saveNewProject,
   setFeltCraftDatabaseForTests,
@@ -128,6 +130,22 @@ describe('project workflow', () => {
     expect(await new ProjectStore(db).get(project.projectId)).toEqual(project)
   })
 
+  it('NAME_01: turns a blank submitted name into the child-friendly default before formal save', async () => {
+    const name = normalizeWorkName('   ')
+    expect(name).toBe(DEFAULT_WORK_NAME)
+    const input = prepared(name)
+    const project = await saveNewProject(input, { db })
+    expect(project.scene.workName).toBe(DEFAULT_WORK_NAME)
+    expect(project.projectName).toBe(DEFAULT_WORK_NAME)
+  })
+
+  it('NAME_02: keeps a custom name identical in SceneDocument and ProjectRecord', async () => {
+    const input = prepared('月光下的河灯')
+    const project = await saveNewProject(input, { db })
+    expect(project.scene.workName).toBe('月光下的河灯')
+    expect(project.projectName).toBe('月光下的河灯')
+  })
+
   it('round 8: preserves the formal all theme when a Project is saved and reopened', async () => {
     const input = prepared()
     input.scene.themeId = 'all'
@@ -168,6 +186,36 @@ describe('project workflow', () => {
     expect(deleted).toEqual([existing.previewUrl])
   })
 
+  it('NAME_03: updates the same Project when its name changes without creating a duplicate', async () => {
+    const existing = validFeltProject()
+    await new ProjectStore(db).save(existing)
+
+    const updated = await updateExistingProject(existing, prepared('重新起的名字'), { db })
+
+    expect(updated.projectId).toBe(existing.projectId)
+    expect(updated.scene.workName).toBe('重新起的名字')
+    expect(updated.projectName).toBe('重新起的名字')
+    expect(await new ProjectStore(db).list()).toHaveLength(1)
+  })
+
+  it('NAME_04: commits the exact prepared Scene together with the preview bytes from one save input', async () => {
+    const captured: Uint8Array[] = []
+    installPreviewApi({
+      save: async (bytes) => {
+        captured.push(new Uint8Array(bytes))
+        return feltPreviewRef('transactionpreview01411181111111111111.png')
+      }
+    })
+    const input = prepared('同一次保存')
+    input.scene.objects[0] = { ...input.scene.objects[0]!, left: 333, top: 222, angle: 45 }
+    const expectedBytes = new Uint8Array(await input.previewPng.arrayBuffer())
+
+    const project = await saveNewProject(input, { db })
+
+    expect(project.scene).toEqual(input.scene)
+    expect(captured).toEqual([expectedBytes])
+  })
+
   it('cleans up the new preview when Dexie fails on create', async () => {
     const { deleted, saved } = installPreviewApi()
     const brokenDb = {
@@ -205,6 +253,17 @@ describe('project workflow', () => {
 
     const stillThere = await new ProjectStore(db).get(existing.projectId)
     expect(stillThere).toEqual(existing)
+  })
+
+  it('NAME_05: a formal Project save failure never removes the existing local Draft', async () => {
+    const scene = preparedScene({ workName: '保留草稿' })
+    const draft = await saveDraftFromPreparedScene(scene, { db })
+    const brokenDb = { projects: { put: async () => { throw new Error('dexie down') } } } as unknown as FeltCraftDatabase
+
+    await expect(saveNewProject({ scene, previewPng: new Blob([MINIMAL_PNG_BYTES], { type: 'image/png' }) }, { db: brokenDb }))
+      .rejects.toBeInstanceOf(PersistenceError)
+
+    expect(await new DraftStore(db).get(draft.draftId)).toEqual(draft)
   })
 
   it('runs Shared Contract validation (projectName must equal workName)', async () => {

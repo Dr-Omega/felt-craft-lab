@@ -162,6 +162,14 @@ class StubAdapter implements EditorSessionAdapter {
     this.sendToBack(this.selectedObjectId)
   }
 
+  setWorkName(workName: string): void {
+    this.ensureReady()
+    if (!this.scene) throw new Error('missing scene')
+    this.scene = { ...this.scene, workName }
+    this.historyProjection = { revision: this.historyProjection.revision + 1, canUndo: true, canRedo: false }
+    this.emitHistory()
+  }
+
   async undo(): Promise<boolean> {
     this.ensureReady()
     return this.undoResult
@@ -277,6 +285,18 @@ describe('EditorSessionService', () => {
 
     adapter.setHistoryProjection({ revision: 1, canUndo: false, canRedo: true })
     expect(service.getState()).toMatchObject({ isDirty: true, canUndo: false, canRedo: true })
+  })
+
+  it('updates the persisted Scene work name through the session history boundary', async () => {
+    const adapter = new StubAdapter()
+    const service = createSession(adapter)
+    await service.open({} as HTMLCanvasElement, cloneFixture(validScene), resolver())
+    service.markSaved()
+
+    service.setWorkName('新作品名字')
+
+    expect(service.getState()).toMatchObject({ isDirty: true, canUndo: true })
+    expect(service.prepareDraftSave().workName).toBe('新作品名字')
   })
 
   it('moves idle 鈫?loading 鈫?ready and exposes subscription snapshots', async () => {

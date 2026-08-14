@@ -131,6 +131,17 @@ async function waitForPortFree(port, timeoutMs = 8000) {
   throw new Error(`Port ${port} did not free within ${timeoutMs}ms.`)
 }
 
+/** Complete the explicit product naming step before its existing formal-save assertion. */
+async function finishProjectThroughNaming(i, label) {
+  await i.click('.topbar-finish')
+  const nameModalOpen = await i.waitFor('Boolean(document.querySelector(".work-name-modal"))')
+  check(`${label}: formal save opens the work-name dialog`, nameModalOpen)
+  if (!nameModalOpen) throw new Error('Work-name dialog did not open.')
+  await i.click('.work-name-modal .return-save')
+  await i.waitFor('document.querySelector(".editor-feedback")?.textContent?.includes("作品收好")')
+  await sleep(400)
+}
+
 // =====================================================================
 // Process-instance helper. Holds the live child + cdp + watchEvents for
 // the current Electron phase. Rebuilt on every launch.
@@ -556,9 +567,7 @@ async function runInProcessPhase1(instance) {
   const finishEnabled = await i.evaluate(`!document.querySelector(".topbar-finish")?.disabled`)
   check('Topbar finish button is enabled after draft reopen', finishEnabled)
   if (finishEnabled) {
-    await i.click('.topbar-finish')
-    await i.waitFor('document.querySelector(".editor-feedback")?.textContent?.includes("作品收好")')
-    await sleep(400)
+    await finishProjectThroughNaming(i, 'Initial Project save')
   }
   await i.click('.topbar-back')
   await i.waitFor('Boolean(document.querySelector(".library"))')
@@ -706,9 +715,7 @@ async function runInProcessPhase2(instance) {
 
   // Now save as a Project so phase 3 can verify project persistence.
   await i.waitFor('!document.querySelector(".topbar-finish")?.disabled', 10000)
-  await i.click('.topbar-finish')
-  await i.waitFor('document.querySelector(".editor-feedback")?.textContent?.includes("作品收好")')
-  await sleep(400)
+  await finishProjectThroughNaming(i, 'Restarted Draft Project save')
   await i.click('.topbar-back')
   await i.waitFor('Boolean(document.querySelector(".library"))')
   await sleep(600)

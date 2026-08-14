@@ -735,6 +735,16 @@ export class FabricEditorAdapter {
     this.withSelectedLayerObject((objectId) => this.sendToBack(objectId))
   }
 
+  setWorkName(workName: string): void {
+    const name = typeof workName === 'string' ? workName.trim() : ''
+    if (!name) throw editorError('INVALID_ARGUMENT', 'Work name is required.')
+    this.requireReadyCanvas()
+    const metadata = this.requireMetadata()
+    if (metadata.workName === name) return
+    this.metadata = { ...metadata, workName: name }
+    this.captureHistory()
+  }
+
   async undo(): Promise<boolean> {
     this.requireReadyCanvas()
     if (this.historyIndex <= 0) return false

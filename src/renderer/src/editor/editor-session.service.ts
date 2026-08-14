@@ -63,6 +63,7 @@ export class EditorSessionService {
       recoveryIssues: this.recoveryIssues.map((issue) => ({ ...issue })),
       canEdit,
       isDirty,
+      ...(this.currentHistoryRevision === undefined ? {} : { historyRevision: this.currentHistoryRevision }),
       canUndo: canEdit && this.historyCanUndo,
       canRedo: canEdit && this.historyCanRedo,
       canPrepareDraft: canPrepare,
@@ -227,6 +228,10 @@ export class EditorSessionService {
 
   sendSelectedToBack(): void {
     this.runSyncMutation('INVALID_ARGUMENT', () => this.requireAdapter().sendSelectedToBack())
+  }
+
+  setWorkName(workName: string): void {
+    this.runSyncMutation('INVALID_ARGUMENT', () => this.requireAdapter().setWorkName(workName))
   }
 
   async undo(): Promise<boolean> {

@@ -12,6 +12,8 @@ export interface EditorSessionState {
   recoveryIssues: readonly SceneRecoveryIssue[]
   canEdit: boolean
   isDirty: boolean
+  /** Adapter history revision; used by persistence to avoid stale autosave commits. */
+  historyRevision?: number
   canUndo: boolean
   canRedo: boolean
   canPrepareDraft: boolean
@@ -43,6 +45,7 @@ export interface EditorSessionAdapter {
   sendSelectedBackward(): void
   bringSelectedToFront(): void
   sendSelectedToBack(): void
+  setWorkName(workName: string): void
   undo(): Promise<boolean>
   redo(): Promise<boolean>
   getHistoryProjection(): EditorHistoryProjection
