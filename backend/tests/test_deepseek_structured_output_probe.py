@@ -138,6 +138,96 @@ class DeepSeekStructuredOutputProbeTests(unittest.TestCase):
         self.assertEqual([len(payload["messages"]) - 2 for payload in payloads], list(range(0, 20, 2)))
         self.assertEqual(payloads[1]["messages"][-2:], [{"role": "assistant", "content": "第1答"}, {"role": "user", "content": CASES["lantern"]["questions"][1]}])
 
+    def test_PROBE_HISTORY_01_success_adds_complete_pair(self):
+        payloads: list[dict[str, object]] = []
+
+        def post(*args, **kwargs):
+            payloads.append(copy.deepcopy(kwargs["json"]))
+            return json_response('{"answer":"完整回答。","safetyAction":"allow"}')
+
+        run_case(
+            mode="json", model="deepseek-chat", case_name="lantern", api_key="test-key",
+            base_url="https://example.invalid", timeout_seconds=1, post=post,
+        )
+        self.assertEqual(payloads[0]["messages"][1:-1], [])
+        self.assertEqual(
+            payloads[1]["messages"][1:-1],
+            [
+                {"role": "user", "content": CASES["lantern"]["questions"][0]},
+                {"role": "assistant", "content": "完整回答。"},
+            ],
+        )
+
+    def test_PROBE_HISTORY_02_failure_adds_no_history(self):
+        payloads: list[dict[str, object]] = []
+
+        def post(*args, **kwargs):
+            payloads.append(copy.deepcopy(kwargs["json"]))
+            return json_response(" \n")
+
+        run_case(
+            mode="json", model="deepseek-chat", case_name="lantern", api_key="test-key",
+            base_url="https://example.invalid", timeout_seconds=1, post=post,
+        )
+        self.assertEqual(payloads[0]["messages"][1:-1], [])
+        self.assertEqual(payloads[1]["messages"][1:-1], [])
+
+    def test_PROBE_HISTORY_03_failed_question_is_not_sent_in_next_successful_turn(self):
+        payloads: list[dict[str, object]] = []
+        outcomes = iter(
+            [
+                '{"answer":"第一答。","safetyAction":"allow"}',
+                " ",
+                '{"answer":"第三答。","safetyAction":"allow"}',
+            ]
+        )
+
+        def post(*args, **kwargs):
+            payloads.append(copy.deepcopy(kwargs["json"]))
+            try:
+                content = next(outcomes)
+            except StopIteration:
+                content = '{"answer":"后续答。","safetyAction":"allow"}'
+            return json_response(content)
+
+        run_case(
+            mode="json", model="deepseek-chat", case_name="lantern", api_key="test-key",
+            base_url="https://example.invalid", timeout_seconds=1, post=post,
+        )
+        third_turn_history = payloads[2]["messages"][1:-1]
+        self.assertEqual(
+            third_turn_history,
+            [
+                {"role": "user", "content": CASES["lantern"]["questions"][0]},
+                {"role": "assistant", "content": "第一答。"},
+            ],
+        )
+        self.assertNotIn({"role": "user", "content": CASES["lantern"]["questions"][1]}, third_turn_history)
+
+    def test_PROBE_HISTORY_04_history_is_always_complete_pairs_for_strict_mode(self):
+        payloads: list[dict[str, object]] = []
+        outcomes = iter([True, False, True, False])
+
+        def post(*args, **kwargs):
+            payloads.append(copy.deepcopy(kwargs["json"]))
+            try:
+                success = next(outcomes)
+            except StopIteration:
+                success = True
+            if not success:
+                return strict_response([])
+            answer = f"第{len(payloads)}答。"
+            return strict_response([expected_tool(json.dumps({"answer": answer, "safetyAction": "allow"}, ensure_ascii=False))])
+
+        run_case(
+            mode="strict", model="deepseek-v4-flash", case_name="lantern", api_key="test-key",
+            base_url="https://example.invalid", timeout_seconds=1, post=post,
+        )
+        for payload in payloads:
+            history = payload["messages"][1:-1]
+            self.assertEqual(len(history) % 2, 0)
+            self.assertEqual([message["role"] for message in history], [role for _ in range(len(history) // 2) for role in ("user", "assistant")])
+
     def test_PROBE_13_input_history_is_not_mutated(self):
         history = [{"role": "user", "content": "第一问"}, {"role": "assistant", "content": "第一答"}]
         original = copy.deepcopy(history)

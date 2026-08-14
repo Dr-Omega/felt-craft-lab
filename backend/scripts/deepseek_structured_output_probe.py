@@ -449,8 +449,11 @@ def run_case(
             post=post,
         )
         records.append(record)
-        history.append({"role": "user", "content": question})
         if record["success"]:
+            # Keep the same committed-turn invariant as the Renderer: a
+            # failed provider result must not leave an orphan user message in
+            # the next provider request.
+            history.append({"role": "user", "content": question})
             history.append({"role": "assistant", "content": record["answer"]})
     return records
 
