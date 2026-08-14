@@ -9,6 +9,7 @@ import sys
 import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
+from unittest import mock
 
 BACKEND = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(BACKEND))
@@ -18,11 +19,13 @@ from scripts.deepseek_structured_output_probe import (  # noqa: E402
     EXPECTED_TOOL_NAME,
     build_messages,
     build_request_payload,
+    main,
     parse_json_message,
     parse_strict_tool_calls,
     print_summary,
     run_case,
     run_turn,
+    summarize,
 )
 
 
@@ -45,6 +48,16 @@ def strict_response(tool_calls: object, finish_reason: str = "tool_calls"):
         def json():
             return {"id": "probe-request", "choices": [{"message": {"tool_calls": tool_calls}, "finish_reason": finish_reason}]}
 
+    return Response()
+
+
+def http_error_response(status_code: int, error: object):
+    class Response:
+        @staticmethod
+        def json():
+            return {"id": "probe-error-request", "error": error}
+
+    Response.status_code = status_code
     return Response()
 
 
@@ -322,6 +335,106 @@ class DeepSeekStructuredOutputProbeTests(unittest.TestCase):
         self.assertEqual(history, original)
         self.assertEqual(messages[1:-1], original[2:])
         self.assertEqual(len(messages[1:-1]), 12)
+
+    def test_PROBE_THINKING_01_v4_flash_disabled_payload_is_explicit(self):
+        payload = build_request_payload(
+            mode="json", model="deepseek-v4-flash", asset=CASES["lantern"]["asset"],
+            question="第一问", history=[], thinking_mode="disabled",
+        )
+        self.assertEqual(payload["thinking"], {"type": "disabled"})
+
+    def test_PROBE_THINKING_02_v4_flash_enabled_payload_is_explicit(self):
+        payload = build_request_payload(
+            mode="json", model="deepseek-v4-flash", asset=CASES["lantern"]["asset"],
+            question="第一问", history=[], thinking_mode="enabled",
+        )
+        self.assertEqual(payload["thinking"], {"type": "enabled"})
+
+    def test_PROBE_THINKING_03_a2_json_disabled_constructs_json_object_request(self):
+        payload = build_request_payload(
+            mode="json", model="deepseek-v4-flash", asset=CASES["lantern"]["asset"],
+            question="第一问", history=[], thinking_mode="disabled",
+        )
+        self.assertEqual(payload["response_format"], {"type": "json_object"})
+        self.assertNotIn("tool_choice", payload)
+
+    def test_PROBE_THINKING_04_b1_strict_disabled_constructs_named_tool_choice(self):
+        payload = build_request_payload(
+            mode="strict", model="deepseek-v4-flash", asset=CASES["lantern"]["asset"],
+            question="第一问", history=[], thinking_mode="disabled",
+        )
+        self.assertEqual(payload["thinking"], {"type": "disabled"})
+        self.assertEqual(payload["tool_choice"], {"type": "function", "function": {"name": EXPECTED_TOOL_NAME}})
+
+    def test_PROBE_THINKING_05_strict_enabled_rejects_before_network_request(self):
+        requests_sent = []
+
+        def post(*args, **kwargs):
+            requests_sent.append((args, kwargs))
+            return json_response('{"answer":"不应调用。","safetyAction":"allow"}')
+
+        with self.assertRaisesRegex(ValueError, "STRICT_NAMED_TOOL_CHOICE_REQUIRES_NON_THINKING"):
+            run_turn(
+                mode="strict", model="deepseek-v4-flash", case_name="lantern", round_number=1,
+                asset=CASES["lantern"]["asset"], question="第一问", history=[], api_key="test-key",
+                base_url="https://example.invalid", timeout_seconds=1, thinking_mode="enabled", post=post,
+            )
+        self.assertEqual(requests_sent, [])
+        with mock.patch("scripts.deepseek_structured_output_probe.load_runtime_config") as load_config:
+            output = io.StringIO()
+            with redirect_stdout(output):
+                exit_code = main(["--mode", "strict", "--model", "deepseek-v4-flash", "--case", "lantern", "--thinking", "enabled"])
+        self.assertEqual(exit_code, 2)
+        self.assertIn("STRICT_NAMED_TOOL_CHOICE_REQUIRES_NON_THINKING", output.getvalue())
+        load_config.assert_not_called()
+
+    def test_PROBE_HTTP_01_400_response_retains_http_status_and_summary_count(self):
+        record = run_turn(
+            mode="strict", model="deepseek-v4-flash", case_name="lantern", round_number=1,
+            asset=CASES["lantern"]["asset"], question="第一问", history=[], api_key="test-key",
+            base_url="https://example.invalid", timeout_seconds=1,
+            post=lambda *args, **kwargs: http_error_response(400, {"type": "invalid_request_error"}),
+        )
+        self.assertFalse(record["success"])
+        self.assertEqual(record["failure_reason"], "HTTP_ERROR")
+        self.assertEqual(record["http_status"], 400)
+        self.assertEqual(summarize([record])["HTTP_STATUS_COUNTS"], {"400": 1})
+
+    def test_PROBE_HTTP_02_extracts_safe_provider_error_identifiers(self):
+        record = run_turn(
+            mode="strict", model="deepseek-v4-flash", case_name="lantern", round_number=1,
+            asset=CASES["lantern"]["asset"], question="第一问", history=[], api_key="test-key",
+            base_url="https://example.invalid", timeout_seconds=1,
+            post=lambda *args, **kwargs: http_error_response(400, {
+                "type": "invalid_request_error", "code": "invalid_parameter", "param": "tool_choice", "message": "not retained",
+            }),
+        )
+        self.assertEqual(record["provider_error_type"], "invalid_request_error")
+        self.assertEqual(record["provider_error_code"], "invalid_parameter")
+        self.assertEqual(record["provider_error_param"], "tool_choice")
+        self.assertEqual(summarize([record])["PROVIDER_ERROR_CODES"], {"invalid_parameter": 1})
+
+    def test_PROBE_HTTP_03_error_observability_does_not_leak_request_or_provider_message(self):
+        secret = "probe-api-key-must-not-appear"
+        question = "question-must-not-appear"
+        history = [{"role": "user", "content": "history-must-not-appear"}]
+        record = run_turn(
+            mode="json", model="deepseek-v4-flash", case_name="lantern", round_number=1,
+            asset=CASES["lantern"]["asset"], question=question, history=history, api_key=secret,
+            base_url="https://example.invalid", timeout_seconds=1,
+            post=lambda *args, **kwargs: http_error_response(400, {
+                "type": "invalid_request_error", "code": "invalid_parameter", "param": "thinking",
+                "message": f"{secret} {question} {history[0]['content']}",
+            }),
+        )
+        stream = io.StringIO()
+        with redirect_stdout(stream):
+            print_summary([record])
+        output = stream.getvalue()
+        serialized = json.dumps(record, ensure_ascii=False)
+        for protected in (secret, question, history[0]["content"]):
+            self.assertNotIn(protected, output)
+            self.assertNotIn(protected, serialized)
 
     def test_PROBE_13_input_history_is_not_mutated(self):
         history = [{"role": "user", "content": "第一问"}, {"role": "assistant", "content": "第一答"}]

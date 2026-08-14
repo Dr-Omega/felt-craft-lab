@@ -31,6 +31,7 @@ DEFAULT_BASE_URL = "https://api.deepseek.com"
 DEFAULT_TIMEOUT_SECONDS = 45
 QA_MAX_HISTORY_MESSAGES = 12
 ALLOWED_SAFETY_ACTIONS = frozenset({"allow", "redirect", "reject"})
+ALLOWED_THINKING_MODES = frozenset({"enabled", "disabled"})
 EXPECTED_TOOL_NAME = "submit_qa_response"
 
 FAILURE_REASONS = frozenset(
@@ -282,12 +283,25 @@ def _mode_fields(mode: str) -> dict[str, Any]:
     }
 
 
-def build_request_payload(*, mode: str, model: str, asset: dict[str, Any], question: str, history: list[dict[str, str]]) -> dict[str, Any]:
+def build_request_payload(
+    *,
+    mode: str,
+    model: str,
+    asset: dict[str, Any],
+    question: str,
+    history: list[dict[str, str]],
+    thinking_mode: str = "disabled",
+) -> dict[str, Any]:
+    if thinking_mode not in ALLOWED_THINKING_MODES:
+        raise ValueError(f"Unsupported thinking mode: {thinking_mode}")
+    if mode == "strict" and thinking_mode == "enabled":
+        raise ValueError("STRICT_NAMED_TOOL_CHOICE_REQUIRES_NON_THINKING")
     payload: dict[str, Any] = {
         "model": model,
         "messages": build_messages(question, asset, history, mode=mode),
         "temperature": 0.6,
         "max_tokens": 300,
+        "thinking": {"type": thinking_mode},
     }
     if mode == "json":
         payload["response_format"] = {"type": "json_object"}
@@ -316,6 +330,24 @@ def _is_model_unavailable(status: int, body: Any) -> bool:
     return "model" in text and any(token in text for token in ("not found", "not exist", "unavailable", "deprecated", "unsupported"))
 
 
+def _safe_provider_error_metadata(body: Any) -> dict[str, str | None]:
+    """Retain only bounded structured error identifiers, never provider text."""
+    error = body.get("error") if isinstance(body, dict) else None
+    if not isinstance(error, dict):
+        return {"provider_error_type": None, "provider_error_code": None, "provider_error_param": None}
+
+    def bounded(value: Any) -> str | None:
+        if not isinstance(value, (str, int, float)) or isinstance(value, bool):
+            return None
+        return re.sub(r"\s+", " ", str(value)).strip()[:128] or None
+
+    return {
+        "provider_error_type": bounded(error.get("type")),
+        "provider_error_code": bounded(error.get("code")),
+        "provider_error_param": bounded(error.get("param")),
+    }
+
+
 def run_turn(
     *,
     mode: str,
@@ -328,11 +360,12 @@ def run_turn(
     api_key: str,
     base_url: str,
     timeout_seconds: int,
+    thinking_mode: str = "disabled",
     post: Callable[..., Any] = requests.post,
 ) -> dict[str, Any]:
     """Perform exactly one provider call and return safe diagnostic metadata."""
     payload = build_request_payload(
-        mode=mode, model=model, asset=asset, question=question, history=history
+        mode=mode, model=model, asset=asset, question=question, history=history, thinking_mode=thinking_mode
     )
     started = time.perf_counter()
     try:
@@ -356,7 +389,10 @@ def run_turn(
     request_id = str(body.get("id") or "")[:128] if isinstance(body, dict) else ""
     if status >= 400:
         reason = "MODEL_UNAVAILABLE" if _is_model_unavailable(status, body) else "HTTP_ERROR"
-        return _failure_record(mode, model, case_name, round_number, reason, started, status=status, latency_ms=latency_ms, request_id=request_id)
+        return _failure_record(
+            mode, model, case_name, round_number, reason, started, status=status,
+            latency_ms=latency_ms, request_id=request_id, **_safe_provider_error_metadata(body),
+        )
     if not isinstance(body, dict):
         return _failure_record(mode, model, case_name, round_number, "HTTP_ERROR", started, status=status, latency_ms=latency_ms, request_id=request_id)
     try:
@@ -383,6 +419,9 @@ def run_turn(
         "content_length": content_length,
         "success": parsed.success,
         "failure_reason": parsed.failure_reason,
+        "provider_error_type": None,
+        "provider_error_code": None,
+        "provider_error_param": None,
         **(parsed.fields or {}),
     }
     if parsed.success:
@@ -404,6 +443,9 @@ def _failure_record(
     request_id: str = "",
     finish_reason: Any = None,
     content_length: int = 0,
+    provider_error_type: str | None = None,
+    provider_error_code: str | None = None,
+    provider_error_param: str | None = None,
 ) -> dict[str, Any]:
     if reason not in FAILURE_REASONS:
         raise ValueError(f"Unsupported failure reason: {reason}")
@@ -419,6 +461,9 @@ def _failure_record(
         "content_length": content_length,
         "success": False,
         "failure_reason": reason,
+        "provider_error_type": provider_error_type,
+        "provider_error_code": provider_error_code,
+        "provider_error_param": provider_error_param,
         **_mode_fields(mode),
     }
 
@@ -431,6 +476,7 @@ def run_case(
     api_key: str,
     base_url: str,
     timeout_seconds: int,
+    thinking_mode: str = "disabled",
     post: Callable[..., Any] = requests.post,
 ) -> list[dict[str, Any]]:
     case = CASES[case_name]
@@ -449,6 +495,7 @@ def run_case(
             api_key=api_key,
             base_url=base_url,
             timeout_seconds=timeout_seconds,
+            thinking_mode=thinking_mode,
             post=post,
         )
         records.append(record)
@@ -466,10 +513,19 @@ def summarize(records: Iterable[dict[str, Any]]) -> dict[str, Any]:
     successes = [item for item in values if item["success"]]
     latencies = sorted(item["latency_ms"] for item in values if isinstance(item.get("latency_ms"), int))
     failures: dict[str, int] = {}
+    http_status_counts: dict[str, int] = {}
+    provider_error_codes: dict[str, int] = {}
     for item in values:
         reason = item.get("failure_reason")
         if reason:
             failures[reason] = failures.get(reason, 0) + 1
+        status = item.get("http_status")
+        if isinstance(status, int):
+            key = str(status)
+            http_status_counts[key] = http_status_counts.get(key, 0) + 1
+        provider_code = item.get("provider_error_code")
+        if isinstance(provider_code, str):
+            provider_error_codes[provider_code] = provider_error_codes.get(provider_code, 0) + 1
     empty_count = sum(item.get("failure_reason") in {"EMPTY_CONTENT", "WHITESPACE_ONLY"} for item in values)
     safety_counts = {action: sum(item.get("safetyAction") == action for item in successes) for action in sorted(ALLOWED_SAFETY_ACTIONS)}
     return {
@@ -486,6 +542,8 @@ def summarize(records: Iterable[dict[str, Any]]) -> dict[str, Any]:
         "SAFETY_REJECT_COUNT": safety_counts["reject"],
         "FAILED_ROUNDS": len(values) - len(successes),
         "FAILURE_REASONS": failures,
+        "HTTP_STATUS_COUNTS": http_status_counts,
+        "PROVIDER_ERROR_CODES": provider_error_codes,
     }
 
 
@@ -516,6 +574,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--mode", choices=("json", "strict"), required=True)
     parser.add_argument("--model", choices=("deepseek-chat", "deepseek-v4-flash"), required=True)
     parser.add_argument("--case", choices=("lantern", "mooncake", "all"), required=True)
+    parser.add_argument("--thinking", choices=("enabled", "disabled"), default="disabled")
     parser.add_argument("--save-responses", type=Path)
     parser.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT_SECONDS)
     args = parser.parse_args(argv)
@@ -526,6 +585,9 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv or sys.argv[1:])
+    if args.mode == "strict" and args.thinking == "enabled":
+        print("STRICT_NAMED_TOOL_CHOICE_REQUIRES_NON_THINKING")
+        return 2
     try:
         api_key, base_url = load_runtime_config()
     except RuntimeError as exc:
@@ -541,8 +603,9 @@ def main(argv: list[str] | None = None) -> int:
             api_key=api_key,
             base_url=base_url,
             timeout_seconds=args.timeout,
+            thinking_mode=args.thinking,
         )
-        print(f"MODE={'JSON_OBJECT' if args.mode == 'json' else 'STRICT_FUNCTION'} MODEL={args.model} CASE={case_name}")
+        print(f"MODE={'JSON_OBJECT' if args.mode == 'json' else 'STRICT_FUNCTION'} MODEL={args.model} CASE={case_name} THINKING_MODE={args.thinking}")
         print_summary(records)
         all_records.extend(records)
     if args.save_responses:
