@@ -70,12 +70,18 @@ class ContractsEnvelopeTests(unittest.TestCase):
 
 class QaSafetyTests(unittest.TestCase):
     @staticmethod
-    def _upstream_response(content: str) -> mock.Mock:
+    def _upstream_response(arguments: str) -> mock.Mock:
         response = mock.Mock(status_code=200)
         response.json.return_value = {
             "id": "req-1",
-            "choices": [{"message": {"content": content}, "finish_reason": "stop"}],
+            "choices": [{"message": {"tool_calls": [{"function": {"name": "submit_qa_response", "arguments": arguments}}]}, "finish_reason": "tool_calls"}],
         }
+        return response
+
+    @staticmethod
+    def _no_tool_response() -> mock.Mock:
+        response = mock.Mock(status_code=200)
+        response.json.return_value = {"id": "req-1", "choices": [{"message": {}, "finish_reason": "stop"}]}
         return response
 
     def test_non_json_is_redirect_not_allow(self):
@@ -121,14 +127,15 @@ class QaSafetyTests(unittest.TestCase):
         self.assertTrue(result["ok"])
         payload = post.call_args.kwargs["json"]
         messages = payload["messages"]
-        self.assertEqual(payload["response_format"], {"type": "json_object"})
+        self.assertEqual(payload["thinking"], {"type": "disabled"})
+        self.assertEqual(payload["tool_choice"], {"type": "function", "function": {"name": "submit_qa_response"}})
         self.assertEqual([item["role"] for item in messages], ["system", "user", "assistant", "user"])
         self.assertEqual(messages[2]["content"], "第一答")
         self.assertEqual(messages[-1]["content"], "第二问")
         self.assertEqual(result["result"]["answer"], "好的")
         self.assertEqual(result["result"]["safetyAction"], "allow")
 
-    def test_deepseek_first_turn_requests_json_object(self):
+    def test_deepseek_first_turn_requests_strict_function(self):
         from providers.qa.deepseek_provider import DeepSeekQaProvider
 
         response = self._upstream_response('{"answer":"好的","safetyAction":"allow"}')
@@ -141,29 +148,30 @@ class QaSafetyTests(unittest.TestCase):
                 )
         self.assertTrue(result["ok"])
         payload = post.call_args.kwargs["json"]
-        self.assertEqual(payload["response_format"], {"type": "json_object"})
+        self.assertEqual(payload["thinking"], {"type": "disabled"})
+        self.assertEqual(payload["model"], "deepseek-v4-flash")
         self.assertEqual([item["role"] for item in payload["messages"]], ["system", "user"])
 
-    def test_deepseek_empty_content_still_uses_safe_fallback(self):
+    def test_deepseek_missing_tool_call_still_uses_safe_fallback(self):
         from providers.qa.deepseek_provider import DeepSeekQaProvider
 
-        response = self._upstream_response("")
+        response = self._no_tool_response()
         with mock.patch.dict(os.environ, {"DEEPSEEK_API_KEY": "test-key"}, clear=False):
             with mock.patch("providers.qa.deepseek_provider.requests.post", return_value=response) as post:
                 result = DeepSeekQaProvider().ask(question="第一问", asset={"nameZh": "莲花河灯"})
-        self.assertEqual(post.call_args.kwargs["json"]["response_format"], {"type": "json_object"})
+        self.assertIn("tools", post.call_args.kwargs["json"])
         self.assertTrue(result["ok"])
         self.assertEqual(result["result"]["safetyAction"], "redirect")
         self.assertTrue(result["result"]["answer"])
 
-    def test_deepseek_plain_text_content_still_uses_safe_fallback(self):
+    def test_deepseek_missing_tool_call_keeps_safe_fallback_contract(self):
         from providers.qa.deepseek_provider import DeepSeekQaProvider
 
-        response = self._upstream_response("莲花河灯通常会漂在水面上。")
+        response = self._no_tool_response()
         with mock.patch.dict(os.environ, {"DEEPSEEK_API_KEY": "test-key"}, clear=False):
             with mock.patch("providers.qa.deepseek_provider.requests.post", return_value=response) as post:
                 result = DeepSeekQaProvider().ask(question="第一问", asset={"nameZh": "莲花河灯"})
-        self.assertEqual(post.call_args.kwargs["json"]["response_format"], {"type": "json_object"})
+        self.assertIn("tools", post.call_args.kwargs["json"])
         self.assertTrue(result["ok"])
         self.assertEqual(result["result"]["safetyAction"], "redirect")
         self.assertTrue(result["result"]["answer"])

@@ -1,4 +1,4 @@
-"""DeepSeek 儿童适龄问答 Provider（含输出安全后处理）。"""
+"""DeepSeek child-safe QA Provider using Strict Function Calling."""
 
 from __future__ import annotations
 
@@ -6,7 +6,6 @@ import json
 import logging
 import os
 import re
-import time
 from dataclasses import dataclass
 from typing import Any
 
@@ -17,7 +16,8 @@ from services.qa_types import err_qa, ok_qa
 from .base import QaProvider
 
 DEFAULT_BASE = "https://api.deepseek.com"
-MODEL = "deepseek-chat"
+MODEL = "deepseek-v4-flash"
+EXPECTED_TOOL_NAME = "submit_qa_response"
 
 REJECT_PATTERNS = [
     r"自杀",
@@ -39,12 +39,12 @@ DANGEROUS_OUTPUT = [
 
 logger = logging.getLogger(__name__)
 
-# These values are backend-only observability labels. They intentionally do
-# not cross the gateway envelope or the frozen QaResult contract.
-EMPTY_CONTENT = "EMPTY_CONTENT"
-NO_JSON_OBJECT = "NO_JSON_OBJECT"
-INVALID_JSON = "INVALID_JSON"
-NON_OBJECT_JSON = "NON_OBJECT_JSON"
+# Backend-only observability labels. They never cross the frozen QaResult
+# contract or the gateway envelope.
+NO_TOOL_CALL = "NO_TOOL_CALL"
+MULTIPLE_TOOL_CALLS = "MULTIPLE_TOOL_CALLS"
+WRONG_TOOL = "WRONG_TOOL"
+INVALID_TOOL_ARGUMENTS = "INVALID_TOOL_ARGUMENTS"
 MISSING_ANSWER = "MISSING_ANSWER"
 INVALID_SAFETY_ACTION = "INVALID_SAFETY_ACTION"
 ANSWER_TOO_LONG = "ANSWER_TOO_LONG"
@@ -52,30 +52,6 @@ DANGEROUS_OUTPUT_REASON = "DANGEROUS_OUTPUT"
 FINISH_REASON_LENGTH = "FINISH_REASON_LENGTH"
 CONTENT_FILTERED = "CONTENT_FILTERED"
 UNKNOWN_FINISH_REASON = "UNKNOWN_FINISH_REASON"
-
-STRUCTURAL_RETRY_REASONS = frozenset(
-    {
-        EMPTY_CONTENT,
-        NO_JSON_OBJECT,
-        INVALID_JSON,
-        NON_OBJECT_JSON,
-        MISSING_ANSWER,
-        INVALID_SAFETY_ACTION,
-        ANSWER_TOO_LONG,
-        FINISH_REASON_LENGTH,
-    }
-)
-
-JSON_OUTPUT_REQUIREMENTS = """
-
-本轮输出格式规则（必须严格遵守）：
-1. 只输出一个 JSON 对象，不能输出 Markdown 代码块，JSON 前后不能有任何解释文字。
-2. JSON 必须有 answer 和 safetyAction 两个字段。
-3. safetyAction 只能是 allow、redirect 或 reject。
-4. 有效示例：
-{"answer":"月饼圆圆的，很像中秋的月亮。你也可以用黄色和棕色的不织布做一个小月饼。","safetyAction":"allow"}
-5. 无论历史 assistant 消息采用什么文本格式，当前这一轮都必须严格使用上述 JSON 格式。
-"""
 
 
 @dataclass(frozen=True)
@@ -106,23 +82,51 @@ def _build_system_prompt(asset: dict[str, Any]) -> str:
 
 硬性规则：
 1. 回答必须尽量围绕当前素材的造型、颜色、文化或手工用法。
-2. 不要讲恐怖、色情、暴力、仇恨、成人不宜内容。
-3. 若问题跑题，温和拉回素材。
-4. 不要输出 Markdown 标题或代码块。
-5. 必须只输出一个 JSON 对象：{{"answer":"...","safetyAction":"allow|redirect|reject"}}
-""" + JSON_OUTPUT_REQUIREMENTS
+2. 当用户说“你”“你的”“你叫什么”“你是什么形状”或“你有别的名字吗”时，默认在问当前素材；只有明确说“你这个助手”“AI助手”“你是谁”或“你这个机器人”时，才说明助手身份。
+3. 询问制作方式时优先提供不织布、胶水、双面胶、针线、棉花/填充、挂绳或不织布装饰片等安全方案；除非用户明确要求其他材料，不要主动换成彩纸、纸杯、纸板或折纸工艺。
+4. 不要讲恐怖、色情、暴力、仇恨、成人不宜内容；安全但明显跑题的问题要温和拉回当前素材。
+5. 不要机械地每轮都用“小朋友”开头，保持自然亲切但避免固定模板。
+6. 你是儿童美育/手工助手，不接受爸爸、妈妈、恋人或真实家人等身份替代；温和说明角色并拉回创作，不要承诺“永远陪伴”或“一直陪着”。
+7. safetyAction 语义：allow 用于正常素材、美育、文化、颜色、造型、制作或安全工具使用；redirect 用于安全但明显跑题或关系身份越界；reject 仅用于明确伤害他人、自伤或成人不宜请求。
+8. 不要输出 Markdown 标题或代码块。必须调用 submit_qa_response 工具提交最终回答。
+"""
 
 
 def build_messages(
     *, question: str, asset: dict[str, Any], history: list[dict[str, str]] | None = None
 ) -> list[dict[str, str]]:
-    messages: list[dict[str, str]] = [
-        {"role": "system", "content": _build_system_prompt(asset or {})}
-    ]
+    messages: list[dict[str, str]] = [{"role": "system", "content": _build_system_prompt(asset or {})}]
     for entry in history or []:
         messages.append({"role": entry["role"], "content": entry["content"]})
     messages.append({"role": "user", "content": (question or "").strip()[:500]})
     return messages
+
+
+def _strict_tool_definition() -> dict[str, Any]:
+    return {
+        "type": "function",
+        "function": {
+            "name": EXPECTED_TOOL_NAME,
+            "description": "Return the final child-safe QA response.",
+            "strict": True,
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "answer": {"type": "string"},
+                    "safetyAction": {"type": "string", "enum": ["allow", "redirect", "reject"]},
+                },
+                "required": ["answer", "safetyAction"],
+                "additionalProperties": False,
+            },
+        },
+    }
+
+
+def _strict_completion_url(base: str) -> str:
+    normalized = (base or DEFAULT_BASE).rstrip("/")
+    if not normalized.endswith("/beta"):
+        normalized = f"{normalized}/beta"
+    return f"{normalized}/chat/completions"
 
 
 class DeepSeekQaProvider(QaProvider):
@@ -142,7 +146,6 @@ class DeepSeekQaProvider(QaProvider):
         q = (question or "").strip()
         if not q:
             return err_qa(code="QA_MISSING_QUESTION")
-
         for pat in REJECT_PATTERNS:
             if re.search(pat, q):
                 return ok_qa(
@@ -150,120 +153,121 @@ class DeepSeekQaProvider(QaProvider):
                     safety_action="reject",
                 )
 
-        base = (os.getenv("DEEPSEEK_BASE_URL") or DEFAULT_BASE).rstrip("/")
-        url = f"{base}/chat/completions"
-        headers = {
-            "Authorization": f"Bearer {key}",
-            "Content-Type": "application/json",
-        }
         normalized_asset = asset or {}
         normalized_history = history or []
+        payload = {
+            "model": MODEL,
+            "messages": build_messages(question=q, asset=normalized_asset, history=normalized_history),
+            "temperature": 0.6,
+            "max_tokens": 300,
+            "thinking": {"type": "disabled"},
+            "tools": [_strict_tool_definition()],
+            "tool_choice": {"type": "function", "function": {"name": EXPECTED_TOOL_NAME}},
+        }
+        headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+        try:
+            response = requests.post(
+                _strict_completion_url(os.getenv("DEEPSEEK_BASE_URL") or DEFAULT_BASE),
+                headers=headers,
+                json=payload,
+                timeout=45,
+            )
+        except requests.Timeout:
+            return err_qa(code="QA_TIMEOUT")
+        except requests.RequestException:
+            return err_qa(code="QA_NETWORK_ERROR")
 
-        # A turn performs at most two real provider calls. Only the first
-        # structural-output failure may receive the lower-temperature retry.
-        for attempt, temperature in ((1, 0.6), (2, 0.2)):
-            payload = {
-                "model": MODEL,
-                "messages": build_messages(question=q, asset=normalized_asset, history=normalized_history),
-                "temperature": temperature,
-                "max_tokens": 300,
-                "response_format": {"type": "json_object"},
-            }
-            started = time.perf_counter()
-            try:
-                resp = requests.post(url, headers=headers, json=payload, timeout=45)
-            except requests.Timeout:
-                return err_qa(code="QA_TIMEOUT")
-            except requests.RequestException:
-                return err_qa(code="QA_NETWORK_ERROR")
+        try:
+            data = response.json()
+        except ValueError:
+            return err_qa(code="QA_UPSTREAM_ERROR")
+        if response.status_code >= 400:
+            return err_qa(code="QA_UPSTREAM_ERROR", retryable=response.status_code >= 500)
 
-            _ = int((time.perf_counter() - started) * 1000)
-            try:
-                data = resp.json()
-            except ValueError:
-                return err_qa(code="QA_UPSTREAM_ERROR")
+        try:
+            choice = data["choices"][0]
+            message = choice["message"]
+        except (KeyError, IndexError, TypeError):
+            return err_qa(code="QA_UPSTREAM_ERROR")
 
-            if resp.status_code >= 400:
-                return err_qa(code="QA_UPSTREAM_ERROR", retryable=resp.status_code >= 500)
-
-            try:
-                choice = data["choices"][0]
-                message = choice["message"]
-                content = message.get("content") if isinstance(message, dict) else None
-            except (KeyError, IndexError, TypeError):
-                return err_qa(code="QA_UPSTREAM_ERROR")
-
-            request_id = str(data.get("id") or "").strip() if isinstance(data, dict) else ""
-            finish_reason = choice.get("finish_reason") if isinstance(choice, dict) else None
-            outcome = _outcome_for_response(content, finish_reason, normalized_asset)
-            if outcome.reason:
-                _log_model_output_event(
-                    reason=outcome.reason,
-                    finish_reason=finish_reason,
-                    history_message_count=len(normalized_history),
-                    content_length=len(content) if isinstance(content, str) else 0,
-                    request_id=request_id,
-                    attempt=attempt,
-                )
-
-            if attempt == 1 and outcome.reason in STRUCTURAL_RETRY_REASONS:
-                continue
-            return ok_qa(answer=outcome.answer, safety_action=outcome.safety_action, request_id=request_id)
-
-        # The loop always returns on attempt two. This retains a defensive
-        # safe fallback if its control flow is changed later.
-        fallback = _fallback_answer(normalized_asset)
-        return ok_qa(answer=fallback, safety_action="redirect")
+        request_id = str(data.get("id") or "").strip() if isinstance(data, dict) else ""
+        finish_reason = choice.get("finish_reason") if isinstance(choice, dict) else None
+        outcome = _outcome_for_response(message, finish_reason, normalized_asset)
+        if outcome.reason:
+            _log_model_output_event(
+                reason=outcome.reason,
+                finish_reason=finish_reason,
+                history_message_count=len(normalized_history),
+                tool_call_count=_tool_call_count(message),
+                arguments_length=_arguments_length(message),
+                request_id=request_id,
+            )
+        return ok_qa(answer=outcome.answer, safety_action=outcome.safety_action, request_id=request_id)
 
 
-def postprocess_model_content(content: str, asset: dict[str, Any]) -> tuple[str, str]:
-    """Compatibility wrapper for tests and callers needing only public-safe output."""
-    outcome = _parse_model_content(content, asset)
-    return outcome.answer, outcome.safety_action
-
-
-def _outcome_for_response(content: Any, finish_reason: Any, asset: dict[str, Any]) -> ModelContentOutcome:
-    if finish_reason == "stop":
-        return _parse_model_content(content, asset)
+def _outcome_for_response(message: Any, finish_reason: Any, asset: dict[str, Any]) -> ModelContentOutcome:
     if finish_reason == "length":
         return _safe_outcome(asset, FINISH_REASON_LENGTH)
     if finish_reason == "content_filter":
-        # The provider explicitly filtered output: do not ask it to reproduce
-        # the same turn. A local safe rejection remains the conservative path.
         return _safe_outcome(asset, CONTENT_FILTERED, safety_action="reject")
-    return _safe_outcome(asset, UNKNOWN_FINISH_REASON)
+    if finish_reason not in {"tool_calls", "stop"}:
+        return _safe_outcome(asset, UNKNOWN_FINISH_REASON)
+    return _parse_tool_calls(message, asset)
 
 
-def _parse_model_content(content: Any, asset: dict[str, Any]) -> ModelContentOutcome:
-    """Strictly parse the single JSON object required by the provider prompt."""
-    text = content.strip() if isinstance(content, str) else ""
-    if not text:
-        return _safe_outcome(asset, EMPTY_CONTENT)
+def _parse_tool_calls(message: Any, asset: dict[str, Any]) -> ModelContentOutcome:
+    if not isinstance(message, dict):
+        return _safe_outcome(asset, NO_TOOL_CALL)
+    tool_calls = message.get("tool_calls")
+    if not isinstance(tool_calls, list) or not tool_calls:
+        return _safe_outcome(asset, NO_TOOL_CALL)
+    if len(tool_calls) != 1:
+        return _safe_outcome(asset, MULTIPLE_TOOL_CALLS)
+    tool_call = tool_calls[0]
+    function = tool_call.get("function") if isinstance(tool_call, dict) else None
+    if not isinstance(function, dict) or function.get("name") != EXPECTED_TOOL_NAME:
+        return _safe_outcome(asset, WRONG_TOOL)
+    arguments = function.get("arguments")
+    if not isinstance(arguments, str):
+        return _safe_outcome(asset, INVALID_TOOL_ARGUMENTS)
     try:
-        obj = json.loads(text)
-    except (json.JSONDecodeError, TypeError, AttributeError):
-        # Plain prose has no object candidate at all. Text that does contain
-        # an object delimiter (including fenced or trailing prose) violates
-        # the required single-object format and is distinctly invalid JSON.
-        reason = INVALID_JSON if "{" in text else NO_JSON_OBJECT
-        return _safe_outcome(asset, reason)
-    if not isinstance(obj, dict):
-        return _safe_outcome(asset, NON_OBJECT_JSON)
+        response = json.loads(arguments)
+    except (json.JSONDecodeError, TypeError):
+        return _safe_outcome(asset, INVALID_TOOL_ARGUMENTS)
+    if not isinstance(response, dict):
+        return _safe_outcome(asset, INVALID_TOOL_ARGUMENTS)
+    return _parse_response_object(response, asset)
 
-    raw_answer = obj.get("answer")
-    if not isinstance(raw_answer, str) or not raw_answer.strip():
+
+def _parse_response_object(response: dict[str, Any], asset: dict[str, Any]) -> ModelContentOutcome:
+    answer = response.get("answer")
+    if not isinstance(answer, str) or not answer.strip():
         return _safe_outcome(asset, MISSING_ANSWER)
-    answer = raw_answer.strip()
+    answer = answer.strip()
     if len(answer) > 300:
         return _safe_outcome(asset, ANSWER_TOO_LONG)
-
-    raw_safety = obj.get("safetyAction")
-    safety = raw_safety.strip().lower() if isinstance(raw_safety, str) else ""
-    if safety not in {"allow", "redirect", "reject"}:
+    safety_action = response.get("safetyAction")
+    if not isinstance(safety_action, str) or safety_action.strip() not in {"allow", "redirect", "reject"}:
         return _safe_outcome(asset, INVALID_SAFETY_ACTION)
+    if set(response) != {"answer", "safetyAction"}:
+        return _safe_outcome(asset, INVALID_TOOL_ARGUMENTS)
     if _is_dangerous_output(answer):
         return _safe_outcome(asset, DANGEROUS_OUTPUT_REASON, safety_action="reject")
-    return ModelContentOutcome(answer=answer, safety_action=safety)
+    return ModelContentOutcome(answer=answer, safety_action=safety_action.strip())
+
+
+def _tool_call_count(message: Any) -> int:
+    tool_calls = message.get("tool_calls") if isinstance(message, dict) else None
+    return len(tool_calls) if isinstance(tool_calls, list) else 0
+
+
+def _arguments_length(message: Any) -> int:
+    tool_calls = message.get("tool_calls") if isinstance(message, dict) else None
+    if not isinstance(tool_calls, list) or len(tool_calls) != 1 or not isinstance(tool_calls[0], dict):
+        return 0
+    function = tool_calls[0].get("function")
+    arguments = function.get("arguments") if isinstance(function, dict) else None
+    return len(arguments) if isinstance(arguments, str) else 0
 
 
 def _safe_outcome(asset: dict[str, Any], reason: str, safety_action: str = "redirect") -> ModelContentOutcome:
@@ -275,30 +279,37 @@ def _log_model_output_event(
     reason: str,
     finish_reason: Any,
     history_message_count: int,
-    content_length: int,
+    tool_call_count: int,
+    arguments_length: int,
     request_id: str,
-    attempt: int,
 ) -> None:
-    """Log only bounded metadata; never log credentials or conversational text."""
+    """Log bounded metadata only; never credentials or conversational text."""
     normalized_finish_reason = finish_reason if isinstance(finish_reason, str) else "unknown"
     logger.warning(
-        "deepseek_qa_output reason=%s finish_reason=%s history_message_count=%d content_length=%d request_id=%s attempt=%d",
+        "deepseek_qa_output reason=%s finish_reason=%s history_message_count=%d tool_call_count=%d arguments_length=%d request_id=%s",
         reason,
         normalized_finish_reason,
         history_message_count,
-        content_length,
+        tool_call_count,
+        arguments_length,
         request_id[:128],
-        attempt,
     )
 
 
 def _is_dangerous_output(answer: str) -> bool:
-    for pat in DANGEROUS_OUTPUT:
-        if re.search(pat, answer):
-            return True
-    return False
+    return any(re.search(pattern, answer) for pattern in DANGEROUS_OUTPUT)
 
 
 def _fallback_answer(asset: dict[str, Any]) -> str:
     name = _sanitize_asset_field(asset.get("nameZh") or "这个贴纸", 40)
     return f"「{name}」很适合不织布手工。你可以观察它的颜色和外形，再把它轻轻贴到画布上试试哦。"
+
+
+def postprocess_model_content(content: str, asset: dict[str, Any]) -> tuple[str, str]:
+    """Legacy local-diagnostic helper; never used by the formal Provider path."""
+    try:
+        response = json.loads(content)
+    except (json.JSONDecodeError, TypeError):
+        return _fallback_answer(asset), "redirect"
+    outcome = _parse_response_object(response, asset) if isinstance(response, dict) else _safe_outcome(asset, INVALID_TOOL_ARGUMENTS)
+    return outcome.answer, outcome.safety_action
