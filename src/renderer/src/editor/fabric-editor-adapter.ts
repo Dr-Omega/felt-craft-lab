@@ -2,8 +2,13 @@ import { fabric } from 'fabric'
 import type {
   AssetAccessState,
   AssetRecord,
+  PersonalAssetRecord,
+  PersonalAssetVersionRecord,
+  SceneCorePatternObject,
   SceneDocument,
   SceneObject,
+  ScenePersonalBackground,
+  ScenePersonalElement,
   SceneSnapshotValidationContext,
   SharedError
 } from '@shared/contracts'
@@ -11,6 +16,8 @@ import {
   SCHEMA_VERSION,
   validateAssetAccessState,
   validateAssetRecord,
+  validatePersonalAssetRecord,
+  validatePersonalAssetVersionRecord,
   validateSceneDocument,
   validateSceneDocumentAgainstSnapshot,
   validateSceneSnapshotValidationContext
@@ -58,10 +65,16 @@ export interface FabricCanvasPort {
   dispose(): unknown
 }
 
+/** Internal renderer discriminator; never persisted as a Scene role field. */
+export type SceneObjectKind = 'system_sticker' | 'core_pattern' | 'personal_element'
+
 export interface FabricObjectPort {
   objectId?: string
   assetId?: string
   assetType?: 'sticker'
+  sceneObjectKind?: SceneObjectKind
+  personalAssetId?: string
+  versionId?: string
   left?: number
   top?: number
   scaleX?: number
@@ -120,6 +133,10 @@ export interface FabricEditorRuntime {
 
 export interface FabricEditorAssetResolver {
   resolveAsset(assetId: string, assetSnapshotId: string): Promise<AssetRecord>
+  resolvePersonalAsset?: (personalAssetId: string, versionId: string) => Promise<{
+    asset: PersonalAssetRecord
+    version: PersonalAssetVersionRecord
+  }>
 }
 
 export interface FabricEditorAdapterOptions {
@@ -134,11 +151,21 @@ export interface FabricEditorAdapterOptions {
 }
 
 export interface SceneRecoveryIssue {
-  code: 'ASSET_NOT_FOUND' | 'ASSET_SNAPSHOT_MISMATCH'
+  code:
+    | 'ASSET_NOT_FOUND'
+    | 'ASSET_SNAPSHOT_MISMATCH'
+    | 'PERSONAL_ASSET_NOT_FOUND'
+    | 'PERSONAL_ASSET_VERSION_NOT_FOUND'
+    | 'PERSONAL_ASSET_INVALID'
+    | 'PERSONAL_RESOURCE_NOT_FOUND'
   message: string
+  source?: 'system' | 'personal'
   assetId?: string
   assetType?: 'background' | 'sticker'
   objectId?: string
+  personalAssetId?: string
+  versionId?: string
+  personalRole?: 'background' | 'core_pattern' | 'element'
 }
 
 export interface SceneImportResult {
@@ -146,14 +173,17 @@ export interface SceneImportResult {
   issues: readonly SceneRecoveryIssue[]
 }
 
-type EditorSceneMetadata = Omit<SceneDocument, 'canvas' | 'backgroundAssetId' | 'objects' | 'updatedAt'>
+type EditorSceneMetadata = Omit<
+  SceneDocument,
+  'canvas' | 'backgroundAssetId' | 'objects' | 'personalBackground' | 'corePattern' | 'personalElements' | 'updatedAt'
+>
 
 interface HistoryEntry {
   scene: SceneDocument
   revision: number
 }
 
-type AsyncOperationKind = 'import' | 'background' | 'sticker'
+type AsyncOperationKind = 'import' | 'background' | 'sticker' | 'personal'
 
 interface AsyncOperation {
   canvas: FabricCanvasPort
@@ -169,9 +199,27 @@ interface PreparedCanvasObject {
 
 interface PreparedScene {
   background: PreparedCanvasObject | undefined
+  corePattern: PreparedCanvasObject | undefined
   objects: PreparedCanvasObject[]
   issues: SceneRecoveryIssue[]
   assets: Map<string, AssetRecord>
+  personalAssets: Map<string, PersonalAssetBundle>
+}
+
+interface PersonalAssetBundle {
+  asset: PersonalAssetRecord
+  version: PersonalAssetVersionRecord
+}
+
+type PersonalRecoveryCode =
+  | 'PERSONAL_ASSET_NOT_FOUND'
+  | 'PERSONAL_ASSET_VERSION_NOT_FOUND'
+  | 'PERSONAL_ASSET_INVALID'
+  | 'PERSONAL_RESOURCE_NOT_FOUND'
+
+interface PersonalLoadFailure {
+  personalRecoveryCode: PersonalRecoveryCode
+  message: string
 }
 
 const DEFAULT_STICKER_SCALE = 1
@@ -416,12 +464,16 @@ export class FabricEditorAdapter {
   private readonly objectResources = new WeakMap<FabricObjectPort, () => void>()
   private readonly recoveryPlaceholders = new WeakSet<FabricObjectPort>()
   private readonly assetCache = new Map<string, AssetRecord>()
+  private readonly personalAssetCache = new Map<string, PersonalAssetBundle>()
   private readonly listeners: Array<[string, (event: { target?: FabricObjectPort }) => void]> = []
   private readonly selectionListeners = new Set<EditorSelectionListener>()
   private readonly historyListeners = new Set<EditorHistoryListener>()
   private canvas: FabricCanvasPort | undefined
   private metadata: EditorSceneMetadata | undefined
   private backgroundAssetId: string | null = null
+  private personalBackground: ScenePersonalBackground | null = null
+  private corePattern: SceneCorePatternObject | null = null
+  private personalElements: ScenePersonalElement[] = []
   private backgroundColor: string | undefined
   private history: HistoryEntry[] = []
   private historyIndex = -1
@@ -433,6 +485,7 @@ export class FabricEditorAdapter {
   private importRequestGeneration = 0
   private backgroundRequestGeneration = 0
   private stickerRequestGeneration = 0
+  private personalRequestGeneration = 0
   private sceneReady = false
   private committedSceneReady = false
   private historyRestoreGeneration = 0
@@ -462,6 +515,9 @@ export class FabricEditorAdapter {
 
     this.metadata = metadataFromScene(scene)
     this.backgroundAssetId = scene.backgroundAssetId
+    this.personalBackground = scene.personalBackground
+    this.corePattern = scene.corePattern
+    this.personalElements = scene.personalElements
     this.backgroundColor = scene.canvas.backgroundColor
     this.canvas = this.runtime.createCanvas(element, scene.canvas.width, scene.canvas.height)
     this.recoveryIssues = this.snapshotAssetsById.has(scene.assetSnapshotId)
@@ -500,16 +556,23 @@ export class FabricEditorAdapter {
         canvas.backgroundColor = scene.canvas.backgroundColor
         if (prepared.background) this.fitBackground(prepared.background.object, canvas)
         canvas.setBackgroundImage(prepared.background?.object ?? null, () => undefined)
+        if (prepared.corePattern) canvas.add(prepared.corePattern.object)
         for (const object of prepared.objects) canvas.add(object.object)
+        if (prepared.corePattern) this.objectResources.set(prepared.corePattern.object, prepared.corePattern.release)
         for (const object of prepared.objects) this.objectResources.set(object.object, object.release)
         if (prepared.background) this.objectResources.set(prepared.background.object, prepared.background.release)
         this.metadata = metadataFromScene(scene)
         this.backgroundAssetId = scene.backgroundAssetId
+        this.personalBackground = scene.personalBackground
+        this.corePattern = scene.corePattern
+        this.personalElements = scene.personalElements
         this.backgroundColor = scene.canvas.backgroundColor
         this.recoveryIssues = prepared.issues
         this.resolver = resolver
         this.assetCache.clear()
         for (const [assetId, asset] of prepared.assets) this.assetCache.set(assetId, asset)
+        this.personalAssetCache.clear()
+        for (const [key, bundle] of prepared.personalAssets) this.personalAssetCache.set(key, bundle)
         this.sceneReady = true
         this.committedSceneReady = true
         canvas.calcOffset()
@@ -535,7 +598,9 @@ export class FabricEditorAdapter {
       this.releaseBackground(canvas)
       canvas.setBackgroundImage(null, () => undefined)
       this.backgroundAssetId = null
-      if (previousBackgroundAssetId) this.clearRecoveryIssueIfResolved(previousBackgroundAssetId, 'background')
+      this.personalBackground = null
+      this.clearBackgroundRecoveryIssues(previousBackgroundAssetId)
+      this.assertProspectiveScene({ backgroundAssetId: null, personalBackground: null })
       canvas.calcOffset()
       canvas.requestRenderAll()
       this.captureHistory()
@@ -555,9 +620,138 @@ export class FabricEditorAdapter {
     canvas.setBackgroundImage(loaded.object, () => undefined)
     this.objectResources.set(loaded.object, loaded.release)
     this.backgroundAssetId = asset.assetId
+    this.personalBackground = null
     this.clearRecoveryIssues('background')
+    this.clearPersonalBackgroundRecoveryIssues()
     canvas.requestRenderAll()
     this.captureHistory()
+  }
+
+  async setPersonalBackground(asset: PersonalAssetRecord, version: PersonalAssetVersionRecord): Promise<void> {
+    const canvas = this.requireReadyCanvas()
+    const metadata = this.requireMetadata()
+    const bundle = this.assertPersonalBundle(asset, version, 'background', metadata.userId)
+    this.assertProspectiveScene({
+      backgroundAssetId: null,
+      personalBackground: { personalAssetId: asset.personalAssetId, versionId: version.versionId }
+    })
+    const operation = this.beginAsyncOperation('background', canvas)
+    const loaded = await this.loadPersonalEditorImage(bundle, this.backgroundOptions(canvas), operation, canvas)
+    this.ensureCurrentOperation(operation)
+    this.fitBackground(loaded.object, canvas)
+    const previousBackgroundAssetId = this.backgroundAssetId
+    this.releaseBackground(canvas)
+    canvas.setBackgroundImage(loaded.object, () => undefined)
+    this.objectResources.set(loaded.object, loaded.release)
+    this.backgroundAssetId = null
+    this.personalBackground = { personalAssetId: asset.personalAssetId, versionId: version.versionId }
+    this.personalAssetCache.set(personalAssetKey(asset.personalAssetId, version.versionId), bundle)
+    this.clearBackgroundRecoveryIssues(previousBackgroundAssetId)
+    canvas.calcOffset()
+    canvas.requestRenderAll()
+    this.captureHistory()
+  }
+
+  async setCorePattern(asset: PersonalAssetRecord, version: PersonalAssetVersionRecord): Promise<void> {
+    const canvas = this.requireReadyCanvas()
+    const metadata = this.requireMetadata()
+    const bundle = this.assertPersonalBundle(asset, version, 'core_pattern', metadata.userId)
+    const operation = this.beginAsyncOperation('personal', canvas)
+    const objectId = this.createObjectId()
+    const loaded = await this.loadPersonalEditorImage(bundle, personalObjectOptions({
+      objectId,
+      personalAssetId: asset.personalAssetId,
+      versionId: version.versionId,
+      sceneObjectKind: 'core_pattern',
+      left: canvas.getWidth() / 2,
+      top: canvas.getHeight() / 2,
+      scaleX: DEFAULT_STICKER_SCALE,
+      scaleY: DEFAULT_STICKER_SCALE,
+      angle: 0,
+      visible: true,
+      locked: false
+    }), operation, canvas)
+    this.ensureCurrentOperation(operation)
+    const previous = this.findCorePatternObject()
+    if (previous) {
+      this.releaseObject(previous)
+      canvas.remove(previous)
+    }
+    canvas.add(loaded.object)
+    canvas.moveTo(loaded.object, 0)
+    this.objectResources.set(loaded.object, loaded.release)
+    this.corePattern = {
+      objectId,
+      personalAssetId: asset.personalAssetId,
+      versionId: version.versionId,
+      left: canvas.getWidth() / 2,
+      top: canvas.getHeight() / 2,
+      scaleX: DEFAULT_STICKER_SCALE,
+      scaleY: DEFAULT_STICKER_SCALE,
+      angle: 0,
+      visible: true,
+      locked: false
+    }
+    this.personalAssetCache.set(personalAssetKey(asset.personalAssetId, version.versionId), bundle)
+    this.clearPersonalObjectRecoveryIssues(previous?.personalAssetId, previous?.versionId, previous?.objectId)
+    canvas.setActiveObject(loaded.object)
+    canvas.calcOffset()
+    canvas.requestRenderAll()
+    this.captureHistory()
+  }
+
+  clearCorePattern(): void {
+    const canvas = this.requireReadyCanvas()
+    const previous = this.findCorePatternObject()
+    if (!previous) {
+      if (this.corePattern === null) return
+      this.corePattern = null
+      this.captureHistory()
+      return
+    }
+    this.releaseObject(previous)
+    canvas.remove(previous)
+    this.corePattern = null
+    this.clearPersonalObjectRecoveryIssues(previous.personalAssetId, previous.versionId, previous.objectId)
+    canvas.discardActiveObject()
+    canvas.calcOffset()
+    canvas.requestRenderAll()
+    this.captureHistory()
+  }
+
+  async addPersonalElement(
+    asset: PersonalAssetRecord,
+    version: PersonalAssetVersionRecord,
+    position?: { left: number; top: number }
+  ): Promise<string> {
+    const canvas = this.requireReadyCanvas()
+    const metadata = this.requireMetadata()
+    const bundle = this.assertPersonalBundle(asset, version, 'element', metadata.userId)
+    const operation = this.beginAsyncOperation('personal', canvas)
+    const objectId = this.createObjectId()
+    const loaded = await this.loadPersonalEditorImage(bundle, personalObjectOptions({
+      objectId,
+      personalAssetId: asset.personalAssetId,
+      versionId: version.versionId,
+      sceneObjectKind: 'personal_element',
+      zIndex: this.elementObjects(canvas).length + 1,
+      left: position?.left ?? canvas.getWidth() / 2,
+      top: position?.top ?? canvas.getHeight() / 2,
+      scaleX: DEFAULT_STICKER_SCALE,
+      scaleY: DEFAULT_STICKER_SCALE,
+      angle: 0,
+      visible: true,
+      locked: false
+    }), operation, canvas)
+    this.ensureCurrentOperation(operation)
+    canvas.add(loaded.object)
+    this.objectResources.set(loaded.object, loaded.release)
+    this.personalAssetCache.set(personalAssetKey(asset.personalAssetId, version.versionId), bundle)
+    canvas.setActiveObject(loaded.object)
+    canvas.calcOffset()
+    canvas.requestRenderAll()
+    this.captureHistory()
+    return objectId
   }
 
   resizeCanvas(width: number, height: number): void {
@@ -573,7 +767,7 @@ export class FabricEditorAdapter {
 
   setSolidBackground(color: string): void {
     const canvas = this.requireReadyCanvas()
-    this.assertProspectiveScene({ backgroundColor: color, backgroundAssetId: null })
+    this.assertProspectiveScene({ backgroundColor: color, backgroundAssetId: null, personalBackground: null })
     this.backgroundRequestGeneration += 1
     const previousBackgroundAssetId = this.backgroundAssetId
     this.releaseBackground(canvas)
@@ -581,7 +775,8 @@ export class FabricEditorAdapter {
     canvas.backgroundColor = color
     this.backgroundColor = color
     this.backgroundAssetId = null
-    if (previousBackgroundAssetId) this.clearRecoveryIssueIfResolved(previousBackgroundAssetId, 'background')
+    this.personalBackground = null
+    this.clearBackgroundRecoveryIssues(previousBackgroundAssetId)
     canvas.calcOffset()
     canvas.requestRenderAll()
     this.captureHistory()
@@ -589,7 +784,7 @@ export class FabricEditorAdapter {
 
   setTransparentBackground(): void {
     const canvas = this.requireReadyCanvas()
-    this.assertProspectiveScene({ clearBackgroundColor: true, backgroundAssetId: null })
+    this.assertProspectiveScene({ clearBackgroundColor: true, backgroundAssetId: null, personalBackground: null })
     this.backgroundRequestGeneration += 1
     const previousBackgroundAssetId = this.backgroundAssetId
     this.releaseBackground(canvas)
@@ -597,7 +792,8 @@ export class FabricEditorAdapter {
     canvas.backgroundColor = undefined
     this.backgroundColor = undefined
     this.backgroundAssetId = null
-    if (previousBackgroundAssetId) this.clearRecoveryIssueIfResolved(previousBackgroundAssetId, 'background')
+    this.personalBackground = null
+    this.clearBackgroundRecoveryIssues(previousBackgroundAssetId)
     canvas.calcOffset()
     canvas.requestRenderAll()
     this.captureHistory()
@@ -618,6 +814,7 @@ export class FabricEditorAdapter {
       objectId,
       assetId: asset.assetId,
       assetType: 'sticker',
+      sceneObjectKind: 'system_sticker',
       originX: 'center',
       originY: 'center',
       left: position?.left ?? canvas.getWidth() / 2,
@@ -683,12 +880,22 @@ export class FabricEditorAdapter {
     if (!object || (object.selectable === false && !this.recoveryPlaceholders.has(object))) {
       throw editorError('INVALID_ARGUMENT', 'Sticker cannot be deleted.')
     }
+    const kind = runtimeObjectKind(object)
     const recoveryAssetId = this.recoveryPlaceholders.has(object) ? object.assetId : undefined
     const recoveryObjectId = this.recoveryPlaceholders.has(object) ? object.objectId : undefined
+    const recoveryPersonalAssetId = this.recoveryPlaceholders.has(object) ? object.personalAssetId : undefined
+    const recoveryVersionId = this.recoveryPlaceholders.has(object) ? object.versionId : undefined
     this.releaseObject(object)
     canvas.remove(object)
     canvas.discardActiveObject()
-    if (recoveryAssetId && recoveryObjectId) {
+    if (kind === 'core_pattern') {
+      this.corePattern = null
+      this.clearPersonalObjectRecoveryIssues(object.personalAssetId, object.versionId, object.objectId)
+    } else if (kind === 'personal_element') {
+      this.clearPersonalObjectRecoveryIssues(object.personalAssetId, object.versionId, object.objectId)
+    } else if (recoveryPersonalAssetId && recoveryVersionId) {
+      this.clearPersonalObjectRecoveryIssues(recoveryPersonalAssetId, recoveryVersionId, recoveryObjectId)
+    } else if (recoveryAssetId && recoveryObjectId) {
       this.clearRecoveryIssueIfResolved(recoveryAssetId, 'sticker', recoveryObjectId)
     }
     canvas.calcOffset()
@@ -705,19 +912,19 @@ export class FabricEditorAdapter {
   }
 
   bringForward(objectId: string): void {
-    this.moveLayer(objectId, (canvas, object) => canvas.bringForward(object))
+    this.moveLayer(objectId, 1)
   }
 
   sendBackward(objectId: string): void {
-    this.moveLayer(objectId, (canvas, object) => canvas.sendBackwards(object))
+    this.moveLayer(objectId, -1)
   }
 
   bringToFront(objectId: string): void {
-    this.moveLayer(objectId, (canvas, object) => canvas.bringToFront(object))
+    this.moveLayer(objectId, Number.POSITIVE_INFINITY)
   }
 
   sendToBack(objectId: string): void {
-    this.moveLayer(objectId, (canvas, object) => canvas.sendToBack(object))
+    this.moveLayer(objectId, Number.NEGATIVE_INFINITY)
   }
 
   bringSelectedForward(): void {
@@ -851,6 +1058,15 @@ export class FabricEditorAdapter {
     const canvas = this.canvas
     if (!canvas) {
       this.recoveryIssues = []
+      this.assetCache.clear()
+      this.personalAssetCache.clear()
+      this.metadata = undefined
+      this.backgroundAssetId = null
+      this.personalBackground = null
+      this.corePattern = null
+      this.personalElements = []
+      this.backgroundColor = undefined
+      this.resolver = undefined
       return
     }
     for (const [eventName, listener] of this.listeners) canvas.off(eventName, listener)
@@ -863,9 +1079,13 @@ export class FabricEditorAdapter {
     this.assetCache.clear()
     this.metadata = undefined
     this.backgroundAssetId = null
+    this.personalBackground = null
+    this.corePattern = null
+    this.personalElements = []
     this.backgroundColor = undefined
     this.resolver = undefined
     this.recoveryIssues = []
+    this.personalAssetCache.clear()
   }
 
   private attachCanvasListeners(canvas: FabricCanvasPort): void {
@@ -931,45 +1151,129 @@ export class FabricEditorAdapter {
   ): Promise<PreparedScene> {
     const issues: SceneRecoveryIssue[] = []
     const assets = new Map<string, AssetRecord>()
+    const personalAssets = new Map<string, PersonalAssetBundle>()
     const snapshotAssets = this.snapshotAssetsById.get(scene.assetSnapshotId)
     if (!snapshotAssets) {
       issues.push({ code: 'ASSET_SNAPSHOT_MISMATCH', message: 'Scene asset snapshot is unavailable.' })
     }
-    const background = scene.backgroundAssetId === null
-      ? undefined
-      : await this.loadSceneAssetOrPlaceholder(
-        scene.backgroundAssetId,
-        'background',
-        scene.assetSnapshotId,
-        resolver,
-        this.backgroundOptionsForScene(scene),
-        snapshotAssets,
-        issues,
-        operation,
-        canvas,
-        assets
-      )
+    let background: PreparedCanvasObject | undefined
+    let personalBackground: PreparedCanvasObject | undefined
+    let corePattern: PreparedCanvasObject | undefined
     const objects: PreparedCanvasObject[] = []
     try {
-      for (const item of scene.objects) {
-        objects.push(await this.loadSceneAssetOrPlaceholder(
-          item.assetId,
-          'sticker',
+      background = scene.backgroundAssetId === null
+        ? undefined
+        : await this.loadSceneAssetOrPlaceholder(
+          scene.backgroundAssetId,
+          'background',
           scene.assetSnapshotId,
           resolver,
-          sceneObjectOptions({ ...item, locked: item.locked }),
+          this.backgroundOptionsForScene(scene),
           snapshotAssets,
           issues,
           operation,
           canvas,
           assets
-        ))
+        )
+      personalBackground = scene.personalBackground === null
+        ? undefined
+        : await this.loadScenePersonalAssetOrPlaceholder(
+          scene.personalBackground,
+          'background',
+          scene,
+          resolver,
+          this.backgroundOptionsForScene(scene),
+          issues,
+          operation,
+          canvas,
+          personalAssets
+        )
+      corePattern = scene.corePattern === null
+        ? undefined
+        : await this.loadScenePersonalAssetOrPlaceholder(
+          scene.corePattern,
+          'core_pattern',
+          scene,
+          resolver,
+          personalObjectOptions(scene.corePattern),
+          issues,
+          operation,
+          canvas,
+          personalAssets
+        )
+      const elements = [
+        ...scene.objects.map((item) => ({ kind: 'system_sticker' as const, item })),
+        ...scene.personalElements.map((item) => ({ kind: 'personal_element' as const, item }))
+      ].sort((left, right) => left.item.zIndex - right.item.zIndex)
+      for (const element of elements) {
+        if (element.kind === 'system_sticker') {
+          objects.push(await this.loadSceneAssetOrPlaceholder(
+            element.item.assetId,
+            'sticker',
+            scene.assetSnapshotId,
+            resolver,
+            sceneObjectOptions(element.item),
+            snapshotAssets,
+            issues,
+            operation,
+            canvas,
+            assets
+          ))
+        } else {
+          objects.push(await this.loadScenePersonalAssetOrPlaceholder(
+            element.item,
+            'element',
+            scene,
+            resolver,
+            personalObjectOptions(element.item),
+            issues,
+            operation,
+            canvas,
+            personalAssets
+          ))
+        }
       }
-      return { background, objects, issues, assets }
+      return { background: personalBackground ?? background, corePattern, objects, issues, assets, personalAssets }
     } catch (error) {
       if (background) background.release()
+      if (personalBackground) personalBackground.release()
+      if (corePattern) corePattern.release()
       for (const object of objects) object.release()
       throw error
+    }
+  }
+
+  private async loadScenePersonalAssetOrPlaceholder(
+    reference: { personalAssetId: string; versionId: string },
+    expectedRole: 'background' | 'core_pattern' | 'element',
+    scene: SceneDocument,
+    resolver: FabricEditorAssetResolver,
+    options: Record<string, unknown>,
+    issues: SceneRecoveryIssue[],
+    operation: AsyncOperation,
+    canvas: FabricCanvasPort,
+    personalAssets: Map<string, PersonalAssetBundle>
+  ): Promise<PreparedCanvasObject> {
+    try {
+      const bundle = await this.resolvePersonalAssetBundle(reference, expectedRole, scene.userId, resolver)
+      const loaded = await this.loadPersonalEditorImage(bundle, options, operation, canvas)
+      personalAssets.set(personalAssetKey(reference.personalAssetId, reference.versionId), bundle)
+      return loaded
+    } catch (error) {
+      if (isRequestCancelled(error)) throw error
+      const failure = isPersonalLoadFailure(error)
+        ? error
+        : { personalRecoveryCode: 'PERSONAL_RESOURCE_NOT_FOUND' as const, message: 'Personal Asset resource could not be loaded.' }
+      issues.push({
+        code: failure.personalRecoveryCode,
+        source: 'personal',
+        message: 'Personal Asset could not be loaded and was restored as a locked placeholder.',
+        personalAssetId: reference.personalAssetId,
+        versionId: reference.versionId,
+        personalRole: expectedRole,
+        ...(typeof options.objectId === 'string' ? { objectId: options.objectId } : {})
+      })
+      return this.createPersonalPlaceholder(reference, expectedRole, options)
     }
   }
 
@@ -1035,19 +1339,110 @@ export class FabricEditorAdapter {
     return this.loadEditorImage(asset, { ...options, assetId: asset.assetId }, operation, canvas)
   }
 
-  private async loadEditorImage(
-    asset: AssetRecord,
+  private async resolvePersonalAssetBundle(
+    reference: { personalAssetId: string; versionId: string },
+    expectedRole: 'background' | 'core_pattern' | 'element',
+    sceneUserId: string,
+    resolver: FabricEditorAssetResolver
+  ): Promise<PersonalAssetBundle> {
+    if (!resolver.resolvePersonalAsset) {
+      throw personalLoadFailure('PERSONAL_ASSET_NOT_FOUND', 'Personal Asset resolver is unavailable.')
+    }
+    let bundle: PersonalAssetBundle
+    try {
+      bundle = await resolver.resolvePersonalAsset(reference.personalAssetId, reference.versionId)
+    } catch (error) {
+      if (isPersonalLoadFailure(error)) throw error
+      const recoveryCode = error !== null
+        && typeof error === 'object'
+        && 'personalRecoveryCode' in error
+        && typeof error.personalRecoveryCode === 'string'
+        && (
+          error.personalRecoveryCode === 'PERSONAL_ASSET_NOT_FOUND'
+          || error.personalRecoveryCode === 'PERSONAL_ASSET_VERSION_NOT_FOUND'
+          || error.personalRecoveryCode === 'PERSONAL_ASSET_INVALID'
+        )
+        ? error.personalRecoveryCode
+        : 'PERSONAL_ASSET_NOT_FOUND'
+      throw personalLoadFailure(recoveryCode, 'Personal Asset could not be resolved.')
+    }
+    if (!bundle || typeof bundle !== 'object' || !bundle.asset || !bundle.version) {
+      throw personalLoadFailure('PERSONAL_ASSET_INVALID', 'Personal Asset resolver returned an invalid result.')
+    }
+    return this.assertPersonalBundle(bundle.asset, bundle.version, expectedRole, sceneUserId, reference)
+  }
+
+  private assertPersonalBundle(
+    asset: PersonalAssetRecord,
+    version: PersonalAssetVersionRecord,
+    expectedRole: 'background' | 'core_pattern' | 'element',
+    sceneUserId: string,
+    requested?: { personalAssetId: string; versionId: string }
+  ): PersonalAssetBundle {
+    const assetValidation = validatePersonalAssetRecord(asset)
+    const versionValidation = validatePersonalAssetVersionRecord(version, FELT_RESOURCE_REF_POLICY)
+    if (!assetValidation.ok || !versionValidation.ok) {
+      throw personalLoadFailure('PERSONAL_ASSET_INVALID', 'Personal Asset records failed runtime validation.')
+    }
+    if (
+      (requested && (asset.personalAssetId !== requested.personalAssetId || version.versionId !== requested.versionId))
+      || version.personalAssetId !== asset.personalAssetId
+      || asset.userId !== sceneUserId
+      || asset.role !== expectedRole
+    ) {
+      throw personalLoadFailure('PERSONAL_ASSET_INVALID', 'Personal Asset ownership, role, or identity does not match the Scene reference.')
+    }
+    return { asset: assetValidation.value, version: versionValidation.value }
+  }
+
+  private async loadPersonalEditorImage(
+    bundle: PersonalAssetBundle,
     options: Record<string, unknown>,
     operation: AsyncOperation,
     canvas: FabricCanvasPort
   ): Promise<PreparedCanvasObject> {
     let resource: LoadedResource | undefined
     try {
-      resource = await this.loadResource(asset.imageUrl)
+      resource = await this.loadResource(bundle.version.sourceImageRef)
+      this.ensureCurrentOperation(operation)
+      const object = await this.runtime.createImage(resource.sourceUrl, {
+        ...options,
+        personalAssetId: bundle.asset.personalAssetId,
+        versionId: bundle.version.versionId
+      })
+      this.ensureCurrentOperation(operation)
+      if (options.sceneObjectKind !== undefined) applyFabricControlTheme(object)
+      return { object, release: resource.dispose }
+    } catch (error) {
+      resource?.dispose()
+      if (isRequestCancelled(error)) throw error
+      throw personalLoadFailure('PERSONAL_RESOURCE_NOT_FOUND', 'Personal Asset resource could not be loaded.')
+    }
+  }
+
+  private async loadEditorImage(
+    asset: AssetRecord,
+    options: Record<string, unknown>,
+    operation: AsyncOperation,
+    canvas: FabricCanvasPort
+  ): Promise<PreparedCanvasObject> {
+    return this.loadImageResource(asset.imageUrl, options, operation, canvas, options.assetType === 'sticker')
+  }
+
+  private async loadImageResource(
+    resourceRef: string,
+    options: Record<string, unknown>,
+    operation: AsyncOperation,
+    _canvas: FabricCanvasPort,
+    applyTheme: boolean
+  ): Promise<PreparedCanvasObject> {
+    let resource: LoadedResource | undefined
+    try {
+      resource = await this.loadResource(resourceRef)
       this.ensureCurrentOperation(operation)
       const object = await this.runtime.createImage(resource.sourceUrl, options)
       this.ensureCurrentOperation(operation)
-      if (options.assetType === 'sticker') applyFabricControlTheme(object)
+      if (applyTheme) applyFabricControlTheme(object)
       return { object, release: resource.dispose }
     } catch (error) {
       resource?.dispose()
@@ -1064,7 +1459,7 @@ export class FabricEditorAdapter {
     const object = this.runtime.createPlaceholder({
       ...options,
       assetId,
-      ...(assetType === 'sticker' ? { assetType: 'sticker' as const } : {}),
+      ...(assetType === 'sticker' ? { assetType: 'sticker' as const, sceneObjectKind: 'system_sticker' as const } : {}),
       selectable: false,
       evented: false,
       lockMovementX: true,
@@ -1081,8 +1476,55 @@ export class FabricEditorAdapter {
     return { object, release: () => undefined }
   }
 
+  private createPersonalPlaceholder(
+    reference: { personalAssetId: string; versionId: string },
+    role: 'background' | 'core_pattern' | 'element',
+    options: Record<string, unknown>
+  ): PreparedCanvasObject {
+    const object = this.runtime.createPlaceholder({
+      ...options,
+      personalAssetId: reference.personalAssetId,
+      versionId: reference.versionId,
+      ...(role === 'core_pattern' ? { sceneObjectKind: 'core_pattern' as const } : {}),
+      ...(role === 'element' ? { sceneObjectKind: 'personal_element' as const } : {}),
+      selectable: false,
+      evented: false,
+      lockMovementX: true,
+      lockMovementY: true,
+      lockScalingX: true,
+      lockScalingY: true,
+      lockScalingFlip: true,
+      lockSkewingX: true,
+      lockSkewingY: true,
+      lockRotation: true
+    })
+    if (role !== 'background') applyFabricControlTheme(object)
+    this.recoveryPlaceholders.add(object)
+    return { object, release: () => undefined }
+  }
+
   private clearRecoveryIssues(assetType: 'background' | 'sticker'): void {
     this.recoveryIssues = this.recoveryIssues.filter((issue) => issue.assetType !== assetType)
+  }
+
+  private clearPersonalBackgroundRecoveryIssues(): void {
+    this.recoveryIssues = this.recoveryIssues.filter((issue) => issue.personalRole !== 'background')
+  }
+
+  private clearBackgroundRecoveryIssues(previousBackgroundAssetId?: string | null): void {
+    if (previousBackgroundAssetId) this.clearRecoveryIssueIfResolved(previousBackgroundAssetId, 'background')
+    this.clearPersonalBackgroundRecoveryIssues()
+  }
+
+  private clearPersonalObjectRecoveryIssues(personalAssetId?: string, versionId?: string, objectId?: string): void {
+    this.recoveryIssues = this.recoveryIssues.filter((issue) => {
+      if (issue.source !== 'personal') return true
+      if (issue.personalRole === 'background') return true
+      if (personalAssetId !== undefined && issue.personalAssetId !== personalAssetId) return true
+      if (versionId !== undefined && issue.versionId !== versionId) return true
+      if (objectId !== undefined && issue.objectId !== objectId) return true
+      return false
+    })
   }
 
   private clearRecoveryIssueIfResolved(assetId: string, assetType: 'background' | 'sticker', objectId?: string): void {
@@ -1128,6 +1570,7 @@ export class FabricEditorAdapter {
     backgroundColor?: string
     clearBackgroundColor?: boolean
     backgroundAssetId?: string | null
+    personalBackground?: ScenePersonalBackground | null
   }): void {
     const current = this.serializeScene()
     const candidate: SceneDocument = {
@@ -1141,7 +1584,8 @@ export class FabricEditorAdapter {
             ? (current.canvas.backgroundColor === undefined ? {} : { backgroundColor: current.canvas.backgroundColor })
             : { backgroundColor: change.backgroundColor })
       },
-      backgroundAssetId: 'backgroundAssetId' in change ? change.backgroundAssetId ?? null : current.backgroundAssetId
+      backgroundAssetId: 'backgroundAssetId' in change ? change.backgroundAssetId ?? null : current.backgroundAssetId,
+      personalBackground: 'personalBackground' in change ? change.personalBackground ?? null : current.personalBackground
     }
     const validation = validateSceneDocument(candidate)
     if (!validation.ok) throw editorError('INVALID_ARGUMENT', 'Canvas state change violates SceneDocument constraints.')
@@ -1158,8 +1602,10 @@ export class FabricEditorAdapter {
     const requestGeneration = kind === 'import'
       ? ++this.importRequestGeneration
       : kind === 'background'
-        ? ++this.backgroundRequestGeneration
-        : ++this.stickerRequestGeneration
+      ? ++this.backgroundRequestGeneration
+        : kind === 'sticker'
+          ? ++this.stickerRequestGeneration
+          : ++this.personalRequestGeneration
     return { canvas, sceneGeneration: this.sceneGeneration, requestGeneration, kind }
   }
 
@@ -1167,7 +1613,8 @@ export class FabricEditorAdapter {
     if (this.sceneGeneration !== operation.sceneGeneration || this.canvas !== operation.canvas) return false
     if (operation.kind === 'import') return this.importRequestGeneration === operation.requestGeneration
     if (operation.kind === 'background') return this.backgroundRequestGeneration === operation.requestGeneration
-    return true
+    if (operation.kind === 'sticker') return this.stickerRequestGeneration === operation.requestGeneration
+    return this.personalRequestGeneration === operation.requestGeneration
   }
 
   private ensureCurrentOperation(operation: AsyncOperation): void {
@@ -1214,11 +1661,25 @@ export class FabricEditorAdapter {
     }
   }
 
-  private moveLayer(objectId: string, action: (canvas: FabricCanvasPort, object: FabricObjectPort) => unknown): void {
+  private moveLayer(objectId: string, offset: number): void {
     const canvas = this.requireReadyCanvas()
     const object = this.findObject(objectId)
-    if (!object || object.selectable === false) throw editorError('INVALID_ARGUMENT', 'Sticker layer cannot be changed.')
-    action(canvas, object)
+    if (!object) throw editorError('INVALID_ARGUMENT', 'Sticker layer cannot be changed.')
+    if (runtimeObjectKind(object) === 'core_pattern') return
+    if (!isElementRuntimeObject(object) || object.selectable === false || this.recoveryPlaceholders.has(object)) {
+      throw editorError('INVALID_ARGUMENT', 'Sticker layer cannot be changed.')
+    }
+    const elements = this.elementObjects(canvas)
+    const currentIndex = elements.indexOf(object)
+    if (currentIndex < 0) throw editorError('INVALID_ARGUMENT', 'Sticker layer cannot be changed.')
+    const targetIndex = offset === Number.POSITIVE_INFINITY
+      ? elements.length - 1
+      : offset === Number.NEGATIVE_INFINITY
+        ? 0
+        : Math.max(0, Math.min(elements.length - 1, currentIndex + offset))
+    if (targetIndex === currentIndex) return
+    const coreIndex = canvas.getObjects().findIndex((candidate) => runtimeObjectKind(candidate) === 'core_pattern')
+    canvas.moveTo(object, (coreIndex >= 0 ? coreIndex + 1 : 0) + targetIndex)
     canvas.requestRenderAll()
     this.captureHistory()
   }
@@ -1227,8 +1688,16 @@ export class FabricEditorAdapter {
   private withSelectedLayerObject(action: (objectId: string) => void): void {
     const active = this.requireReadyCanvas().getActiveObject()
     if (!active?.objectId) return
-    if (this.recoveryPlaceholders.has(active) || active.selectable === false) return
+    if (this.recoveryPlaceholders.has(active) || active.selectable === false || !isElementRuntimeObject(active)) return
     action(active.objectId)
+  }
+
+  private elementObjects(canvas: FabricCanvasPort): FabricObjectPort[] {
+    return canvas.getObjects().filter(isElementRuntimeObject)
+  }
+
+  private findCorePatternObject(): FabricObjectPort | undefined {
+    return this.requireCanvas().getObjects().find((object) => runtimeObjectKind(object) === 'core_pattern')
   }
 
   private enforceUniformScale(object: FabricObjectPort): void {
@@ -1282,12 +1751,21 @@ export class FabricEditorAdapter {
 
   private async restoreHistory(entry: HistoryEntry): Promise<void> {
     const canvas = this.requireReadyCanvas()
-    const resolver = this.resolver ?? {
+    const fallbackResolver: FabricEditorAssetResolver = {
       resolveAsset: async (assetId: string): Promise<AssetRecord> => {
         const asset = this.assetCache.get(assetId)
         if (!asset) throw editorError('ASSET_NOT_FOUND', 'History material is unavailable.')
         return asset
+      },
+      resolvePersonalAsset: async (personalAssetId: string, versionId: string): Promise<PersonalAssetBundle> => {
+        const bundle = this.personalAssetCache.get(personalAssetKey(personalAssetId, versionId))
+        if (!bundle) throw editorError('ASSET_NOT_FOUND', 'History personal asset is unavailable.')
+        return bundle
       }
+    }
+    const resolver: FabricEditorAssetResolver = {
+      resolveAsset: this.resolver?.resolveAsset ?? fallbackResolver.resolveAsset,
+      resolvePersonalAsset: this.resolver?.resolvePersonalAsset ?? fallbackResolver.resolvePersonalAsset
     }
     const transaction = {
       generation: ++this.historyRestoreGeneration,
@@ -1330,6 +1808,7 @@ export class FabricEditorAdapter {
 
   private releasePreparedScene(prepared: PreparedScene): void {
     prepared.background?.release()
+    prepared.corePattern?.release()
     for (const object of prepared.objects) object.release()
   }
 
@@ -1346,7 +1825,7 @@ export class FabricEditorAdapter {
       !object
       || typeof object.objectId !== 'string'
       || object.objectId.length === 0
-      || object.assetType !== 'sticker'
+      || !runtimeObjectKind(object)
       || object.selectable === false
       || this.recoveryPlaceholders.has(object)
       || typeof object.getBoundingRect !== 'function'
@@ -1369,7 +1848,13 @@ export class FabricEditorAdapter {
           top: bounds.top,
           width: bounds.width,
           height: bounds.height
-        }
+        },
+        ...(runtimeObjectKind(object) === 'system_sticker'
+          ? {}
+          : {
+              kind: runtimeObjectKind(object),
+              canChangeLayer: runtimeObjectKind(object) === 'personal_element'
+            })
       }
     } catch {
       return undefined
@@ -1384,7 +1869,9 @@ export class FabricEditorAdapter {
           type: event.type,
           selection: {
             objectId: event.selection.objectId,
-            bounds: { ...event.selection.bounds }
+            bounds: { ...event.selection.bounds },
+            ...(event.selection.kind === undefined ? {} : { kind: event.selection.kind }),
+            ...(event.selection.canChangeLayer === undefined ? {} : { canChangeLayer: event.selection.canChangeLayer })
           }
         })
       } catch {
@@ -1417,6 +1904,19 @@ export class FabricEditorAdapter {
   private serializeScene(): SceneDocument {
     const canvas = this.requireCanvas()
     const metadata = this.requireMetadata()
+    const runtimeObjects = canvas.getObjects()
+    const elements = runtimeObjects.filter(isElementRuntimeObject)
+    const systemObjects: SceneObject[] = []
+    const personalElements: ScenePersonalElement[] = []
+    elements.forEach((object, index) => {
+      const zIndex = index + 1
+      if (runtimeObjectKind(object) === 'personal_element') {
+        personalElements.push(fabricObjectToPersonalElement(object, zIndex))
+      } else {
+        systemObjects.push(fabricObjectToSceneObject(object, zIndex))
+      }
+    })
+    const coreObject = runtimeObjects.find((object) => runtimeObjectKind(object) === 'core_pattern')
     return {
       ...metadata,
       schemaVersion: SCHEMA_VERSION,
@@ -1426,7 +1926,10 @@ export class FabricEditorAdapter {
         ...(this.backgroundColor === undefined ? {} : { backgroundColor: this.backgroundColor })
       },
       backgroundAssetId: this.backgroundAssetId,
-      objects: canvas.getObjects().map((object, index) => fabricObjectToSceneObject(object, index + 1)),
+      objects: systemObjects,
+      personalBackground: this.personalBackground,
+      corePattern: coreObject ? fabricObjectToCorePattern(coreObject) : null,
+      personalElements,
       updatedAt: nowUtc(this.now)
     }
   }
@@ -1440,9 +1943,6 @@ function metadataFromScene(scene: SceneDocument): EditorSceneMetadata {
     workName: scene.workName,
     themeId: scene.themeId,
     assetSnapshotId: scene.assetSnapshotId,
-    personalBackground: scene.personalBackground,
-    corePattern: scene.corePattern,
-    personalElements: scene.personalElements,
     createdAt: scene.createdAt
   }
 }
@@ -1452,6 +1952,7 @@ function sceneObjectOptions(sceneObject: SceneObject): Record<string, unknown> {
     objectId: sceneObject.objectId,
     assetId: sceneObject.assetId,
     assetType: 'sticker',
+    sceneObjectKind: 'system_sticker',
     originX: 'center',
     originY: 'center',
     left: sceneObject.left,
@@ -1474,8 +1975,52 @@ function sceneObjectOptions(sceneObject: SceneObject): Record<string, unknown> {
   }
 }
 
+interface PersonalObjectOptionsInput {
+  objectId: string
+  personalAssetId: string
+  versionId: string
+  left: number
+  top: number
+  scaleX: number
+  scaleY: number
+  angle: number
+  visible: boolean
+  locked: boolean
+  zIndex?: number
+  sceneObjectKind?: SceneObjectKind
+}
+
+function personalObjectOptions(object: PersonalObjectOptionsInput): Record<string, unknown> {
+  return {
+    objectId: object.objectId,
+    personalAssetId: object.personalAssetId,
+    versionId: object.versionId,
+    sceneObjectKind: 'zIndex' in object ? 'personal_element' : 'core_pattern',
+    ...('zIndex' in object ? { zIndex: object.zIndex } : {}),
+    originX: 'center',
+    originY: 'center',
+    left: object.left,
+    top: object.top,
+    scaleX: object.scaleX,
+    scaleY: object.scaleY,
+    angle: normalizeSceneAngle(object.angle),
+    visible: object.visible,
+    selectable: !object.locked,
+    evented: !object.locked,
+    lockMovementX: object.locked,
+    lockMovementY: object.locked,
+    lockScalingX: object.locked,
+    lockScalingY: object.locked,
+    lockUniScaling: true,
+    lockScalingFlip: true,
+    lockSkewingX: true,
+    lockSkewingY: true,
+    lockRotation: object.locked
+  }
+}
+
 function fabricObjectToSceneObject(object: FabricObjectPort, zIndex: number): SceneObject {
-  if (!object.objectId || !object.assetId || object.assetType !== 'sticker') {
+  if (!object.objectId || !object.assetId || runtimeObjectKind(object) !== 'system_sticker' || object.assetType !== 'sticker') {
     throw editorError('SCENE_VALIDATION_FAILED', 'Canvas contains a non-sticker object.')
   }
   if (hasUnsupportedFabricTransform(object)) {
@@ -1500,12 +2045,76 @@ function fabricObjectToSceneObject(object: FabricObjectPort, zIndex: number): Sc
   }
 }
 
+function fabricObjectToCorePattern(object: FabricObjectPort): SceneCorePatternObject {
+  if (!object.objectId || !object.personalAssetId || !object.versionId || runtimeObjectKind(object) !== 'core_pattern') {
+    throw editorError('SCENE_VALIDATION_FAILED', 'Canvas core pattern is missing its Personal Asset reference.')
+  }
+  return fabricObjectToPersonalTransform(object)
+}
+
+function fabricObjectToPersonalElement(object: FabricObjectPort, zIndex: number): ScenePersonalElement {
+  if (!object.objectId || !object.personalAssetId || !object.versionId || runtimeObjectKind(object) !== 'personal_element') {
+    throw editorError('SCENE_VALIDATION_FAILED', 'Canvas personal element is missing its Personal Asset reference.')
+  }
+  return { ...fabricObjectToPersonalTransform(object), zIndex }
+}
+
+function fabricObjectToPersonalTransform(object: FabricObjectPort): SceneCorePatternObject {
+  if (hasUnsupportedFabricTransform(object)) {
+    throw editorError('SCENE_VALIDATION_FAILED', 'Fabric flip/skew transforms are not representable in SceneDocument.')
+  }
+  const scaleX = object.scaleX
+  const scaleY = object.scaleY
+  if (typeof scaleX !== 'number' || !Number.isFinite(scaleX) || typeof scaleY !== 'number' || !Number.isFinite(scaleY) || scaleX <= 0 || scaleY <= 0) {
+    throw editorError('SCENE_VALIDATION_FAILED', 'Personal Asset scale is invalid.')
+  }
+  return {
+    objectId: object.objectId!,
+    personalAssetId: object.personalAssetId!,
+    versionId: object.versionId!,
+    left: finiteOrThrow(object.left, 'Personal Asset position is invalid.'),
+    top: finiteOrThrow(object.top, 'Personal Asset position is invalid.'),
+    scaleX,
+    scaleY,
+    angle: normalizeSceneAngle(object.angle ?? 0),
+    visible: object.visible !== false,
+    locked: object.selectable === false
+  }
+}
+
 function hasUnsupportedFabricTransform(object: FabricObjectPort): boolean {
   if ((object.flipX !== undefined && object.flipX !== false) || (object.flipY !== undefined && object.flipY !== false)) return true
   for (const value of [object.skewX, object.skewY]) {
     if (value !== undefined && (typeof value !== 'number' || !Number.isFinite(value) || value !== 0)) return true
   }
   return false
+}
+
+function runtimeObjectKind(object: FabricObjectPort): SceneObjectKind | undefined {
+  if (object.sceneObjectKind === 'system_sticker' || object.sceneObjectKind === 'core_pattern' || object.sceneObjectKind === 'personal_element') {
+    return object.sceneObjectKind
+  }
+  return object.assetType === 'sticker' ? 'system_sticker' : undefined
+}
+
+function isElementRuntimeObject(object: FabricObjectPort): boolean {
+  const kind = runtimeObjectKind(object)
+  return kind === 'system_sticker' || kind === 'personal_element'
+}
+
+function personalAssetKey(personalAssetId: string, versionId: string): string {
+  return `${personalAssetId}:${versionId}`
+}
+
+function personalLoadFailure(personalRecoveryCode: PersonalRecoveryCode, message: string): PersonalLoadFailure {
+  return { personalRecoveryCode, message }
+}
+
+function isPersonalLoadFailure(value: unknown): value is PersonalLoadFailure {
+  return value !== null
+    && typeof value === 'object'
+    && 'personalRecoveryCode' in value
+    && typeof value.personalRecoveryCode === 'string'
 }
 
 function finiteOrThrow(value: number | undefined, message: string): number {

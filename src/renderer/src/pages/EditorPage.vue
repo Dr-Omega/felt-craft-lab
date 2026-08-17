@@ -568,6 +568,7 @@ watch([oqtOpen, oqtSelection], () => { void nextTick(updateOqtPosition) })
       :left="oqtPosition.left"
       :top="oqtPosition.top"
       :below="oqtPosition.below"
+      :can-change-layer="oqtSelection?.canChangeLayer !== false"
       @forward="quickBringForward"
       @backward="quickSendBackward"
       @bring-to-front="quickBringToFront"

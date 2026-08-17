@@ -1,5 +1,13 @@
 import { toSharedError, validateSceneDocument } from '@shared/contracts'
-import type { AssetAccessState, AssetRecord, SceneDocument, SharedError, SharedErrorCode } from '@shared/contracts'
+import type {
+  AssetAccessState,
+  AssetRecord,
+  PersonalAssetRecord,
+  PersonalAssetVersionRecord,
+  SceneDocument,
+  SharedError,
+  SharedErrorCode
+} from '@shared/contracts'
 import type { FabricEditorAssetResolver, SceneImportResult, SceneRecoveryIssue } from './fabric-editor-adapter'
 import type {
   EditorSessionAdapter,
@@ -173,6 +181,18 @@ export class EditorSessionService {
     await this.runAsyncMutation('INVALID_ARGUMENT', () => this.requireAdapter().setBackground(asset, access))
   }
 
+  async setPersonalBackground(asset: PersonalAssetRecord, version: PersonalAssetVersionRecord): Promise<void> {
+    await this.runAsyncMutation('INVALID_ARGUMENT', () => this.requireAdapter().setPersonalBackground(asset, version))
+  }
+
+  async setCorePattern(asset: PersonalAssetRecord, version: PersonalAssetVersionRecord): Promise<void> {
+    await this.runAsyncMutation('INVALID_ARGUMENT', () => this.requireAdapter().setCorePattern(asset, version))
+  }
+
+  clearCorePattern(): void {
+    this.runSyncMutation('INVALID_ARGUMENT', () => this.requireAdapter().clearCorePattern())
+  }
+
   setSolidBackground(color: string): void {
     this.runSyncMutation('INVALID_ARGUMENT', () => this.requireAdapter().setSolidBackground(color))
   }
@@ -187,6 +207,14 @@ export class EditorSessionService {
 
   async addSticker(asset: AssetRecord, access: AssetAccessState, position?: { left: number; top: number }): Promise<string> {
     return this.runAsyncMutation('INVALID_ARGUMENT', () => this.requireAdapter().addSticker(asset, access, position))
+  }
+
+  async addPersonalElement(
+    asset: PersonalAssetRecord,
+    version: PersonalAssetVersionRecord,
+    position?: { left: number; top: number }
+  ): Promise<string> {
+    return this.runAsyncMutation('INVALID_ARGUMENT', () => this.requireAdapter().addPersonalElement(asset, version, position))
   }
 
   deleteObject(objectId: string): void {

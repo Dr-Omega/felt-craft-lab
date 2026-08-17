@@ -3,6 +3,7 @@ defineProps<{
   left: number
   top: number
   below?: boolean
+  canChangeLayer?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -22,12 +23,12 @@ const emit = defineEmits<{
     aria-label="对象快捷工具"
   >
     <div class="oqt-row" role="group" aria-label="图层顺序">
-      <button type="button" aria-label="往前" @click="emit('forward')">往前</button>
-      <button type="button" aria-label="往后" @click="emit('backward')">往后</button>
+      <button type="button" aria-label="往前" :disabled="canChangeLayer === false" @click="emit('forward')">往前</button>
+      <button type="button" aria-label="往后" :disabled="canChangeLayer === false" @click="emit('backward')">往后</button>
     </div>
     <div class="oqt-row" role="group" aria-label="置顶置底">
-      <button type="button" aria-label="置顶" @click="emit('bringToFront')">置顶</button>
-      <button type="button" aria-label="置底" @click="emit('sendToBack')">置底</button>
+      <button type="button" aria-label="置顶" :disabled="canChangeLayer === false" @click="emit('bringToFront')">置顶</button>
+      <button type="button" aria-label="置底" :disabled="canChangeLayer === false" @click="emit('sendToBack')">置底</button>
     </div>
     <div class="oqt-row oqt-row-remove" role="group" aria-label="拿掉对象">
       <button type="button" class="oqt-remove" aria-label="拿掉" @click="emit('remove')">拿掉</button>
@@ -74,6 +75,11 @@ const emit = defineEmits<{
 
 .object-quick-tools button:hover {
   background: var(--paper, #eef4f2);
+}
+
+.object-quick-tools button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .object-quick-tools .oqt-remove {

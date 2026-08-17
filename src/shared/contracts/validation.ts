@@ -12,7 +12,14 @@ import { PROJECT_SYNC_STATUSES } from './project'
 import type { DraftRecord, ProjectRecord } from './project'
 import { PERSONAL_ASSET_ROLES, PERSONAL_ASSET_SOURCE_TYPES } from './personal-asset'
 import type { PersonalAssetRecord, PersonalAssetVersionRecord } from './personal-asset'
-import type { SceneDocument, SceneObject, ScenePersonalBackground, ScenePersonalObject } from './scene'
+import type {
+  SceneCorePatternObject,
+  SceneDocument,
+  SceneObject,
+  ScenePersonalBackground,
+  ScenePersonalElement,
+  ScenePersonalObject
+} from './scene'
 
 export interface ValidationIssue {
   path: string
@@ -370,7 +377,7 @@ export function validateScenePersonalBackground(raw: unknown): ValidationResult<
   return errors.length ? failure(errors) : success(raw as ScenePersonalBackground)
 }
 
-export function validateScenePersonalObject(raw: unknown): ValidationResult<ScenePersonalObject> {
+function validateScenePersonalTransformBase(raw: unknown): ValidationResult<ScenePersonalObject> {
   const errors: ValidationIssue[] = []
   const value = requireObject(raw, 'scenePersonalObject', errors)
   if (!value) return failure(errors)
@@ -392,6 +399,42 @@ export function validateScenePersonalObject(raw: unknown): ValidationResult<Scen
   requireBoolean(value.visible, 'scenePersonalObject.visible', errors)
   requireBoolean(value.locked, 'scenePersonalObject.locked', errors)
   return errors.length ? failure(errors) : success(raw as ScenePersonalObject)
+}
+
+export function validateSceneCorePatternObject(raw: unknown): ValidationResult<SceneCorePatternObject> {
+  return validateScenePersonalTransformBase(raw)
+}
+
+export function validateScenePersonalElement(raw: unknown): ValidationResult<ScenePersonalElement> {
+  const errors: ValidationIssue[] = []
+  const value = requireObject(raw, 'scenePersonalElement', errors)
+  if (!value) return failure(errors)
+  hasOnlyKeys(value, ['objectId', 'personalAssetId', 'versionId', 'left', 'top', 'scaleX', 'scaleY', 'angle', 'zIndex', 'visible', 'locked'], 'scenePersonalElement', errors)
+  requireUuid(value.objectId, 'scenePersonalElement.objectId', errors)
+  requireUuid(value.personalAssetId, 'scenePersonalElement.personalAssetId', errors)
+  requireUuid(value.versionId, 'scenePersonalElement.versionId', errors)
+  requireFiniteNumber(value.left, 'scenePersonalElement.left', errors)
+  requireFiniteNumber(value.top, 'scenePersonalElement.top', errors)
+  if (!requireFiniteNumber(value.scaleX, 'scenePersonalElement.scaleX', errors) || value.scaleX <= 0) {
+    errors.push({ path: 'scenePersonalElement.scaleX', message: '必须是大于 0 的有限数字。' })
+  }
+  if (!requireFiniteNumber(value.scaleY, 'scenePersonalElement.scaleY', errors) || value.scaleY <= 0) {
+    errors.push({ path: 'scenePersonalElement.scaleY', message: '必须是大于 0 的有限数字。' })
+  }
+  if (requireFiniteNumber(value.angle, 'scenePersonalElement.angle', errors) && (value.angle < -180 || value.angle >= 180)) {
+    errors.push({ path: 'scenePersonalElement.angle', message: '角度必须规范化到 [-180, 180)。' })
+  }
+  if (!requireFiniteNumber(value.zIndex, 'scenePersonalElement.zIndex', errors) || !Number.isInteger(value.zIndex) || value.zIndex < 1) {
+    errors.push({ path: 'scenePersonalElement.zIndex', message: '个人元素 zIndex 必须为从 1 开始的整数。' })
+  }
+  requireBoolean(value.visible, 'scenePersonalElement.visible', errors)
+  requireBoolean(value.locked, 'scenePersonalElement.locked', errors)
+  return errors.length ? failure(errors) : success(raw as ScenePersonalElement)
+}
+
+/** @deprecated Use validateSceneCorePatternObject for the zIndex-free shape. */
+export function validateScenePersonalObject(raw: unknown): ValidationResult<ScenePersonalObject> {
+  return validateScenePersonalTransformBase(raw)
 }
 
 export function validateSceneDocument(raw: unknown): ValidationResult<SceneDocument> {
@@ -428,7 +471,6 @@ export function validateSceneDocument(raw: unknown): ValidationResult<SceneDocum
       else if (objectIds.has(result.value.objectId)) errors.push({ path: `scene.objects[${index}].objectId`, message: 'objectId 在 Scene 内必须唯一。' })
       else objectIds.add(result.value.objectId)
     }
-    validateContinuousLayers(value.objects, errors)
   }
   const objectIds = new Set<string>()
   if (Array.isArray(value.objects)) {
@@ -439,7 +481,7 @@ export function validateSceneDocument(raw: unknown): ValidationResult<SceneDocum
   if (value.corePattern === null) {
     // null is the explicit no-core-pattern state.
   } else {
-    const corePattern = validateScenePersonalObject(value.corePattern)
+    const corePattern = validateSceneCorePatternObject(value.corePattern)
     if (!corePattern.ok) errors.push(...corePattern.errors.map((issue) => ({ ...issue, path: `scene.corePattern.${issue.path.replace(/^scenePersonalObject\.?/, '')}` })))
     else if (objectIds.has(corePattern.value.objectId)) errors.push({ path: 'scene.corePattern.objectId', message: 'objectId 在 Scene 内必须唯一。' })
     else objectIds.add(corePattern.value.objectId)
@@ -448,15 +490,18 @@ export function validateSceneDocument(raw: unknown): ValidationResult<SceneDocum
     errors.push({ path: 'scene.personalElements', message: '必须是对象数组。' })
   } else {
     for (const [index, object] of value.personalElements.entries()) {
-      const personalObject = validateScenePersonalObject(object)
+      const personalObject = validateScenePersonalElement(object)
       if (!personalObject.ok) {
-        errors.push(...personalObject.errors.map((issue) => ({ ...issue, path: `scene.personalElements[${index}].${issue.path.replace(/^scenePersonalObject\.?/, '')}` })))
+        errors.push(...personalObject.errors.map((issue) => ({ ...issue, path: `scene.personalElements[${index}].${issue.path.replace(/^scenePersonalElement\.?/, '')}` })))
       } else if (objectIds.has(personalObject.value.objectId)) {
         errors.push({ path: `scene.personalElements[${index}].objectId`, message: 'objectId 在 Scene 内必须唯一。' })
       } else {
         objectIds.add(personalObject.value.objectId)
       }
     }
+  }
+  if (Array.isArray(value.objects) && Array.isArray(value.personalElements)) {
+    validateGlobalElementLayers(value.objects, value.personalElements, errors)
   }
   requireUtcTimestamp(value.createdAt, 'scene.createdAt', errors)
   requireUtcTimestamp(value.updatedAt, 'scene.updatedAt', errors)
@@ -646,11 +691,26 @@ function validateCanvas(raw: unknown, errors: ValidationIssue[]): void {
   }
 }
 
-function validateContinuousLayers(objects: unknown[], errors: ValidationIssue[]): void {
-  const zIndexes = objects.map((object) => isObject(object) && typeof object.zIndex === 'number' ? object.zIndex : undefined)
-  for (const [index, zIndex] of zIndexes.entries()) {
-    if (zIndex !== index + 1) {
-      errors.push({ path: `scene.objects[${index}].zIndex`, message: 'objects 必须按连续的 zIndex=1..N 升序保存。' })
+function validateGlobalElementLayers(
+  objects: unknown[],
+  personalElements: unknown[],
+  errors: ValidationIssue[]
+): void {
+  const entries: Array<{ zIndex: number; path: string }> = []
+  objects.forEach((object, index) => {
+    if (isObject(object) && typeof object.zIndex === 'number' && Number.isInteger(object.zIndex) && object.zIndex >= 1) {
+      entries.push({ zIndex: object.zIndex, path: `scene.objects[${index}].zIndex` })
+    }
+  })
+  personalElements.forEach((object, index) => {
+    if (isObject(object) && typeof object.zIndex === 'number' && Number.isInteger(object.zIndex) && object.zIndex >= 1) {
+      entries.push({ zIndex: object.zIndex, path: `scene.personalElements[${index}].zIndex` })
+    }
+  })
+  entries.sort((left, right) => left.zIndex - right.zIndex)
+  for (const [index, entry] of entries.entries()) {
+    if (entry.zIndex !== index + 1) {
+      errors.push({ path: entry.path, message: '系统贴纸与个人元素必须共享连续且唯一的全局 zIndex=1..N。' })
       return
     }
   }

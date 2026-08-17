@@ -109,6 +109,7 @@ describe('Scene Personal Asset cross-table validation', () => {
       scaleX: 1,
       scaleY: 1,
       angle: 0,
+      zIndex: 2,
       visible: true,
       locked: false
     }]

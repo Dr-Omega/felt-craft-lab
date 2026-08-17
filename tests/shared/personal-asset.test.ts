@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest'
 import {
   validatePersonalAssetRecord,
   validatePersonalAssetVersionRecord,
+  validateSceneCorePatternObject,
   validateSceneDocument,
+  validateScenePersonalElement,
   validateScenePersonalBackground,
   validateScenePersonalObject
 } from '../../src/shared/contracts'
@@ -79,12 +81,41 @@ describe('Scene V2 personal references', () => {
     scene.personalBackground = { personalAssetId, versionId }
     scene.corePattern = { ...validPersonalObject, objectId: '8d4bbd2b-7288-4a19-b0dd-5bf43fd1cb9e' }
     scene.personalElements = [
-      validPersonalObject,
-      { ...validPersonalObject, objectId: '1ea8d75e-5949-440c-9db5-c7b4eaf4a6d1', left: 120 }
+      { ...validPersonalObject, zIndex: 2 },
+      { ...validPersonalObject, zIndex: 3, objectId: '1ea8d75e-5949-440c-9db5-c7b4eaf4a6d1', left: 120 }
     ]
     expect(validateScenePersonalBackground(scene.personalBackground).ok).toBe(true)
     expect(validateScenePersonalObject(scene.corePattern).ok).toBe(true)
     expect(validateSceneDocument(scene).ok).toBe(true)
+  })
+
+  it('validates one global continuous Element tier across system and personal elements', () => {
+    const mixed = cloneFixture(validScene)
+    mixed.personalElements = [{ ...validPersonalObject, zIndex: 2 }]
+    expect(validateSceneDocument(mixed).ok).toBe(true)
+
+    const personalOnly = cloneFixture(validScene)
+    personalOnly.objects = []
+    personalOnly.personalElements = [
+      { ...validPersonalObject, zIndex: 1 },
+      { ...validPersonalObject, zIndex: 2, objectId: '1ea8d75e-5949-440c-9db5-c7b4eaf4a6d1' }
+    ]
+    expect(validateSceneDocument(personalOnly).ok).toBe(true)
+
+    const duplicate = cloneFixture(validScene)
+    duplicate.personalElements = [{ ...validPersonalObject, zIndex: 1 }]
+    expect(validateSceneDocument(duplicate).ok).toBe(false)
+
+    const gap = cloneFixture(validScene)
+    gap.personalElements = [{ ...validPersonalObject, zIndex: 3 }]
+    expect(validateSceneDocument(gap).ok).toBe(false)
+  })
+
+  it('keeps Core Pattern zIndex-free while Personal Element requires zIndex', () => {
+    expect(validateSceneCorePatternObject(validPersonalObject).ok).toBe(true)
+    expect(validateSceneCorePatternObject({ ...validPersonalObject, zIndex: 1 }).ok).toBe(false)
+    expect(validateScenePersonalElement({ ...validPersonalObject, zIndex: 1 }).ok).toBe(true)
+    expect(validateScenePersonalElement(validPersonalObject).ok).toBe(false)
   })
 
   it('rejects mutually exclusive backgrounds, duplicate personal object IDs, and invalid transforms', () => {
@@ -93,7 +124,7 @@ describe('Scene V2 personal references', () => {
     expect(validateSceneDocument(withBothBackgrounds).ok).toBe(false)
 
     const duplicate = cloneFixture(validScene)
-    duplicate.personalElements = [validPersonalObject, { ...validPersonalObject }]
+    duplicate.personalElements = [{ ...validPersonalObject, zIndex: 2 }, { ...validPersonalObject, zIndex: 3 }]
     expect(validateSceneDocument(duplicate).ok).toBe(false)
 
     expect(validateScenePersonalObject({ ...validPersonalObject, left: Number.NaN }).ok).toBe(false)

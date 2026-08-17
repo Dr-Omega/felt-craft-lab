@@ -11,6 +11,7 @@ export type {
   FabricEditorRuntime,
   FabricObjectPort,
   LoadedResource,
+  SceneObjectKind,
   SceneImportResult,
   SceneRecoveryIssue
 } from './fabric-editor-adapter'

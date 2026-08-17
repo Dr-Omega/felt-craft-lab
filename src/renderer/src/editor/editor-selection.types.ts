@@ -13,6 +13,8 @@ export interface EditorSelectionBounds {
 export interface EditorSelectionProjection {
   objectId: string
   bounds: EditorSelectionBounds
+  kind?: 'system_sticker' | 'core_pattern' | 'personal_element'
+  canChangeLayer?: boolean
 }
 
 export type EditorSelectionEvent =

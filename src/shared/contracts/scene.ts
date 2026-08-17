@@ -5,7 +5,7 @@ export interface ScenePersonalBackground {
   versionId: string
 }
 
-export interface ScenePersonalObject {
+export interface ScenePersonalTransformBase {
   objectId: string
   personalAssetId: string
   versionId: string
@@ -20,6 +20,18 @@ export interface ScenePersonalObject {
   visible: boolean
   locked: boolean
 }
+
+/** A personal core pattern occupies its own fixed tier and has no zIndex. */
+export interface SceneCorePatternObject extends ScenePersonalTransformBase {}
+
+/** Personal elements share the global Element tier with system stickers. */
+export interface ScenePersonalElement extends ScenePersonalTransformBase {
+  /** Global Element-tier position, continuous with SceneObject.zIndex. */
+  zIndex: number
+}
+
+/** @deprecated Use SceneCorePatternObject or ScenePersonalElement explicitly. */
+export type ScenePersonalObject = SceneCorePatternObject
 
 export interface SceneObject {
   objectId: string
@@ -63,9 +75,9 @@ export interface SceneDocument {
   /** A version-pinned personal asset used as the whole-scene background. */
   personalBackground: ScenePersonalBackground | null
   /** A version-pinned whole instance of a personal core pattern. */
-  corePattern: ScenePersonalObject | null
+  corePattern: SceneCorePatternObject | null
   /** Version-pinned personal element instances. */
-  personalElements: ScenePersonalObject[]
+  personalElements: ScenePersonalElement[]
   createdAt: UtcIso8601
   updatedAt: UtcIso8601
 }

@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import type { AssetAccessState, AssetRecord, SceneDocument } from '../../src/shared/contracts'
+import type {
+  AssetAccessState,
+  AssetRecord,
+  PersonalAssetRecord,
+  PersonalAssetVersionRecord,
+  SceneDocument
+} from '../../src/shared/contracts'
 import { EditorSessionService, type EditorSessionAdapter } from '../../src/renderer/src/editor'
 import type { FabricEditorAssetResolver, SceneImportResult, SceneRecoveryIssue } from '../../src/renderer/src/editor'
 import type { EditorSelectionEvent, EditorSelectionListener } from '../../src/renderer/src/editor'
@@ -75,6 +81,18 @@ class StubAdapter implements EditorSessionAdapter {
     this.issues = []
   }
 
+  async setPersonalBackground(_asset: PersonalAssetRecord, _version: PersonalAssetVersionRecord): Promise<void> {
+    this.ensureReady()
+  }
+
+  async setCorePattern(_asset: PersonalAssetRecord, _version: PersonalAssetVersionRecord): Promise<void> {
+    this.ensureReady()
+  }
+
+  clearCorePattern(): void {
+    this.ensureReady()
+  }
+
   setSolidBackground(_color: string): void {
     this.ensureReady()
     this.issues = []
@@ -103,6 +121,12 @@ class StubAdapter implements EditorSessionAdapter {
     this.nextObjectId += 1
     this.historyProjection = { revision: this.historyProjection.revision + 1, canUndo: true, canRedo: false }
     this.emitHistory()
+    return `object-${this.nextObjectId}`
+  }
+
+  async addPersonalElement(_asset: PersonalAssetRecord, _version: PersonalAssetVersionRecord): Promise<string> {
+    this.ensureReady()
+    this.nextObjectId += 1
     return `object-${this.nextObjectId}`
   }
 

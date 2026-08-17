@@ -1,5 +1,6 @@
 import type { AssetRecord, SceneDocument } from '@shared/contracts'
 import type { FabricEditorAssetResolver } from '../editor'
+import { getFeltCraftDatabase, PersonalAssetStore, PersonalAssetVersionStore } from '../persistence'
 import registryJson from './snapshot-registry.json'
 import { createUnlockedAccess, DEFAULT_USER_ID, isAssetUnlocked } from './asset-access-helpers'
 import { loadFormalCatalog, type FormalCatalog } from './load-formal-catalog'
@@ -100,6 +101,8 @@ export function resolveEditorCatalogForSnapshot(snapshotId: string): {
  * Missing historical snapshot must NOT fall back to latest — throw so Adapter Recovery runs.
  */
 export function createCatalogResolver(): FabricEditorAssetResolver {
+  const personalAssets = new PersonalAssetStore(getFeltCraftDatabase())
+  const personalVersions = new PersonalAssetVersionStore(getFeltCraftDatabase())
   return {
     async resolveAsset(assetId: string, assetSnapshotId: string): Promise<AssetRecord> {
       const snapshotAssets = assetsBySnapshotId.get(assetSnapshotId)
@@ -111,6 +114,26 @@ export function createCatalogResolver(): FabricEditorAssetResolver {
         throw new Error(`Catalog missing asset ${assetId} in snapshot ${assetSnapshotId}`)
       }
       return asset
+    },
+    async resolvePersonalAsset(personalAssetId: string, versionId: string) {
+      const asset = await personalAssets.get(personalAssetId)
+      if (!asset) {
+        const error = new Error(`Personal Asset not found: ${personalAssetId}`) as Error & { personalRecoveryCode?: string }
+        error.personalRecoveryCode = 'PERSONAL_ASSET_NOT_FOUND'
+        throw error
+      }
+      const version = await personalVersions.get(versionId)
+      if (!version) {
+        const error = new Error(`Personal Asset Version not found: ${versionId}`) as Error & { personalRecoveryCode?: string }
+        error.personalRecoveryCode = 'PERSONAL_ASSET_VERSION_NOT_FOUND'
+        throw error
+      }
+      if (version.personalAssetId !== asset.personalAssetId) {
+        const error = new Error('Personal Asset Version ownership mismatch.') as Error & { personalRecoveryCode?: string }
+        error.personalRecoveryCode = 'PERSONAL_ASSET_INVALID'
+        throw error
+      }
+      return { asset, version }
     }
   }
 }

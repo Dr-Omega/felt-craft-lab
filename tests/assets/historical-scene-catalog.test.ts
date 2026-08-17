@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { AssetRecord, SceneDocument } from '../../src/shared/contracts'
+import type { AssetRecord, PersonalAssetRecord, PersonalAssetVersionRecord, SceneDocument } from '../../src/shared/contracts'
 import { assetsForEditor, pickSelectedAsset } from '../../src/renderer/src/catalog/editor-selection'
 import {
   getCatalogAssetsForSnapshot,
@@ -60,11 +60,17 @@ class RecoveryStubAdapter implements EditorSessionAdapter {
   }
 
   async setBackground(): Promise<void> {}
+  async setPersonalBackground(_asset: PersonalAssetRecord, _version: PersonalAssetVersionRecord): Promise<void> {}
+  async setCorePattern(_asset: PersonalAssetRecord, _version: PersonalAssetVersionRecord): Promise<void> {}
+  clearCorePattern(): void {}
   setSolidBackground(): void {}
   setTransparentBackground(): void {}
   resizeCanvas(): void {}
   async addSticker(): Promise<string> {
     return 'object-1'
+  }
+  async addPersonalElement(): Promise<string> {
+    return 'personal-object-1'
   }
   deleteObject(): void {}
   deleteSelected(): void {}
