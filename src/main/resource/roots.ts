@@ -38,5 +38,8 @@ export function createResourceRoots(): ResourceRoots {
   const previewRoot = join(app.getPath('userData'), 'previews')
   mkdirSync(previewRoot, { recursive: true })
 
-  return { materialRoot, audioRoot, audioDynamicRoot, previewRoot }
+  const personalRoot = join(app.getPath('userData'), 'personal-assets')
+  mkdirSync(personalRoot, { recursive: true })
+
+  return { materialRoot, audioRoot, audioDynamicRoot, previewRoot, personalRoot }
 }

@@ -44,7 +44,8 @@ describe('YWN formal manifest', () => {
     materialRoot,
     audioRoot,
     audioDynamicRoot: resolve('assets/generated/audio-dynamic'),
-    previewRoot: resolve('assets/generated/previews')
+    previewRoot: resolve('assets/generated/previews'),
+    personalRoot: resolve('assets/generated/personal-assets')
   }
 
   it('imports exactly 17 ready assets and validates every AssetRecord', () => {

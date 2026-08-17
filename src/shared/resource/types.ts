@@ -1,4 +1,5 @@
 import type { SharedError } from '../contracts/error'
+import type { ResourceRef } from '../contracts/common'
 import type { FeltResourceKind } from './constants'
 
 export interface ParsedFeltResourceRef {
@@ -18,6 +19,8 @@ export interface ResourceRoots {
    */
   audioDynamicRoot: string
   previewRoot: string
+  /** User-owned Personal Asset PNGs under Electron userData/personal-assets. */
+  personalRoot: string
 }
 
 export type FeltResourceResolveSuccess = {
@@ -52,3 +55,13 @@ export type ResourceInspectFailure = {
 }
 
 export type ResourceInspectResult = ResourceInspectSuccess | ResourceInspectFailure
+
+export interface PersonalAssetPngIngestRequest {
+  personalAssetId: string
+  versionId: string
+  pngBytes: ArrayBuffer | Uint8Array
+}
+
+export type PersonalAssetPngIngestResult =
+  | { ok: true; ref: ResourceRef }
+  | { ok: false; error: SharedError }

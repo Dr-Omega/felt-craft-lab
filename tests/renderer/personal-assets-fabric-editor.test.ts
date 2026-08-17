@@ -165,7 +165,7 @@ function personalVersion(versionId: string, personalAssetId: string): PersonalAs
     versionId,
     personalAssetId,
     versionNumber: 1,
-    sourceImageRef: `felt-resource://material/personal/${versionId}.png`,
+    sourceImageRef: `felt-resource://personal/${personalAssetId}/${versionId}/source.png`,
     parentVersionId: null,
     createdAt: '2026-07-30T05:20:00.000Z'
   }
@@ -440,7 +440,7 @@ describe('personal asset Fabric runtime integration', () => {
     ]))
 
     const resourceResolver = resolverForPersonal()
-    const resource = createHarness(scene, resourceResolver, new Set([`felt-resource://material/personal/${elementVersionId}.png`]))
+    const resource = createHarness(scene, resourceResolver, new Set([`felt-resource://personal/${elementAssetId}/${elementVersionId}/source.png`]))
     const resourceResult = await resource.adapter.importScene(scene, resourceResolver)
     expect(resourceResult.issues).toEqual(expect.arrayContaining([
       expect.objectContaining({ code: 'PERSONAL_RESOURCE_NOT_FOUND', personalAssetId: elementAssetId })
@@ -481,10 +481,10 @@ describe('personal asset Fabric runtime integration', () => {
     await adapter.importScene(scene, resolver)
     adapter.dispose()
     expect(released).toEqual(expect.arrayContaining([
-      `felt-resource://material/personal/${backgroundVersionId}.png`,
-      `felt-resource://material/personal/${backgroundVersionV2Id}.png`,
-      `felt-resource://material/personal/${coreVersionId}.png`,
-      `felt-resource://material/personal/${elementVersionId}.png`
+      `felt-resource://personal/${backgroundAssetId}/${backgroundVersionId}/source.png`,
+      `felt-resource://personal/${backgroundAssetId}/${backgroundVersionV2Id}/source.png`,
+      `felt-resource://personal/${coreAssetId}/${coreVersionId}/source.png`,
+      `felt-resource://personal/${elementAssetId}/${elementVersionId}/source.png`
     ]))
   })
 })

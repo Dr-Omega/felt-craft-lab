@@ -1,12 +1,13 @@
 import { basename, dirname, isAbsolute, join, normalize, relative, resolve, sep } from 'node:path'
 import { existsSync, realpathSync, statSync } from 'node:fs'
 import { toSharedError } from '../contracts/error'
+import type { FeltResourceKind } from './constants'
 import { parseFeltResourceRef } from './parse'
 import type { FeltResourceResolveResult, ResourceRoots } from './types'
 
 function rootForKind(
   roots: ResourceRoots,
-  kind: 'material' | 'audio' | 'preview',
+  kind: FeltResourceKind,
   relativePath: string
 ): string {
   if (kind === 'material') return roots.materialRoot
@@ -15,7 +16,8 @@ function rootForKind(
     if (relativePath.startsWith('dynamic/')) return roots.audioDynamicRoot
     return roots.audioRoot
   }
-  return roots.previewRoot
+  if (kind === 'preview') return roots.previewRoot
+  return roots.personalRoot
 }
 
 function isInsideRoot(root: string, candidate: string): boolean {
@@ -112,7 +114,7 @@ export function resolveFeltResourcePath(
   try {
     const parsed = parseFeltResourceRef(ref)
     if (!parsed) {
-      return invalidRef('资源引用无效：仅支持 felt-resource://material|audio|preview/... 格式。')
+      return invalidRef('资源引用无效：仅支持 felt-resource://material|audio|preview|personal/... 格式。')
     }
 
     const segments = parsed.relativePath.split('/')

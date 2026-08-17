@@ -6,7 +6,9 @@ import { isSafeResourceRef } from '../../src/shared/contracts/validation'
 import {
   FELT_RESOURCE_REF_POLICY,
   buildFeltResourceRef,
-  parseFeltResourceRef
+  buildPersonalAssetSourceRef,
+  parseFeltResourceRef,
+  parsePersonalAssetSourceRef
 } from '../../src/shared/resource'
 import { resolveFeltResourcePath } from '../../src/shared/resource/resolve-path'
 import {
@@ -20,6 +22,8 @@ import {
 } from '../../src/main/resource/methods'
 
 const tempDirs: string[] = []
+const PERSONAL_ASSET_ID = '8b4f4c7d-0b51-4c72-8b37-4e44dbb8c9f1'
+const PERSONAL_VERSION_ID = '3f2b8a91-2d60-4c2b-9e02-71c4c21d3d6a'
 
 function makeRoots(): {
   roots: {
@@ -27,6 +31,7 @@ function makeRoots(): {
     audioRoot: string
     audioDynamicRoot: string
     previewRoot: string
+    personalRoot: string
   }
   dir: string
 } {
@@ -36,15 +41,19 @@ function makeRoots(): {
   const audioRoot = join(dir, 'audio')
   const audioDynamicRoot = join(dir, 'audio-dynamic')
   const previewRoot = join(dir, 'preview')
+  const personalRoot = join(dir, 'personal')
   mkdirSync(materialRoot, { recursive: true })
   mkdirSync(audioRoot, { recursive: true })
   mkdirSync(join(audioDynamicRoot, 'dynamic'), { recursive: true })
   mkdirSync(previewRoot, { recursive: true })
+  mkdirSync(personalRoot, { recursive: true })
+  mkdirSync(join(personalRoot, PERSONAL_ASSET_ID, PERSONAL_VERSION_ID), { recursive: true })
   writeFileSync(join(materialRoot, 'mock-sticker.png'), 'png-mock')
   writeFileSync(join(audioRoot, 'mock-name-zh.wav'), 'wav-mock')
   writeFileSync(join(audioDynamicRoot, 'dynamic', 'abc123.mp3'), 'mp3-dynamic')
   writeFileSync(join(previewRoot, 'project-demo.png'), 'preview-mock')
-  return { dir, roots: { materialRoot, audioRoot, audioDynamicRoot, previewRoot } }
+  writeFileSync(join(personalRoot, PERSONAL_ASSET_ID, PERSONAL_VERSION_ID, 'source.png'), 'personal-mock')
+  return { dir, roots: { materialRoot, audioRoot, audioDynamicRoot, previewRoot, personalRoot } }
 }
 
 afterEach(() => {
@@ -56,13 +65,38 @@ afterEach(() => {
 })
 
 describe('felt-resource parse', () => {
-  it('parses material/audio/preview refs', () => {
+  it('parses material/audio/preview/personal refs', () => {
     expect(parseFeltResourceRef('felt-resource://material/mock-sticker.png')).toEqual({
       ref: 'felt-resource://material/mock-sticker.png',
       kind: 'material',
       relativePath: 'mock-sticker.png'
     })
     expect(buildFeltResourceRef('audio', 'fixed/a.wav')).toBe('felt-resource://audio/fixed/a.wav')
+    const personalRef = buildPersonalAssetSourceRef(PERSONAL_ASSET_ID, PERSONAL_VERSION_ID)
+    expect(personalRef).toBe(`felt-resource://personal/${PERSONAL_ASSET_ID}/${PERSONAL_VERSION_ID}/source.png`)
+    expect(parsePersonalAssetSourceRef(personalRef)).toEqual({
+      ref: personalRef,
+      personalAssetId: PERSONAL_ASSET_ID,
+      versionId: PERSONAL_VERSION_ID
+    })
+  })
+
+  it('accepts only the canonical Personal Asset source ref', () => {
+    const valid = `felt-resource://personal/${PERSONAL_ASSET_ID}/${PERSONAL_VERSION_ID}/source.png`
+    expect(parsePersonalAssetSourceRef(valid)).toBeDefined()
+    for (const ref of [
+      'felt-resource://personal/not-a-uuid/3f2b8a91-2d60-4c2b-9e02-71c4c21d3d6a/source.png',
+      `felt-resource://personal/${PERSONAL_ASSET_ID}/${PERSONAL_VERSION_ID}/other.png`,
+      `felt-resource://personal/${PERSONAL_ASSET_ID}/${PERSONAL_VERSION_ID}/source.png/extra`,
+      `${valid}?token=secret`,
+      `${valid}#fragment`,
+      `felt-resource://personal/${PERSONAL_ASSET_ID}/%2e%2e/source.png`,
+      'felt-resource://material/8b4f4c7d-0b51-4c72-8b37-4e44dbb8c9f1/3f2b8a91-2d60-4c2b-9e02-71c4c21d3d6a/source.png'
+    ]) {
+      expect(parsePersonalAssetSourceRef(ref)).toBeUndefined()
+    }
+    expect(buildPersonalAssetSourceRef('not-a-uuid', PERSONAL_VERSION_ID)).toBeUndefined()
+    expect(buildPersonalAssetSourceRef(PERSONAL_ASSET_ID, 'not-a-uuid')).toBeUndefined()
   })
 
   it('accepts fixed intro snapshot refs used by AI batch tool', () => {
@@ -97,9 +131,14 @@ describe('felt-resource path resolve', () => {
     const material = resolveFeltResourcePath('felt-resource://material/mock-sticker.png', roots)
     const audio = resolveFeltResourcePath('felt-resource://audio/mock-name-zh.wav', roots)
     const preview = resolveFeltResourcePath('felt-resource://preview/project-demo.png', roots)
+    const personal = resolveFeltResourcePath(
+      `felt-resource://personal/${PERSONAL_ASSET_ID}/${PERSONAL_VERSION_ID}/source.png`,
+      roots
+    )
     expect(material.ok).toBe(true)
     expect(audio.ok).toBe(true)
     expect(preview.ok).toBe(true)
+    expect(personal.ok).toBe(true)
     if (material.ok) {
       expect(material.exists).toBe(true)
       expect(material.absolutePath.endsWith('mock-sticker.png')).toBe(true)
@@ -195,6 +234,34 @@ describe('felt-resource path resolve', () => {
       expect(escaped.error.code).toBe('INVALID_ARGUMENT')
       expect(JSON.stringify(escaped.error)).not.toMatch(/[A-Za-z]:\\/)
     }
+  })
+
+  it('blocks symlink or junction escape from personalRoot', () => {
+    const { dir, roots } = makeRoots()
+    const outsideDir = join(dir, 'personal-outside')
+    mkdirSync(outsideDir, { recursive: true })
+    writeFileSync(join(outsideDir, 'source.png'), 'leak')
+
+    const linkPath = join(roots.personalRoot, PERSONAL_ASSET_ID)
+    let linked = false
+    try {
+      symlinkSync(outsideDir, linkPath, process.platform === 'win32' ? 'junction' : 'dir')
+      linked = true
+    } catch {
+      linked = false
+    }
+
+    if (!linked) {
+      expect(true).toBe(true)
+      return
+    }
+
+    const escaped = resolveFeltResourcePath(
+      `felt-resource://personal/${PERSONAL_ASSET_ID}/${PERSONAL_VERSION_ID}/source.png`,
+      roots,
+      { requireExists: false }
+    )
+    expect(escaped.ok).toBe(false)
   })
 })
 

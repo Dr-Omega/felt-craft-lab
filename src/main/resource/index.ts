@@ -2,3 +2,5 @@ export { attachFeltResourceProtocol, handleFeltResourceRequest, registerFeltReso
 export { isFeltResourceMethodAllowed, methodNotAllowedResponse } from './methods'
 export { registerResourceIpc } from './ipc'
 export { createResourceRoots } from './roots'
+export { ingestPersonalAssetPng, MAX_PERSONAL_ASSET_PNG_BYTES } from './personal-ingestion'
+export { inspectResource } from './inspect'

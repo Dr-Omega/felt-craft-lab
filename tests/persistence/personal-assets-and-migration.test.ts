@@ -29,7 +29,7 @@ const personalVersion = {
   versionId,
   personalAssetId,
   versionNumber: 1,
-  sourceImageRef: 'felt-resource://material/personal-flower-v1.png',
+  sourceImageRef: `felt-resource://personal/${personalAssetId}/${versionId}/source.png`,
   parentVersionId: null,
   createdAt: fixtureTime
 }
@@ -154,12 +154,13 @@ describe('Dexie V2 upgrade and personal asset stores', () => {
       ...personalVersion,
       versionId: 'a9c70a06-bc96-4b7e-a934-d6eeb8c7de19',
       versionNumber: 2,
-      parentVersionId: versionId
+      parentVersionId: versionId,
+      sourceImageRef: `felt-resource://personal/${personalAssetId}/a9c70a06-bc96-4b7e-a934-d6eeb8c7de19/source.png`
     }
     await versions.save(version2)
 
     const mutations = [
-      { ...version2, sourceImageRef: 'felt-resource://material/personal-flower-v2.png' },
+      { ...version2, sourceImageRef: `felt-resource://personal/${personalAssetId}/${version2.versionId}/different-source.png` },
       { ...version2, personalAssetId: '7b3a9d6e-9b80-4f4f-9c47-44ef1e910f35' },
       { ...version2, versionNumber: 3 },
       { ...version2, parentVersionId: 'b4bcf8d2-f1f3-42d2-89ef-8c62b6a8e171' },
@@ -190,7 +191,8 @@ describe('Dexie V2 upgrade and personal asset stores', () => {
     await versions.save({
       ...personalVersion,
       personalAssetId: otherAssetId,
-      versionId: otherVersionId
+      versionId: otherVersionId,
+      sourceImageRef: `felt-resource://personal/${otherAssetId}/${otherVersionId}/source.png`
     })
     await expect(versions.save({
       ...personalVersion,
@@ -215,13 +217,15 @@ describe('Dexie V2 upgrade and personal asset stores', () => {
       ...personalVersion,
       versionId: 'a9c70a06-bc96-4b7e-a934-d6eeb8c7de19',
       versionNumber: 2,
-      parentVersionId: versionId
+      parentVersionId: versionId,
+      sourceImageRef: `felt-resource://personal/${personalAssetId}/a9c70a06-bc96-4b7e-a934-d6eeb8c7de19/source.png`
     }
     const version3 = {
       ...personalVersion,
       versionId: 'c7f0e8a2-09a7-4532-b3bb-9960be7af1d7',
       versionNumber: 3,
-      parentVersionId: version2.versionId
+      parentVersionId: version2.versionId,
+      sourceImageRef: `felt-resource://personal/${personalAssetId}/c7f0e8a2-09a7-4532-b3bb-9960be7af1d7/source.png`
     }
     await expect(versions.save(version2)).resolves.toEqual(version2)
     await expect(versions.save(version3)).resolves.toEqual(version3)
@@ -233,7 +237,8 @@ describe('Dexie V2 upgrade and personal asset stores', () => {
     const assets = new PersonalAssetStore(db)
     await versions.save({
       ...personalVersion,
-      personalAssetId: '7b3a9d6e-9b80-4f4f-9c47-44ef1e910f35'
+      personalAssetId: '7b3a9d6e-9b80-4f4f-9c47-44ef1e910f35',
+      sourceImageRef: 'felt-resource://personal/7b3a9d6e-9b80-4f4f-9c47-44ef1e910f35/3f2b8a91-2d60-4c2b-9e02-71c4c21d3d6a/source.png'
     })
     await expect(assets.save(personalAsset)).rejects.toMatchObject({ shared: { code: 'INVALID_ARGUMENT' } })
     await db.table('personalAssets').put(personalAsset)

@@ -13,7 +13,7 @@ import {
   validateProjectRecord
 } from '@shared/contracts/validation'
 import { migrateDraftRecord as migrateDraftRecordValue, migrateProjectRecord as migrateProjectRecordValue } from '@shared/contracts/scene-migration'
-import { FELT_RESOURCE_REF_POLICY } from '@shared/resource'
+import { FELT_RESOURCE_REF_POLICY, isPersonalAssetSourceRefFor } from '@shared/resource'
 import type { FeltCraftDatabase } from './db'
 import { persistenceError } from './errors'
 import { isFavoriteRecord, type FavoriteRecord } from './favorites'
@@ -40,6 +40,12 @@ function rejectPersonalAsset(message: string): never {
 
 function rejectPersonalAssetVersion(message: string): never {
   throw persistenceError('INVALID_ARGUMENT', message)
+}
+
+function assertPersonalAssetVersionResource(record: PersonalAssetVersionRecord): void {
+  if (!isPersonalAssetSourceRefFor(record.sourceImageRef, record.personalAssetId, record.versionId)) {
+    rejectPersonalAssetVersion('Personal Asset Version 的 sourceImageRef 必须是对应 personalAssetId/versionId 的 personal source.png。')
+  }
 }
 
 export class DraftStore {
@@ -190,6 +196,9 @@ export class PersonalAssetStore {
     if (!version.ok) {
       rejectPersonalAsset('个人素材当前版本未通过 Shared Contract 校验。')
     }
+    if (!isPersonalAssetSourceRefFor(version.value.sourceImageRef, version.value.personalAssetId, version.value.versionId)) {
+      rejectPersonalAsset('个人素材当前版本的 sourceImageRef 不是对应的 personal source.png。')
+    }
     if (version.value.personalAssetId !== record.personalAssetId) {
       rejectPersonalAsset('个人素材当前版本不属于该个人素材。')
     }
@@ -203,11 +212,13 @@ export class PersonalAssetVersionStore {
     const validated = validatePersonalAssetVersionRecord(raw, FELT_RESOURCE_REF_POLICY)
     if (!validated.ok) rejectPersonalAssetVersion('个人素材版本记录未通过 Shared Contract 校验。')
     const record = structuredClone(validated.value) as PersonalAssetVersionRecord
+    assertPersonalAssetVersionResource(record)
 
     const existingRaw = await this.db.personalAssetVersions.get(record.versionId)
     if (existingRaw !== undefined) {
       const existing = validatePersonalAssetVersionRecord(existingRaw, FELT_RESOURCE_REF_POLICY)
       if (!existing.ok) rejectPersonalAssetVersion('已有 Personal Asset Version 记录未通过 Shared Contract 校验。')
+      assertPersonalAssetVersionResource(existing.value)
       if (samePersonalAssetVersion(existing.value, record)) {
         return Object.freeze(structuredClone(existing.value)) as PersonalAssetVersionRecord
       }
@@ -224,6 +235,7 @@ export class PersonalAssetVersionStore {
     if (raw === undefined) return undefined
     const validated = validatePersonalAssetVersionRecord(raw, FELT_RESOURCE_REF_POLICY)
     if (!validated.ok) rejectPersonalAssetVersion('读取到的个人素材版本记录未通过 Shared Contract 校验。')
+    assertPersonalAssetVersionResource(validated.value)
     return Object.freeze(structuredClone(validated.value)) as PersonalAssetVersionRecord
   }
 
@@ -232,6 +244,7 @@ export class PersonalAssetVersionStore {
     return rows.map((raw) => {
       const validated = validatePersonalAssetVersionRecord(raw, FELT_RESOURCE_REF_POLICY)
       if (!validated.ok) rejectPersonalAssetVersion('读取到的个人素材版本记录未通过 Shared Contract 校验。')
+      assertPersonalAssetVersionResource(validated.value)
       return Object.freeze(structuredClone(validated.value)) as PersonalAssetVersionRecord
     })
   }
@@ -245,6 +258,7 @@ export class PersonalAssetVersionStore {
     for (const raw of existingRows) {
       const existing = validatePersonalAssetVersionRecord(raw, FELT_RESOURCE_REF_POLICY)
       if (!existing.ok) rejectPersonalAssetVersion('已有个人素材版本记录未通过 Shared Contract 校验。')
+      assertPersonalAssetVersionResource(existing.value)
       if (existing.value.versionNumber === record.versionNumber && existing.value.versionId !== record.versionId) {
         rejectPersonalAssetVersion('同一 Personal Asset 的 versionNumber 不得重复。')
       }
@@ -258,6 +272,7 @@ export class PersonalAssetVersionStore {
     if (parentRaw === undefined) rejectPersonalAssetVersion('个人素材父版本不存在。')
     const parent = validatePersonalAssetVersionRecord(parentRaw, FELT_RESOURCE_REF_POLICY)
     if (!parent.ok) rejectPersonalAssetVersion('个人素材父版本未通过 Shared Contract 校验。')
+    assertPersonalAssetVersionResource(parent.value)
     if (parent.value.personalAssetId !== record.personalAssetId) {
       rejectPersonalAssetVersion('个人素材父版本不属于当前 Personal Asset。')
     }

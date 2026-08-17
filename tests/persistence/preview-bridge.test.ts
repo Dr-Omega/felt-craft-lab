@@ -16,15 +16,17 @@ function makeRoots() {
   const audioRoot = join(dir, 'audio')
   const audioDynamicRoot = join(dir, 'audio-dynamic')
   const previewRoot = join(dir, 'previews')
+  const personalRoot = join(dir, 'personal-assets')
   mkdirSync(materialRoot, { recursive: true })
   mkdirSync(audioRoot, { recursive: true })
   mkdirSync(join(audioDynamicRoot, 'dynamic'), { recursive: true })
   mkdirSync(previewRoot, { recursive: true })
+  mkdirSync(personalRoot, { recursive: true })
   writeFileSync(join(materialRoot, 'keep.png'), MINIMAL_PNG_BYTES)
   writeFileSync(join(audioRoot, 'keep.mp3'), Buffer.from('mp3'))
   return {
     dir,
-    roots: { materialRoot, audioRoot, audioDynamicRoot, previewRoot }
+    roots: { materialRoot, audioRoot, audioDynamicRoot, previewRoot, personalRoot }
   }
 }
 

@@ -20,7 +20,7 @@ const version = (versionId: string, versionNumber: number, parentVersionId: stri
   versionId,
   personalAssetId,
   versionNumber,
-  sourceImageRef: `felt-resource://material/personal/${versionId}.png`,
+  sourceImageRef: `felt-resource://personal/${personalAssetId}/${versionId}/source.png`,
   parentVersionId,
   createdAt: '2026-07-30T05:20:00.000Z'
 })
