@@ -1,5 +1,26 @@
 import type { SchemaVersion, UtcIso8601 } from './common'
 
+export interface ScenePersonalBackground {
+  personalAssetId: string
+  versionId: string
+}
+
+export interface ScenePersonalObject {
+  objectId: string
+  personalAssetId: string
+  versionId: string
+  /** Centre-point x coordinate in pixels, from the canvas top-left origin. */
+  left: number
+  /** Centre-point y coordinate in pixels, from the canvas top-left origin. */
+  top: number
+  scaleX: number
+  scaleY: number
+  /** Clockwise degrees, normalized to [-180, 180). */
+  angle: number
+  visible: boolean
+  locked: boolean
+}
+
 export interface SceneObject {
   objectId: string
   assetId: string
@@ -39,6 +60,12 @@ export interface SceneDocument {
   /** A material background; null encodes either solid-color or transparent. */
   backgroundAssetId: string | null
   objects: SceneObject[]
+  /** A version-pinned personal asset used as the whole-scene background. */
+  personalBackground: ScenePersonalBackground | null
+  /** A version-pinned whole instance of a personal core pattern. */
+  corePattern: ScenePersonalObject | null
+  /** Version-pinned personal element instances. */
+  personalElements: ScenePersonalObject[]
   createdAt: UtcIso8601
   updatedAt: UtcIso8601
 }

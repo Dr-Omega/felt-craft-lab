@@ -1,11 +1,18 @@
-import { ASR_PROVIDERS, ASSET_RUNTIME_STATUSES, ASSET_TYPES, SCHEMA_VERSION } from './common'
+import {
+  ASR_PROVIDERS,
+  ASSET_RUNTIME_STATUSES,
+  ASSET_TYPES,
+  SCHEMA_VERSION
+} from './common'
 import type { AssetAccessState, AssetRecord } from './asset'
 import type { AsrResult, QaResult, TtsResult } from './ai'
 import { SHARED_ERROR_CODES } from './error'
 import type { SharedError } from './error'
 import { PROJECT_SYNC_STATUSES } from './project'
 import type { DraftRecord, ProjectRecord } from './project'
-import type { SceneDocument, SceneObject } from './scene'
+import { PERSONAL_ASSET_ROLES, PERSONAL_ASSET_SOURCE_TYPES } from './personal-asset'
+import type { PersonalAssetRecord, PersonalAssetVersionRecord } from './personal-asset'
+import type { SceneDocument, SceneObject, ScenePersonalBackground, ScenePersonalObject } from './scene'
 
 export interface ValidationIssue {
   path: string
@@ -252,6 +259,56 @@ function validateAssetAudioRefs(value: RawObject, path: string, errors: Validati
   }
 }
 
+export function validatePersonalAssetRecord(raw: unknown): ValidationResult<PersonalAssetRecord> {
+  const errors: ValidationIssue[] = []
+  const value = requireObject(raw, 'personalAsset', errors)
+  if (!value) return failure(errors)
+  hasOnlyKeys(value, ['personalAssetId', 'userId', 'role', 'sourceType', 'name', 'currentVersionId', 'createdAt', 'updatedAt'], 'personalAsset', errors)
+  requireUuid(value.personalAssetId, 'personalAsset.personalAssetId', errors)
+  requireUuid(value.userId, 'personalAsset.userId', errors)
+  if (!PERSONAL_ASSET_ROLES.includes(value.role as (typeof PERSONAL_ASSET_ROLES)[number])) {
+    errors.push({ path: 'personalAsset.role', message: '必须是 core_pattern、element 或 background。' })
+  }
+  if (!PERSONAL_ASSET_SOURCE_TYPES.includes(value.sourceType as (typeof PERSONAL_ASSET_SOURCE_TYPES)[number])) {
+    errors.push({ path: 'personalAsset.sourceType', message: '必须是 ai_generated、uploaded 或 hand_drawn。' })
+  }
+  requireString(value.name, 'personalAsset.name', errors)
+  requireUuid(value.currentVersionId, 'personalAsset.currentVersionId', errors)
+  requireUtcTimestamp(value.createdAt, 'personalAsset.createdAt', errors)
+  requireUtcTimestamp(value.updatedAt, 'personalAsset.updatedAt', errors)
+  return errors.length ? failure(errors) : success(raw as PersonalAssetRecord)
+}
+
+export function validatePersonalAssetVersionRecord(
+  raw: unknown,
+  resourcePolicy: unknown = MOCK_RESOURCE_REF_POLICY
+): ValidationResult<PersonalAssetVersionRecord> {
+  const errors: ValidationIssue[] = []
+  const value = requireObject(raw, 'personalAssetVersion', errors)
+  if (!value) return failure(errors)
+  hasOnlyKeys(value, ['versionId', 'personalAssetId', 'versionNumber', 'sourceImageRef', 'parentVersionId', 'createdAt'], 'personalAssetVersion', errors)
+  requireUuid(value.versionId, 'personalAssetVersion.versionId', errors)
+  requireUuid(value.personalAssetId, 'personalAssetVersion.personalAssetId', errors)
+  const versionNumber = value.versionNumber
+  const hasVersionNumber = requireFiniteNumber(versionNumber, 'personalAssetVersion.versionNumber', errors)
+  if (hasVersionNumber && (!Number.isInteger(versionNumber) || versionNumber < 1)) {
+    errors.push({ path: 'personalAssetVersion.versionNumber', message: '必须是大于等于 1 的整数。' })
+  }
+  requireResourceRef(value.sourceImageRef, 'personalAssetVersion.sourceImageRef', errors, resourcePolicy)
+  if (value.parentVersionId !== null) requireUuid(value.parentVersionId, 'personalAssetVersion.parentVersionId', errors)
+  if (value.versionId === value.parentVersionId) {
+    errors.push({ path: 'personalAssetVersion.parentVersionId', message: '不得引用自身作为父版本。' })
+  }
+  if (hasVersionNumber && versionNumber === 1 && value.parentVersionId !== null) {
+    errors.push({ path: 'personalAssetVersion.parentVersionId', message: '第一版的 parentVersionId 必须为 null。' })
+  }
+  if (hasVersionNumber && versionNumber > 1 && value.parentVersionId === null) {
+    errors.push({ path: 'personalAssetVersion.parentVersionId', message: '后续版本必须引用上一版。' })
+  }
+  requireUtcTimestamp(value.createdAt, 'personalAssetVersion.createdAt', errors)
+  return errors.length ? failure(errors) : success(raw as PersonalAssetVersionRecord)
+}
+
 export function validateAssetAccessState(raw: unknown): ValidationResult<AssetAccessState> {
   const errors: ValidationIssue[] = []
   const value = requireObject(raw, 'access', errors)
@@ -294,11 +351,45 @@ export function validateSceneObject(raw: unknown): ValidationResult<SceneObject>
   return errors.length ? failure(errors) : success(raw as SceneObject)
 }
 
+export function validateScenePersonalBackground(raw: unknown): ValidationResult<ScenePersonalBackground> {
+  const errors: ValidationIssue[] = []
+  const value = requireObject(raw, 'scenePersonalBackground', errors)
+  if (!value) return failure(errors)
+  hasOnlyKeys(value, ['personalAssetId', 'versionId'], 'scenePersonalBackground', errors)
+  requireUuid(value.personalAssetId, 'scenePersonalBackground.personalAssetId', errors)
+  requireUuid(value.versionId, 'scenePersonalBackground.versionId', errors)
+  return errors.length ? failure(errors) : success(raw as ScenePersonalBackground)
+}
+
+export function validateScenePersonalObject(raw: unknown): ValidationResult<ScenePersonalObject> {
+  const errors: ValidationIssue[] = []
+  const value = requireObject(raw, 'scenePersonalObject', errors)
+  if (!value) return failure(errors)
+  hasOnlyKeys(value, ['objectId', 'personalAssetId', 'versionId', 'left', 'top', 'scaleX', 'scaleY', 'angle', 'visible', 'locked'], 'scenePersonalObject', errors)
+  requireUuid(value.objectId, 'scenePersonalObject.objectId', errors)
+  requireUuid(value.personalAssetId, 'scenePersonalObject.personalAssetId', errors)
+  requireUuid(value.versionId, 'scenePersonalObject.versionId', errors)
+  requireFiniteNumber(value.left, 'scenePersonalObject.left', errors)
+  requireFiniteNumber(value.top, 'scenePersonalObject.top', errors)
+  if (!requireFiniteNumber(value.scaleX, 'scenePersonalObject.scaleX', errors) || value.scaleX <= 0) {
+    errors.push({ path: 'scenePersonalObject.scaleX', message: '必须是大于 0 的有限数字。' })
+  }
+  if (!requireFiniteNumber(value.scaleY, 'scenePersonalObject.scaleY', errors) || value.scaleY <= 0) {
+    errors.push({ path: 'scenePersonalObject.scaleY', message: '必须是大于 0 的有限数字。' })
+  }
+  if (requireFiniteNumber(value.angle, 'scenePersonalObject.angle', errors) && (value.angle < -180 || value.angle >= 180)) {
+    errors.push({ path: 'scenePersonalObject.angle', message: '角度必须规范化到 [-180, 180)。' })
+  }
+  requireBoolean(value.visible, 'scenePersonalObject.visible', errors)
+  requireBoolean(value.locked, 'scenePersonalObject.locked', errors)
+  return errors.length ? failure(errors) : success(raw as ScenePersonalObject)
+}
+
 export function validateSceneDocument(raw: unknown): ValidationResult<SceneDocument> {
   const errors: ValidationIssue[] = []
   const value = requireObject(raw, 'scene', errors)
   if (!value) return failure(errors)
-  hasOnlyKeys(value, ['schemaVersion', 'sceneId', 'userId', 'workName', 'themeId', 'assetSnapshotId', 'canvas', 'backgroundAssetId', 'objects', 'createdAt', 'updatedAt'], 'scene', errors)
+  hasOnlyKeys(value, ['schemaVersion', 'sceneId', 'userId', 'workName', 'themeId', 'assetSnapshotId', 'canvas', 'backgroundAssetId', 'objects', 'personalBackground', 'corePattern', 'personalElements', 'createdAt', 'updatedAt'], 'scene', errors)
   if (value.schemaVersion !== SCHEMA_VERSION) errors.push({ path: 'scene.schemaVersion', message: '不支持的 Scene schemaVersion。' })
   requireUuid(value.sceneId, 'scene.sceneId', errors)
   requireString(value.userId, 'scene.userId', errors)
@@ -308,6 +399,15 @@ export function validateSceneDocument(raw: unknown): ValidationResult<SceneDocum
   validateCanvas(value.canvas, errors)
   if (value.backgroundAssetId !== null && !requireString(value.backgroundAssetId, 'scene.backgroundAssetId', errors)) {
     // The diagnostic was emitted by requireString.
+  }
+  if (value.personalBackground === null) {
+    // null is the explicit no-personal-background state.
+  } else {
+    const personalBackground = validateScenePersonalBackground(value.personalBackground)
+    if (!personalBackground.ok) errors.push(...personalBackground.errors.map((issue) => ({ ...issue, path: `scene.personalBackground.${issue.path.replace(/^scenePersonalBackground\.?/, '')}` })))
+  }
+  if (value.backgroundAssetId !== null && value.personalBackground !== null) {
+    errors.push({ path: 'scene.personalBackground', message: '系统背景与个人背景不能同时存在。' })
   }
   if (!Array.isArray(value.objects)) {
     errors.push({ path: 'scene.objects', message: '必须是对象数组。' })
@@ -320,6 +420,34 @@ export function validateSceneDocument(raw: unknown): ValidationResult<SceneDocum
       else objectIds.add(result.value.objectId)
     }
     validateContinuousLayers(value.objects, errors)
+  }
+  const objectIds = new Set<string>()
+  if (Array.isArray(value.objects)) {
+    for (const object of value.objects) {
+      if (isObject(object) && typeof object.objectId === 'string') objectIds.add(object.objectId)
+    }
+  }
+  if (value.corePattern === null) {
+    // null is the explicit no-core-pattern state.
+  } else {
+    const corePattern = validateScenePersonalObject(value.corePattern)
+    if (!corePattern.ok) errors.push(...corePattern.errors.map((issue) => ({ ...issue, path: `scene.corePattern.${issue.path.replace(/^scenePersonalObject\.?/, '')}` })))
+    else if (objectIds.has(corePattern.value.objectId)) errors.push({ path: 'scene.corePattern.objectId', message: 'objectId 在 Scene 内必须唯一。' })
+    else objectIds.add(corePattern.value.objectId)
+  }
+  if (!Array.isArray(value.personalElements)) {
+    errors.push({ path: 'scene.personalElements', message: '必须是对象数组。' })
+  } else {
+    for (const [index, object] of value.personalElements.entries()) {
+      const personalObject = validateScenePersonalObject(object)
+      if (!personalObject.ok) {
+        errors.push(...personalObject.errors.map((issue) => ({ ...issue, path: `scene.personalElements[${index}].${issue.path.replace(/^scenePersonalObject\.?/, '')}` })))
+      } else if (objectIds.has(personalObject.value.objectId)) {
+        errors.push({ path: `scene.personalElements[${index}].objectId`, message: 'objectId 在 Scene 内必须唯一。' })
+      } else {
+        objectIds.add(personalObject.value.objectId)
+      }
+    }
   }
   requireUtcTimestamp(value.createdAt, 'scene.createdAt', errors)
   requireUtcTimestamp(value.updatedAt, 'scene.updatedAt', errors)

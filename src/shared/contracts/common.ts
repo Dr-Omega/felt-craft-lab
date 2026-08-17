@@ -1,5 +1,8 @@
-/** The only persisted SceneDocument schema version supported by V1. */
-export const SCHEMA_VERSION = 1 as const
+/** The current persisted SceneDocument schema version. */
+export const SCHEMA_VERSION = 2 as const
+
+/** The previous SceneDocument schema version accepted by the migration layer. */
+export const LEGACY_SCENE_SCHEMA_VERSION = 1 as const
 
 export type SchemaVersion = typeof SCHEMA_VERSION
 

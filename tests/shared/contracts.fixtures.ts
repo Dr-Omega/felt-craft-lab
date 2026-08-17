@@ -56,7 +56,7 @@ export const validSceneObject: SceneObject = {
 }
 
 export const validScene: SceneDocument = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   sceneId: '7a3435d2-2c2f-4df1-a38c-5b7e32ce91a8',
   userId: validAccess.userId,
   workName: '我的中秋月夜',
@@ -65,6 +65,9 @@ export const validScene: SceneDocument = {
   canvas: { width: 1200, height: 800, backgroundColor: '#FFF8E7' },
   backgroundAssetId: 'background_moon_001',
   objects: [validSceneObject],
+  personalBackground: null,
+  corePattern: null,
+  personalElements: [],
   createdAt: '2026-07-30T05:10:00.000Z',
   updatedAt: fixtureTime
 }

@@ -102,7 +102,7 @@ export function createUnlockedAccess(assetId: string, now = new Date().toISOStri
 export function createBlankScene(workName: string): SceneDocument {
   const now = new Date().toISOString()
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     sceneId: crypto.randomUUID(),
     userId: MOCK_USER_ID,
     workName,
@@ -111,6 +111,9 @@ export function createBlankScene(workName: string): SceneDocument {
     canvas: { ...DEFAULT_SCENE_CANVAS, backgroundColor: '#FFF8E7' },
     backgroundAssetId: null,
     objects: [],
+    personalBackground: null,
+    corePattern: null,
+    personalElements: [],
     createdAt: now,
     updatedAt: now
   }

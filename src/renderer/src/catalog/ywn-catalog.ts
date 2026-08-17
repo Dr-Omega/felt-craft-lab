@@ -120,7 +120,7 @@ export function createBlankScene(workName: string, themeId?: string): SceneDocum
   const theme = themeId ?? CATALOG_ASSETS[0]?.themeId ?? 'spring_festival'
   const name = workName.trim() || '我的新作品'
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     sceneId: crypto.randomUUID(),
     userId: DEFAULT_USER_ID,
     workName: name,
@@ -129,6 +129,9 @@ export function createBlankScene(workName: string, themeId?: string): SceneDocum
     canvas: { ...DEFAULT_SCENE_CANVAS, backgroundColor: '#FFF8E7' },
     backgroundAssetId: null,
     objects: [],
+    personalBackground: null,
+    corePattern: null,
+    personalElements: [],
     createdAt: now,
     updatedAt: now
   }

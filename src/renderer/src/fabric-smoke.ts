@@ -27,7 +27,7 @@ const background = asset(backgroundId, 'background', 'felt-resource://material/m
 const sticker = asset(stickerId, 'sticker', 'felt-resource://material/mock-sticker.png')
 
 const scene: SceneDocument = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   sceneId: '59bd8862-8616-44c0-91bf-0d95bfe1161e',
   userId: 'fabric_smoke_user',
   workName: 'Fabric smoke',
@@ -48,6 +48,9 @@ const scene: SceneDocument = {
     visible: true,
     locked: false
   }],
+  personalBackground: null,
+  corePattern: null,
+  personalElements: [],
   createdAt: now,
   updatedAt: now
 }

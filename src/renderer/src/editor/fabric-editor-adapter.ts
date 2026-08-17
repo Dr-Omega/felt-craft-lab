@@ -8,6 +8,7 @@ import type {
   SharedError
 } from '@shared/contracts'
 import {
+  SCHEMA_VERSION,
   validateAssetAccessState,
   validateAssetRecord,
   validateSceneDocument,
@@ -1418,7 +1419,7 @@ export class FabricEditorAdapter {
     const metadata = this.requireMetadata()
     return {
       ...metadata,
-      schemaVersion: 1,
+      schemaVersion: SCHEMA_VERSION,
       canvas: {
         width: canvas.getWidth(),
         height: canvas.getHeight(),
@@ -1439,6 +1440,9 @@ function metadataFromScene(scene: SceneDocument): EditorSceneMetadata {
     workName: scene.workName,
     themeId: scene.themeId,
     assetSnapshotId: scene.assetSnapshotId,
+    personalBackground: scene.personalBackground,
+    corePattern: scene.corePattern,
+    personalElements: scene.personalElements,
     createdAt: scene.createdAt
   }
 }
