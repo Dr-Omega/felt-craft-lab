@@ -92,15 +92,20 @@ export function ingestPersonalAssetPng(
 
   try {
     mkdirSync(roots.personalRoot, { recursive: true })
-    mkdirSync(join(roots.personalRoot, rawRequest.personalAssetId, rawRequest.versionId), { recursive: true })
 
-    const resolved = resolveFeltResourcePath(ref, roots, { requireExists: false })
-    if (!resolved.ok) return { ok: false, error: resolved.error }
-    if (resolved.kind !== 'personal') return fail('INVALID_ARGUMENT', '个人素材只能写入 personal 资源空间。')
+    // Validate the unresolved destination before creating any descendant
+    // directory. The resolver checks the nearest existing ancestor via
+    // realpath, so symlink/junction escapes are rejected without mutation.
+    const unresolved = resolveFeltResourcePath(ref, roots, { requireExists: false })
+    if (!unresolved.ok) return { ok: false, error: unresolved.error }
+    if (unresolved.kind !== 'personal') return fail('INVALID_ARGUMENT', '个人素材只能写入 personal 资源空间。')
 
-    // Re-resolve after directory creation so missing-ancestor and symlink
-    // checks cover the exact parent used by the atomic temp file.
-    mkdirSync(dirname(resolved.absolutePath), { recursive: true })
+    // Only create the parent path approved by the resolver; do not reconstruct
+    // a descendant path from renderer-provided IDs after this point.
+    mkdirSync(dirname(unresolved.absolutePath), { recursive: true })
+
+    // Re-resolve after directory creation so the final parent remains inside
+    // the trusted personal root before the atomic write.
     const confirmed = resolveFeltResourcePath(ref, roots, { requireExists: false })
     if (!confirmed.ok) return { ok: false, error: confirmed.error }
     if (confirmed.kind !== 'personal') return fail('INVALID_ARGUMENT', '个人素材只能写入 personal 资源空间。')

@@ -1,4 +1,4 @@
-import { mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -137,8 +137,16 @@ describe('Personal Asset PNG ingestion', () => {
       return
     }
 
+    const outsideVersion = join(outside, VERSION_A)
+    const outsideSource = join(outsideVersion, 'source.png')
+    expect(existsSync(outsideVersion)).toBe(false)
+    expect(existsSync(outsideSource)).toBe(false)
+
     const result = ingestPersonalAssetPng(request(), roots)
     expect(result.ok).toBe(false)
+    expect(existsSync(outsideVersion)).toBe(false)
+    expect(existsSync(outsideSource)).toBe(false)
+    expect(readFileSync(join(outside, 'keep.txt'), 'utf8')).toBe('keep')
   })
 
   it('inspects personal resources without returning an absolute path', () => {
