@@ -144,6 +144,36 @@ describe('Dexie V2 upgrade and personal asset stores', () => {
     expect(await versions.get(versionId)).toBeUndefined()
   })
 
+  it('makes PersonalAssetVersion immutable while allowing exact idempotent saves', async () => {
+    const versions = new PersonalAssetVersionStore(db)
+    const savedV1 = await versions.save(personalVersion)
+    expect(await versions.save({ ...personalVersion })).toEqual(savedV1)
+    expect(await db.table('personalAssetVersions').count()).toBe(1)
+
+    const version2 = {
+      ...personalVersion,
+      versionId: 'a9c70a06-bc96-4b7e-a934-d6eeb8c7de19',
+      versionNumber: 2,
+      parentVersionId: versionId
+    }
+    await versions.save(version2)
+
+    const mutations = [
+      { ...version2, sourceImageRef: 'felt-resource://material/personal-flower-v2.png' },
+      { ...version2, personalAssetId: '7b3a9d6e-9b80-4f4f-9c47-44ef1e910f35' },
+      { ...version2, versionNumber: 3 },
+      { ...version2, parentVersionId: 'b4bcf8d2-f1f3-42d2-89ef-8c62b6a8e171' },
+      { ...version2, createdAt: '2026-07-31T05:20:00.000Z' }
+    ]
+    for (const mutation of mutations) {
+      await expect(versions.save(mutation)).rejects.toMatchObject({ shared: { code: 'INVALID_ARGUMENT' } })
+    }
+
+    expect(await versions.get(versionId)).toEqual(personalVersion)
+    expect(await versions.get(version2.versionId)).toEqual(version2)
+    expect(await db.table('personalAssetVersions').count()).toBe(2)
+  })
+
   it('enforces contiguous Personal Asset Version chains and unique version numbers', async () => {
     const versions = new PersonalAssetVersionStore(db)
     await versions.save(personalVersion)

@@ -203,6 +203,17 @@ export class PersonalAssetVersionStore {
     const validated = validatePersonalAssetVersionRecord(raw, FELT_RESOURCE_REF_POLICY)
     if (!validated.ok) rejectPersonalAssetVersion('个人素材版本记录未通过 Shared Contract 校验。')
     const record = structuredClone(validated.value) as PersonalAssetVersionRecord
+
+    const existingRaw = await this.db.personalAssetVersions.get(record.versionId)
+    if (existingRaw !== undefined) {
+      const existing = validatePersonalAssetVersionRecord(existingRaw, FELT_RESOURCE_REF_POLICY)
+      if (!existing.ok) rejectPersonalAssetVersion('已有 Personal Asset Version 记录未通过 Shared Contract 校验。')
+      if (samePersonalAssetVersion(existing.value, record)) {
+        return Object.freeze(structuredClone(existing.value)) as PersonalAssetVersionRecord
+      }
+      rejectPersonalAssetVersion('Personal Asset Version 是 immutable，已有 versionId 不能被修改或覆盖。')
+    }
+
     await this.assertVersionChain(record)
     await this.db.personalAssetVersions.put(record)
     return Object.freeze(structuredClone(record)) as PersonalAssetVersionRecord
@@ -254,6 +265,18 @@ export class PersonalAssetVersionStore {
       rejectPersonalAssetVersion('个人素材父版本必须是紧邻的上一版本。')
     }
   }
+}
+
+function samePersonalAssetVersion(
+  left: PersonalAssetVersionRecord,
+  right: PersonalAssetVersionRecord
+): boolean {
+  return left.versionId === right.versionId
+    && left.personalAssetId === right.personalAssetId
+    && left.versionNumber === right.versionNumber
+    && left.sourceImageRef === right.sourceImageRef
+    && left.parentVersionId === right.parentVersionId
+    && left.createdAt === right.createdAt
 }
 
 export class AssetAccessStore {
