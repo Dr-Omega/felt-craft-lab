@@ -47,6 +47,15 @@ export interface SceneSnapshotValidationContext {
   snapshots: Readonly<Record<string, readonly AssetSnapshotAsset[]>>
 }
 
+/**
+ * Non-persistent Personal Asset lookup context for Scene cross-table checks.
+ * Personal Asset rows are deliberately not copied into SceneDocument.
+ */
+export interface ScenePersonalAssetValidationContext {
+  personalAssets: readonly PersonalAssetRecord[]
+  personalAssetVersions: readonly PersonalAssetVersionRecord[]
+}
+
 type RawObject = Record<string, unknown>
 
 const UTC_ISO_8601_MS = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
@@ -265,7 +274,7 @@ export function validatePersonalAssetRecord(raw: unknown): ValidationResult<Pers
   if (!value) return failure(errors)
   hasOnlyKeys(value, ['personalAssetId', 'userId', 'role', 'sourceType', 'name', 'currentVersionId', 'createdAt', 'updatedAt'], 'personalAsset', errors)
   requireUuid(value.personalAssetId, 'personalAsset.personalAssetId', errors)
-  requireUuid(value.userId, 'personalAsset.userId', errors)
+  requireString(value.userId, 'personalAsset.userId', errors)
   if (!PERSONAL_ASSET_ROLES.includes(value.role as (typeof PERSONAL_ASSET_ROLES)[number])) {
     errors.push({ path: 'personalAsset.role', message: '必须是 core_pattern、element 或 background。' })
   }
@@ -452,6 +461,105 @@ export function validateSceneDocument(raw: unknown): ValidationResult<SceneDocum
   requireUtcTimestamp(value.createdAt, 'scene.createdAt', errors)
   requireUtcTimestamp(value.updatedAt, 'scene.updatedAt', errors)
   return errors.length ? failure(errors) : success(raw as SceneDocument)
+}
+
+/** Validates the lookup rows used for Scene Personal Asset cross-table checks. */
+export function validateScenePersonalAssetValidationContext(
+  raw: unknown,
+  resourcePolicy: unknown = MOCK_RESOURCE_REF_POLICY
+): ValidationResult<ScenePersonalAssetValidationContext> {
+  const errors: ValidationIssue[] = []
+  const value = requireObject(raw, 'personalAssetContext', errors)
+  if (!value) return failure(errors)
+  hasOnlyKeys(value, ['personalAssets', 'personalAssetVersions'], 'personalAssetContext', errors)
+
+  const assets = value.personalAssets
+  if (!Array.isArray(assets)) {
+    errors.push({ path: 'personalAssetContext.personalAssets', message: '必须是 PersonalAssetRecord 数组。' })
+  } else {
+    const assetIds = new Set<string>()
+    for (const [index, asset] of assets.entries()) {
+      const result = validatePersonalAssetRecord(asset)
+      if (!result.ok) {
+        errors.push(...result.errors.map((issue) => ({ ...issue, path: `personalAssetContext.personalAssets[${index}].${issue.path.replace(/^personalAsset\.?/, '')}` })))
+      } else if (assetIds.has(result.value.personalAssetId)) {
+        errors.push({ path: `personalAssetContext.personalAssets[${index}].personalAssetId`, message: 'personalAssetId 必须唯一。' })
+      } else {
+        assetIds.add(result.value.personalAssetId)
+      }
+    }
+  }
+
+  const versions = value.personalAssetVersions
+  if (!Array.isArray(versions)) {
+    errors.push({ path: 'personalAssetContext.personalAssetVersions', message: '必须是 PersonalAssetVersionRecord 数组。' })
+  } else {
+    const versionIds = new Set<string>()
+    for (const [index, version] of versions.entries()) {
+      const result = validatePersonalAssetVersionRecord(version, resourcePolicy)
+      if (!result.ok) {
+        errors.push(...result.errors.map((issue) => ({ ...issue, path: `personalAssetContext.personalAssetVersions[${index}].${issue.path.replace(/^personalAssetVersion\.?/, '')}` })))
+      } else if (versionIds.has(result.value.versionId)) {
+        errors.push({ path: `personalAssetContext.personalAssetVersions[${index}].versionId`, message: 'versionId 必须唯一。' })
+      } else {
+        versionIds.add(result.value.versionId)
+      }
+    }
+  }
+
+  return errors.length ? failure(errors) : success(raw as ScenePersonalAssetValidationContext)
+}
+
+/**
+ * Validates Scene Personal Asset references against a non-persistent lookup
+ * context. Historical versions are valid; only version ownership is checked.
+ */
+export function validateSceneDocumentAgainstPersonalAssets(
+  raw: unknown,
+  contextRaw: unknown,
+  resourcePolicy: unknown = MOCK_RESOURCE_REF_POLICY
+): ValidationResult<SceneDocument> {
+  const scene = validateSceneDocument(raw)
+  if (!scene.ok) return scene
+  const context = validateScenePersonalAssetValidationContext(contextRaw, resourcePolicy)
+  if (!context.ok) return failure(context.errors)
+
+  const assetsById = new Map(context.value.personalAssets.map((asset) => [asset.personalAssetId, asset]))
+  const versionsById = new Map(context.value.personalAssetVersions.map((version) => [version.versionId, version]))
+  const errors: ValidationIssue[] = []
+
+  const validateReference = (
+    reference: { personalAssetId: string; versionId: string },
+    path: string,
+    expectedRole: (typeof PERSONAL_ASSET_ROLES)[number]
+  ): void => {
+    const asset = assetsById.get(reference.personalAssetId)
+    if (!asset) {
+      errors.push({ path: `${path}.personalAssetId`, message: '引用的 Personal Asset 不存在。' })
+    } else {
+      if (asset.role !== expectedRole) errors.push({ path: `${path}.personalAssetId`, message: `Personal Asset role 必须是 ${expectedRole}。` })
+      if (asset.userId !== scene.value.userId) errors.push({ path: `${path}.personalAssetId`, message: 'Personal Asset 不属于当前 Scene 用户。' })
+    }
+
+    const version = versionsById.get(reference.versionId)
+    if (!version) {
+      errors.push({ path: `${path}.versionId`, message: '引用的 Personal Asset Version 不存在。' })
+    } else if (version.personalAssetId !== reference.personalAssetId) {
+      errors.push({ path: `${path}.versionId`, message: 'Personal Asset Version 不属于引用的 Personal Asset。' })
+    }
+  }
+
+  if (scene.value.personalBackground !== null) {
+    validateReference(scene.value.personalBackground, 'scene.personalBackground', 'background')
+  }
+  if (scene.value.corePattern !== null) {
+    validateReference(scene.value.corePattern, 'scene.corePattern', 'core_pattern')
+  }
+  scene.value.personalElements.forEach((element, index) => {
+    validateReference(element, `scene.personalElements[${index}]`, 'element')
+  })
+
+  return errors.length ? failure(errors) : scene
 }
 
 /** Validates the non-persistent Manifest snapshot context before Scene lookup. */

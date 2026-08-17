@@ -182,11 +182,15 @@ export class PersonalAssetStore {
   }
 
   private async assertCurrentVersionOwner(record: PersonalAssetRecord): Promise<void> {
-    const version = await this.db.personalAssetVersions.get(record.currentVersionId)
-    if (version === undefined) {
+    const versionRaw = await this.db.personalAssetVersions.get(record.currentVersionId)
+    if (versionRaw === undefined) {
       rejectPersonalAsset('个人素材当前版本不存在。')
     }
-    if (version.personalAssetId !== record.personalAssetId) {
+    const version = validatePersonalAssetVersionRecord(versionRaw, FELT_RESOURCE_REF_POLICY)
+    if (!version.ok) {
+      rejectPersonalAsset('个人素材当前版本未通过 Shared Contract 校验。')
+    }
+    if (version.value.personalAssetId !== record.personalAssetId) {
       rejectPersonalAsset('个人素材当前版本不属于该个人素材。')
     }
   }
@@ -199,6 +203,7 @@ export class PersonalAssetVersionStore {
     const validated = validatePersonalAssetVersionRecord(raw, FELT_RESOURCE_REF_POLICY)
     if (!validated.ok) rejectPersonalAssetVersion('个人素材版本记录未通过 Shared Contract 校验。')
     const record = structuredClone(validated.value) as PersonalAssetVersionRecord
+    await this.assertVersionChain(record)
     await this.db.personalAssetVersions.put(record)
     return Object.freeze(structuredClone(record)) as PersonalAssetVersionRecord
   }
@@ -222,6 +227,32 @@ export class PersonalAssetVersionStore {
 
   async delete(versionId: string): Promise<void> {
     await this.db.personalAssetVersions.delete(versionId)
+  }
+
+  private async assertVersionChain(record: PersonalAssetVersionRecord): Promise<void> {
+    const existingRows = await this.db.personalAssetVersions.where('personalAssetId').equals(record.personalAssetId).toArray()
+    for (const raw of existingRows) {
+      const existing = validatePersonalAssetVersionRecord(raw, FELT_RESOURCE_REF_POLICY)
+      if (!existing.ok) rejectPersonalAssetVersion('已有个人素材版本记录未通过 Shared Contract 校验。')
+      if (existing.value.versionNumber === record.versionNumber && existing.value.versionId !== record.versionId) {
+        rejectPersonalAssetVersion('同一 Personal Asset 的 versionNumber 不得重复。')
+      }
+    }
+
+    if (record.versionNumber <= 1) return
+    if (record.parentVersionId === null) {
+      rejectPersonalAssetVersion('后续个人素材版本必须引用父版本。')
+    }
+    const parentRaw = await this.db.personalAssetVersions.get(record.parentVersionId)
+    if (parentRaw === undefined) rejectPersonalAssetVersion('个人素材父版本不存在。')
+    const parent = validatePersonalAssetVersionRecord(parentRaw, FELT_RESOURCE_REF_POLICY)
+    if (!parent.ok) rejectPersonalAssetVersion('个人素材父版本未通过 Shared Contract 校验。')
+    if (parent.value.personalAssetId !== record.personalAssetId) {
+      rejectPersonalAssetVersion('个人素材父版本不属于当前 Personal Asset。')
+    }
+    if (parent.value.versionNumber !== record.versionNumber - 1) {
+      rejectPersonalAssetVersion('个人素材父版本必须是紧邻的上一版本。')
+    }
   }
 }
 

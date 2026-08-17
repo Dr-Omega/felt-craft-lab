@@ -9,7 +9,8 @@ export type PersonalAssetSourceType = (typeof PERSONAL_ASSET_SOURCE_TYPES)[numbe
 /** A logical item in the user's personal asset library. */
 export interface PersonalAssetRecord {
   personalAssetId: Uuid
-  userId: Uuid
+  /** Existing application user identifiers are non-UUID strings. */
+  userId: string
   role: PersonalAssetRole
   sourceType: PersonalAssetSourceType
   name: string

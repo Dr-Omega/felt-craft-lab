@@ -10,7 +10,7 @@ import { cloneFixture, validScene } from './contracts.fixtures'
 
 const personalAssetId = '8b4f4c7d-0b51-4c72-8b37-4e44dbb8c9f1'
 const versionId = '3f2b8a91-2d60-4c2b-9e02-71c4c21d3d6a'
-const userId = 'd1be2c2e-7b1e-4b0f-a7f7-34bb0de5b9b8'
+const userId = 'user_demo_001'
 const objectId = '2a8c8c2b-66ef-43b5-9ea4-748af0eac3b4'
 
 const validPersonalAsset = {

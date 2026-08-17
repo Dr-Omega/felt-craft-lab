@@ -14,7 +14,7 @@ import { cloneFixture, fixtureTime, validAccess, validFeltDraft, validFeltProjec
 
 const personalAssetId = '8b4f4c7d-0b51-4c72-8b37-4e44dbb8c9f1'
 const versionId = '3f2b8a91-2d60-4c2b-9e02-71c4c21d3d6a'
-const userId = 'd1be2c2e-7b1e-4b0f-a7f7-34bb0de5b9b8'
+const userId = 'user_demo_001'
 
 function legacyScene(): Record<string, unknown> {
   const scene = cloneFixture(validScene) as unknown as Record<string, unknown>
@@ -144,6 +144,60 @@ describe('Dexie V2 upgrade and personal asset stores', () => {
     expect(await versions.get(versionId)).toBeUndefined()
   })
 
+  it('enforces contiguous Personal Asset Version chains and unique version numbers', async () => {
+    const versions = new PersonalAssetVersionStore(db)
+    await versions.save(personalVersion)
+
+    await expect(versions.save({
+      ...personalVersion,
+      versionId: 'a9c70a06-bc96-4b7e-a934-d6eeb8c7de19',
+      versionNumber: 2,
+      parentVersionId: 'f3d111f5-f6a8-4b45-83af-2c90c6036f52'
+    })).rejects.toMatchObject({ shared: { code: 'INVALID_ARGUMENT' } })
+
+    const otherAssetId = '7b3a9d6e-9b80-4f4f-9c47-44ef1e910f35'
+    const otherVersionId = 'b4bcf8d2-f1f3-42d2-89ef-8c62b6a8e171'
+    await versions.save({
+      ...personalVersion,
+      personalAssetId: otherAssetId,
+      versionId: otherVersionId
+    })
+    await expect(versions.save({
+      ...personalVersion,
+      versionId: 'c7f0e8a2-09a7-4532-b3bb-9960be7af1d7',
+      versionNumber: 2,
+      parentVersionId: otherVersionId
+    })).rejects.toMatchObject({ shared: { code: 'INVALID_ARGUMENT' } })
+
+    await expect(versions.save({
+      ...personalVersion,
+      versionId: 'd8a1009a-12de-4bd6-b5e4-33b70e4cd2c6',
+      versionNumber: 3,
+      parentVersionId: versionId
+    })).rejects.toMatchObject({ shared: { code: 'INVALID_ARGUMENT' } })
+
+    await expect(versions.save({
+      ...personalVersion,
+      versionId: 'e9a2110b-23ef-4ce7-c6f5-44c81f5de3d7'
+    })).rejects.toMatchObject({ shared: { code: 'INVALID_ARGUMENT' } })
+
+    const version2 = {
+      ...personalVersion,
+      versionId: 'a9c70a06-bc96-4b7e-a934-d6eeb8c7de19',
+      versionNumber: 2,
+      parentVersionId: versionId
+    }
+    const version3 = {
+      ...personalVersion,
+      versionId: 'c7f0e8a2-09a7-4532-b3bb-9960be7af1d7',
+      versionNumber: 3,
+      parentVersionId: version2.versionId
+    }
+    await expect(versions.save(version2)).resolves.toEqual(version2)
+    await expect(versions.save(version3)).resolves.toEqual(version3)
+    expect(await versions.listForAsset(personalAssetId)).toHaveLength(3)
+  })
+
   it('rejects a current version row owned by another Personal Asset at the Store boundary', async () => {
     const versions = new PersonalAssetVersionStore(db)
     const assets = new PersonalAssetStore(db)
@@ -151,6 +205,18 @@ describe('Dexie V2 upgrade and personal asset stores', () => {
       ...personalVersion,
       personalAssetId: '7b3a9d6e-9b80-4f4f-9c47-44ef1e910f35'
     })
+    await expect(assets.save(personalAsset)).rejects.toMatchObject({ shared: { code: 'INVALID_ARGUMENT' } })
+    await db.table('personalAssets').put(personalAsset)
+    await expect(assets.get(personalAssetId)).rejects.toMatchObject({ shared: { code: 'INVALID_ARGUMENT' } })
+  })
+
+  it('validates a raw current version row before trusting its ownership', async () => {
+    const assets = new PersonalAssetStore(db)
+    await db.table('personalAssetVersions').put({
+      ...personalVersion,
+      sourceImageRef: 'https://example.com/not-safe.png'
+    })
+
     await expect(assets.save(personalAsset)).rejects.toMatchObject({ shared: { code: 'INVALID_ARGUMENT' } })
     await db.table('personalAssets').put(personalAsset)
     await expect(assets.get(personalAssetId)).rejects.toMatchObject({ shared: { code: 'INVALID_ARGUMENT' } })
