@@ -7,6 +7,7 @@ export {
   type FeltCraftDatabase
 } from './db'
 export { saveDraftFromPreparedScene } from './draft-workflow'
+export { persistAcceptedGeneration } from './accepted-generation'
 export { PersistenceError, asPersistenceError, persistenceError } from './errors'
 export { isFavoriteRecord, type FavoriteRecord } from './favorites'
 export {

@@ -10,7 +10,14 @@ export const IPC_CHANNELS = {
   AI_HEALTH: 'felt:ai:health',
   AI_ASR_TRANSCRIBE: 'felt:ai:asr:transcribe',
   AI_QA_ASK: 'felt:ai:qa:ask',
-  AI_TTS_SYNTHESIZE: 'felt:ai:tts:synthesize'
+  AI_TTS_SYNTHESIZE: 'felt:ai:tts:synthesize',
+  CREATION_INTENT_START: 'felt:creation-intent:start',
+  CREATION_INTENT_SUBMIT: 'felt:creation-intent:submit',
+  CREATION_INTENT_CONFIRM: 'felt:creation-intent:confirm',
+  CREATION_INTENT_DECIDE_FOR_ME: 'felt:creation-intent:decide-for-me',
+  CREATION_INTENT_REGENERATE: 'felt:creation-intent:regenerate',
+  CREATION_INTENT_SNAPSHOT: 'felt:creation-intent:snapshot',
+  CREATION_INTENT_ACCEPT: 'felt:creation-intent:accept'
 } as const
 
 export interface BootstrapPingResult {

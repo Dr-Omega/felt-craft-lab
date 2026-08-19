@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
 import { APP_DISPLAY_NAME } from '@shared/constants/app'
-import { getAppView, openLibrary, openStatus, subscribeAppNav, type AppView } from './app-nav'
+import { getAppView, openCreate, openLibrary, openStatus, subscribeAppNav, type AppView } from './app-nav'
 import LibraryPage from './pages/LibraryPage.vue'
 import EditorPage from './pages/EditorPage.vue'
 import StatusPage from './pages/StatusPage.vue'
+import CreateAssetPage from './pages/CreateAssetPage.vue'
 
 const view = ref<AppView>(getAppView())
 
@@ -32,12 +33,14 @@ onUnmounted(() => {
       </div>
       <nav class="nav">
         <button type="button" :class="{ active: view === 'library' }" @click="openLibrary">素材库</button>
+        <button type="button" :class="{ active: view === 'create' }" @click="openCreate">生成作品</button>
         <button type="button" :class="{ active: view === 'status' }" @click="openStatus">运行状态</button>
       </nav>
     </header>
 
     <main class="content">
       <LibraryPage v-if="view === 'library'" />
+      <CreateAssetPage v-else-if="view === 'create'" />
       <EditorPage v-else-if="view === 'editor'" />
       <StatusPage v-else />
     </main>
@@ -65,9 +68,15 @@ onUnmounted(() => {
   box-sizing: border-box;
 }
 
-body {
+html,
+body,
+#app {
+  height: 100%;
   margin: 0;
-  min-height: 100vh;
+}
+
+body {
+  overflow: hidden;
 }
 
 button {
@@ -109,9 +118,13 @@ button.active {
 }
 
 .shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   max-width: 1180px;
   margin: 0 auto;
-  padding: 28px 20px 48px;
+  padding: 20px 20px 16px;
+  overflow: hidden;
 }
 
 .topbar {
@@ -142,7 +155,11 @@ button.active {
 }
 
 .content {
-  min-height: 60vh;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 @media (max-width: 720px) {

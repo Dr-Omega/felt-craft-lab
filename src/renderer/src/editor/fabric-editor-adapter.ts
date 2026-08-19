@@ -881,6 +881,9 @@ export class FabricEditorAdapter {
       throw editorError('INVALID_ARGUMENT', 'Sticker cannot be deleted.')
     }
     const kind = runtimeObjectKind(object)
+    if (kind === 'core_pattern') {
+      throw editorError('INVALID_ARGUMENT', '核心图案不能拿掉。')
+    }
     const recoveryAssetId = this.recoveryPlaceholders.has(object) ? object.assetId : undefined
     const recoveryObjectId = this.recoveryPlaceholders.has(object) ? object.objectId : undefined
     const recoveryPersonalAssetId = this.recoveryPlaceholders.has(object) ? object.personalAssetId : undefined
@@ -888,10 +891,7 @@ export class FabricEditorAdapter {
     this.releaseObject(object)
     canvas.remove(object)
     canvas.discardActiveObject()
-    if (kind === 'core_pattern') {
-      this.corePattern = null
-      this.clearPersonalObjectRecoveryIssues(object.personalAssetId, object.versionId, object.objectId)
-    } else if (kind === 'personal_element') {
+    if (kind === 'personal_element') {
       this.clearPersonalObjectRecoveryIssues(object.personalAssetId, object.versionId, object.objectId)
     } else if (recoveryPersonalAssetId && recoveryVersionId) {
       this.clearPersonalObjectRecoveryIssues(recoveryPersonalAssetId, recoveryVersionId, recoveryObjectId)

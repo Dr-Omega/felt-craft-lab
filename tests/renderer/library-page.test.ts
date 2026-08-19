@@ -14,6 +14,10 @@ describe('V4.6 Phase 1 Library 我的创作 surface', () => {
     expect(library).toContain('继续制作')
     expect(library).toContain('我的作品')
     expect(library).toContain('素材库')
+    expect(library).not.toContain('我生成的图案')
+    expect(library).not.toContain('用到作品里')
+    expect(library).not.toContain('listGeneratedCorePatterns')
+    expect(library).not.toContain('createSceneWithCorePattern')
   })
 
   it('keeps the existing acceptance all-themes gate intact', () => {

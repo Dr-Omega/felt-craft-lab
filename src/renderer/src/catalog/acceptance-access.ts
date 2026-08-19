@@ -35,4 +35,23 @@ export async function seedAcceptanceUnlockedAccess(
   return seeded
 }
 
+/**
+ * Unlock stickers and backgrounds of the work's theme so a generated core
+ * can be decorated. Does not unlock other themes.
+ */
+export async function seedThemeUnlockedAccess(
+  store: Pick<AssetAccessStore, 'save'>,
+  assets: readonly AssetRecord[],
+  themeId: string
+): Promise<AssetAccessState[]> {
+  const seeded: AssetAccessState[] = []
+  for (const asset of editorAssetsForAcceptanceAccess(assets)) {
+    if (asset.themeId !== themeId) continue
+    const access = createUnlockedAccess(asset.assetId)
+    await store.save(access)
+    seeded.push(access)
+  }
+  return seeded
+}
+
 export { createUnlockedAccess, DEFAULT_USER_ID, isAssetUnlocked }

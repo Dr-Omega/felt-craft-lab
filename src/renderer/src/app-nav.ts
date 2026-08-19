@@ -1,6 +1,6 @@
 import type { SceneDocument } from '@shared/contracts'
 
-export type AppView = 'library' | 'editor' | 'status'
+export type AppView = 'library' | 'editor' | 'status' | 'create'
 
 export type EditorLaunchMode = 'new' | 'draft' | 'project'
 
@@ -9,6 +9,8 @@ export interface EditorLaunchContext {
   scene: SceneDocument
   draftId?: string
   projectId?: string
+  /** True when opened from「生成作品」so the editor can unlock that theme's stickers. */
+  fromGeneration?: boolean
 }
 
 let currentView: AppView = 'library'
@@ -39,6 +41,11 @@ export function openLibrary(): void {
 
 export function openStatus(): void {
   currentView = 'status'
+  notify()
+}
+
+export function openCreate(): void {
+  currentView = 'create'
   notify()
 }
 

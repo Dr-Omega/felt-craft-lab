@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+import base64
 
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request, send_from_directory
@@ -32,15 +33,19 @@ from services.guards import (
     check_audio_mime,
     check_audio_size,
     check_qa_text,
+    check_intent_text,
     check_tts_text,
     is_dev_mode,
     qa_provider_allowed,
     rate_limit_ok,
     smoke_allowed,
+    image_provider_allowed,
+    check_image_prompt,
     tts_provider_allowed,
 )
 from services.ops_rules import ops_rules_doc
 from services.qa_service import QaService, UnknownQaProvider
+from services.intent_service import IntentService, UnknownIntentProvider
 from services.qa_types import QA_ERROR_CODES
 from services.session_auth import (
     is_valid_installation_id,
@@ -52,6 +57,8 @@ from services.session_auth import (
 from services.shared_error_map import fail
 from services.tts_cache import prune_tts_cache
 from services.tts_service import TtsService, UnknownTtsProvider
+from services.image_service import ImageService, UnknownImageProvider, finalize_image_bytes
+from services.image_types import IMAGE_ERROR_CODES
 from services.tts_types import TTS_ERROR_CODES
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -84,6 +91,21 @@ def _asr_key() -> str:
         os.getenv("QWEN_ASR_API_KEY", "").strip()
         or os.getenv("DASHSCOPE_API_KEY", "").strip()
     )
+
+
+def _image_key() -> str:
+    return (
+        os.getenv("DASHSCOPE_API_KEY", "").strip()
+        or os.getenv("QWEN_ASR_API_KEY", "").strip()
+    )
+
+
+def _selected_image_provider() -> str:
+    return (os.getenv("IMAGE_PROVIDER") or "mock").strip()
+
+
+def _selected_intent_provider() -> str:
+    return (os.getenv("INTENT_PROVIDER") or os.getenv("QA_PROVIDER") or "deepseek").strip()
 
 
 def _client_bucket() -> str:
@@ -183,13 +205,20 @@ def health():
                 "deepseek": _configured(os.getenv("DEEPSEEK_API_KEY")),
                 "minimax": _configured(os.getenv("MINIMAX_API_KEY"))
                 and _configured(os.getenv("MINIMAX_GROUP_ID")),
+                "dashscope": _configured(_image_key()),
                 "sessionHmac": session_secret_status()["configured"],
+            },
+            "selected": {
+                "image": _selected_image_provider(),
+                "intent": _selected_intent_provider(),
             },
             "providers": {
                 "asr": ["qwen_cloud_http", "qwen_cloud_realtime", "qwen_local"]
                 + (["mock"] if is_dev_mode() else []),
                 "qa": ["deepseek"] + (["mock"] if is_dev_mode() else []),
+                "intent": ["deepseek"] + (["mock"] if is_dev_mode() else []),
                 "tts": ["minimax"] + (["mock"] if is_dev_mode() else []),
+                "image": ["wan_dashscope"] + (["mock"] if is_dev_mode() else []),
             },
         }
     )
@@ -443,6 +472,46 @@ def qa_contract():
     )
 
 
+@app.post("/api/creation-intent/parse")
+def creation_intent_parse():
+    """Spoken Chinese → GenerationSpec patch. Never Prompt or Provider fields."""
+    claims, err = _require_session(apply_install_rate=False)
+    if err:
+        return err
+    data = request.get_json(silent=True) or {}
+    text = data.get("text") or ""
+    locked_role = data.get("lockedRole") or data.get("locked_role") or None
+    if locked_role is not None:
+        locked_role = str(locked_role).strip() or None
+        if locked_role not in {"core_pattern", "element", "background"}:
+            return _json_fail("INVALID_ARGUMENT")
+    provider = data.get("provider")
+    text_err = check_intent_text(str(text))
+    if text_err:
+        return _json_fail(text_err)
+    resolved_name = (provider or _selected_intent_provider()).strip()
+    if not qa_provider_allowed(resolved_name):
+        return _json_fail("INVALID_PROVIDER")
+    limited = check_install_rate_limit(claims.installation_id)
+    if limited:
+        return _json_fail(limited, 429)
+    if not rate_limit_ok(f"intent:{_client_bucket()}"):
+        return _json_fail("RATE_LIMITED", 429)
+    try:
+        with InflightGuard():
+            if not _is_mock_provider(resolved_name):
+                fuse_err = _consume_paid_fuse(claims.installation_id)
+                if fuse_err:
+                    return fuse_err
+            result = IntentService(resolved_name).parse(text=str(text), locked_role=locked_role)
+            status = 200 if result.get("ok") else 502
+            return jsonify(result), status
+    except UnknownIntentProvider:
+        return _json_fail("INVALID_PROVIDER")
+    except TimeoutError:
+        return _json_fail("RATE_LIMITED", 429)
+
+
 @app.post("/api/tts/synthesize")
 def tts_synthesize():
     claims, err = _require_session(apply_install_rate=False)
@@ -536,6 +605,116 @@ def tts_contract():
                 "onFailure": "keep_text_only",
             },
             "errorCodes": TTS_ERROR_CODES,
+        }
+    )
+
+
+@app.post("/api/image/generate")
+def image_generate():
+    """Canonical Prompt → mock/cloud image. Returns imageBase64; Main writes preview."""
+    claims, err = _require_session(apply_install_rate=False)
+    if err:
+        return err
+    data = request.get_json(silent=True) or {}
+    positive = data.get("positivePrompt") or data.get("positive_prompt") or ""
+    negative = data.get("negativePrompt") or data.get("negative_prompt") or ""
+    provider = data.get("provider")
+    width = data.get("width", 512)
+    height = data.get("height", 512)
+    prompt_err = check_image_prompt(str(positive))
+    if prompt_err:
+        return _json_fail(prompt_err)
+    resolved_name = (provider or _selected_image_provider()).strip()
+    if not image_provider_allowed(resolved_name):
+        return _json_fail("INVALID_PROVIDER")
+    limited = check_install_rate_limit(claims.installation_id)
+    if limited:
+        return _json_fail(limited, 429)
+    if not rate_limit_ok(f"image:{_client_bucket()}"):
+        return _json_fail("RATE_LIMITED", 429)
+    try:
+        with InflightGuard():
+            if not _is_mock_provider(resolved_name):
+                fuse_err = _consume_paid_fuse(claims.installation_id)
+                if fuse_err:
+                    return fuse_err
+            try:
+                w = int(width)
+                h = int(height)
+            except (TypeError, ValueError):
+                return _json_fail("INVALID_ARGUMENT")
+            service = ImageService(resolved_name)
+            asset_role = str(data.get("assetRole") or data.get("asset_role") or "core_pattern")
+            result = service.generate(
+                positive_prompt=str(positive),
+                negative_prompt=str(negative),
+                width=w,
+                height=h,
+                asset_role=asset_role,
+                request_id=(data.get("requestId") or data.get("request_id") or ""),
+            )
+            status = 200 if result.get("ok") else 502
+            return jsonify(result), status
+    except UnknownImageProvider:
+        return _json_fail("INVALID_PROVIDER")
+    except TimeoutError:
+        return _json_fail("RATE_LIMITED", 429)
+
+
+@app.post("/api/image/finalize")
+def image_finalize():
+    """Normalize PNG + felt quality gate. Used after generate or local mock."""
+    claims, err = _require_session(apply_install_rate=False)
+    if err:
+        return err
+    data = request.get_json(silent=True) or {}
+    encoded = (data.get("imageBase64") or data.get("image_base64") or "").strip()
+    if not encoded:
+        return _json_fail("INVALID_ARGUMENT")
+    try:
+        w = int(data.get("width", 512))
+        h = int(data.get("height", 512))
+    except (TypeError, ValueError):
+        return _json_fail("INVALID_ARGUMENT")
+    asset_role = str(data.get("assetRole") or data.get("asset_role") or "core_pattern")
+    limited = check_install_rate_limit(claims.installation_id)
+    if limited:
+        return _json_fail(limited, 429)
+    if not rate_limit_ok(f"image-finalize:{_client_bucket()}"):
+        return _json_fail("RATE_LIMITED", 429)
+    try:
+        image_bytes = base64.b64decode(encoded)
+    except Exception:  # noqa: BLE001
+        return _json_fail("INVALID_ARGUMENT")
+    if not image_bytes.startswith(b"\x89PNG"):
+        return _json_fail("INVALID_ARGUMENT")
+    try:
+        with InflightGuard():
+            result = finalize_image_bytes(
+                image_bytes,
+                width=w,
+                height=h,
+                asset_role=asset_role,
+                request_id=str(data.get("requestId") or data.get("request_id") or ""),
+                provider=str(data.get("provider") or "local"),
+            )
+            status = 200 if result.get("ok") else 502
+            return jsonify(result), status
+    except TimeoutError:
+        return _json_fail("RATE_LIMITED", 429)
+
+
+@app.get("/api/image/contract")
+def image_contract():
+    return jsonify(
+        {
+            "ok": True,
+            "contract": {
+                "gatewayWire": "generate/finalize return imageBase64 + quality; Electron Main materializes preview",
+                "rendererContract": "src/shared/contracts/generation-candidate.ts GenerationCandidate",
+                "errorContract": "src/shared/contracts/error.ts SharedError",
+            },
+            "errorCodes": IMAGE_ERROR_CODES,
         }
     )
 

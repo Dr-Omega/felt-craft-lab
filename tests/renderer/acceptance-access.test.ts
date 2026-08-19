@@ -5,7 +5,8 @@ import {
   editorAssetsForAcceptanceAccess,
   isAcceptanceUnlockAllAssetsEnabled,
   isAssetUnlocked,
-  seedAcceptanceUnlockedAccess
+  seedAcceptanceUnlockedAccess,
+  seedThemeUnlockedAccess
 } from '../../src/renderer/src/catalog/acceptance-access'
 import {
   AssetAccessStore,
@@ -13,11 +14,15 @@ import {
   type FeltCraftDatabase
 } from '../../src/renderer/src/persistence'
 
-function asset(assetId: string, type: AssetRecord['type']): AssetRecord {
+function asset(
+  assetId: string,
+  type: AssetRecord['type'],
+  themeId: string = 'spring_festival'
+): AssetRecord {
   return {
     assetId,
     type,
-    themeId: 'spring_festival',
+    themeId,
     categoryIds: ['test'],
     nameZh: assetId,
     nameEn: assetId,
@@ -85,5 +90,26 @@ describe('acceptance unlock-all-assets mode', () => {
 
     expect(saved).toHaveLength(0)
     expect(isAssetUnlocked(undefined)).toBe(false)
+  })
+
+  it('unlocks only stickers and backgrounds of the work theme', async () => {
+    const assets = [
+      asset('bg-spring', 'background', 'spring_festival'),
+      asset('sticker-spring', 'sticker', 'spring_festival'),
+      asset('sticker-midautumn', 'sticker', 'mid_autumn')
+    ]
+    const saved: AssetAccessState[] = []
+    const store = {
+      save: async (raw: AssetAccessState): Promise<AssetAccessState> => {
+        saved.push(raw)
+        return raw
+      }
+    }
+
+    const seeded = await seedThemeUnlockedAccess(store, assets, 'spring_festival')
+
+    expect(seeded).toHaveLength(2)
+    expect(saved.map((row) => row.assetId).sort()).toEqual(['bg-spring', 'sticker-spring'])
+    expect(saved.every((row) => isAssetUnlocked(row))).toBe(true)
   })
 })

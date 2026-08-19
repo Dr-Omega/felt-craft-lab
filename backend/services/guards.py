@@ -12,6 +12,7 @@ from typing import Optional
 MAX_AUDIO_BYTES = int(os.getenv("AI_MAX_AUDIO_BYTES", str(5 * 1024 * 1024)))
 MAX_QA_QUESTION_CHARS = int(os.getenv("AI_MAX_QA_CHARS", "500"))
 MAX_TTS_TEXT_CHARS = int(os.getenv("AI_MAX_TTS_CHARS", "500"))
+MAX_INTENT_TEXT_CHARS = int(os.getenv("AI_MAX_INTENT_CHARS", "120"))
 
 ALLOWED_AUDIO_MIME = frozenset(
     {
@@ -36,6 +37,10 @@ QA_PROVIDERS_PROD = frozenset({"deepseek"})
 QA_PROVIDERS_DEV_EXTRA = frozenset({"mock"})
 TTS_PROVIDERS_PROD = frozenset({"minimax"})
 TTS_PROVIDERS_DEV_EXTRA = frozenset({"mock"})
+# Cloud image is DashScope 通义万相; mock remains a development stand-in.
+IMAGE_PROVIDERS_PROD = frozenset({"wan_dashscope"})
+IMAGE_PROVIDERS_DEV_EXTRA = frozenset({"mock"})
+MAX_IMAGE_PROMPT_CHARS = int(os.getenv("AI_MAX_IMAGE_PROMPT_CHARS", "2000"))
 
 _RATE_WINDOW_SEC = float(os.getenv("AI_RATE_WINDOW_SEC", "60"))
 _RATE_MAX = int(os.getenv("AI_RATE_MAX", "30"))
@@ -82,6 +87,21 @@ def tts_provider_allowed(name: str) -> bool:
     return is_dev_mode() and n in TTS_PROVIDERS_DEV_EXTRA
 
 
+def image_provider_allowed(name: str) -> bool:
+    n = (name or "").strip()
+    if n in IMAGE_PROVIDERS_PROD:
+        return True
+    return is_dev_mode() and n in IMAGE_PROVIDERS_DEV_EXTRA
+
+
+def check_image_prompt(text: str) -> Optional[str]:
+    if not (text or "").strip():
+        return "INVALID_ARGUMENT"
+    if len(text) > MAX_IMAGE_PROMPT_CHARS:
+        return "TEXT_TOO_LONG"
+    return None
+
+
 def check_audio_mime(mime: Optional[str]) -> Optional[str]:
     if not mime:
         return None
@@ -103,6 +123,14 @@ def check_qa_text(text: str) -> Optional[str]:
     if not (text or "").strip():
         return "QA_MISSING_QUESTION"
     if len(text) > MAX_QA_QUESTION_CHARS:
+        return "TEXT_TOO_LONG"
+    return None
+
+
+def check_intent_text(text: str) -> Optional[str]:
+    if not (text or "").strip():
+        return "QA_MISSING_QUESTION"
+    if len(text) > MAX_INTENT_TEXT_CHARS:
         return "TEXT_TOO_LONG"
     return None
 

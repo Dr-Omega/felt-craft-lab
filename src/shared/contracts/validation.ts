@@ -12,6 +12,22 @@ import { PROJECT_SYNC_STATUSES } from './project'
 import type { DraftRecord, ProjectRecord } from './project'
 import { PERSONAL_ASSET_ROLES, PERSONAL_ASSET_SOURCE_TYPES } from './personal-asset'
 import type { PersonalAssetRecord, PersonalAssetVersionRecord } from './personal-asset'
+import {
+  DEFAULT_BACKGROUND_CONSTRAINTS,
+  DEFAULT_CORE_PATTERN_CONSTRAINTS,
+  DEFAULT_ELEMENT_CONSTRAINTS,
+  FELT_COMMON_STYLE_CONSTRAINTS,
+  GENERATION_CONFIRMATION_STATUSES,
+  GENERATION_CREATION_MODES,
+  GENERATION_SPEC_POLLUTION_KEYS,
+  GENERATION_SPEC_SCHEMA_VERSION,
+  HARD_CLARIFICATION_MAX_ROUNDS,
+  type CommonStyleConstraints,
+  type GenerationContentSpec,
+  type GenerationSpec,
+  type GenerationSubject,
+  type RoleConstraints
+} from './generation-spec'
 import type {
   SceneCorePatternObject,
   SceneDocument,
@@ -805,5 +821,200 @@ export function validateSharedError(raw: unknown): ValidationResult<SharedError>
     }
   }
   return errors.length ? failure(errors) : success(raw as SharedError)
+}
+
+const GENERATION_SPEC_KEYS = [
+  'schemaVersion',
+  'assetRole',
+  'creationMode',
+  'themeContext',
+  'content',
+  'roleConstraints',
+  'styleConstraints',
+  'clarification',
+  'confirmation'
+] as const
+
+const CONTENT_KEYS = [
+  'primarySubjects',
+  'actionOrRelationship',
+  'preferredColors',
+  'requiredElements',
+  'forbiddenElements',
+  'environmentDescription'
+] as const
+
+function rejectPollution(value: RawObject, path: string, errors: ValidationIssue[]): void {
+  for (const key of Object.keys(value)) {
+    if ((GENERATION_SPEC_POLLUTION_KEYS as readonly string[]).includes(key)) {
+      errors.push({ path: `${path}.${key}`, message: '不得写入 Prompt 或 Provider 字段。' })
+    }
+  }
+}
+
+function requireShortString(value: unknown, path: string, errors: ValidationIssue[], maxLength: number): value is string {
+  if (!requireString(value, path, errors)) return false
+  if (value.length > maxLength) {
+    errors.push({ path, message: `不能超过 ${maxLength} 个字符。` })
+    return false
+  }
+  return true
+}
+
+function requireStringList(value: unknown, path: string, errors: ValidationIssue[], maxItems: number, maxLength: number): void {
+  if (!Array.isArray(value)) {
+    errors.push({ path, message: '必须是字符串数组。' })
+    return
+  }
+  if (value.length > maxItems) errors.push({ path, message: `不能超过 ${maxItems} 项。` })
+  for (const [index, item] of value.entries()) {
+    requireShortString(item, `${path}[${index}]`, errors, maxLength)
+  }
+}
+
+function validateGenerationSubject(raw: unknown, path: string, errors: ValidationIssue[]): void {
+  const value = requireObject(raw, path, errors)
+  if (!value) return
+  hasOnlyKeys(value, ['name', 'count', 'attributes'], path, errors)
+  rejectPollution(value, path, errors)
+  requireShortString(value.name, `${path}.name`, errors, 40)
+  if (value.count !== undefined) {
+    if (!requireFiniteNumber(value.count, `${path}.count`, errors) || !Number.isInteger(value.count) || value.count < 1 || value.count > 8) {
+      errors.push({ path: `${path}.count`, message: '必须是 1 到 8 的整数。' })
+    }
+  }
+  if (value.attributes !== undefined) requireStringList(value.attributes, `${path}.attributes`, errors, 8, 24)
+}
+
+function validateGenerationContent(raw: unknown, errors: ValidationIssue[]): void {
+  const value = requireObject(raw, 'generationSpec.content', errors)
+  if (!value) return
+  hasOnlyKeys(value, CONTENT_KEYS, 'generationSpec.content', errors)
+  rejectPollution(value, 'generationSpec.content', errors)
+  if (!Array.isArray(value.primarySubjects)) {
+    errors.push({ path: 'generationSpec.content.primarySubjects', message: '必须是主体数组。' })
+  } else {
+    if (value.primarySubjects.length > 8) {
+      errors.push({ path: 'generationSpec.content.primarySubjects', message: '不能超过 8 个主体。' })
+    }
+    for (const [index, subject] of value.primarySubjects.entries()) {
+      validateGenerationSubject(subject, `generationSpec.content.primarySubjects[${index}]`, errors)
+    }
+  }
+  if (value.actionOrRelationship !== undefined) {
+    requireShortString(value.actionOrRelationship, 'generationSpec.content.actionOrRelationship', errors, 80)
+  }
+  if (value.preferredColors !== undefined) {
+    requireStringList(value.preferredColors, 'generationSpec.content.preferredColors', errors, 8, 24)
+  }
+  if (value.requiredElements !== undefined) {
+    requireStringList(value.requiredElements, 'generationSpec.content.requiredElements', errors, 8, 40)
+  }
+  if (value.forbiddenElements !== undefined) {
+    requireStringList(value.forbiddenElements, 'generationSpec.content.forbiddenElements', errors, 8, 40)
+  }
+  if (value.environmentDescription !== undefined) {
+    requireShortString(value.environmentDescription, 'generationSpec.content.environmentDescription', errors, 80)
+  }
+}
+
+function sameStyle(value: unknown): value is CommonStyleConstraints {
+  if (!isObject(value)) return false
+  return (Object.keys(FELT_COMMON_STYLE_CONSTRAINTS) as Array<keyof CommonStyleConstraints>).every(
+    (key) => value[key] === FELT_COMMON_STYLE_CONSTRAINTS[key]
+  )
+}
+
+function validateRoleConstraints(raw: unknown, assetRole: unknown, errors: ValidationIssue[]): void {
+  const value = requireObject(raw, 'generationSpec.roleConstraints', errors)
+  if (!value) return
+  rejectPollution(value, 'generationSpec.roleConstraints', errors)
+  if (value.role !== assetRole) {
+    errors.push({ path: 'generationSpec.roleConstraints.role', message: '必须与 assetRole 一致。' })
+  }
+  const expected =
+    assetRole === 'element'
+      ? DEFAULT_ELEMENT_CONSTRAINTS
+      : assetRole === 'background'
+        ? DEFAULT_BACKGROUND_CONSTRAINTS
+        : DEFAULT_CORE_PATTERN_CONSTRAINTS
+  for (const [key, expectedValue] of Object.entries(expected)) {
+    if (value[key] !== expectedValue) {
+      errors.push({ path: `generationSpec.roleConstraints.${key}`, message: '角色约束必须使用项目默认值。' })
+    }
+  }
+}
+
+export function validateGenerationSpec(raw: unknown): ValidationResult<GenerationSpec> {
+  const errors: ValidationIssue[] = []
+  const value = requireObject(raw, 'generationSpec', errors)
+  if (!value) return failure(errors)
+  hasOnlyKeys(value, GENERATION_SPEC_KEYS, 'generationSpec', errors)
+  rejectPollution(value, 'generationSpec', errors)
+  if (value.schemaVersion !== GENERATION_SPEC_SCHEMA_VERSION) {
+    errors.push({ path: 'generationSpec.schemaVersion', message: '必须是 GenerationSpec schemaVersion 1。' })
+  }
+  if (!PERSONAL_ASSET_ROLES.includes(value.assetRole as (typeof PERSONAL_ASSET_ROLES)[number])) {
+    errors.push({ path: 'generationSpec.assetRole', message: '必须是 core_pattern、element 或 background。' })
+  }
+  if (!GENERATION_CREATION_MODES.includes(value.creationMode as (typeof GENERATION_CREATION_MODES)[number])) {
+    errors.push({ path: 'generationSpec.creationMode', message: '必须是 guided 或 free。' })
+  }
+  if (value.themeContext !== undefined) {
+    const theme = requireObject(value.themeContext, 'generationSpec.themeContext', errors)
+    if (theme) {
+      hasOnlyKeys(theme, ['themeId'], 'generationSpec.themeContext', errors)
+      if (theme.themeId !== undefined) requireShortString(theme.themeId, 'generationSpec.themeContext.themeId', errors, 64)
+    }
+  }
+  validateGenerationContent(value.content, errors)
+  validateRoleConstraints(value.roleConstraints, value.assetRole, errors)
+  if (!sameStyle(value.styleConstraints)) {
+    errors.push({ path: 'generationSpec.styleConstraints', message: '必须使用项目固定 FeltStyleSpec，不能改基础画风。' })
+  }
+  const clarification = requireObject(value.clarification, 'generationSpec.clarification', errors)
+  if (clarification) {
+    hasOnlyKeys(clarification, ['roundCount', 'askedFields', 'pendingField'], 'generationSpec.clarification', errors)
+    if (
+      !requireFiniteNumber(clarification.roundCount, 'generationSpec.clarification.roundCount', errors) ||
+      !Number.isInteger(clarification.roundCount) ||
+      clarification.roundCount < 0 ||
+      clarification.roundCount > HARD_CLARIFICATION_MAX_ROUNDS
+    ) {
+      errors.push({ path: 'generationSpec.clarification.roundCount', message: '必须是 0 到硬上限之间的整数。' })
+    }
+    if (!Array.isArray(clarification.askedFields)) {
+      errors.push({ path: 'generationSpec.clarification.askedFields', message: '必须是字符串数组。' })
+    } else {
+      requireStringList(clarification.askedFields, 'generationSpec.clarification.askedFields', errors, 8, 64)
+    }
+    if (clarification.pendingField !== null && clarification.pendingField !== undefined) {
+      requireShortString(clarification.pendingField, 'generationSpec.clarification.pendingField', errors, 64)
+    }
+  }
+  const confirmation = requireObject(value.confirmation, 'generationSpec.confirmation', errors)
+  if (confirmation) {
+    hasOnlyKeys(confirmation, ['status', 'confirmedAt'], 'generationSpec.confirmation', errors)
+    if (!GENERATION_CONFIRMATION_STATUSES.includes(confirmation.status as (typeof GENERATION_CONFIRMATION_STATUSES)[number])) {
+      errors.push({ path: 'generationSpec.confirmation.status', message: '必须是 unconfirmed 或 confirmed。' })
+    }
+    if (confirmation.confirmedAt !== null) requireUtcTimestamp(confirmation.confirmedAt, 'generationSpec.confirmation.confirmedAt', errors)
+    if (confirmation.status === 'unconfirmed' && confirmation.confirmedAt !== null) {
+      errors.push({ path: 'generationSpec.confirmation.confirmedAt', message: '未确认时 confirmedAt 必须为 null。' })
+    }
+  }
+  return errors.length ? failure(errors) : success(raw as GenerationSpec)
+}
+
+export function validateGenerationContentSpec(raw: unknown): ValidationResult<GenerationContentSpec> {
+  const errors: ValidationIssue[] = []
+  validateGenerationContent(raw, errors)
+  return errors.length ? failure(errors) : success(raw as GenerationContentSpec)
+}
+
+export function validateRoleConstraintsRecord(raw: unknown, assetRole: unknown): ValidationResult<RoleConstraints> {
+  const errors: ValidationIssue[] = []
+  validateRoleConstraints(raw, assetRole, errors)
+  return errors.length ? failure(errors) : success(raw as RoleConstraints)
 }
 

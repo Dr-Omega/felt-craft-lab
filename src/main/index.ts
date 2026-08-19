@@ -6,10 +6,14 @@ import { APP_DISPLAY_NAME, IPC_CHANNELS } from '@shared/constants/app'
 import { isAllowedExternalUrl } from './external-url'
 import { resolveRuntimeAssetPath } from './paths'
 import { registerAiIpc } from './ai/ipc'
+import { registerCreationIntentIpc, CreationIntentHost, createLiveCreationIntentParser } from './creation-intent'
+import { generateCandidatePng } from './image-generation'
 import { registerPreviewIpc } from './preview'
+import { readPreviewPng, savePreviewPng } from './preview/write'
 import {
   attachFeltResourceProtocol,
   createResourceRoots,
+  ingestPersonalAssetPng,
   registerFeltResourceScheme,
   registerResourceIpc
 } from './resource'
@@ -133,6 +137,15 @@ app.whenReady().then(() => {
   registerPreviewIpc(resourceRoots)
   registerBootstrapIpc()
   registerAiIpc()
+  registerCreationIntentIpc(
+    new CreationIntentHost({
+      parser: createLiveCreationIntentParser(),
+      saveTemporaryPng: (bytes) => savePreviewPng(bytes, resourceRoots),
+      readTemporaryPng: (ref) => readPreviewPng(ref, resourceRoots),
+      ingestPersonalPng: (input) => ingestPersonalAssetPng(input, resourceRoots),
+      generatePng: generateCandidatePng
+    })
+  )
   createWindow(packagedRendererPath)
 
   app.on('activate', () => {

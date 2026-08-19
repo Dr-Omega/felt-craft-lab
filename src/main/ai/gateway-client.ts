@@ -269,3 +269,86 @@ export async function gatewayTtsSynthesize(input: {
     auth: input.auth
   })
 }
+
+export async function gatewayCreationIntentParse(input: {
+  text: string
+  lockedRole?: string
+  provider?: string
+  signal?: AbortSignal
+  isPackaged?: boolean
+  auth?: GatewayAuth
+}): Promise<GatewayJsonResult> {
+  return gatewayJson('/api/creation-intent/parse', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      text: input.text,
+      ...(input.lockedRole ? { lockedRole: input.lockedRole } : {}),
+      ...(input.provider ? { provider: input.provider } : {})
+    }),
+    signal: input.signal,
+    isPackaged: input.isPackaged,
+    auth: input.auth,
+    timeoutMs: 20_000
+  })
+}
+
+export async function gatewayImageGenerate(input: {
+  positivePrompt: string
+  negativePrompt?: string
+  width?: number
+  height?: number
+  assetRole?: string
+  provider?: string
+  requestId?: string
+  signal?: AbortSignal
+  isPackaged?: boolean
+  auth?: GatewayAuth
+}): Promise<GatewayJsonResult> {
+  return gatewayJson('/api/image/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      positivePrompt: input.positivePrompt,
+      negativePrompt: input.negativePrompt || '',
+      width: input.width ?? 512,
+      height: input.height ?? 512,
+      assetRole: input.assetRole || 'core_pattern',
+      ...(input.provider ? { provider: input.provider } : {}),
+      ...(input.requestId ? { requestId: input.requestId } : {})
+    }),
+    signal: input.signal,
+    isPackaged: input.isPackaged,
+    auth: input.auth,
+    timeoutMs: 120_000
+  })
+}
+
+export async function gatewayImageFinalize(input: {
+  imageBase64: string
+  width?: number
+  height?: number
+  assetRole?: string
+  provider?: string
+  requestId?: string
+  signal?: AbortSignal
+  isPackaged?: boolean
+  auth?: GatewayAuth
+}): Promise<GatewayJsonResult> {
+  return gatewayJson('/api/image/finalize', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      imageBase64: input.imageBase64,
+      width: input.width ?? 512,
+      height: input.height ?? 512,
+      assetRole: input.assetRole || 'core_pattern',
+      ...(input.provider ? { provider: input.provider } : {}),
+      ...(input.requestId ? { requestId: input.requestId } : {})
+    }),
+    signal: input.signal,
+    isPackaged: input.isPackaged,
+    auth: input.auth,
+    timeoutMs: 60_000
+  })
+}

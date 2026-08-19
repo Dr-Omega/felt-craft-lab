@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { mkdirSync, renameSync, unlinkSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 'node:fs'
 import type { ResourceRef, SharedError } from '@shared/contracts'
 import { toSharedError } from '@shared/contracts/error'
 import { buildFeltResourceRef, parseFeltResourceRef } from '@shared/resource'
@@ -13,6 +13,10 @@ export type PreviewSaveResult =
 
 export type PreviewDeleteResult = { ok: true } | { ok: false; error: SharedError }
 
+export type PreviewReadResult =
+  | { ok: true; bytes: Uint8Array }
+  | { ok: false; error: SharedError }
+
 function fail(code: SharedError['code'], message: string, retryable = false): PreviewSaveResult {
   return {
     ok: false,
@@ -21,6 +25,13 @@ function fail(code: SharedError['code'], message: string, retryable = false): Pr
 }
 
 function failDelete(code: SharedError['code'], message: string, retryable = false): PreviewDeleteResult {
+  return {
+    ok: false,
+    error: toSharedError({ code, message, retryable }, code)
+  }
+}
+
+function failRead(code: SharedError['code'], message: string, retryable = false): PreviewReadResult {
   return {
     ok: false,
     error: toSharedError({ code, message, retryable }, code)
@@ -114,4 +125,31 @@ export function deletePreviewPng(rawRef: unknown, roots: ResourceRoots): Preview
   }
 
   return { ok: true }
+}
+
+/**
+ * Read a preview PNG identified only by a felt-resource://preview/... ref.
+ * Accept candidates stay in preview space until the user accepts them.
+ */
+export function readPreviewPng(rawRef: unknown, roots: ResourceRoots): PreviewReadResult {
+  if (typeof rawRef !== 'string') {
+    return failRead('INVALID_ARGUMENT', '预览引用必须是字符串。')
+  }
+
+  const parsed = parseFeltResourceRef(rawRef)
+  if (!parsed || parsed.kind !== 'preview') {
+    return failRead('INVALID_ARGUMENT', '只能读取合法的 felt-resource://preview/... 预览图。')
+  }
+
+  const resolved = resolveFeltResourcePath(parsed.ref, roots, { requireExists: true })
+  if (!resolved.ok) return { ok: false, error: resolved.error }
+  if (resolved.kind !== 'preview') {
+    return failRead('INVALID_ARGUMENT', '不允许读取非 preview 资源。')
+  }
+
+  try {
+    return { ok: true, bytes: readFileSync(resolved.absolutePath) }
+  } catch {
+    return failRead('UNKNOWN', '预览图读取失败，请稍后重试。', true)
+  }
 }

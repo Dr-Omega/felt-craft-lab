@@ -2,6 +2,12 @@ import { contextBridge, ipcRenderer } from 'electron'
 import { IPC_CHANNELS, type BootstrapPingResult } from '@shared/constants/app'
 import type { ResourceRef, SharedError } from '@shared/contracts'
 import type {
+  CreationIntentIpcResult,
+  CreationIntentSessionRequest,
+  CreationIntentStartRequest,
+  CreationIntentSubmitRequest
+} from '@shared/creation-intent'
+import type {
   PersonalAssetPngIngestRequest,
   PersonalAssetPngIngestResult,
   ResourceInspectResult
@@ -98,6 +104,22 @@ const electronAPI = {
       voicePurpose?: string
       provider?: string
     }): Promise<unknown> => ipcRenderer.invoke(IPC_CHANNELS.AI_TTS_SYNTHESIZE, input)
+  },
+  creationIntent: {
+    start: (input: CreationIntentStartRequest = {}): Promise<CreationIntentIpcResult> =>
+      ipcRenderer.invoke(IPC_CHANNELS.CREATION_INTENT_START, input),
+    submitText: (input: CreationIntentSubmitRequest): Promise<CreationIntentIpcResult> =>
+      ipcRenderer.invoke(IPC_CHANNELS.CREATION_INTENT_SUBMIT, input),
+    confirm: (input: CreationIntentSessionRequest): Promise<CreationIntentIpcResult> =>
+      ipcRenderer.invoke(IPC_CHANNELS.CREATION_INTENT_CONFIRM, input),
+    decideForMe: (input: CreationIntentSessionRequest): Promise<CreationIntentIpcResult> =>
+      ipcRenderer.invoke(IPC_CHANNELS.CREATION_INTENT_DECIDE_FOR_ME, input),
+    regenerate: (input: CreationIntentSessionRequest): Promise<CreationIntentIpcResult> =>
+      ipcRenderer.invoke(IPC_CHANNELS.CREATION_INTENT_REGENERATE, input),
+    snapshot: (input: CreationIntentSessionRequest): Promise<CreationIntentIpcResult> =>
+      ipcRenderer.invoke(IPC_CHANNELS.CREATION_INTENT_SNAPSHOT, input),
+    accept: (input: CreationIntentSessionRequest): Promise<CreationIntentIpcResult> =>
+      ipcRenderer.invoke(IPC_CHANNELS.CREATION_INTENT_ACCEPT, input)
   }
 }
 

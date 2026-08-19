@@ -4,6 +4,7 @@ defineProps<{
   top: number
   below?: boolean
   canChangeLayer?: boolean
+  canRemove?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -30,7 +31,7 @@ const emit = defineEmits<{
       <button type="button" aria-label="置顶" :disabled="canChangeLayer === false" @click="emit('bringToFront')">置顶</button>
       <button type="button" aria-label="置底" :disabled="canChangeLayer === false" @click="emit('sendToBack')">置底</button>
     </div>
-    <div class="oqt-row oqt-row-remove" role="group" aria-label="拿掉对象">
+    <div v-if="canRemove !== false" class="oqt-row oqt-row-remove" role="group" aria-label="拿掉对象">
       <button type="button" class="oqt-remove" aria-label="拿掉" @click="emit('remove')">拿掉</button>
     </div>
   </aside>

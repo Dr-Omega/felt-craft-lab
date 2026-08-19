@@ -159,3 +159,27 @@ export function createBlankScene(workName: string, themeId?: string): SceneDocum
     updatedAt: now
   }
 }
+
+export function createSceneWithCorePattern(input: {
+  workName: string
+  personalAssetId: string
+  versionId: string
+  objectId?: string
+}): SceneDocument {
+  const scene = createBlankScene(input.workName)
+  return {
+    ...scene,
+    corePattern: {
+      objectId: input.objectId ?? crypto.randomUUID(),
+      personalAssetId: input.personalAssetId,
+      versionId: input.versionId,
+      left: scene.canvas.width / 2,
+      top: scene.canvas.height / 2,
+      scaleX: 1,
+      scaleY: 1,
+      angle: 0,
+      visible: true,
+      locked: false
+    }
+  }
+}

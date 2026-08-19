@@ -360,8 +360,10 @@ describe('personal asset Fabric runtime integration', () => {
     expect(transparent).toMatchObject({ backgroundAssetId: null, personalBackground: null })
     expect(transparent.canvas.backgroundColor).toBeUndefined()
 
-    adapter.deleteObject(scene.corePattern!.objectId)
-    expect(adapter.exportScene().corePattern).toBeNull()
+    expect(() => adapter.deleteObject(scene.corePattern!.objectId)).toThrow(
+      expect.objectContaining({ code: 'INVALID_ARGUMENT' })
+    )
+    expect(adapter.exportScene().corePattern?.objectId).toBe(scene.corePattern!.objectId)
     adapter.deleteObject(scene.personalElements[0].objectId)
     expect(adapter.exportScene().personalElements).toEqual([])
   })
@@ -392,9 +394,9 @@ describe('personal asset Fabric runtime integration', () => {
     canvas.emit('object:modified', core)
     await adapter.undo()
     expect(adapter.exportScene().corePattern?.left).toBe(scene.corePattern?.left)
-    adapter.deleteObject(scene.corePattern!.objectId)
-    expect(adapter.exportScene().corePattern).toBeNull()
-    await adapter.undo()
+    expect(() => adapter.deleteObject(scene.corePattern!.objectId)).toThrow(
+      expect.objectContaining({ code: 'INVALID_ARGUMENT' })
+    )
     expect(adapter.exportScene().corePattern?.objectId).toBe(scene.corePattern!.objectId)
 
     const replacement = personalAsset(backgroundAssetId, backgroundVersionV2Id, 'background')

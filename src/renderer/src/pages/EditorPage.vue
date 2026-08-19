@@ -18,7 +18,8 @@ import {
 import { assetsForEditor, pickSelectedAsset } from '../catalog/editor-selection'
 import {
   isAcceptanceUnlockAllAssetsEnabled,
-  seedAcceptanceUnlockedAccess
+  seedAcceptanceUnlockedAccess,
+  seedThemeUnlockedAccess
 } from '../catalog/acceptance-access'
 import { getEditorLaunch, openLibrary } from '../app-nav'
 import {
@@ -225,7 +226,13 @@ async function boot(): Promise<void> {
   sceneSnapshotMissing.value = editorCatalog.snapshotMissing
   const accessStore = new AssetAccessStore(getFeltCraftDatabase())
   await seedAcceptanceUnlockedAccess(accessStore, sceneCatalogAssets, acceptanceUnlockAllAssets)
+  if (launch.fromGeneration && launch.scene.themeId) {
+    await seedThemeUnlockedAccess(accessStore, sceneCatalogAssets, launch.scene.themeId)
+  }
   await refreshAccess()
+  if (launch.fromGeneration) {
+    showFeedback('点下面的花，用贴纸打扮它', 'info')
+  }
   const service = new EditorSessionService({
     createAdapter: () => new FabricEditorAdapter({ allowTestAssets: false, snapshotContext: YWN_SNAPSHOT_CONTEXT })
   })
@@ -413,6 +420,7 @@ async function quickSendToBack(): Promise<void> {
 async function quickRemove(): Promise<void> {
   const selection = oqtSelection.value
   if (!selection || !session.value) return
+  if (selection.kind === 'core_pattern') return
   try {
     session.value.deleteObject(selection.objectId)
     closeOqt()
@@ -473,11 +481,13 @@ function continueEditing(): void {
 }
 
 onMounted(async () => {
+  document.body.classList.add('editor-lock-scroll')
   window.addEventListener('resize', updateOqtPosition)
   try { await boot() } catch (error) { showFeedback(friendlyError(error), 'error') }
 })
 
 onUnmounted(() => {
+  document.body.classList.remove('editor-lock-scroll')
   unsubscribe?.()
   selectionUnsubscribe?.()
   hideRemoveToast()
@@ -569,6 +579,7 @@ watch([oqtOpen, oqtSelection], () => { void nextTick(updateOqtPosition) })
       :top="oqtPosition.top"
       :below="oqtPosition.below"
       :can-change-layer="oqtSelection?.canChangeLayer !== false"
+      :can-remove="oqtSelection?.kind !== 'core_pattern'"
       @forward="quickBringForward"
       @backward="quickSendBackward"
       @bring-to-front="quickBringToFront"
@@ -616,7 +627,7 @@ watch([oqtOpen, oqtSelection], () => { void nextTick(updateOqtPosition) })
   --shadow-lift: 0 10px 24px rgba(89, 71, 56, 0.22);
 }
 
-body { margin: 0; overflow: hidden; }
+body.editor-lock-scroll { margin: 0; overflow: hidden; }
 
 .editor-stage {
   position: fixed;

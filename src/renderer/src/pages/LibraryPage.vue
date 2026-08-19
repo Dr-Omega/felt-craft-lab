@@ -283,7 +283,7 @@ onUnmounted(() => {
         <header class="section-head section-head-secondary">
           <div>
             <h2>素材库</h2>
-            <p class="muted">挑一个喜欢的素材，等开始做作品时再放进画布。</p>
+            <p class="muted">贴纸和背景用来装饰作品里的核心图案。</p>
           </div>
         </header>
 
