@@ -8,6 +8,8 @@
 
 → **[固定TTS批量工具.md](./固定TTS批量工具.md)**
 
+→ **[sd-local-lora.md](./sd-local-lora.md)**（本地 SD + LoRA 画风锁定）
+
 错误码 / 重试 / 降级：
 
 → **[错误码与重试降级.md](./错误码与重试降级.md)**

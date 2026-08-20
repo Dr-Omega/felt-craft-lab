@@ -37,8 +37,9 @@ QA_PROVIDERS_PROD = frozenset({"deepseek"})
 QA_PROVIDERS_DEV_EXTRA = frozenset({"mock"})
 TTS_PROVIDERS_PROD = frozenset({"minimax"})
 TTS_PROVIDERS_DEV_EXTRA = frozenset({"mock"})
-# Cloud image is DashScope 通义万相; mock remains a development stand-in.
-IMAGE_PROVIDERS_PROD = frozenset({"wan_dashscope"})
+# Cloud image is DashScope 通义万相; local SD+LoRA is the felt-style path;
+# mock remains a development stand-in.
+IMAGE_PROVIDERS_PROD = frozenset({"wan_dashscope", "sd_local"})
 IMAGE_PROVIDERS_DEV_EXTRA = frozenset({"mock"})
 MAX_IMAGE_PROMPT_CHARS = int(os.getenv("AI_MAX_IMAGE_PROMPT_CHARS", "2000"))
 

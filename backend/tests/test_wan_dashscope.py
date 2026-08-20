@@ -32,6 +32,7 @@ class _Resp:
 class WanDashScopeTests(unittest.TestCase):
     def test_provider_allowed_in_dev_and_prod_names(self):
         self.assertTrue(image_provider_allowed("wan_dashscope"))
+        self.assertTrue(image_provider_allowed("sd_local"))
         self.assertTrue(image_provider_allowed("mock"))
 
     def test_missing_key_is_fail_closed(self):

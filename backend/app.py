@@ -206,6 +206,9 @@ def health():
                 "minimax": _configured(os.getenv("MINIMAX_API_KEY"))
                 and _configured(os.getenv("MINIMAX_GROUP_ID")),
                 "dashscope": _configured(_image_key()),
+                # No cloud key; true when URL is set or sd_local is the selected provider.
+                "sdLocal": _configured(os.getenv("SD_LOCAL_BASE_URL"))
+                or _selected_image_provider() == "sd_local",
                 "sessionHmac": session_secret_status()["configured"],
             },
             "selected": {
@@ -218,7 +221,7 @@ def health():
                 "qa": ["deepseek"] + (["mock"] if is_dev_mode() else []),
                 "intent": ["deepseek"] + (["mock"] if is_dev_mode() else []),
                 "tts": ["minimax"] + (["mock"] if is_dev_mode() else []),
-                "image": ["wan_dashscope"] + (["mock"] if is_dev_mode() else []),
+                "image": ["wan_dashscope", "sd_local"] + (["mock"] if is_dev_mode() else []),
             },
         }
     )
@@ -643,7 +646,8 @@ def image_generate():
         return _json_fail("RATE_LIMITED", 429)
     try:
         with InflightGuard():
-            if not _is_mock_provider(resolved_name):
+            # Local SD uses the user's GPU — do not consume the paid-API fuse.
+            if not _is_mock_provider(resolved_name) and resolved_name != "sd_local":
                 fuse_err = _consume_paid_fuse(claims.installation_id)
                 if fuse_err:
                     return fuse_err

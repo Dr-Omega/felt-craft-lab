@@ -7,6 +7,7 @@ import os
 from typing import Any, Optional
 
 from providers.image.mock_provider import MockImageProvider
+from providers.image.sd_local import SdLocalProvider
 from providers.image.wan_dashscope import WanDashScopeProvider
 from services.guards import image_provider_allowed
 from services.image_postprocess import normalize_rgba_png
@@ -55,6 +56,8 @@ class ImageService:
             self.provider = MockImageProvider()
         elif name == "wan_dashscope":
             self.provider = WanDashScopeProvider()
+        elif name == "sd_local":
+            self.provider = SdLocalProvider()
         else:
             raise UnknownImageProvider(name)
 
