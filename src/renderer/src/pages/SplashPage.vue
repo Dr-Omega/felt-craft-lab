@@ -43,12 +43,12 @@ function start(): void {
   top: 920px;
   z-index: 2;
   margin: 0;
-  padding: 10px 22px;
+  padding: 16px 36px;
   border-radius: 999px;
   background: rgba(255, 254, 248, 0.88);
   color: #594738;
-  font-size: 28px;
-  letter-spacing: 1px;
+  font-size: 38px;
+  letter-spacing: 2px;
   transform: translateX(-50%);
   pointer-events: none;
   box-shadow: 0 6px 18px rgba(89, 71, 56, 0.14);
