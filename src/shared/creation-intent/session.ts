@@ -8,6 +8,7 @@ import { applyDecideForMe, decideClarification, type ClarificationQuestion } fro
 import { confirmGenerationSpec } from './confirm'
 import type { CreationIntentParser } from './parser'
 import { applyGenerationSpecPatch } from './patch'
+import { enrichPatchForPendingField } from './pending-field'
 
 export const CREATION_SESSION_PHASES = [
   'collecting',
@@ -71,11 +72,12 @@ export class CreationIntentSession {
 
   async submitText(text: string): Promise<CreationSessionSnapshot> {
     const pendingField = this.spec.clarification.pendingField
-    const patch = await this.parser.parse({
+    let patch = await this.parser.parse({
       text,
       ...(this.lockedRole ? { lockedRole: this.lockedRole } : {}),
       ...(pendingField ? { pendingField } : {})
     })
+    patch = enrichPatchForPendingField(pendingField, text, patch, this.spec)
     this.spec = applyGenerationSpecPatch(this.spec, patch)
     this.prompt = null
     this.candidate = null

@@ -49,7 +49,14 @@ ACTION_PATTERNS = (
 class MockIntentProvider(IntentProvider):
     name = "mock"
 
-    def parse(self, *, text: str, locked_role: str | None) -> dict[str, Any]:
+    def parse(
+        self,
+        *,
+        text: str,
+        locked_role: str | None,
+        pending_field: str | None = None,
+    ) -> dict[str, Any]:
+        _ = pending_field
         source = (text or "").strip()
         subjects = []
         positions: list[tuple[str, int]] = []

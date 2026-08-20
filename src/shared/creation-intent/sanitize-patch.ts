@@ -4,6 +4,7 @@ import {
   type GenerationSubject
 } from '../contracts/generation-spec'
 import { PERSONAL_ASSET_ROLES, type PersonalAssetRole } from '../contracts/personal-asset'
+import { mergeActionOrRelationship } from './patch'
 
 const MAX_NAME_CHARS = 16
 const MAX_ACTION_CHARS = 40
@@ -134,7 +135,30 @@ function mergeSubjects(
   return [...byName.values()]
 }
 
-/** Overlay wins on filled fields; empty overlay fields keep the base (usually local parser). */
+const HOLDING_HINT = /抱|捧|举|抬|拿|带|提/
+
+/**
+ * Same-utterance local+LLM merge: keep the richer phrase; only stack when
+ * one looks like posture and the other like holding.
+ */
+export function mergePatchActions(
+  base: string | undefined,
+  overlay: string | undefined
+): string | undefined {
+  const local = base?.trim()
+  const remote = overlay?.trim()
+  if (!remote) return local
+  if (!local) return remote
+  if (local === remote) return local
+  if (local.includes(remote)) return local
+  if (remote.includes(local)) return remote
+  if (HOLDING_HINT.test(local) && HOLDING_HINT.test(remote)) {
+    return local.length >= remote.length ? local : remote
+  }
+  return mergeActionOrRelationship(local, remote)
+}
+
+/** Overlay fills gaps; actions stack instead of wiping; lists union by name/value. */
 export function mergeGenerationSpecPatches(
   base: GenerationSpecPatch,
   overlay: GenerationSpecPatch
@@ -143,7 +167,10 @@ export function mergeGenerationSpecPatches(
   const subjects = mergeSubjects(base.content?.primarySubjects, overlay.content?.primarySubjects)
   if (subjects?.length) content.primarySubjects = subjects
 
-  const action = overlay.content?.actionOrRelationship?.trim() || base.content?.actionOrRelationship
+  const action = mergePatchActions(
+    base.content?.actionOrRelationship,
+    overlay.content?.actionOrRelationship
+  )
   if (action) content.actionOrRelationship = action
 
   const colors = mergeStringList(base.content?.preferredColors, overlay.content?.preferredColors)

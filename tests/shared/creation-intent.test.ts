@@ -302,7 +302,7 @@ describe('FallbackCreationIntentParser', () => {
     })
     const patch = await parser.parse({ text: '一只蓝衣服小猫追蝴蝶', lockedRole: 'core_pattern' })
     expect(patch).not.toHaveProperty('prompt')
-    expect(patch.content?.primarySubjects?.map((item) => item.name)).toEqual(['蝴蝶', '小猫'])
+    expect(patch.content?.primarySubjects?.map((item) => item.name)).toEqual(['小猫', '蝴蝶'])
     expect(patch.content?.actionOrRelationship).toBe('追蝴蝶')
   })
 })

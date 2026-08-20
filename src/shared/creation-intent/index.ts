@@ -30,9 +30,11 @@ export { FallbackCreationIntentParser } from './fallback-parser'
 export { RemoteCreationIntentParser, extractCreationIntentPatch } from './remote-parser'
 export {
   mergeGenerationSpecPatches,
+  mergePatchActions,
   patchHasContent,
   sanitizeGenerationSpecPatch
 } from './sanitize-patch'
+export { enrichPatchForPendingField } from './pending-field'
 export {
   confirmGenerationSpec,
   type ConfirmGenerationSpecFailureReason,

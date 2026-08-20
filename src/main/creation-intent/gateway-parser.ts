@@ -30,6 +30,7 @@ export function createLiveCreationIntentParser(): CreationIntentParser {
     const parsed = await gatewayCreationIntentParse({
       text: input.text,
       lockedRole: input.lockedRole,
+      pendingField: input.pendingField,
       isPackaged: packaged,
       auth: {
         token: session.session.token,

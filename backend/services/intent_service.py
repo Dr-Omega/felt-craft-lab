@@ -30,8 +30,18 @@ class IntentService:
         else:
             self.provider = DeepSeekIntentProvider()
 
-    def parse(self, *, text: str, locked_role: str | None) -> dict:
+    def parse(
+        self,
+        *,
+        text: str,
+        locked_role: str | None,
+        pending_field: str | None = None,
+    ) -> dict:
         try:
-            return self.provider.parse(text=text, locked_role=locked_role)
+            return self.provider.parse(
+                text=text,
+                locked_role=locked_role,
+                pending_field=pending_field,
+            )
         except Exception:  # noqa: BLE001
             return err_intent(code="QA_UPSTREAM_ERROR")

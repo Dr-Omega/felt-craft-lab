@@ -15,9 +15,18 @@ function hasNamedSubject(spec: GenerationSpec): boolean {
 }
 
 function hasAnyColor(spec: GenerationSpec): boolean {
-  if ((spec.content.preferredColors ?? []).some((item) => item.trim().length > 0)) return true
+  const looksLikeColor = (value: string) => {
+    const trimmed = value.trim()
+    if (!trimmed) return false
+    // Reject posture / place phrases that accidentally landed in color slots.
+    if (/坐|站|躺|跪|蹲|跑|抱|捧|举|抬|追|在/.test(trimmed) && trimmed.length > 2) {
+      if (!/色|黑白|金|粉|红|绿|蓝|黄|橙|紫|灰|棕|白|黑/.test(trimmed)) return false
+    }
+    return true
+  }
+  if ((spec.content.preferredColors ?? []).some(looksLikeColor)) return true
   return spec.content.primarySubjects.some(
-    (subject) => (subject.attributes ?? []).some((item) => item.trim().length > 0)
+    (subject) => (subject.attributes ?? []).some((item) => looksLikeColor(item))
   )
 }
 

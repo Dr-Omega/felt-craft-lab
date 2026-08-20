@@ -273,6 +273,7 @@ export async function gatewayTtsSynthesize(input: {
 export async function gatewayCreationIntentParse(input: {
   text: string
   lockedRole?: string
+  pendingField?: string | null
   provider?: string
   signal?: AbortSignal
   isPackaged?: boolean
@@ -284,6 +285,7 @@ export async function gatewayCreationIntentParse(input: {
     body: JSON.stringify({
       text: input.text,
       ...(input.lockedRole ? { lockedRole: input.lockedRole } : {}),
+      ...(input.pendingField ? { pendingField: input.pendingField } : {}),
       ...(input.provider ? { provider: input.provider } : {})
     }),
     signal: input.signal,

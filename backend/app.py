@@ -481,9 +481,14 @@ def creation_intent_parse():
     data = request.get_json(silent=True) or {}
     text = data.get("text") or ""
     locked_role = data.get("lockedRole") or data.get("locked_role") or None
+    pending_field = data.get("pendingField") or data.get("pending_field") or None
     if locked_role is not None:
         locked_role = str(locked_role).strip() or None
         if locked_role not in {"core_pattern", "element", "background"}:
+            return _json_fail("INVALID_ARGUMENT")
+    if pending_field is not None:
+        pending_field = str(pending_field).strip() or None
+        if pending_field and len(pending_field) > 64:
             return _json_fail("INVALID_ARGUMENT")
     provider = data.get("provider")
     text_err = check_intent_text(str(text))
@@ -503,7 +508,11 @@ def creation_intent_parse():
                 fuse_err = _consume_paid_fuse(claims.installation_id)
                 if fuse_err:
                     return fuse_err
-            result = IntentService(resolved_name).parse(text=str(text), locked_role=locked_role)
+            result = IntentService(resolved_name).parse(
+                text=str(text),
+                locked_role=locked_role,
+                pending_field=pending_field,
+            )
             status = 200 if result.get("ok") else 502
             return jsonify(result), status
     except UnknownIntentProvider:

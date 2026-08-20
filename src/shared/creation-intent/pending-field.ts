@@ -1,6 +1,6 @@
 import type { GenerationSpecPatch, GenerationSubject } from '../contracts/generation-spec'
 import type { GenerationSpec } from '../contracts/generation-spec'
-import { PLAN_FIELD_PATHS, SUBJECT_COLORS_FIELD, subjectsNeedColors } from './plan-fields'
+import { isSkipClarificationAnswer } from './clarification'
 
 const COLOR_WORDS = [
   '黑白',
@@ -26,8 +26,7 @@ function trimText(text: string, max: number): string {
 }
 
 function extractColors(text: string): string[] {
-  const found = COLOR_WORDS.filter((word) => text.includes(word))
-  return [...new Set(found)]
+  return [...new Set(COLOR_WORDS.filter((word) => text.includes(word)))]
 }
 
 function attachColorsToSubjects(
@@ -47,7 +46,7 @@ function attachColorsToSubjects(
 
 /**
  * When the session is waiting on a specific plan slot, make sure the user's
- * answer lands on that field even if the parser returns an empty patch.
+ * answer lands on that field even if the parser returns a thin patch.
  */
 export function enrichPatchForPendingField(
   pendingField: string | null,
@@ -58,40 +57,52 @@ export function enrichPatchForPendingField(
   if (!pendingField) return patch
   const trimmed = text.trim()
   if (!trimmed) return patch
+  if (isSkipClarificationAnswer(trimmed)) return patch
 
   const content = { ...(patch.content ?? {}) }
 
   switch (pendingField) {
-    case PLAN_FIELD_PATHS.subjects:
+    case 'content.primarySubjects':
       if (!(content.primarySubjects?.length ?? spec.content.primarySubjects.length)) {
         content.primarySubjects = [{ name: trimText(trimmed, MAX_NAME) }]
       }
       break
-    case PLAN_FIELD_PATHS.action:
-      content.actionOrRelationship = trimText(trimmed, MAX_ACTION)
+    case 'content.actionOrRelationship':
+      if (!content.actionOrRelationship?.trim()) {
+        content.actionOrRelationship = trimText(trimmed, MAX_ACTION)
+      }
       break
-    case SUBJECT_COLORS_FIELD: {
+    case 'content.preferredColors':
+    case 'content.subjectColors': {
       const colors = extractColors(trimmed)
+      if (!colors.length) {
+        // Posture/supplement while colors are pending — let action merge, don't pollute colors.
+        break
+      }
       const base = spec.content.primarySubjects.length
         ? spec.content.primarySubjects
         : (content.primarySubjects ?? [])
-      if (base.length && colors.length) {
+      if (base.length) {
         content.primarySubjects = attachColorsToSubjects(base, colors)
-      } else if (colors.length) {
-        content.preferredColors = colors
       } else {
-        content.preferredColors = [trimText(trimmed, MAX_NAME)]
+        content.preferredColors = colors
       }
       break
     }
-    case PLAN_FIELD_PATHS.required:
-      content.requiredElements = [trimText(trimmed, MAX_NAME)]
+    case 'content.requiredElements':
+      if (!content.requiredElements?.length) {
+        content.requiredElements = [trimText(trimmed, MAX_NAME)]
+      }
       break
-    case PLAN_FIELD_PATHS.forbidden:
-      content.forbiddenElements = [trimText(trimmed, MAX_NAME)]
+    case 'content.forbiddenElements':
+      if (!content.forbiddenElements?.length) {
+        content.forbiddenElements = [trimText(trimmed, MAX_NAME)]
+      }
       break
-    case PLAN_FIELD_PATHS.environment:
-      content.environmentDescription = trimText(trimmed, MAX_ACTION)
+    case 'content.environmentDescription':
+      if (!content.environmentDescription?.trim()) {
+        content.environmentDescription = trimText(trimmed, MAX_ACTION)
+      }
       break
     default:
       break
@@ -99,25 +110,4 @@ export function enrichPatchForPendingField(
 
   if (!Object.keys(content).length) return patch
   return { ...patch, content: { ...patch.content, ...content } }
-}
-
-export function pendingFieldSatisfied(spec: GenerationSpec, pendingField: string | null): boolean {
-  if (!pendingField) return true
-  if (pendingField === SUBJECT_COLORS_FIELD) return !subjectsNeedColors(spec)
-  if (pendingField === PLAN_FIELD_PATHS.subjects) {
-    return spec.content.primarySubjects.some((subject) => subject.name.trim().length > 0)
-  }
-  if (pendingField === PLAN_FIELD_PATHS.action) {
-    return Boolean(spec.content.actionOrRelationship?.trim())
-  }
-  if (pendingField === PLAN_FIELD_PATHS.required) {
-    return Boolean((spec.content.requiredElements ?? []).some((item) => item.trim()))
-  }
-  if (pendingField === PLAN_FIELD_PATHS.forbidden) {
-    return Boolean((spec.content.forbiddenElements ?? []).some((item) => item.trim()))
-  }
-  if (pendingField === PLAN_FIELD_PATHS.environment) {
-    return Boolean(spec.content.environmentDescription?.trim())
-  }
-  return true
 }

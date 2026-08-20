@@ -28,8 +28,9 @@ SYSTEM_PROMPT = """你是不织布手工工具里的意图整理员。把小朋�
     "primarySubjects": [{"name": "短中文名词", "attributes": ["只属于它的颜色或外形"]}],
     "actionOrRelationship": "短动作短语",
     "preferredColors": ["仅当颜色还没绑到某个主体时才用"],
+    "requiredElements": ["画面还必须有的短名词"],
     "forbiddenElements": ["不要出现的东西"],
-    "environmentDescription": "仅背景才填地点"
+    "environmentDescription": "地点或场景短词"
   }
 }
 
@@ -38,11 +39,15 @@ SYSTEM_PROMPT = """你是不织布手工工具里的意图整理员。把小朋�
 2. 主体用短名词。手里拿着、抱着的东西也要放进 primarySubjects。
 3. 颜色必须跟主体一一对应：例如黑白熊猫、红色皮球，把颜色写进该主体的 attributes，不要把所有颜色摊给每一个主体。
 4. 动作写成短短语，例如「坐在地上抱着皮球」。
-5. 「不要/别」后面的内容放 forbiddenElements。
+5. 「不要/别」后面的内容放 forbiddenElements；「必须有/还要有」放 requiredElements。
 6. 不确定的字段省略，不要编造。
 7. 这是扁平卡通不织布，不要写成写实摄影需求。
 8. 若调用方已锁定角色，不要改 assetRole。
 9. 若口语只是补充姿势（如「坐在地上」），只填 actionOrRelationship 为该补充；合并时会与已有动作叠加，不要删掉已有的抱/捧等动作。
+10. 若调用方给出「当前追问栏」，只填该栏相关字段，其他字段一律省略。
+11. 「再加一个X」把 X 放进 primarySubjects，不要清空其它未提及主体（其它主体省略即可）。
+12. 补充句不要重复输出已经完整的旧动作；只输出新增部分（例如已有「抱着皮球」时，补充「坐在地上」只输出「坐在地上」）。
+13. 颜色追问时若用户说的是姿势/地点而不是颜色，不要填写 preferredColors 或 attributes。
 """
 
 REJECT_PATTERNS = (
@@ -58,7 +63,13 @@ REJECT_PATTERNS = (
 class DeepSeekIntentProvider(IntentProvider):
     name = "deepseek"
 
-    def parse(self, *, text: str, locked_role: str | None) -> dict[str, Any]:
+    def parse(
+        self,
+        *,
+        text: str,
+        locked_role: str | None,
+        pending_field: str | None = None,
+    ) -> dict[str, Any]:
         key = os.getenv("DEEPSEEK_API_KEY", "").strip()
         if not key:
             return err_intent(code="QA_MISSING_API_KEY")
@@ -76,6 +87,10 @@ class DeepSeekIntentProvider(IntentProvider):
         user = source[:120]
         if locked_role:
             user = f"锁定角色：{locked_role}\n口语：{user}"
+        else:
+            user = f"口语：{user}"
+        if pending_field:
+            user = f"{user}\n当前追问栏：{pending_field}\n只填这一栏相关内容，其他字段省略。"
         payload = {
             "model": MODEL,
             "messages": [

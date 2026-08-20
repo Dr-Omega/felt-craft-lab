@@ -7,12 +7,24 @@ const KNOWN_SUBJECTS = [
   '玉兔',
   '兔子',
   '熊猫',
+  '小猫',
+  '小狗',
+  '小熊',
+  '小青蛙',
+  '青蛙',
   '小鹿',
   '鲸鱼',
   '蝴蝶',
   '鲤鱼',
+  '小鸟',
+  '鸭子',
   '荷花',
   '莲花',
+  '花朵',
+  '月亮',
+  '太阳',
+  '星星',
+  '云朵',
   '茶壶',
   '灯笼',
   '月饼',
@@ -22,8 +34,13 @@ const KNOWN_SUBJECTS = [
   '西瓜',
   '苹果',
   '萝卜',
-  '花朵',
-  '扇子'
+  '扇子',
+  '围巾',
+  '帽子',
+  '花环',
+  '书包',
+  '房子',
+  '大树'
 ]
 const KNOWN_COLORS = [
   '黑白',
@@ -36,7 +53,9 @@ const KNOWN_COLORS = [
   '黄色',
   '橙色',
   '紫色',
-  '黑色'
+  '黑色',
+  '灰色',
+  '棕色'
 ]
 /** Longer relation phrases first; simple verbs last. */
 const ACTION_PATTERNS = [
@@ -46,6 +65,10 @@ const ACTION_PATTERNS = [
   /捧着[^，。！？]{0,12}/,
   /举着[^，。！？]{0,12}/,
   /抬着[^，。！？]{0,12}/,
+  /戴着[^，。！？]{0,12}/,
+  /追着[^，。！？]{0,12}/,
+  /追[^，。！？]{0,8}/,
+  /看着[^，。！？]{0,12}/,
   /坐在[^，。！？]{0,12}/,
   /漂在[^，。！？]{0,12}/,
   /放在[^，。！？]{0,12}/,
@@ -56,9 +79,14 @@ const ACTION_PATTERNS = [
   /坐着?/,
   /站着?/,
   /捧着?/,
-  /举着?/
+  /举着?/,
+  /笑着?/,
+  /跑着?/
 ]
 const FORBIDDEN_PATTERN = /(?:不要|别|不能有|禁止)\s*([^，。！？]+)/
+const REQUIRED_PATTERN = /(?:必须有|一定要有|还要有|再加上)\s*([^，。！？]+)/
+const ADD_SUBJECT_PATTERN =
+  /(?:再加(?:一个|一只|一条|一朵)?|加上(?:一个|一只)?|还要(?:一个|一只|一条)?)\s*([^\s，。！？的]{1,8})/
 const ENVIRONMENT_STRIP = /(?:做|画|生成)?(?:一个|一张)?/g
 
 function unique(values: string[]): string[] {
@@ -74,13 +102,28 @@ function subjectsFrom(text: string): GenerationSubject[] {
     .filter((item) => item.index >= 0)
     .sort((a, b) => a.index - b.index)
 
-  return found.map((item, index) => {
+  const fromDict = found.map((item, index) => {
     const previous = found[index - 1]
     const segmentStart = previous ? previous.index + previous.name.length : 0
     const segment = text.slice(segmentStart, item.index + item.name.length)
     const attributes = findAll(segment, KNOWN_COLORS)
     return attributes.length ? { name: item.name, attributes } : { name: item.name }
   })
+
+  const added: GenerationSubject[] = []
+  const addMatch = text.match(ADD_SUBJECT_PATTERN)
+  if (addMatch?.[1]) {
+    const name = addMatch[1].replace(/^(一个|一只|一条|一朵)/, '').trim()
+    if (name && !fromDict.some((subject) => subject.name === name) && !KNOWN_SUBJECTS.includes(name)) {
+      // Unknown short noun from「再加一个X」— still record it.
+      if (name.length <= 8) added.push({ name })
+    } else if (name && !fromDict.some((subject) => subject.name === name)) {
+      const attrs = findAll(addMatch[0], KNOWN_COLORS)
+      added.push(attrs.length ? { name, attributes: attrs } : { name })
+    }
+  }
+
+  return [...fromDict, ...added]
 }
 
 function actionFrom(text: string): string | undefined {
@@ -96,6 +139,16 @@ function actionFrom(text: string): string | undefined {
 
 function forbiddenFrom(text: string): string[] | undefined {
   const match = text.match(FORBIDDEN_PATTERN)
+  if (!match?.[1]) return undefined
+  const items = match[1]
+    .split(/[和与、,，]/)
+    .map((item) => item.trim())
+    .filter(Boolean)
+  return items.length ? unique(items) : undefined
+}
+
+function requiredFrom(text: string): string[] | undefined {
+  const match = text.match(REQUIRED_PATTERN)
   if (!match?.[1]) return undefined
   const items = match[1]
     .split(/[和与、,，]/)
@@ -135,6 +188,9 @@ export class LocalCreationIntentParser implements CreationIntentParser {
     const forbidden = forbiddenFrom(text)
     if (forbidden) content.forbiddenElements = forbidden
 
+    const required = requiredFrom(text)
+    if (required) content.requiredElements = required
+
     const place = placeFrom(text)
     if (place) content.environmentDescription = place
 
@@ -150,7 +206,7 @@ export class LocalCreationIntentParser implements CreationIntentParser {
   }
 }
 
-const PLACE_PATTERN = /(?:在)?(地上|草地上|水上|天上|桌子上|月亮上)/
+const PLACE_PATTERN = /(?:在)?(地上|草地上|水上|天上|桌子上|月亮上|花园里|院子里)/
 
 function placeFrom(text: string): string | undefined {
   const match = text.match(PLACE_PATTERN)
@@ -171,9 +227,13 @@ function bindPendingField(
     content.actionOrRelationship = text.slice(0, 40)
     return
   }
-  if (pendingField === 'content.preferredColors' && !content.preferredColors?.length) {
+  if (
+    (pendingField === 'content.preferredColors' || pendingField === 'content.subjectColors') &&
+    !content.preferredColors?.length
+  ) {
     const known = findAll(text, KNOWN_COLORS)
-    content.preferredColors = known.length ? known : [text.slice(0, 20)]
+    // Never dump a non-color utterance (e.g.「坐在地上」) into preferredColors.
+    if (known.length) content.preferredColors = known
     return
   }
   if (pendingField === 'content.requiredElements' && !content.requiredElements?.length) {
