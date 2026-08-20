@@ -1,0 +1,41 @@
+{
+  "_comment": "改数字 → 保存 → 刷新程序。单位 px。",
+  "library": {
+    "bookPagerOffsetY": 60,
+    "bookPageLeftOffsetX": -10,
+    "bookPageLeftOffsetY": -25,
+    "bookPageRightOffsetX": 20,
+    "bookPageRightOffsetY": -25,
+    "bookPageInsetPx": 50,
+    "bookPageGapPx": 40
+  },
+  "editor": {
+    "topbarOffsetY": -120,
+    "backgroundButtonOffsetX": -160,
+    "backgroundButtonLeftPx": 24,
+    "canvasAspectWidth": 902,
+    "canvasAspectHeight": 516,
+    "canvasFillScale": 1
+  },
+  "iconButtons": {
+    "undo": { "width": 52, "height": 52 },
+    "redo": { "width": 52, "height": 52 },
+    "material": { "width": 52, "height": 52 },
+    "back": { "width": 92, "height": 49 },
+    "close": { "width": 44, "height": 40 },
+    "background": { "width": 48, "height": 78 }
+  },
+  "textButtons": {
+    "primary": { "minHeight": 44, "minWidth": 80 },
+    "secondary": { "minHeight": 44, "minWidth": 80 }
+  },
+  "qaSheet": {
+    "widthPx": 420,
+    "topPx": 16,
+    "rightPx": 16,
+    "bottomPx": 16,
+    "paddingPx": 18,
+    "inputMinHeightPx": 72,
+    "zIndex": 92
+  }
+}

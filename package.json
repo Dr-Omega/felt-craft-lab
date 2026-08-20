@@ -26,11 +26,14 @@
     "test:product-closure": "node scripts/run-product-closure.cjs",
     "test:new-work-all-themes": "node scripts/run-v46-new-work-all-themes.cjs",
     "build:assets": "python scripts/build-ywn-manifest.py",
+    "export:ui-assets": "python scripts/export-psd-ui-layers.py",
+    "export:hand-drawn-ui": "python scripts/crop-hand-drawn-assets.py",
     "dist:win": "npm run build && electron-builder --win --x64 --config.electronDist=node_modules/electron/dist",
     "dist:win:dir": "npm run build && electron-builder --win --x64 --dir --config.electronDist=node_modules/electron/dist",
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
+    "@fontsource/zcool-kuaile": "^5.3.0",
     "dexie": "4.4.4",
     "fabric": "5.3.0",
     "howler": "^2.2.4",
@@ -42,10 +45,12 @@
     "@types/howler": "^2.2.13",
     "@types/node": "^22.19.0",
     "@vitejs/plugin-vue": "^6.0.1",
+    "ag-psd": "^31.0.2",
     "electron": "^43.2.0",
     "electron-builder": "^26.15.3",
     "electron-vite": "^5.0.0",
     "fake-indexeddb": "6.2.5",
+    "pngjs": "^7.0.0",
     "typescript": "^5.9.3",
     "vitest": "^4.1.10",
     "vue-tsc": "^3.1.5"

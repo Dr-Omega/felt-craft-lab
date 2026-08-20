@@ -5,6 +5,6 @@
  * SceneDocument remains the source of truth after creation.
  */
 export const DEFAULT_SCENE_CANVAS = {
-  width: 960,
-  height: 960
+  width: 902,
+  height: 516
 } as const

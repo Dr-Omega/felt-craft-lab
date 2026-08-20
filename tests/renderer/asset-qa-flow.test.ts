@@ -490,6 +490,15 @@ async function flush(): Promise<void> {
   }
 }
 
+/** AssetQaSheet teleports UI to document.body — query there, not mount.root. */
+function querySheet(selector: string): Element | null {
+  return document.body.querySelector(selector)
+}
+
+function querySheetAll(selector: string): NodeListOf<Element> {
+  return document.body.querySelectorAll(selector)
+}
+
 describe('AssetQaSheet — mounted voice flow', () => {
   function defineMediaDevices(impl: {
     getUserMedia: (constraints: MediaStreamConstraints) => Promise<MediaStream>
@@ -551,14 +560,14 @@ describe('AssetQaSheet — mounted voice flow', () => {
     })
     const mount = mountSheet()
     await flush()
-    const voiceBtn = mount.root.querySelector('.asset-qa-voice') as HTMLButtonElement | null
+    const voiceBtn = querySheet('.asset-qa-voice') as HTMLButtonElement | null
     expect(voiceBtn).toBeTruthy()
     voiceBtn?.click()
     await flush()
     await new Promise((r) => setTimeout(r, 20))
-    const hint = mount.root.querySelector('.asset-qa-mic-hint') as HTMLElement | null
+    const hint = querySheet('.asset-qa-mic-hint') as HTMLElement | null
     expect(hint?.textContent ?? '').toMatch(/打字/)
-    const textarea = mount.root.querySelector('.asset-qa-input') as HTMLTextAreaElement | null
+    const textarea = querySheet('.asset-qa-input') as HTMLTextAreaElement | null
     expect(textarea).toBeTruthy()
     textarea!.value = '你能做什么？'
     textarea!.dispatchEvent(new Event('input'))
@@ -581,12 +590,12 @@ describe('AssetQaSheet — mounted voice flow', () => {
     const mount = mountSheet()
     await flush()
 
-    const voiceBtn = mount.root.querySelector('.asset-qa-voice') as HTMLButtonElement | null
+    const voiceBtn = querySheet('.asset-qa-voice') as HTMLButtonElement | null
     expect(voiceBtn).toBeTruthy()
     voiceBtn?.click()
     await flush()
     await new Promise((r) => setTimeout(r, 20))
-    const recordingBtn = mount.root.querySelector('.asset-qa-voice.is-live') as HTMLButtonElement | null
+    const recordingBtn = querySheet('.asset-qa-voice.is-live') as HTMLButtonElement | null
     expect(recordingBtn).toBeTruthy()
     recordingBtn?.click()
     await flush()
@@ -594,19 +603,19 @@ describe('AssetQaSheet — mounted voice flow', () => {
     expect(asrMock).toHaveBeenCalledTimes(1)
     expect(qaMock).not.toHaveBeenCalled()
 
-    const textarea = mount.root.querySelector('.asset-qa-input') as HTMLTextAreaElement | null
+    const textarea = querySheet('.asset-qa-input') as HTMLTextAreaElement | null
     expect(textarea).toBeTruthy()
     textarea!.value = '小兔子喜欢什么？'
     textarea!.dispatchEvent(new Event('input'))
     await flush()
-    const form = mount.root.querySelector('.asset-qa-form') as HTMLFormElement | null
+    const form = querySheet('.asset-qa-form') as HTMLFormElement | null
     expect(form).toBeTruthy()
     form?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }))
     await flush()
     await new Promise((r) => setTimeout(r, 80))
     expect(qaMock).toHaveBeenCalledTimes(1)
     expect(qaMock.mock.calls[0]?.[0]?.question).toBe('小兔子喜欢什么？')
-    const bubbles = mount.root.querySelectorAll('.asset-qa-bubble')
+    const bubbles = querySheetAll('.asset-qa-bubble')
     expect(bubbles).toHaveLength(2)
     expect(bubbles[0]?.classList.contains('is-user')).toBe(true)
     expect(bubbles[1]?.classList.contains('is-assistant')).toBe(true)
@@ -627,7 +636,7 @@ describe('AssetQaSheet — mounted voice flow', () => {
     })
     const mount = mountSheet()
     await flush()
-    const voiceBtn = mount.root.querySelector('.asset-qa-voice') as HTMLButtonElement | null
+    const voiceBtn = querySheet('.asset-qa-voice') as HTMLButtonElement | null
     voiceBtn?.click()
     await new Promise((r) => setTimeout(r, 20))
     expect(stopTrack).not.toHaveBeenCalled()
@@ -654,7 +663,7 @@ describe('AssetQaSheet — mounted voice flow', () => {
     const mount = mountSheet()
     await flush()
 
-    const voiceBtn = mount.root.querySelector('.asset-qa-voice') as HTMLButtonElement | null
+    const voiceBtn = querySheet('.asset-qa-voice') as HTMLButtonElement | null
     voiceBtn?.click()
     // The component is now awaiting getUserMedia. We unmount BEFORE resolving.
     await new Promise((r) => setTimeout(r, 5))
@@ -684,10 +693,10 @@ describe('AssetQaSheet — mounted voice flow', () => {
     const mount = mountSheet()
     await flush()
 
-    const voiceBtn = mount.root.querySelector('.asset-qa-voice') as HTMLButtonElement | null
+    const voiceBtn = querySheet('.asset-qa-voice') as HTMLButtonElement | null
     voiceBtn?.click()
     await new Promise((r) => setTimeout(r, 20))
-    const recordingBtn = mount.root.querySelector('.asset-qa-voice.is-live') as HTMLButtonElement | null
+    const recordingBtn = querySheet('.asset-qa-voice.is-live') as HTMLButtonElement | null
     expect(recordingBtn).toBeTruthy()
     recordingBtn?.click()
     // ASR is now in flight. Unmount BEFORE it resolves.
@@ -714,24 +723,24 @@ describe('AssetQaSheet — mounted voice flow', () => {
 
     const mount = mountSheet()
     await flush()
-    const textarea = mount.root.querySelector('.asset-qa-input') as HTMLTextAreaElement | null
+    const textarea = querySheet('.asset-qa-input') as HTMLTextAreaElement | null
     expect(textarea).toBeTruthy()
     // Set input first so canSend is normally true, then the recording gate is
     // the only thing that should disable it.
     textarea!.value = '问题'
     textarea!.dispatchEvent(new Event('input'))
     await flush()
-    const sendBefore = mount.root.querySelector('.asset-qa-send') as HTMLButtonElement | null
+    const sendBefore = querySheet('.asset-qa-send') as HTMLButtonElement | null
     expect(sendBefore?.disabled).toBe(false)
 
-    const voiceBtn = mount.root.querySelector('.asset-qa-voice') as HTMLButtonElement | null
+    const voiceBtn = querySheet('.asset-qa-voice') as HTMLButtonElement | null
     voiceBtn?.click()
     await new Promise((r) => setTimeout(r, 30))
-    const sendDuring = mount.root.querySelector('.asset-qa-send') as HTMLButtonElement | null
+    const sendDuring = querySheet('.asset-qa-send') as HTMLButtonElement | null
     expect(sendDuring?.disabled).toBe(true)
 
     // stop recording so we don't leak
-    const recordingBtn = mount.root.querySelector('.asset-qa-voice.is-live') as HTMLButtonElement | null
+    const recordingBtn = querySheet('.asset-qa-voice.is-live') as HTMLButtonElement | null
     recordingBtn?.click()
     await new Promise((r) => setTimeout(r, 100))
     expect(stopTrack).toHaveBeenCalled()
@@ -752,10 +761,10 @@ describe('AssetQaSheet — mounted voice flow', () => {
 
     const mount = mountSheet()
     await flush()
-    const voiceBtn = mount.root.querySelector('.asset-qa-voice') as HTMLButtonElement | null
+    const voiceBtn = querySheet('.asset-qa-voice') as HTMLButtonElement | null
     voiceBtn?.click()
     await new Promise((r) => setTimeout(r, 30))
-    const recordingBtn = mount.root.querySelector('.asset-qa-voice.is-live') as HTMLButtonElement | null
+    const recordingBtn = querySheet('.asset-qa-voice.is-live') as HTMLButtonElement | null
     recordingBtn?.click()
     await new Promise((r) => setTimeout(r, 100)) // wait for finishRecording + ASR call
     expect(asrMock).toHaveBeenCalledTimes(1)
@@ -763,9 +772,9 @@ describe('AssetQaSheet — mounted voice flow', () => {
     // While ASR is in flight (gate never resolves), isAsrBusy is true and the
     // send button must be disabled even if the input has text from a prior
     // session.
-    const sendDuringAsr = mount.root.querySelector('.asset-qa-send') as HTMLButtonElement | null
+    const sendDuringAsr = querySheet('.asset-qa-send') as HTMLButtonElement | null
     expect(sendDuringAsr?.disabled).toBe(true)
-    const ta = mount.root.querySelector('.asset-qa-input') as HTMLTextAreaElement | null
+    const ta = querySheet('.asset-qa-input') as HTMLTextAreaElement | null
     expect(ta?.disabled).toBe(true)
 
     asrGate.resolve({ ok: true, result: { transcript: '小兔子' } })
@@ -786,7 +795,7 @@ describe('AssetQaSheet — mounted voice flow', () => {
 
     const mount = mountSheet()
     await flush()
-    const voiceBtn = mount.root.querySelector('.asset-qa-voice') as HTMLButtonElement | null
+    const voiceBtn = querySheet('.asset-qa-voice') as HTMLButtonElement | null
     voiceBtn?.click()
     await new Promise((r) => setTimeout(r, 10))
     // Close (or unmount) before resolving. resetForClose bumps voiceGeneration,
@@ -813,10 +822,10 @@ describe('AssetQaSheet — mounted voice flow', () => {
 
     const mount = mountSheet()
     await flush()
-    const voiceBtn = mount.root.querySelector('.asset-qa-voice') as HTMLButtonElement | null
+    const voiceBtn = querySheet('.asset-qa-voice') as HTMLButtonElement | null
     voiceBtn?.click()
     await new Promise((r) => setTimeout(r, 30))
-    const recordingBtn = mount.root.querySelector('.asset-qa-voice.is-live') as HTMLButtonElement | null
+    const recordingBtn = querySheet('.asset-qa-voice.is-live') as HTMLButtonElement | null
     expect(recordingBtn).toBeTruthy()
     recordingBtn?.click() // stopRecording → schedules onstop on next tick
     // Immediately close BEFORE the async onstop fires. resetForClose bumps
@@ -846,7 +855,7 @@ describe('AssetQaSheet — mounted voice flow', () => {
 
     const mount = mountSheetReactive(sampleAsset)
     await flush()
-    const voiceBtn = mount.root.querySelector('.asset-qa-voice') as HTMLButtonElement | null
+    const voiceBtn = querySheet('.asset-qa-voice') as HTMLButtonElement | null
     voiceBtn?.click()
     await new Promise((r) => setTimeout(r, 10))
     expect(stopTrack).not.toHaveBeenCalled()
@@ -878,10 +887,10 @@ describe('AssetQaSheet — mounted voice flow', () => {
 
     const mount = mountSheetReactive(sampleAsset)
     await flush()
-    const voiceBtn = mount.root.querySelector('.asset-qa-voice') as HTMLButtonElement | null
+    const voiceBtn = querySheet('.asset-qa-voice') as HTMLButtonElement | null
     voiceBtn?.click()
     await new Promise((r) => setTimeout(r, 30))
-    const recordingBtn = mount.root.querySelector('.asset-qa-voice.is-live') as HTMLButtonElement | null
+    const recordingBtn = querySheet('.asset-qa-voice.is-live') as HTMLButtonElement | null
     recordingBtn?.click()
     await new Promise((r) => setTimeout(r, 100))
     expect(asrMock).toHaveBeenCalledTimes(1)
@@ -894,7 +903,7 @@ describe('AssetQaSheet — mounted voice flow', () => {
     await new Promise((r) => setTimeout(r, 50))
     // The leaked transcript must NEVER have been written into the new asset's
     // input. After the asset switch the input is empty.
-    const ta = mount.root.querySelector('.asset-qa-input') as HTMLTextAreaElement | null
+    const ta = querySheet('.asset-qa-input') as HTMLTextAreaElement | null
     expect(ta?.value).not.toMatch(/should-not-leak/)
     expect(ta?.value).toBe('')
     // No manual send happened, so no qaAsk either.
@@ -937,7 +946,7 @@ describe('AssetQaSheet — mounted voice flow', () => {
     await flush()
 
     // 1) Voice A starts; getUserMedia is pending (deferred).
-    const voiceBtn = mount.root.querySelector('.asset-qa-voice') as HTMLButtonElement | null
+    const voiceBtn = querySheet('.asset-qa-voice') as HTMLButtonElement | null
     voiceBtn?.click()
     await new Promise((r) => setTimeout(r, 10))
     expect(gates.length).toBe(1)
@@ -966,7 +975,7 @@ describe('AssetQaSheet — mounted voice flow', () => {
     gates[1]!.resolve(streamB)
     await new Promise((r) => setTimeout(r, 60))
     // B is now in recording state on the new asset.
-    const liveBtn = mount.root.querySelector('.asset-qa-voice.is-live') as HTMLButtonElement | null
+    const liveBtn = querySheet('.asset-qa-voice.is-live') as HTMLButtonElement | null
     expect(liveBtn).toBeTruthy()
     // B's own stream is still alive (not stopped by A's late path).
     expect(stopTrackB).not.toHaveBeenCalled()
@@ -999,7 +1008,7 @@ describe('AssetQaSheet — mounted voice flow', () => {
     await flush()
 
     // 1) Voice A starts; getUserMedia pending.
-    const voiceBtn = mount.root.querySelector('.asset-qa-voice') as HTMLButtonElement | null
+    const voiceBtn = querySheet('.asset-qa-voice') as HTMLButtonElement | null
     voiceBtn?.click()
     await new Promise((r) => setTimeout(r, 10))
     expect(gates.length).toBe(1)
@@ -1022,7 +1031,7 @@ describe('AssetQaSheet — mounted voice flow', () => {
     // No mic-denied hint on B (the hint element either doesn't exist or
     // is empty). This is the key proof: A's late reject did NOT call
     // controller.failRecording('denied').
-    const hintB = mount.root.querySelector('.asset-qa-mic-hint') as HTMLElement | null
+    const hintB = querySheet('.asset-qa-mic-hint') as HTMLElement | null
     expect(hintB?.textContent ?? '').toBe('')
     // No qaAsk / asrTranscribe from A's late path.
     expect(qaMock).not.toHaveBeenCalled()
@@ -1037,7 +1046,7 @@ describe('AssetQaSheet — mounted voice flow', () => {
     } as unknown as MediaStream
     gates[1]!.resolve(streamB)
     await new Promise((r) => setTimeout(r, 60))
-    const liveBtn = mount.root.querySelector('.asset-qa-voice.is-live') as HTMLButtonElement | null
+    const liveBtn = querySheet('.asset-qa-voice.is-live') as HTMLButtonElement | null
     expect(liveBtn).toBeTruthy()
     // Stop B and unmount.
     liveBtn?.click()
@@ -1063,7 +1072,7 @@ describe('AssetQaSheet — mounted voice flow', () => {
 
     const mount = mountSheet()
     await flush()
-    const voiceBtn = mount.root.querySelector('.asset-qa-voice') as HTMLButtonElement | null
+    const voiceBtn = querySheet('.asset-qa-voice') as HTMLButtonElement | null
     expect(voiceBtn).toBeTruthy()
     // First click — getUserMedia invoked, returns pending promise.
     voiceBtn?.click()
@@ -1122,7 +1131,7 @@ describe('AssetQaSheet — mounted voice flow', () => {
     // A) Click voice on asset A; getUserMedia is pending (deferred).
     const mountA = mountSheetReactive(sampleAsset)
     await flush()
-    const voiceA = mountA.root.querySelector('.asset-qa-voice') as HTMLButtonElement | null
+    const voiceA = querySheet('.asset-qa-voice') as HTMLButtonElement | null
     voiceA?.click()
     await new Promise((r) => setTimeout(r, 10))
     expect(getUserMediaCalls).toBe(1)
@@ -1143,7 +1152,7 @@ describe('AssetQaSheet — mounted voice flow', () => {
     expect(stopTrack).toHaveBeenCalled() // A's late stream is dropped
 
     // C) Click voice on the new asset B; getUserMedia is invoked again.
-    const voiceB = mountA.root.querySelector('.asset-qa-voice') as HTMLButtonElement | null
+    const voiceB = querySheet('.asset-qa-voice') as HTMLButtonElement | null
     voiceB?.click()
     await new Promise((r) => setTimeout(r, 10))
     expect(getUserMediaCalls).toBe(2)
@@ -1158,7 +1167,7 @@ describe('AssetQaSheet — mounted voice flow', () => {
     //    be invokable exactly once for the new flow.
     const mountC = mountSheet()
     await flush()
-    const voiceC = mountC.root.querySelector('.asset-qa-voice') as HTMLButtonElement | null
+    const voiceC = querySheet('.asset-qa-voice') as HTMLButtonElement | null
     expect(voiceC?.disabled).toBe(false)
     voiceC?.click()
     await new Promise((r) => setTimeout(r, 10))

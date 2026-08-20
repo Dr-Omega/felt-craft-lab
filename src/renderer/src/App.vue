@@ -1,18 +1,39 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
-import { APP_DISPLAY_NAME } from '@shared/constants/app'
-import { getAppView, openLibrary, openStatus, subscribeAppNav, type AppView } from './app-nav'
+import {
+  getAppView,
+  openEditorCanvas,
+  openLibrary,
+  openProjection,
+  subscribeAppNav,
+  type AppView
+} from './app-nav'
+import AppShell from './components/shell/AppShell.vue'
 import LibraryPage from './pages/LibraryPage.vue'
 import EditorPage from './pages/EditorPage.vue'
-import StatusPage from './pages/StatusPage.vue'
+import ProjectionPage from './pages/ProjectionPage.vue'
 
 const view = ref<AppView>(getAppView())
+const editorRef = ref<{ requestBack: () => void } | null>(null)
 
 function syncView(): void {
   view.value = getAppView()
 }
 
 let unsubscribe = subscribeAppNav(syncView)
+
+function handleNavigate(target: AppView): void {
+  if (target === view.value) return
+
+  if (view.value === 'editor' && target === 'library') {
+    editorRef.value?.requestBack()
+    return
+  }
+
+  if (target === 'library') openLibrary()
+  else if (target === 'editor') openEditorCanvas()
+  else openProjection()
+}
 
 onMounted(() => {
   syncView()
@@ -24,40 +45,27 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="shell">
-    <header class="topbar">
-      <div>
-        <p class="eyebrow">Material Library · UI Workflows</p>
-        <h1>{{ APP_DISPLAY_NAME }}</h1>
-      </div>
-      <nav class="nav">
-        <button type="button" :class="{ active: view === 'library' }" @click="openLibrary">素材库</button>
-        <button type="button" :class="{ active: view === 'status' }" @click="openStatus">运行状态</button>
-      </nav>
-    </header>
-
-    <main class="content">
-      <LibraryPage v-if="view === 'library'" />
-      <EditorPage v-else-if="view === 'editor'" />
-      <StatusPage v-else />
-    </main>
-  </div>
+  <AppShell :active-view="view" @navigate="handleNavigate">
+    <LibraryPage v-if="view === 'library'" />
+    <EditorPage v-if="view === 'editor'" ref="editorRef" />
+    <ProjectionPage v-if="view === 'projection'" />
+  </AppShell>
 </template>
 
 <style>
+@import './styles/text-box.css';
+@import './styles/hand-drawn-ui.css';
+
 :root {
   color-scheme: light;
-  --ink: #16302b;
-  --muted: #4d6460;
-  --paper: #eef4f2;
-  --panel: #ffffff;
-  --line: #c5d5d0;
-  --accent: #1f6f63;
+  --ink: #594738;
+  --muted: #8b7355;
+  --paper: #f5ecd8;
+  --panel: #f5ecd8;
+  --line: #d4a843;
+  --accent: #e8a572;
   --danger: #9b2c2c;
-  font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-  background:
-    radial-gradient(circle at 12% 8%, rgba(31, 111, 99, 0.16), transparent 42%),
-    linear-gradient(165deg, #e7f2ef 0%, var(--paper) 48%, #f7faf9 100%);
+  font-family: "ZCOOL KuaiLe", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
   color: var(--ink);
 }
 
@@ -68,14 +76,11 @@ onUnmounted(() => {
 body {
   margin: 0;
   min-height: 100vh;
+  overflow: hidden;
 }
 
 button {
   appearance: none;
-  border: 1px solid var(--line);
-  background: #fff;
-  color: var(--ink);
-  padding: 8px 12px;
   font: inherit;
   cursor: pointer;
 }
@@ -86,9 +91,7 @@ button:disabled {
 }
 
 button.primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
+  /* see hand-drawn-ui.css */
 }
 
 button.ghost,
@@ -103,52 +106,7 @@ button.linkish {
   text-align: left;
 }
 
-button.active {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-.shell {
-  max-width: 1180px;
-  margin: 0 auto;
-  padding: 28px 20px 48px;
-}
-
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  align-items: flex-end;
-  margin-bottom: 24px;
-}
-
-.topbar h1 {
-  margin: 4px 0 0;
-  font-size: clamp(1.6rem, 3vw, 2.2rem);
-}
-
-.eyebrow {
-  margin: 0;
-  color: var(--accent);
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  font-size: 0.75rem;
-}
-
-.nav {
-  display: flex;
-  gap: 8px;
-}
-
-.content {
-  min-height: 60vh;
-}
-
-@media (max-width: 720px) {
-  .topbar {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+button.ghost {
+  /* see hand-drawn-ui.css */
 }
 </style>

@@ -1,0 +1,155 @@
+{
+  "assets": [
+    {
+      "slug": "btn-primary",
+      "sourceName": "按钮-主.png",
+      "file": "btn-primary.png",
+      "width": 153,
+      "height": 68,
+      "fullBleed": false,
+      "borderSlice": 16
+    },
+    {
+      "slug": "btn-secondary",
+      "sourceName": "按钮-次.png",
+      "file": "btn-secondary.png",
+      "width": 153,
+      "height": 68,
+      "fullBleed": false,
+      "borderSlice": 16
+    },
+    {
+      "slug": "btn-close",
+      "sourceName": "按钮-关闭.png",
+      "file": "btn-close.png",
+      "width": 87,
+      "height": 79,
+      "fullBleed": false,
+      "borderSlice": 18
+    },
+    {
+      "slug": "btn-round-undo",
+      "sourceName": "按钮-圆-撤销.png",
+      "file": "btn-round-undo.png",
+      "width": 165,
+      "height": 154,
+      "fullBleed": false,
+      "borderSlice": 18
+    },
+    {
+      "slug": "btn-round-redo",
+      "sourceName": "按钮-圆-重做.png",
+      "file": "btn-round-redo.png",
+      "width": 165,
+      "height": 154,
+      "fullBleed": false,
+      "borderSlice": 18
+    },
+    {
+      "slug": "btn-round-material",
+      "sourceName": "按钮-圆-素材盒.png",
+      "file": "btn-round-material.png",
+      "width": 165,
+      "height": 154,
+      "fullBleed": false,
+      "borderSlice": 18
+    },
+    {
+      "slug": "btn-back",
+      "sourceName": "按钮-返回.png",
+      "file": "btn-back.png",
+      "width": 184,
+      "height": 98,
+      "fullBleed": false,
+      "borderSlice": 23
+    },
+    {
+      "slug": "text-box",
+      "sourceName": "文本框.png",
+      "file": "text-box.png",
+      "width": 408,
+      "height": 613,
+      "fullBleed": false,
+      "borderSlice": 48
+    },
+    {
+      "slug": "text-box-small",
+      "sourceName": "文本框-小.png",
+      "file": "text-box-small.png",
+      "width": 385,
+      "height": 146,
+      "fullBleed": false,
+      "borderSlice": 40
+    },
+    {
+      "slug": "material-sheet-bg",
+      "sourceName": "素材盒底.png",
+      "file": "material-sheet-bg.png",
+      "width": 1920,
+      "height": 1080,
+      "fullBleed": true
+    },
+    {
+      "slug": "background-trigger",
+      "sourceName": "背景.png",
+      "file": "background-trigger.png",
+      "width": 145,
+      "height": 235,
+      "fullBleed": false,
+      "borderSlice": 17
+    },
+    {
+      "slug": "input-field",
+      "sourceName": "输入框.png",
+      "file": "input-field.png",
+      "width": 263,
+      "height": 64,
+      "fullBleed": false,
+      "borderSlice": 15
+    },
+    {
+      "slug": "qa-panel-bg",
+      "sourceName": "QA面板底.png",
+      "file": "qa-panel-bg.png",
+      "width": 581,
+      "height": 744,
+      "fullBleed": true
+    },
+    {
+      "slug": "qa-input-field",
+      "sourceName": "QA输入框.png",
+      "file": "qa-input-field.png",
+      "width": 539,
+      "height": 257,
+      "fullBleed": false,
+      "borderSlice": 30
+    },
+    {
+      "slug": "qa-bubble-question",
+      "sourceName": "聊天气泡-问.png",
+      "file": "qa-bubble-question.png",
+      "width": 268,
+      "height": 68,
+      "fullBleed": false,
+      "borderSlice": 16
+    },
+    {
+      "slug": "btn-send",
+      "sourceName": "按钮-发送.png",
+      "file": "btn-send.png",
+      "width": 125,
+      "height": 56,
+      "fullBleed": false,
+      "borderSlice": 13
+    },
+    {
+      "slug": "btn-voice",
+      "sourceName": "按钮-语音.png",
+      "file": "btn-voice.png",
+      "width": 209,
+      "height": 57,
+      "fullBleed": false,
+      "borderSlice": 13
+    }
+  ]
+}

@@ -79,8 +79,14 @@ describe('V4.6 Phase 1 Library 我的创作 surface', () => {
   })
 
   it('routes the Library scroll container inside the page so Editor overflow cannot leak', () => {
-    expect(library).toContain('.library-scroll')
+    expect(library).toContain('.book-list')
+    expect(library).toContain('.book-asset-grid')
     expect(library).toContain('overflow-y: auto')
+    const psdAssets = readFileSync(resolve('src/renderer/src/ui/psd160-assets.ts'), 'utf8')
+    expect(psdAssets).toContain('canvas-bounds')
+    expect(library).toContain('PsdFrameStage')
+    expect(library).toContain('frame="book"')
+    expect(library).toContain('#footer')
   })
 
   it('keeps delete confirmations explicit and never deletes immediately on a single click', () => {

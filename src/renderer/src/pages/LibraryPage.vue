@@ -20,7 +20,11 @@ import {
   ProjectStore
 } from '../persistence'
 import ProjectPreviewModal from '../components/library/ProjectPreviewModal.vue'
+import PsdFrameStage from '../components/shell/PsdFrameStage.vue'
 import { friendlyRelativeTime } from '../util/friendly-time'
+import { friendlyUserError, withDbRetry } from '../util/friendly-user-error'
+
+const bookSpread = ref(0)
 
 const drafts = ref<DraftRecord[]>([])
 const projects = ref<ProjectRecord[]>([])
@@ -44,13 +48,37 @@ const visibleAssets = computed(() => {
   return CATALOG_ASSETS.filter((asset) => asset.themeId === themeFilter.value)
 })
 
+const leftAssets = computed(() => {
+  const half = Math.ceil(visibleAssets.value.length / 2)
+  return visibleAssets.value.slice(0, half)
+})
+
+const rightAssets = computed(() => {
+  const half = Math.ceil(visibleAssets.value.length / 2)
+  return visibleAssets.value.slice(half)
+})
+
+function prevBookSpread(): void {
+  bookSpread.value = 0
+}
+
+function nextBookSpread(): void {
+  bookSpread.value = 1
+}
+
 async function refreshLists(): Promise<void> {
-  const db = getFeltCraftDatabase()
-  drafts.value = await new DraftStore(db).list()
-  projects.value = await new ProjectStore(db).list()
-  favorites.value = (await new FavoriteStore(db).listForUser(DEFAULT_USER_ID)).map((row) => row.assetId)
-  const accessRows = await new AssetAccessStore(db).listForUser(DEFAULT_USER_ID)
-  unlockedIds.value = new Set(accessRows.filter((row) => isAssetUnlocked(row)).map((row) => row.assetId))
+  try {
+    await withDbRetry(async () => {
+      const db = getFeltCraftDatabase()
+      drafts.value = await new DraftStore(db).list()
+      projects.value = await new ProjectStore(db).list()
+      favorites.value = (await new FavoriteStore(db).listForUser(DEFAULT_USER_ID)).map((row) => row.assetId)
+      const accessRows = await new AssetAccessStore(db).listForUser(DEFAULT_USER_ID)
+      unlockedIds.value = new Set(accessRows.filter((row) => isAssetUnlocked(row)).map((row) => row.assetId))
+    })
+  } catch (error) {
+    message.value = friendlyUserError(error)
+  }
 }
 
 async function startNewWork(): Promise<void> {
@@ -68,7 +96,7 @@ async function startNewWork(): Promise<void> {
       scene: prepared.scene
     })
   } catch (error) {
-    message.value = error instanceof Error ? error.message : String(error)
+    message.value = friendlyUserError(error)
   } finally {
     busy.value = false
   }
@@ -114,7 +142,7 @@ async function confirmRemoveNow(): Promise<void> {
     confirmDelete.value = null
     await refreshLists()
   } catch (error) {
-    message.value = error instanceof Error ? error.message : String(error)
+    message.value = friendlyUserError(error)
   } finally {
     busy.value = false
   }
@@ -137,11 +165,11 @@ function openProjectFromPreview(project: ProjectRecord): void {
 }
 
 function draftLabel(draft: DraftRecord): string {
-  return draft.scene.workName?.trim() || '未命名草稿'
+  return draft.scene.workName?.trim() || '我的新作品'
 }
 
 function projectLabel(project: ProjectRecord): string {
-  return project.projectName?.trim() || '未命名作品'
+  return project.projectName?.trim() || '我的作品'
 }
 
 async function toggleFavorite(assetId: string): Promise<void> {
@@ -169,7 +197,7 @@ async function unlockForTest(assetId: string): Promise<void> {
     message.value = `已测试解锁：${assetId}`
     await refreshLists()
   } catch (error) {
-    message.value = error instanceof Error ? error.message : String(error)
+    message.value = friendlyUserError(error)
   } finally {
     busy.value = false
   }
@@ -179,134 +207,148 @@ onMounted(() => {
   void refreshLists()
 })
 
-const stopRefresh = window.setInterval(() => {
-  void refreshLists()
-}, 4000)
-
 onUnmounted(() => {
-  window.clearInterval(stopRefresh)
+  /* no background polling — reduces UI jank */
 })
 </script>
 
 <template>
   <section class="library">
-    <div class="library-scroll">
-      <header class="section-head">
-        <div>
-          <h2>我的创作</h2>
-          <p class="muted">继续做以前的草稿，看看自己已经完成的作品。</p>
-        </div>
-      </header>
-
-      <section class="creation-cluster" aria-label="我的创作">
-        <div class="creation-cluster-toolbar">
-          <label class="creation-cluster-name">
-            新作品名
-            <input v-model="newWorkName" type="text" maxlength="40" />
-          </label>
-          <label class="creation-cluster-theme">
-            主题
-            <select v-model="themeFilter">
-              <option value="all">全部</option>
-              <option v-for="theme in themes" :key="theme" :value="theme">{{ theme }}</option>
-            </select>
-          </label>
-          <button type="button" class="primary new-work-button" :disabled="busy" @click="startNewWork">
-            新建作品
-          </button>
-        </div>
-
-        <div class="creation-row">
-          <section class="creation-card-list" aria-label="继续制作">
-            <header class="creation-card-list-head">
-              <h3>继续制作</h3>
-              <span class="creation-card-list-count">{{ drafts.length }} 件</span>
+    <PsdFrameStage frame="book" :clip-overflow="false">
+      <div class="book-spread">
+        <template v-if="bookSpread === 0">
+          <div class="book-page book-page--left">
+            <header class="book-page-head">
+              <h2>继续制作</h2>
+              <span class="book-page-count">{{ drafts.length }} 件</span>
             </header>
-            <p v-if="drafts.length === 0" class="creation-empty">还没有草稿，新建一件作品开始吧。</p>
-            <ul v-else class="creation-cards">
-              <li v-for="draft in drafts" :key="draft.draftId" class="creation-card">
-                <div class="creation-card-body">
-                  <h4 class="creation-card-title">{{ draftLabel(draft) }}</h4>
-                  <p class="creation-card-meta">{{ friendlyRelativeTime(draft.updatedAt) }} · 草稿</p>
+
+            <div class="book-toolbar">
+              <label class="book-field">
+                新作品名
+                <input v-model="newWorkName" class="text-box-field" type="text" maxlength="40" />
+              </label>
+              <label class="book-field">
+                主题
+                <select v-model="themeFilter" class="text-box-field">
+                  <option value="all">全部</option>
+                  <option v-for="theme in themes" :key="theme" :value="theme">{{ theme }}</option>
+                </select>
+              </label>
+              <button type="button" class="primary" :disabled="busy" @click="startNewWork">新建作品</button>
+            </div>
+
+            <p v-if="drafts.length === 0" class="book-empty">还没有草稿，新建一件作品开始吧。</p>
+            <ul v-else class="book-list">
+              <li v-for="draft in drafts" :key="draft.draftId" class="book-item text-box-surface">
+                <div>
+                  <h4>{{ draftLabel(draft) }}</h4>
+                  <p class="muted">{{ friendlyRelativeTime(draft.updatedAt) }} · 草稿</p>
                 </div>
-                <div class="creation-card-actions">
-                  <button type="button" class="primary" :disabled="busy" @click="openDraft(draft)">继续制作</button>
+                <div class="book-item-actions">
+                  <button type="button" class="primary" :disabled="busy" @click="openDraft(draft)">继续</button>
                   <button type="button" class="ghost" :disabled="busy" @click="askRemoveDraft(draft)">删除</button>
                 </div>
               </li>
             </ul>
-          </section>
+          </div>
 
-          <section class="creation-card-list" aria-label="我的作品">
-            <header class="creation-card-list-head">
-              <h3>我的作品</h3>
-              <span class="creation-card-list-count">{{ projects.length }} 件</span>
+          <div class="book-page book-page--right">
+            <header class="book-page-head">
+              <h2>我的作品</h2>
+              <span class="book-page-count">{{ projects.length }} 件</span>
             </header>
-            <p v-if="projects.length === 0" class="creation-empty">还没有作品，完成第一件吧。</p>
-            <ul v-else class="creation-cards creation-cards-projects">
-              <li v-for="project in projects" :key="project.projectId" class="creation-card creation-card-project">
+
+            <p v-if="projects.length === 0" class="book-empty">还没有作品，完成第一件吧。</p>
+            <ul v-else class="book-list">
+              <li v-for="project in projects" :key="project.projectId" class="book-item book-item-project text-box-surface">
                 <button
                   v-if="project.previewUrl"
                   type="button"
-                  class="creation-card-thumb"
+                  class="book-item-thumb"
                   :aria-label="`预览 ${projectLabel(project)}`"
                   @click="showProjectPreview(project)"
                 >
                   <img :src="project.previewUrl" :alt="projectLabel(project)" />
                 </button>
-                <div v-else class="creation-card-thumb creation-card-thumb-empty" aria-hidden="true">—</div>
-                <div class="creation-card-body">
-                  <h4 class="creation-card-title">{{ projectLabel(project) }}</h4>
-                  <p class="creation-card-meta">{{ friendlyRelativeTime(project.updatedAt) }} · 作品</p>
-                  <div class="creation-card-actions">
-                    <button type="button" class="primary" :disabled="busy" @click="continueProject(project)">打开作品</button>
+                <div v-else class="book-item-thumb book-item-thumb-empty" aria-hidden="true">—</div>
+                <div class="book-item-body">
+                  <h4>{{ projectLabel(project) }}</h4>
+                  <p class="muted">{{ friendlyRelativeTime(project.updatedAt) }} · 作品</p>
+                  <div class="book-item-actions">
+                    <button type="button" class="primary" :disabled="busy" @click="continueProject(project)">打开</button>
                     <button type="button" class="ghost" :disabled="busy" @click="showProjectPreview(project)">预览</button>
                     <button type="button" class="ghost" :disabled="busy" @click="askRemoveProject(project)">删除</button>
                   </div>
                 </div>
               </li>
             </ul>
-          </section>
-        </div>
-      </section>
-
-      <p v-if="message" class="error">{{ message }}</p>
-
-      <section class="material-library" aria-label="素材库">
-        <header class="section-head section-head-secondary">
-          <div>
-            <h2>素材库</h2>
-            <p class="muted">挑一个喜欢的素材，等开始做作品时再放进画布。</p>
           </div>
-        </header>
+        </template>
 
-        <div class="asset-grid">
-          <article v-for="asset in visibleAssets" :key="asset.assetId" class="asset-card">
-            <img :src="asset.thumbnailUrl || asset.imageUrl" :alt="asset.nameZh" width="96" height="96" />
-            <div>
-              <h3>{{ asset.nameZh }}</h3>
-              <p>
-                {{ unlockedIds.has(asset.assetId) ? '已解锁' : '锁定' }}
-              </p>
-              <div class="actions">
-                <button type="button" class="ghost" @click="toggleFavorite(asset.assetId)">
-                  {{ favorites.includes(asset.assetId) ? '取消收藏' : '收藏' }}
-                </button>
-                <button
-                  v-if="allowTestUnlock && !unlockedIds.has(asset.assetId)"
-                  type="button"
-                  class="ghost"
-                  :disabled="busy"
-                  @click="unlockForTest(asset.assetId)"
-                >
-                  测试解锁
-                </button>
-              </div>
+        <template v-else>
+          <div class="book-page book-page--left">
+            <header class="book-page-head">
+              <h2>素材库</h2>
+              <p class="muted">左页</p>
+            </header>
+            <div class="book-asset-grid">
+              <article v-for="asset in leftAssets" :key="asset.assetId" class="asset-card">
+                <img :src="asset.thumbnailUrl || asset.imageUrl" :alt="asset.nameZh" width="72" height="72" />
+                <div>
+                  <h3>{{ asset.nameZh }}</h3>
+                  <p>{{ unlockedIds.has(asset.assetId) ? '已解锁' : '锁定' }}</p>
+                  <div class="actions">
+                    <button type="button" class="ghost" @click="toggleFavorite(asset.assetId)">
+                      {{ favorites.includes(asset.assetId) ? '取消收藏' : '收藏' }}
+                    </button>
+                  </div>
+                </div>
+              </article>
             </div>
-          </article>
-        </div>
-      </section>
-    </div>
+          </div>
+
+          <div class="book-page book-page--right">
+            <header class="book-page-head">
+              <h2>素材库</h2>
+              <p class="muted">右页</p>
+            </header>
+            <div class="book-asset-grid">
+              <article v-for="asset in rightAssets" :key="asset.assetId" class="asset-card">
+                <img :src="asset.thumbnailUrl || asset.imageUrl" :alt="asset.nameZh" width="72" height="72" />
+                <div>
+                  <h3>{{ asset.nameZh }}</h3>
+                  <p>{{ unlockedIds.has(asset.assetId) ? '已解锁' : '锁定' }}</p>
+                  <div class="actions">
+                    <button type="button" class="ghost" @click="toggleFavorite(asset.assetId)">
+                      {{ favorites.includes(asset.assetId) ? '取消收藏' : '收藏' }}
+                    </button>
+                    <button
+                      v-if="allowTestUnlock && !unlockedIds.has(asset.assetId)"
+                      type="button"
+                      class="ghost"
+                      :disabled="busy"
+                      @click="unlockForTest(asset.assetId)"
+                    >
+                      测试解锁
+                    </button>
+                  </div>
+                </div>
+              </article>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <template #footer>
+        <nav class="book-pager" aria-label="书本翻页">
+          <button type="button" class="ghost" :disabled="bookSpread === 0" @click="prevBookSpread">上一页</button>
+          <span class="book-pager-indicator">{{ bookSpread === 0 ? '我的创作' : '素材库' }}</span>
+          <button type="button" class="ghost" :disabled="bookSpread === 1" @click="nextBookSpread">下一页</button>
+        </nav>
+        <p v-if="message" class="book-message error">{{ message }}</p>
+      </template>
+    </PsdFrameStage>
 
     <div v-if="confirmDelete" class="confirm-backdrop" role="presentation" @click.self="cancelRemove">
       <div class="confirm-dialog" role="dialog" aria-modal="true" :aria-label="confirmDelete.kind === 'draft' ? '删除草稿' : '删除作品'">
@@ -335,230 +377,215 @@ onUnmounted(() => {
 
 <style scoped>
 .library {
-  display: block;
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
 }
 
-.library-scroll {
+.library :deep(.psd-frame-stage__content),
+.library :deep(.psd-frame-stage__footer),
+.library .confirm-backdrop,
+.library :deep(.project-preview-backdrop) {
+  pointer-events: auto;
+}
+
+.library :deep(.psd-frame-stage__content) {
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+}
+
+.library :deep(.psd-frame-stage__footer) {
+  overflow: visible;
+}
+
+.book-spread {
+  flex: 1 1 auto;
+  min-height: 0;
   display: grid;
-  gap: 32px;
-  max-height: calc(100vh - 200px);
-  overflow-y: auto;
-  padding: 4px 8px 32px;
-  scrollbar-gutter: stable;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--ui-library-page-gap, 40px);
+  padding: var(--ui-library-page-inset, 0);
+  box-sizing: border-box;
+  overflow: visible;
 }
 
-.section-head {
+.book-page {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  min-height: 0;
+  overflow: visible;
+}
+
+.book-page--left {
+  transform: translate(
+    var(--ui-library-page-left-offset-x, 0),
+    var(--ui-library-page-left-offset-y, 0)
+  );
+}
+
+.book-page--right {
+  transform: translate(
+    var(--ui-library-page-right-offset-x, 0),
+    var(--ui-library-page-right-offset-y, 0)
+  );
+}
+
+.book-page-head {
   display: flex;
   justify-content: space-between;
-  gap: 16px;
-  align-items: flex-start;
+  align-items: baseline;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
-.section-head h2 {
-  margin: 0 0 6px;
-  font-size: 1.6rem;
+.book-page-head h2 {
+  margin: 0;
+  font-size: clamp(1rem, 1.6vw, 1.35rem);
 }
 
-.section-head p,
+.book-page-count {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
 .muted {
   margin: 0;
   color: var(--muted);
   line-height: 1.5;
 }
 
-.section-head-secondary h2 {
-  font-size: 1.3rem;
-}
-
-.creation-cluster {
+.book-toolbar {
   display: grid;
-  gap: 18px;
-  padding: 20px;
-  background: var(--panel, #fff);
-  border: 1px solid var(--line, #c5d5d0);
-  border-radius: 24px;
-  box-shadow: 0 2px 12px rgba(22, 48, 43, 0.06);
+  grid-template-columns: 1fr;
+  gap: 8px;
+  align-items: stretch;
+  flex-shrink: 0;
 }
 
-.creation-cluster-toolbar {
-  display: grid;
-  grid-template-columns: minmax(180px, 1fr) minmax(160px, 1fr) auto;
-  gap: 12px;
-  align-items: end;
+.book-toolbar .primary {
+  width: 100%;
+  justify-content: center;
 }
 
-.creation-cluster-name,
-.creation-cluster-theme {
+.book-field {
   display: grid;
   gap: 4px;
-  color: var(--muted);
-  font-size: 0.85rem;
-}
-
-.creation-cluster-name input,
-.creation-cluster-theme select {
-  padding: 8px 10px;
-  border: 1px solid var(--line, #c5d5d0);
-  background: #fff;
-  border-radius: 12px;
-  font: inherit;
-}
-
-.new-work-button {
-  height: 40px;
-  padding: 0 18px;
-  border-radius: 12px;
-}
-
-.creation-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
-}
-
-.creation-card-list {
-  display: grid;
-  gap: 12px;
-  padding: 16px;
-  background: var(--paper, #eef4f2);
-  border: 1px solid var(--line, #c5d5d0);
-  border-radius: 20px;
-  min-height: 180px;
-}
-
-.creation-card-list-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 8px;
-}
-
-.creation-card-list-head h3 {
-  margin: 0;
-  font-size: 1.05rem;
-}
-
-.creation-card-list-count {
   font-size: 0.85rem;
   color: var(--muted);
 }
 
-.creation-empty {
-  margin: auto;
-  color: var(--muted);
-  font-size: 0.95rem;
-  text-align: center;
-  padding: 24px 8px;
+.book-field .text-box-field {
+  width: 100%;
 }
 
-.creation-cards {
+.book-list,
+.book-asset-grid {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 10px;
+  gap: 8px;
+  overflow-y: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-.creation-card {
+.book-list::-webkit-scrollbar,
+.book-asset-grid::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.book-item {
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 12px;
+  gap: 8px;
   align-items: center;
-  padding: 12px 14px;
-  background: #fff;
-  border: 1px solid var(--line, #c5d5d0);
-  border-radius: 16px;
+  padding: 8px 10px;
 }
 
-.creation-card-title {
+.book-item-project {
+  grid-template-columns: 56px 1fr;
+  align-items: stretch;
+}
+
+.book-item h4 {
   margin: 0 0 2px;
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 0.95rem;
 }
 
-.creation-card-meta {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.85rem;
-}
-
-.creation-card-actions {
+.book-item-actions {
   display: flex;
-  gap: 6px;
+  gap: 4px;
   flex-wrap: wrap;
   justify-content: flex-end;
 }
 
-.creation-card-actions button {
-  padding: 6px 12px;
+.book-item-project .book-item-actions {
+  justify-content: flex-start;
+}
+
+.book-item-actions button {
+  padding: 6px 10px;
   border-radius: 10px;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
 }
 
-.creation-cards-projects .creation-card {
-  grid-template-columns: 72px 1fr;
-  align-items: stretch;
-}
-
-.creation-card-thumb {
-  width: 72px;
-  height: 72px;
-  border: 1px solid var(--line, #c5d5d0);
-  background: #fff;
-  border-radius: 14px;
+.book-item-thumb {
+  width: 56px;
+  height: 56px;
   padding: 0;
-  cursor: pointer;
+  border: 3px solid var(--text-box-border, #d4a843);
+  border-radius: 12px;
   overflow: hidden;
+  background: var(--text-box-fill, #f5ecd8);
+  cursor: pointer;
   appearance: none;
 }
 
-.creation-card-thumb img {
+.book-item-thumb img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
 }
 
-.creation-card-thumb-empty {
+.book-item-thumb-empty {
   display: grid;
   place-items: center;
   color: var(--muted);
-  font-size: 1.4rem;
-  background: var(--paper, #eef4f2);
   cursor: default;
 }
 
-.creation-card-project .creation-card-body {
+.book-item-body {
   display: grid;
-  gap: 6px;
+  gap: 4px;
   align-content: start;
 }
 
-.creation-card-project .creation-card-actions {
-  justify-content: flex-start;
-}
-
-.material-library {
-  display: grid;
-  gap: 16px;
-}
-
-.asset-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 16px;
+.book-empty {
+  margin: auto;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+  padding: 16px 8px;
 }
 
 .asset-card {
   display: flex;
-  gap: 14px;
-  padding: 14px;
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 16px;
+  gap: 12px;
+  padding: 10px 12px;
 }
 
 .asset-card img {
+  flex-shrink: 0;
   object-fit: contain;
   background: #fff;
   border: 1px solid var(--line);
@@ -567,11 +594,11 @@ onUnmounted(() => {
 
 .asset-card h3 {
   margin: 0 0 4px;
-  font-size: 1rem;
+  font-size: 0.95rem;
 }
 
 .asset-card p {
-  margin: 0 0 10px;
+  margin: 0 0 8px;
   color: var(--muted);
   font-size: 0.85rem;
 }
@@ -579,11 +606,35 @@ onUnmounted(() => {
 .actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
+}
+
+.book-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-shrink: 0;
+  margin-top: var(--ui-library-pager-offset-y, 0);
+}
+
+.book-pager button {
+  padding: 4px 10px;
+  font-size: 0.8rem;
+}
+
+.book-pager-indicator {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.book-message {
+  margin: 0;
+  text-align: center;
+  flex-shrink: 0;
 }
 
 .error {
-  margin: 0;
   color: var(--danger, #9b2c2c);
 }
 
@@ -597,14 +648,10 @@ onUnmounted(() => {
 }
 
 .confirm-dialog {
-  background: #fff;
-  border: 1px solid var(--line, #c5d5d0);
-  border-radius: 20px;
-  padding: 24px;
+  padding: 24px 20px 20px;
   width: min(90vw, 420px);
   display: grid;
   gap: 12px;
-  box-shadow: 0 12px 32px rgba(89, 71, 56, 0.22);
 }
 
 .confirm-dialog h3 {
@@ -630,10 +677,7 @@ button.danger:disabled {
 }
 
 @media (max-width: 900px) {
-  .creation-row {
-    grid-template-columns: 1fr;
-  }
-  .creation-cluster-toolbar {
+  .book-spread {
     grid-template-columns: 1fr;
   }
 }

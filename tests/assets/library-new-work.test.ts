@@ -20,7 +20,7 @@ describe('Library new work theme selection (round 8: all is a formal theme)', ()
     const prepared = prepareNewWorkScene('元宵作品', 'lantern_festival')
 
     expect(prepared.scene?.themeId).toBe('lantern_festival')
-    expect(prepared.scene?.canvas).toMatchObject({ width: 960, height: 960 })
+    expect(prepared.scene?.canvas).toMatchObject({ width: 902, height: 516 })
     expect(prepared.message).toBeUndefined()
   })
 

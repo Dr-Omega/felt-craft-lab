@@ -100,10 +100,10 @@ watch(() => props.open, (open) => {
   transform: translate(-50%, -50%);
   width: min(92vw, 720px);
   max-height: min(86vh, 720px);
-  background: var(--panel, #fff);
-  border: 1px solid var(--line, #c5d5d0);
-  border-radius: 24px;
-  box-shadow: 0 16px 48px rgba(89, 71, 56, 0.28);
+  background: var(--text-box-fill, #f5ecd8);
+  border: 3px solid var(--text-box-border, #d4a843);
+  border-radius: var(--text-box-radius, 18px);
+  box-shadow: var(--text-box-shadow, 0 3px 10px rgba(92, 64, 48, 0.12));
   display: grid;
   grid-template-rows: auto 1fr auto;
   z-index: 61;

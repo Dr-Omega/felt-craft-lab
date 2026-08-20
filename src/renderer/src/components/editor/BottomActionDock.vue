@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { handDrawnAssets } from '../../ui/hand-drawn-assets'
+
 defineProps<{
   busy?: boolean
   sheetOpen?: boolean
@@ -17,17 +19,17 @@ const emit = defineEmits<{
 <template>
   <nav class="bottom-action-dock" aria-label="画布工具">
     <button
-      class="dock-tool"
+      class="hand-icon-btn hand-icon-btn--undo"
       type="button"
       aria-label="撤销"
       title="撤销"
       :disabled="busy || canEdit === false || canUndo === false"
       @click="emit('undo')"
     >
-      <span aria-hidden="true">↶</span>
+      <img :src="handDrawnAssets.btnRoundUndo" alt="" />
     </button>
     <button
-      class="dock-material"
+      class="hand-icon-btn hand-icon-btn--material"
       type="button"
       aria-label="打开素材盒"
       title="素材盒"
@@ -35,17 +37,30 @@ const emit = defineEmits<{
       :disabled="busy || canEdit === false"
       @click="emit('toggleSheet')"
     >
-      <span class="material-box-icon" aria-hidden="true">✿</span>
+      <img :src="handDrawnAssets.btnRoundMaterial" alt="" />
     </button>
     <button
-      class="dock-tool"
+      class="hand-icon-btn hand-icon-btn--redo"
       type="button"
       aria-label="重做"
       title="重做"
       :disabled="busy || canEdit === false || canRedo === false"
       @click="emit('redo')"
     >
-      <span aria-hidden="true">↷</span>
+      <img :src="handDrawnAssets.btnRoundRedo" alt="" />
     </button>
   </nav>
 </template>
+
+<style scoped>
+.bottom-action-dock {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.hand-icon-btn.is-open {
+  filter: drop-shadow(0 0 8px rgba(232, 165, 114, 0.55));
+}
+</style>

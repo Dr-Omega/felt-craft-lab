@@ -128,6 +128,7 @@ describe('editor snapshot-scoped selection', () => {
     const saved: AssetAccessState[] = []
     await seedAcceptanceUnlockedAccess(
       {
+        listForUser: async () => [],
         save: async (row: AssetAccessState) => {
           saved.push(row)
           return row

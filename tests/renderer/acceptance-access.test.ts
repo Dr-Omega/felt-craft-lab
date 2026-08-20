@@ -41,6 +41,7 @@ describe('acceptance unlock-all-assets mode', () => {
     const assets = [asset('background-1', 'background'), asset('sticker-1', 'sticker')]
     const saved: AssetAccessState[] = []
     const store = {
+      listForUser: async () => [],
       save: async (raw: AssetAccessState): Promise<AssetAccessState> => {
         saved.push(raw)
         return raw
@@ -72,9 +73,34 @@ describe('acceptance unlock-all-assets mode', () => {
     }
   })
 
+  it('does not rewrite access rows that are already unlocked', async () => {
+    const assets = [asset('background-1', 'background')]
+    const saved: AssetAccessState[] = []
+    const store = {
+      listForUser: async () => [
+        {
+          userId: 'user_demo_001',
+          assetId: 'background-1',
+          unlocked: true,
+          updatedAt: new Date().toISOString()
+        }
+      ],
+      save: async (raw: AssetAccessState): Promise<AssetAccessState> => {
+        saved.push(raw)
+        return raw
+      }
+    }
+
+    const seeded = await seedAcceptanceUnlockedAccess(store, assets, true)
+
+    expect(seeded).toHaveLength(0)
+    expect(saved).toHaveLength(0)
+  })
+
   it('does not write access when the flag is disabled, so absent rows stay locked', async () => {
     const saved: AssetAccessState[] = []
     const store = {
+      listForUser: async () => [],
       save: async (raw: AssetAccessState): Promise<AssetAccessState> => {
         saved.push(raw)
         return raw

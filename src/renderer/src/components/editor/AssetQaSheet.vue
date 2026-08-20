@@ -30,6 +30,7 @@ import {
   AssetQaController,
   type AssetQaSnapshot
 } from './asset-qa.controller'
+import { handDrawnAssets } from '../../ui/hand-drawn-assets'
 
 const props = defineProps<{
   asset: AssetRecord | null
@@ -334,11 +335,6 @@ function toggleRecording(): void {
   else void startRecording()
 }
 
-const voiceButtonLabel = computed(() => {
-  if (isRecording.value) return '停止'
-  if (isMicStarting.value) return '等一下'
-  return '说一说'
-})
 const voiceButtonAria = computed(() => {
   if (isRecording.value) return '停止录音'
   if (isMicStarting.value) return '等一下'
@@ -378,20 +374,21 @@ const inputPlaceholder = computed(() => {
 </script>
 
 <template>
-  <button
-    v-if="open"
-    class="asset-qa-backdrop"
-    type="button"
-    aria-label="关闭问问它"
-    @click="onClose"
-  ></button>
-  <aside
-    v-if="open"
-    class="asset-qa-sheet"
-    :class="{ 'is-open': open }"
-    role="complementary"
-    aria-label="问问它"
-  >
+  <Teleport to="body">
+    <button
+      v-if="open"
+      class="asset-qa-backdrop"
+      type="button"
+      aria-label="关闭问问它"
+      @click="onClose"
+    ></button>
+    <aside
+      v-if="open"
+      class="asset-qa-sheet"
+      :class="{ 'is-open': open }"
+      role="complementary"
+      aria-label="问问它"
+    >
     <header class="asset-qa-header">
       <div class="asset-qa-avatar" aria-hidden="true">
         <img v-if="asset" :src="asset.thumbnailUrl || asset.imageUrl" :alt="''" />
@@ -402,11 +399,13 @@ const inputPlaceholder = computed(() => {
         <h2 class="asset-qa-name">{{ asset?.nameZh ?? '素材' }}</h2>
       </div>
       <button
-        class="asset-qa-close"
+        class="hand-icon-btn hand-icon-btn--close asset-qa-close"
         type="button"
         aria-label="关闭问问它"
         @click="onClose"
-      >×</button>
+      >
+        <img :src="handDrawnAssets.btnClose" alt="" />
+      </button>
     </header>
 
     <p v-if="asset?.introZh" class="asset-qa-intro">{{ asset.introZh }}</p>
@@ -429,7 +428,7 @@ const inputPlaceholder = computed(() => {
           v-for="(message, index) in snapshot.history"
           :key="index"
           class="asset-qa-bubble"
-          :class="`is-${message.role}`"
+          :class="message.role === 'user' ? 'qa-bubble-question is-user' : `is-${message.role}`"
         >
           <span class="asset-qa-bubble-text">{{ message.content }}</span>
         </li>
@@ -451,7 +450,7 @@ const inputPlaceholder = computed(() => {
     >
       <textarea
         :value="snapshot.input"
-        class="asset-qa-input"
+        class="asset-qa-input qa-input-field"
         rows="2"
         :maxlength="ASSET_QA_MAX_QUESTION"
         :placeholder="inputPlaceholder"
@@ -462,28 +461,29 @@ const inputPlaceholder = computed(() => {
       <div class="asset-qa-actions">
         <button
           type="button"
-          class="asset-qa-voice"
-          :class="{ 'is-live': isRecording, 'is-starting': isMicStarting }"
+          class="hand-btn-img asset-qa-voice"
+          :class="{ 'is-live': isRecording, 'is-starting': isMicStarting && !isRecording }"
           :aria-pressed="isRecording"
           :disabled="isBusy || isAsrBusy || isMicStarting"
           :aria-label="voiceButtonAria"
           :title="voiceButtonAria"
           @click="toggleRecording"
         >
-          <span class="asset-qa-voice-dot" aria-hidden="true"></span>
-          <span class="asset-qa-voice-label">{{ voiceButtonLabel }}</span>
+          <img :src="handDrawnAssets.btnVoice" alt="" />
+          <span class="sr-only">{{ voiceButtonAria }}</span>
         </button>
         <button
           type="submit"
-          class="asset-qa-send"
+          class="hand-btn-img asset-qa-send"
           :disabled="!canSend"
           aria-label="发送"
         >
-          发送
+          <img :src="handDrawnAssets.btnSend" alt="" />
         </button>
       </div>
     </form>
-  </aside>
+    </aside>
+  </Teleport>
 </template>
 
 <style scoped>
@@ -491,7 +491,7 @@ const inputPlaceholder = computed(() => {
 .asset-qa-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 60;
+  z-index: var(--ui-qa-sheet-z-index, 92);
   background: rgba(89, 71, 56, 0.18);
   border: 0;
   padding: 0;
@@ -501,23 +501,10 @@ const inputPlaceholder = computed(() => {
 
 .asset-qa-sheet {
   position: fixed;
-  z-index: 61;
-  top: 16px;
-  right: 16px;
-  bottom: 16px;
-  width: min(420px, 92vw);
+  z-index: calc(var(--ui-qa-sheet-z-index, 92) + 1);
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 18px 18px 16px;
-  border-radius: var(--radius-lg, 24px);
-  border: 1px solid rgba(89, 71, 56, 0.16);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.32), rgba(255, 255, 255, 0) 36%),
-    var(--wood-light, #f0e2c5);
-  box-shadow: var(--shadow-canvas, 0 8px 28px rgba(89, 71, 56, 0.18));
   color: var(--color-text, #594738);
-  font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
   transform: translateX(0);
 }
 
@@ -569,18 +556,8 @@ const inputPlaceholder = computed(() => {
 }
 
 .asset-qa-close {
-  appearance: none;
-  border: 1px solid rgba(89, 71, 56, 0.18);
-  background: #fffef8;
-  color: var(--color-text-soft, #8b7355);
-  border-radius: var(--radius-pill, 999px);
-  width: 32px;
-  height: 32px;
-  font-size: 1.2rem;
-  line-height: 1;
-  cursor: pointer;
+  justify-self: end;
 }
-.asset-qa-close:hover { background: var(--wood-surface, #efe2c9); }
 
 .asset-qa-intro {
   margin: 0;
@@ -655,28 +632,19 @@ const inputPlaceholder = computed(() => {
 
 .asset-qa-bubble {
   max-width: 88%;
-  padding: 10px 14px;
-  border-radius: var(--radius-md, 20px);
   font-size: 0.95rem;
   line-height: 1.5;
-  border: 1px solid rgba(89, 71, 56, 0.12);
-  background: #fffef8;
   color: var(--color-text, #594738);
   word-break: break-word;
-  box-shadow: var(--shadow-soft, 0 2px 8px rgba(89, 71, 56, 0.08));
-}
-
-.asset-qa-bubble.is-user {
-  align-self: flex-end;
-  background: var(--color-primary-soft, #f4c9a4);
-  border-color: rgba(89, 71, 56, 0.16);
-  border-bottom-right-radius: var(--radius-xs, 14px);
 }
 
 .asset-qa-bubble.is-assistant {
   align-self: flex-start;
+  padding: 10px 14px;
+  border-radius: var(--radius-md, 20px);
+  border: 1px solid rgba(89, 71, 56, 0.12);
   background: #fffef8;
-  border-color: rgba(89, 71, 56, 0.12);
+  box-shadow: var(--shadow-soft, 0 2px 8px rgba(89, 71, 56, 0.08));
   border-bottom-left-radius: var(--radius-xs, 14px);
 }
 
@@ -730,29 +698,11 @@ const inputPlaceholder = computed(() => {
   flex-direction: column;
   gap: 8px;
   padding-top: 8px;
-  border-top: 1px solid rgba(89, 71, 56, 0.16);
 }
 
 .asset-qa-input {
-  width: 100%;
-  border: 1px solid rgba(89, 71, 56, 0.2);
-  border-radius: var(--radius-md, 20px);
-  padding: 10px 14px;
-  background: #fffef8;
-  color: var(--color-text, #594738);
-  font: inherit;
-  resize: none;
-  outline: none;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
-}
-
-.asset-qa-input:focus {
-  border-color: var(--color-primary, #e8a572);
-  box-shadow: 0 0 0 3px rgba(232, 165, 114, 0.22);
-}
-.asset-qa-input:disabled {
-  background: rgba(255, 254, 248, 0.5);
-  color: var(--color-text-soft, #8b7355);
+  font-size: 0.95rem;
+  line-height: 1.5;
 }
 
 .asset-qa-actions {
@@ -760,60 +710,5 @@ const inputPlaceholder = computed(() => {
   gap: 8px;
   align-items: center;
   justify-content: flex-end;
-}
-
-.asset-qa-voice,
-.asset-qa-send {
-  appearance: none;
-  font: inherit;
-  border-radius: var(--radius-pill, 999px);
-  padding: 8px 18px;
-  cursor: pointer;
-}
-
-.asset-qa-voice {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
-  border: 1px solid rgba(89, 71, 56, 0.22);
-  background: #fffef8;
-  color: var(--color-text, #594738);
-  font-weight: 600;
-}
-.asset-qa-voice:hover { background: var(--wood-surface, #efe2c9); }
-.asset-qa-voice.is-live {
-  background: var(--color-primary, #e8a572);
-  border-color: var(--color-primary, #e8a572);
-  color: var(--color-on-primary, #fff);
-}
-.asset-qa-voice-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: var(--radius-pill, 999px);
-  background: var(--color-text-soft, #8b7355);
-}
-.asset-qa-voice.is-live .asset-qa-voice-dot {
-  background: var(--color-on-primary, #fff);
-  animation: asset-qa-pulse 1.2s ease-in-out infinite;
-}
-.asset-qa-voice:disabled,
-.asset-qa-send:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.asset-qa-send {
-  background: var(--color-primary, #e8a572);
-  border: 0;
-  color: var(--color-on-primary, #fff);
-  padding: 9px 22px;
-  font-weight: 700;
-  box-shadow: var(--shadow-soft, 0 2px 8px rgba(89, 71, 56, 0.08));
-}
-.asset-qa-send:disabled {
-  background: var(--wood-mid, #d9b98a);
-  color: var(--color-on-primary, #fff);
-  opacity: 0.65;
 }
 </style>

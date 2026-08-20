@@ -31,20 +31,40 @@ import {
 } from '../persistence'
 import EditorTopbar from '../components/editor/EditorTopbar.vue'
 import BottomActionDock from '../components/editor/BottomActionDock.vue'
+import { handDrawnAssets } from '../ui/hand-drawn-assets'
 import BackgroundDrawer from '../components/editor/BackgroundDrawer.vue'
 import MaterialSheet from '../components/editor/MaterialSheet.vue'
 import ReturnSaveModal from '../components/editor/ReturnSaveModal.vue'
 import ObjectQuickTools from '../components/editor/ObjectQuickTools.vue'
 import RemoveToast from '../components/editor/RemoveToast.vue'
 import AssetQaSheet from '../components/editor/AssetQaSheet.vue'
+import PsdFrameStage from '../components/shell/PsdFrameStage.vue'
 import { audioService } from '../services/audio.service'
+import { friendlyUserError, withDbRetry } from '../util/friendly-user-error'
+import { psd160Assets, psdBoxStyle, psdFixedChromeStyle } from '../ui/psd160-assets'
+import editorCanvasOverlayUrl from '../../../../assets/ui/editor-canvas-overlay.png'
+
+const saveButtonStyle = psdBoxStyle('save-button')
+const canvasOverlayStyle = {
+  ...psdBoxStyle('background'),
+  position: 'fixed',
+  zIndex: '15',
+  pointerEvents: 'none'
+} as const
+const topbarChromeStyle = psdFixedChromeStyle('canvas-bounds', {
+  offsetY: 'var(--ui-editor-topbar-offset-y, 0px)'
+})
+const backgroundChromeStyle = psdFixedChromeStyle('canvas-bounds', {
+  anchor: 'center-left',
+  offsetX: 'calc(var(--ui-editor-background-left, 24px) + var(--ui-editor-background-offset-x, 0px))'
+})
 
 const launch = getEditorLaunch()
 if (!launch) openLibrary()
 
 const canvasEl = ref<HTMLCanvasElement | null>(null)
-const logicalCanvasWidth = launch?.scene.canvas.width ?? 960
-const logicalCanvasHeight = launch?.scene.canvas.height ?? 960
+const logicalCanvasWidth = launch?.scene.canvas.width ?? 902
+const logicalCanvasHeight = launch?.scene.canvas.height ?? 516
 const session = shallowRef<EditorSessionService | null>(null)
 const sessionState = ref<EditorSessionState | null>(null)
 const accessByAssetId = ref<Record<string, AssetAccessState | undefined>>({})
@@ -113,14 +133,6 @@ function selectedBackground(): AssetRecord | null {
 
 function accessFor(assetId: string): AssetAccessState | undefined {
   return accessByAssetId.value[assetId]
-}
-
-function friendlyError(error: unknown): string {
-  const text = error instanceof Error ? error.message : String(error)
-  if (/snapshot|registry|assetSnapshot|ASSET_SNAPSHOT/i.test(text)) return '有些以前用过的素材暂时找不到啦，这件作品先不能继续保存。'
-  if (/locked|unlock|解锁/i.test(text)) return '这个素材还没有解锁，先看看别的吧。'
-  if (/save|draft|project|preview|PROJECT_SAVE|DRAFT_SAVE/i.test(text)) return '这次还没有收好作品，请稍后再试。'
-  return text && text.length < 120 ? text : '刚刚遇到一点小问题，请稍后再试。'
 }
 
 function showFeedback(message: string, kind: 'success' | 'error' | 'info' = 'info'): void {
@@ -216,18 +228,24 @@ function handleSelectionEvent(event: EditorSelectionEvent): void {
 }
 
 async function refreshAccess(): Promise<void> {
-  const store = new AssetAccessStore(getFeltCraftDatabase())
-  const rows = await store.listForUser(DEFAULT_USER_ID)
-  const next: Record<string, AssetAccessState | undefined> = {}
-  for (const row of rows) next[row.assetId] = row
-  accessByAssetId.value = next
+  await withDbRetry(async () => {
+    const store = new AssetAccessStore(getFeltCraftDatabase())
+    const rows = await store.listForUser(DEFAULT_USER_ID)
+    const next: Record<string, AssetAccessState | undefined> = {}
+    for (const row of rows) next[row.assetId] = row
+    accessByAssetId.value = next
+  })
 }
 
 async function boot(): Promise<void> {
   if (!launch || !canvasEl.value) return
   sceneSnapshotMissing.value = editorCatalog.snapshotMissing
   const accessStore = new AssetAccessStore(getFeltCraftDatabase())
-  await seedAcceptanceUnlockedAccess(accessStore, sceneCatalogAssets, acceptanceUnlockAllAssets)
+  await seedAcceptanceUnlockedAccess(
+    accessStore,
+    sceneCatalogAssets,
+    acceptanceUnlockAllAssets || import.meta.env.DEV
+  )
   await refreshAccess()
   const service = new EditorSessionService({
     createAdapter: () => new FabricEditorAdapter({ allowTestAssets: false, snapshotContext: YWN_SNAPSHOT_CONTEXT })
@@ -244,7 +262,7 @@ async function boot(): Promise<void> {
     if (launch.mode === 'draft' || launch.mode === 'project') service.markSaved()
     selectionUnsubscribe = service.subscribeSelection(handleSelectionEvent)
   } catch (error) {
-    showFeedback(friendlyError(error), 'error')
+    showFeedback(friendlyUserError(error), 'error')
   }
 }
 
@@ -320,7 +338,7 @@ async function addSticker(asset: AssetRecord): Promise<void> {
     closeTransientContexts()
     showFeedback('放进作品啦', 'success')
   } catch (error) {
-    showFeedback(friendlyError(error), 'error')
+    showFeedback(friendlyUserError(error), 'error')
   } finally {
     busy.value = false
   }
@@ -337,7 +355,7 @@ async function applyBackground(asset: AssetRecord | null): Promise<void> {
     closeBackgroundDrawer()
     showFeedback(asset ? '背景换好啦' : '换成空白纸啦', 'success')
   } catch (error) {
-    showFeedback(friendlyError(error), 'error')
+    showFeedback(friendlyUserError(error), 'error')
   } finally {
     busy.value = false
   }
@@ -346,13 +364,13 @@ async function applyBackground(asset: AssetRecord | null): Promise<void> {
 async function undo(): Promise<void> {
   if (!session.value) return
   hideRemoveToast()
-  try { await session.value.undo() } catch (error) { showFeedback(friendlyError(error), 'error') }
+  try { await session.value.undo() } catch (error) { showFeedback(friendlyUserError(error), 'error') }
 }
 
 async function redo(): Promise<void> {
   if (!session.value) return
   hideRemoveToast()
-  try { await session.value.redo() } catch (error) { showFeedback(friendlyError(error), 'error') }
+  try { await session.value.redo() } catch (error) { showFeedback(friendlyUserError(error), 'error') }
 }
 
 async function finish(): Promise<void> {
@@ -372,7 +390,7 @@ async function finish(): Promise<void> {
     session.value.markSaved()
     showFeedback('作品收好啦！', 'success')
   } catch (error) {
-    showFeedback(friendlyError(error), 'error')
+    showFeedback(friendlyUserError(error), 'error')
   } finally {
     busy.value = false
   }
@@ -386,7 +404,7 @@ async function quickBringForward(): Promise<void> {
     session.value.bringForward(selection.objectId)
     void nextTick(updateOqtPosition)
   } catch (error) {
-    showFeedback(friendlyError(error), 'error')
+    showFeedback(friendlyUserError(error), 'error')
   }
 }
 
@@ -398,7 +416,7 @@ async function quickSendBackward(): Promise<void> {
     session.value.sendBackward(selection.objectId)
     void nextTick(updateOqtPosition)
   } catch (error) {
-    showFeedback(friendlyError(error), 'error')
+    showFeedback(friendlyUserError(error), 'error')
   }
 }
 
@@ -410,7 +428,7 @@ async function quickBringToFront(): Promise<void> {
     session.value.bringToFront(selection.objectId)
     void nextTick(updateOqtPosition)
   } catch (error) {
-    showFeedback(friendlyError(error), 'error')
+    showFeedback(friendlyUserError(error), 'error')
   }
 }
 
@@ -422,7 +440,7 @@ async function quickSendToBack(): Promise<void> {
     session.value.sendToBack(selection.objectId)
     void nextTick(updateOqtPosition)
   } catch (error) {
-    showFeedback(friendlyError(error), 'error')
+    showFeedback(friendlyUserError(error), 'error')
   }
 }
 
@@ -434,7 +452,7 @@ async function quickRemove(): Promise<void> {
     closeOqt()
     showRemoveToast()
   } catch (error) {
-    showFeedback(friendlyError(error), 'error')
+    showFeedback(friendlyUserError(error), 'error')
   }
 }
 
@@ -444,7 +462,7 @@ async function undoRemoval(): Promise<void> {
   try {
     await session.value.undo()
   } catch (error) {
-    showFeedback(friendlyError(error), 'error')
+    showFeedback(friendlyUserError(error), 'error')
   }
 }
 
@@ -471,7 +489,7 @@ async function saveProgressAndBack(): Promise<void> {
     returnModalOpen.value = false
     openLibrary()
   } catch (error) {
-    returnModalError.value = friendlyError(error)
+    returnModalError.value = friendlyUserError(error)
   } finally {
     busy.value = false
   }
@@ -490,7 +508,7 @@ function continueEditing(): void {
 
 onMounted(async () => {
   window.addEventListener('resize', updateOqtPosition)
-  try { await boot() } catch (error) { showFeedback(friendlyError(error), 'error') }
+  try { await boot() } catch (error) { showFeedback(friendlyUserError(error), 'error') }
 })
 
 onUnmounted(() => {
@@ -503,53 +521,66 @@ onUnmounted(() => {
 })
 
 watch([oqtOpen, oqtSelection], () => { void nextTick(updateOqtPosition) })
+
+defineExpose({ requestBack })
 </script>
 
 <template>
   <section class="editor-stage">
-    <EditorTopbar
-      :work-name="launch?.scene.workName ?? '我的新作品'"
-      :busy="busy"
-      :can-finish="canFinish"
-      @back="requestBack"
-      @finish="finish"
+    <img
+      class="editor-canvas-overlay"
+      :style="canvasOverlayStyle"
+      :src="editorCanvasOverlayUrl"
+      alt=""
+      aria-hidden="true"
     />
 
-    <main class="editor-workspace">
-      <div class="creation-workspace" @click.self="closeTransientContexts">
-        <button
-          class="background-trigger"
-          type="button"
-          aria-label="打开背景选择"
-          :class="{ 'is-open': backgroundDrawerOpen }"
-          @click.stop="toggleBackgroundDrawer"
-        >
-          <span class="background-trigger-pad" aria-hidden="true">▧</span>
-        </button>
-
-        <BackgroundDrawer
-          :assets="backgrounds"
-          :access-by-asset-id="accessByAssetId"
-          :selected-asset-id="selectedBackgroundId"
-          :open="backgroundDrawerOpen"
-          :busy="busy"
-          @select="(assetId) => (selectedBackgroundId = assetId)"
-          @apply="applyBackground"
-          @close="closeBackgroundDrawer"
-        />
-
-        <div class="canvas-frame">
-          <div class="canvas-wrap">
-            <canvas
-              ref="canvasEl"
-              class="editor-canvas"
-              :width="logicalCanvasWidth"
-              :height="logicalCanvasHeight"
-            ></canvas>
+    <PsdFrameStage frame="canvas-frame" :clip-overflow="false">
+      <div class="editor-frame-inner" @click.self="closeTransientContexts">
+        <div class="canvas-area">
+          <div class="canvas-stage">
+            <div class="canvas-wrap">
+              <canvas
+                ref="canvasEl"
+                class="editor-canvas"
+                :width="logicalCanvasWidth"
+                :height="logicalCanvasHeight"
+              ></canvas>
+            </div>
           </div>
         </div>
 
+        <EditorTopbar
+          :style="topbarChromeStyle"
+          :work-name="launch?.scene.workName ?? '我的新作品'"
+          @back="requestBack"
+        />
+
+        <div class="editor-side" :style="backgroundChromeStyle">
+          <button
+            class="hand-icon-btn hand-icon-btn--background background-trigger"
+            type="button"
+            aria-label="打开背景选择"
+            :class="{ 'is-open': backgroundDrawerOpen }"
+            @click.stop="toggleBackgroundDrawer"
+          >
+            <img :src="handDrawnAssets.backgroundTrigger" alt="" />
+          </button>
+
+          <BackgroundDrawer
+            :assets="backgrounds"
+            :access-by-asset-id="accessByAssetId"
+            :selected-asset-id="selectedBackgroundId"
+            :open="backgroundDrawerOpen"
+            :busy="busy"
+            @select="(assetId) => (selectedBackgroundId = assetId)"
+            @apply="applyBackground"
+            @close="closeBackgroundDrawer"
+          />
+        </div>
+
         <BottomActionDock
+          class="bottom-action-dock"
           :busy="busy"
           :can-edit="canEdit"
           :can-undo="canUndo"
@@ -560,7 +591,19 @@ watch([oqtOpen, oqtSelection], () => { void nextTick(updateOqtPosition) })
           @toggle-sheet="toggleSheet"
         />
       </div>
-    </main>
+    </PsdFrameStage>
+
+    <button
+      class="editor-save-psd"
+      type="button"
+      :style="saveButtonStyle"
+      aria-label="保存作品"
+      :disabled="busy || canFinish === false"
+      @click="finish"
+    >
+      <img :src="psd160Assets.saveButton" alt="" aria-hidden="true" />
+      <span class="sr-only">完成啦</span>
+    </button>
 
     <p v-if="sessionState?.status === 'recovery' || sceneSnapshotMissing" class="editor-state-banner">
       有些以前用过的素材暂时找不到啦，这件作品先不能继续保存或完成。
@@ -638,198 +681,155 @@ watch([oqtOpen, oqtSelection], () => { void nextTick(updateOqtPosition) })
   --shadow-lift: 0 10px 24px rgba(89, 71, 56, 0.22);
 }
 
-body { margin: 0; overflow: hidden; }
+body { margin: 0; }
 
 .editor-stage {
-  position: fixed;
+  position: absolute;
   inset: 0;
-  height: 100vh;
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  min-width: 960px;
-  min-height: 640px;
+  z-index: 5;
   overflow: visible;
   color: var(--color-text);
-  background-color: var(--wood-light);
-  background-image: repeating-linear-gradient(2deg, rgba(126, 98, 68, 0.06) 0 1px, transparent 1px 9px), repeating-linear-gradient(178deg, rgba(255, 255, 255, 0.18) 0 1px, transparent 1px 18px);
-  background-size: 600px 40px;
-  background-repeat: repeat;
+  background: transparent;
   font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  pointer-events: none;
 }
 
-.editor-topbar {
-  flex: 0 0 64px;
-  height: 64px;
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  padding: 0 20px;
-  border-bottom: 1px solid rgba(89, 71, 56, 0.18);
-  background: rgba(240, 226, 197, 0.72);
+.editor-canvas-overlay {
+  object-fit: fill;
+  user-select: none;
 }
 
-.topbar-back,
-.topbar-finish {
-  border: 0;
-  font: inherit;
-  cursor: pointer;
+.editor-stage :deep(.psd-frame-stage__content),
+.editor-save-psd,
+.editor-state-banner,
+.editor-feedback,
+.editor-frame-inner,
+.canvas-area,
+.canvas-wrap {
+  pointer-events: auto;
 }
 
-.topbar-back {
-  justify-self: start;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 40px;
-  padding: 0 16px;
-  border-radius: var(--radius-pill);
-  background: var(--wood-deeper);
-  color: var(--color-on-primary);
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.topbar-back span:first-child { font-size: 22px; line-height: 1; }
-.topbar-title { margin: 0; font-size: 18px; font-weight: 650; text-align: center; }
-
-.topbar-finish {
-  justify-self: end;
-  min-height: 42px;
-  padding: 0 22px;
-  border-radius: var(--radius-pill);
-  background: var(--color-primary);
-  color: var(--color-on-primary);
-  font-size: 15px;
-  font-weight: 700;
-  box-shadow: var(--shadow-soft);
-}
-
-.topbar-finish:disabled { cursor: not-allowed; opacity: 0.48; }
-.topbar-back:hover, .topbar-finish:hover:not(:disabled) { filter: brightness(1.04); }
-
-.editor-workspace { position: relative; flex: 0 0 auto; width: 100%; height: calc(100vh - 64px); min-height: 0; padding: 16px 20px 84px; }
-.creation-workspace { position: relative; width: 100%; height: 100%; min-height: 0; }
-
-.canvas-frame {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: min(66vw, calc(100vh - 180px), 760px);
-  height: min(66vw, calc(100vh - 180px), 760px);
-  transform: translate(-50%, -50%);
-  border-radius: var(--radius-xl);
-  background: var(--bg-app);
-  box-shadow: var(--shadow-canvas);
+.editor-stage :deep(.psd-frame-stage__content) {
   overflow: visible;
+}
+
+.editor-frame-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: visible;
+}
+
+.canvas-area {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+}
+
+.editor-stage :deep(.editor-topbar) {
+  padding: 0 8px;
+}
+
+.editor-side {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.editor-side .background-trigger,
+.editor-side .background-drawer {
+  pointer-events: auto;
+}
+
+.bottom-action-dock {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  display: flex;
+  justify-content: center;
+  padding-bottom: 2px;
+  pointer-events: auto;
+}
+
+.canvas-stage {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-lg);
+  background: var(--bg-app);
+  overflow: hidden;
+}
+
+.editor-save-psd {
+  position: fixed;
+  z-index: 90;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.editor-save-psd img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.editor-save-psd:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .canvas-wrap,
 .canvas-wrap .canvas-container {
   width: 100% !important;
   height: 100% !important;
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
   overflow: visible;
   background: var(--bg-app);
 }
 
-.canvas-wrap { position: relative; }
-.editor-canvas { display: block; width: 100%; height: 100%; border-radius: var(--radius-xl); touch-action: none; }
-.canvas-wrap .canvas-container .lower-canvas { width: 100% !important; height: 100% !important; border-radius: var(--radius-xl); }
-.canvas-wrap .canvas-container .upper-canvas { width: 100% !important; height: 100% !important; border-radius: var(--radius-xl); background: transparent !important; }
+.canvas-wrap { position: relative; width: 100%; height: 100%; }
+.editor-canvas { display: block; width: 100%; height: 100%; border-radius: var(--radius-lg); touch-action: none; }
+.canvas-wrap .canvas-container .lower-canvas { width: 100% !important; height: 100% !important; border-radius: var(--radius-lg); }
+.canvas-wrap .canvas-container .upper-canvas { width: 100% !important; height: 100% !important; border-radius: var(--radius-lg); background: transparent !important; }
 
 .background-trigger {
-  position: absolute;
-  left: calc(50% - min(66vw, calc(100vh - 180px), 760px) / 2 - 90px);
-  top: 50%;
+  position: relative;
   z-index: 30;
-  width: 64px;
-  height: 64px;
   padding: 0;
   border: 0;
-  transform: translateY(-50%);
   background: transparent;
-  color: var(--color-text);
   cursor: pointer;
 }
 
-.background-trigger-pad { display: grid; place-items: center; width: 48px; height: 48px; margin: 8px; border-radius: var(--radius-xs); background: rgba(248, 240, 226, 0.86); box-shadow: var(--shadow-soft); font-size: 28px; }
-.background-trigger.is-open .background-trigger-pad { background: var(--color-primary); color: var(--color-on-primary); }
-
-.background-drawer {
-  position: absolute;
-  left: calc(50% - min(66vw, calc(100vh - 180px), 760px) / 2 - 90px - 200px);
-  top: 50%;
-  z-index: 29;
-  display: flex;
-  flex-direction: column;
-  width: 188px;
-  max-height: min(420px, calc(100% - 24px));
-  gap: 12px;
-  padding: 18px 14px 14px;
-  border-radius: var(--radius-md);
-  background: #f4e9d3;
-  box-shadow: var(--shadow-card);
-  opacity: 0;
-  pointer-events: none;
-  transform: translate(-12px, -50%) scale(0.96);
-  transform-origin: top right;
-  transition: opacity 220ms ease, transform 220ms ease;
+.background-trigger.is-open {
+  filter: drop-shadow(0 0 8px rgba(232, 165, 114, 0.55));
 }
 
-.background-drawer.is-open { opacity: 1; pointer-events: auto; transform: translate(0, -50%) scale(1); }
-.drawer-title { color: var(--color-text-soft); font-size: 13px; letter-spacing: 1px; text-align: center; }
-.background-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; overflow-y: auto; }
-.background-card { position: relative; aspect-ratio: 1; min-width: 0; overflow: hidden; padding: 0; border: 2px solid transparent; border-radius: var(--radius-xs); background: #fffef8; cursor: pointer; }
-.background-card img { display: block; width: 100%; height: 100%; object-fit: cover; }
-.background-card.is-selected { border-color: var(--color-primary); box-shadow: 0 4px 14px rgba(232, 165, 114, 0.3); }
-.background-card.is-locked { opacity: 0.55; }
-.background-card .card-name { position: absolute; inset: auto 4px 4px; overflow: hidden; color: var(--color-text); font-size: 10px; line-height: 1.1; text-overflow: ellipsis; white-space: nowrap; }
-.blank-card { display: grid; place-items: center; gap: 2px; color: var(--color-text-soft); font-size: 11px; }
-.blank-card-mark { font-size: 24px; }
-.card-lock { position: absolute; top: 4px; right: 4px; z-index: 1; font-size: 12px; }
-.drawer-apply { min-height: 42px; border: 0; border-radius: var(--radius-pill); background: var(--color-primary); color: var(--color-on-primary); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
-.drawer-apply:disabled { cursor: not-allowed; opacity: 0.45; }
-
-.bottom-action-dock { position: absolute; left: 50%; top: calc(50% + min(66vw, calc(100vh - 180px), 760px) / 2 + 16px); z-index: 31; display: flex; align-items: center; gap: 22px; transform: translateX(-50%); }
-.dock-tool, .dock-material { display: grid; place-items: center; padding: 0; border: 1px solid rgba(89, 71, 56, 0.15); border-radius: var(--radius-sm); background: rgba(248, 240, 226, 0.88); color: var(--color-text); box-shadow: var(--shadow-soft); cursor: pointer; }
-.dock-tool { width: 36px; height: 36px; font-size: 26px; line-height: 1; }
-.dock-material { width: 44px; height: 44px; border-color: rgba(89, 71, 56, 0.2); border-radius: var(--radius-md); font-size: 27px; }
-.dock-material.is-open { background: var(--color-primary); color: var(--color-on-primary); }
-.dock-tool:disabled, .dock-material:disabled { cursor: not-allowed; opacity: 0.42; }
-.dock-tool:hover:not(:disabled), .dock-material:hover:not(:disabled) { transform: translateY(-1px); }
-
-.sheet-backdrop { position: fixed; inset: 0; z-index: 90; border: 0; background: rgba(89, 71, 56, 0.28); opacity: 0; pointer-events: none; transition: opacity 220ms ease; }
-.sheet-backdrop.is-open { opacity: 1; pointer-events: auto; }
-/* MaterialSheet layout: fixed bottom drawer, flex column so the asset list
-   is the only flex region and the footer (selection + actions) is anchored
-   below. The grid uses flex: 1 + min-height: 0 so it shrinks to the
-   remaining vertical space and becomes scrollable when content overflows,
-   instead of pushing the footer off-screen. */
-.material-sheet { position: fixed; left: 50%; bottom: 20px; z-index: 91; display: flex; flex-direction: column; width: calc(100% - 80px); max-width: 1280px; max-height: 70vh; min-height: 360px; overflow: hidden; border-radius: var(--radius-xl); background: var(--bg-app); box-shadow: var(--shadow-lift); transform: translate(-50%, calc(100% + 24px)); transition: transform 280ms cubic-bezier(0.4, 0, 0.2, 1); }
-.material-sheet.is-open { transform: translate(-50%, 0); }
-.sheet-handle { width: 48px; height: 5px; margin: 10px auto 4px; padding: 0; border: 0; border-radius: var(--radius-pill); background: var(--wood-mid); cursor: pointer; opacity: 0.75; flex: 0 0 auto; }
-.sheet-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 20px 10px; border-bottom: 1px solid rgba(89, 71, 56, 0.08); flex: 0 0 auto; }
-.sheet-header h2 { margin: 0; font-size: 16px; font-weight: 700; }
-.sheet-close { width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--color-text-soft); font-size: 26px; cursor: pointer; }
-.sheet-category { display: flex; gap: 8px; padding: 10px 30px 4px; }
-/* MaterialGrid is the only scrollable zone. The grid template uses
-   `grid-auto-rows: max-content` + `align-items: start` so cards never
-   stretch or overlap when the available height shrinks. Each card is a
-   flex column with a 1:1 image area and a fixed-height name strip below
-   — the name sits on its own paper-coloured row instead of overlaying the
-   image. */
-.material-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); grid-auto-rows: max-content; align-items: start; gap: 14px; max-width: 1210px; width: 100%; margin: 0 auto; padding: 4px 30px 12px; flex: 1 1 auto; min-height: 180px; overflow-y: auto; align-content: start; }
-.material-card { position: relative; display: flex; flex-direction: column; gap: 0; padding: 0; border: 2px solid transparent; border-radius: var(--radius-xs); background: #fffef8; cursor: pointer; box-shadow: var(--shadow-soft); overflow: hidden; }
-.material-card-image { position: relative; width: 100%; aspect-ratio: 1; overflow: hidden; background: var(--wood-light); }
-.material-card img { display: block; width: 100%; height: 100%; object-fit: cover; }
-.material-card:hover:not(.is-locked) { transform: translateY(-2px); }
-.material-card.is-selected { border-color: var(--color-primary); box-shadow: 0 4px 14px rgba(232, 165, 114, 0.3); }
-.material-card.is-locked { opacity: 0.55; }
-.material-card-name { position: static; min-height: 28px; display: flex; align-items: center; justify-content: center; padding: 0 4px; background: #fffef8; color: var(--color-text); font-size: 11px; line-height: 1.1; text-align: center; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; border-top: 1px solid rgba(89, 71, 56, 0.08); }
-
 .editor-state-banner { position: absolute; top: 74px; left: 50%; z-index: 40; margin: 0; padding: 8px 16px; border-radius: var(--radius-pill); background: rgba(244, 213, 192, 0.92); color: var(--wood-deeper); font-size: 13px; transform: translateX(-50%); }
-.editor-feedback { position: absolute; bottom: 18px; left: 50%; z-index: 120; margin: 0; padding: 10px 18px; border-radius: var(--radius-pill); background: #fffef8; color: var(--color-text); box-shadow: var(--shadow-lift); font-size: 13px; transform: translateX(-50%); }
+.editor-feedback { position: fixed; bottom: 18px; left: 50%; z-index: 95; margin: 0; padding: 10px 18px; border-radius: var(--radius-pill); background: #fffef8; color: var(--color-text); box-shadow: var(--shadow-lift); font-size: 13px; transform: translateX(-50%); pointer-events: none; }
 .editor-feedback.is-success { background: var(--color-confirm); color: #fff; }
 .editor-feedback.is-error { background: #f4d5c0; color: var(--wood-deeper); }
 
@@ -852,20 +852,6 @@ body { margin: 0; overflow: hidden; }
 .object-quick-tools button:last-child { background: var(--color-primary); color: var(--color-on-primary); }
 .remove-toast { position: fixed; left: 50%; bottom: 72px; z-index: 160; display: inline-flex; align-items: center; gap: 14px; min-height: 42px; padding: 0 8px 0 18px; border-radius: var(--radius-pill); background: rgba(89, 71, 56, 0.94); color: #fff; box-shadow: var(--shadow-lift); font-size: 13px; transform: translateX(-50%); }
 .remove-toast button { min-height: 32px; padding: 0 14px; border: 0; border-radius: var(--radius-pill); background: var(--color-primary-soft); color: var(--wood-deeper); font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
-
-.return-modal-layer { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; }
-.return-modal-backdrop { position: absolute; inset: 0; border: 0; background: rgba(89, 71, 56, 0.32); }
-.return-modal { position: relative; width: min(430px, calc(100vw - 48px)); padding: 28px; border-radius: var(--radius-lg); background: #fffef8; box-shadow: var(--shadow-lift); text-align: center; }
-.return-modal-icon { display: grid; place-items: center; width: 54px; height: 54px; margin: 0 auto 12px; border-radius: 50%; background: var(--color-primary-soft); color: var(--wood-deeper); font-size: 28px; }
-.return-modal h2 { margin: 0; font-size: 20px; }
-.return-modal p { margin: 10px 0 0; color: var(--color-text-soft); font-size: 14px; }
-.return-modal-error { color: var(--wood-deeper) !important; }
-.return-modal-actions { display: grid; gap: 9px; margin-top: 22px; }
-.return-modal-actions button { min-height: 42px; border-radius: var(--radius-pill); font: inherit; font-weight: 700; cursor: pointer; }
-.return-save { border: 0; background: var(--color-primary); color: #fff; }
-.return-discard { border: 1px solid var(--wood-mid); background: transparent; color: var(--wood-deeper); }
-.return-cancel { border: 0; background: var(--wood-surface); color: var(--color-text); }
-.return-modal-actions button:disabled { cursor: not-allowed; opacity: 0.5; }
 
 @media (max-width: 1439px) { .material-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
 @media (min-width: 1920px) { .material-grid { grid-template-columns: repeat(8, minmax(0, 1fr)); } }

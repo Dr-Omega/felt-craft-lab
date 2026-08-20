@@ -38,22 +38,22 @@ describe('MaterialSheet layout closure (P0 — card overlap fix)', () => {
     // The whole card used to carry `aspect-ratio: 1`, which forced the
     // card to stay square even when the grid row shrank, so the card
     // overflowed into the next row and visually overlapped the next line.
-    expect(editorPage).toContain('.material-grid')
-    expect(editorPage).toMatch(/\.material-grid\s*\{[^}]*grid-auto-rows:\s*max-content/)
-    expect(editorPage).toMatch(/\.material-grid\s*\{[^}]*align-items:\s*start/)
+    expect(sheet).toContain('.material-grid')
+    expect(sheetStyle).toMatch(/\.material-grid\s*\{[^}]*grid-auto-rows:\s*max-content/)
+    expect(sheetStyle).toMatch(/\.material-grid\s*\{[^}]*align-items:\s*start/)
     // The 1:1 ratio now lives on the image wrapper, not the whole card.
-    expect(editorPage).not.toMatch(/\.material-card\s*\{[^}]*aspect-ratio:\s*1/)
-    expect(editorPage).toMatch(/\.material-card-image\s*\{[^}]*aspect-ratio:\s*1/)
+    expect(sheetStyle).not.toMatch(/\.material-card\s*\{[^}]*aspect-ratio:\s*1/)
+    expect(sheetStyle).toMatch(/\.material-card-image\s*\{[^}]*aspect-ratio:\s*1/)
   })
 
   it('material-card has an independent paper-coloured name strip (not absolute on top of the image)', () => {
-    expect(editorPage).toMatch(/\.material-card-name\s*\{[^}]*position:\s*static/)
+    expect(sheetStyle).toMatch(/\.material-card-name\s*\{[^}]*position:\s*static/)
     // Must NOT be positioned absolute (was the readability-on-dark-image bug)
-    expect(editorPage).not.toMatch(/\.material-card-name\s*\{[^}]*position:\s*absolute/)
+    expect(sheetStyle).not.toMatch(/\.material-card-name\s*\{[^}]*position:\s*absolute/)
     // Has a min-height so all cards line up to the same row height
-    expect(editorPage).toMatch(/\.material-card-name\s*\{[^}]*min-height:\s*28px/)
+    expect(sheetStyle).toMatch(/\.material-card-name\s*\{[^}]*min-height:\s*28px/)
     // The text colour is the warm wood brown, not on top of an image
-    expect(editorPage).toMatch(/\.material-card-name\s*\{[^}]*color:\s*var\(--color-text/)
+    expect(sheetStyle).toMatch(/\.material-card-name\s*\{[^}]*color:\s*var\(--color-text/)
   })
 
   it('MaterialSheet wraps the image in material-card-image so the lock badge stays on the picture, not the name strip', () => {
