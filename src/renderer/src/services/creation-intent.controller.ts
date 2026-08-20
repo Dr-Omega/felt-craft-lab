@@ -76,6 +76,8 @@ function emptyPlan(): CreationPlanView {
   return planFromSpec(createEmptyGenerationSpec(CREATION_ASSET_ROLE), null)
 }
 
+export type CreationRetryAction = 'submit' | 'confirm' | 'regenerate' | 'accept' | 'decide'
+
 export class CreationIntentController {
   readonly role = CREATION_ASSET_ROLE
   sessionId = ''
@@ -86,6 +88,7 @@ export class CreationIntentController {
   choices: string[] = []
   plan: CreationPlanView = emptyPlan()
   summary = ''
+  /** Kept for diagnostics/tests; CreateAssetPage must not show raw prompt to children. */
   positiveText: string | null = null
   negativeText: string | null = null
   candidateRef: string | null = null
@@ -94,7 +97,10 @@ export class CreationIntentController {
   error: string | null = null
   busy = false
   busyHint: string | null = null
+  /** Set when the last network/action failed so the UI can offer「再试一次」. */
+  retryAction: CreationRetryAction | null = null
   private lastSubmittedText = ''
+  private lastUtteranceForRetry = ''
 
   constructor(
     private readonly client: CreationIntentUiClient = creationIntentClient,
@@ -117,17 +123,24 @@ export class CreationIntentController {
     return Boolean(this.sessionId && this.candidateRef && !this.accepted)
   }
 
+  get canRetry(): boolean {
+    return Boolean(this.error && this.retryAction && !this.busy)
+  }
+
   async acceptUtterance(raw: string): Promise<void> {
     const next = raw.trim()
     if (!next) {
       this.error = this.hasPlan ? '请先写要补的那一句。' : '请先说想画什么。'
+      this.retryAction = null
       return
     }
     if (this.hasPlan && next === this.lastSubmittedText) {
       this.error = '这句话已经记过了。请换一句要补的，比如：坐在地上。'
+      this.retryAction = null
       return
     }
     this.text = next
+    this.lastUtteranceForRetry = next
     await this.submitUtterance(next)
   }
 
@@ -136,7 +149,7 @@ export class CreationIntentController {
   }
 
   private async submitUtterance(text: string): Promise<void> {
-    await this.run(async () => {
+    await this.run('submit', async () => {
       if (!this.sessionId) {
         const started = await this.client.start({ lockedRole: CREATION_ASSET_ROLE })
         if (!this.applyResult(started)) return
@@ -151,13 +164,15 @@ export class CreationIntentController {
   async confirmPlan(): Promise<void> {
     if (!this.sessionId) {
       this.error = '请先说想画什么。'
+      this.retryAction = null
       return
     }
     if (this.phase !== 'ready_to_confirm') {
       this.error = this.question ? '还缺一点，请先回答上面那句。' : '请先说想画什么。'
+      this.retryAction = null
       return
     }
-    await this.run(async () => {
+    await this.run('confirm', async () => {
       this.applyResult(await this.client.confirm({ sessionId: this.sessionId }))
     }, '正在画图，大约要等十几秒…')
   }
@@ -165,9 +180,10 @@ export class CreationIntentController {
   async decideForMe(): Promise<void> {
     if (!this.sessionId) {
       this.error = '请先说想画什么。'
+      this.retryAction = null
       return
     }
-    await this.run(async () => {
+    await this.run('decide', async () => {
       this.applyResult(await this.client.decideForMe({ sessionId: this.sessionId }))
     })
   }
@@ -176,9 +192,10 @@ export class CreationIntentController {
   async redrawCandidate(): Promise<void> {
     if (!this.sessionId) {
       this.error = '请先说想画什么。'
+      this.retryAction = null
       return
     }
-    await this.run(async () => {
+    await this.run('regenerate', async () => {
       this.applyResult(await this.client.regenerate({ sessionId: this.sessionId }))
     }, '正在再画一张…')
   }
@@ -186,15 +203,45 @@ export class CreationIntentController {
   async acceptCandidate(): Promise<void> {
     if (!this.sessionId) {
       this.error = '请先说想画什么。'
+      this.retryAction = null
       return
     }
-    await this.run(async () => {
+    await this.run('accept', async () => {
       const result = await this.client.accept({ sessionId: this.sessionId })
       if (!this.applyResult(result)) return
       if (!result.ok || !result.accepted) return
       await this.persistAccepted(result.accepted)
       this.accepted = result.accepted
     }, '正在打开作品…')
+  }
+
+  async retryLastFailure(): Promise<void> {
+    const action = this.retryAction
+    if (!action || this.busy) return
+    if (action === 'submit') {
+      const text = this.lastUtteranceForRetry.trim() || this.text.trim()
+      if (!text) {
+        this.error = '请先写要补的那一句。'
+        return
+      }
+      await this.submitUtterance(text)
+      return
+    }
+    if (action === 'confirm') {
+      await this.confirmPlan()
+      return
+    }
+    if (action === 'regenerate') {
+      await this.redrawCandidate()
+      return
+    }
+    if (action === 'accept') {
+      await this.acceptCandidate()
+      return
+    }
+    if (action === 'decide') {
+      await this.decideForMe()
+    }
   }
 
   reset(): void {
@@ -214,17 +261,26 @@ export class CreationIntentController {
     this.error = null
     this.busy = false
     this.busyHint = null
+    this.retryAction = null
     this.lastSubmittedText = ''
+    this.lastUtteranceForRetry = ''
   }
 
-  private async run(work: () => Promise<void>, hint: string | null = null): Promise<void> {
+  private async run(
+    action: CreationRetryAction,
+    work: () => Promise<void>,
+    hint: string | null = null
+  ): Promise<void> {
     this.busy = true
     this.busyHint = hint
     this.error = null
+    this.retryAction = null
     try {
       await work()
+      if (this.error) this.retryAction = action
     } catch (error) {
       this.error = error instanceof Error ? error.message : '创作暂时无法完成，请稍后重试。'
+      this.retryAction = action
     } finally {
       this.busy = false
       this.busyHint = null

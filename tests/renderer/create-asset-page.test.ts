@@ -51,6 +51,14 @@ describe('CreateAssetPage surface', () => {
     expect(page).toContain('createSceneWithCorePattern')
     expect(page).toContain('startWork')
     expect(page).toContain('qualityHeadline')
+    expect(page).toContain('create-guide')
+    expect(page).toContain('再试一次')
+    expect(page).toContain('retryLastFailure')
+    expect(page).toContain('仍可以点「去编辑器装饰」')
+    expect(page).not.toContain('画图说明')
+    expect(page).not.toContain('不要出现')
+    expect(page).not.toContain('positiveText')
+    expect(page).not.toContain('negativeText')
     expect((page.match(/<script setup lang="ts">/g) ?? []).length).toBe(1)
     expect(page).not.toContain('云端生图还没接上')
     expect(page).not.toContain('开始记下来')
@@ -187,6 +195,25 @@ describe('CreationIntentController', () => {
     expect(controller.candidateRef).toContain('felt-resource://preview/')
     expect(controller.quality?.verdict).toBe('PASS')
     expect(controller.canAccept).toBe(true)
+  })
+
+  it('offers retry after a failed confirm', async () => {
+    const host = new CreationIntentHost({
+      createId: () => 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+      now: () => '2026-08-18T14:22:00.000Z',
+      saveTemporaryPng: () => {
+        throw new Error('暂时画不出来')
+      }
+    })
+    const controller = new CreationIntentController(clientFor(host))
+    await controller.acceptUtterance('白色玉兔抱月饼，不要真实毛发')
+    await controller.confirmPlan()
+    expect(controller.error).toContain('暂时画不出来')
+    expect(controller.canRetry).toBe(true)
+    expect(controller.retryAction).toBe('confirm')
+    await controller.retryLastFailure()
+    expect(controller.retryAction).toBe('confirm')
+    expect(controller.error).toBeTruthy()
   })
 
   it('persists an accepted candidate, including FAIL quality core patterns', async () => {
