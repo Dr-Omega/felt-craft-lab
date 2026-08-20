@@ -2,7 +2,10 @@ import type { SceneDocument } from '@shared/contracts'
 import { ALL_THEMES_ID } from './catalog/ywn-catalog'
 import { prepareNewWorkScene } from './catalog/library-new-work'
 
-export type AppView = 'library' | 'editor' | 'projection'
+export type AppView = 'splash' | 'login' | 'library' | 'editor' | 'projection'
+
+/** Views rendered inside the main three-page shell after login. */
+export type MainAppView = 'library' | 'editor' | 'projection'
 
 export type EditorLaunchMode = 'new' | 'draft' | 'project'
 
@@ -13,7 +16,7 @@ export interface EditorLaunchContext {
   projectId?: string
 }
 
-let currentView: AppView = 'library'
+let currentView: AppView = 'splash'
 let launch: EditorLaunchContext | undefined
 const listeners = new Set<() => void>()
 
@@ -32,6 +35,22 @@ export function getEditorLaunch(): EditorLaunchContext | undefined {
 export function subscribeAppNav(listener: () => void): () => void {
   listeners.add(listener)
   return () => listeners.delete(listener)
+}
+
+export function openSplash(): void {
+  currentView = 'splash'
+  notify()
+}
+
+export function openLogin(): void {
+  currentView = 'login'
+  notify()
+}
+
+/** Enter the main app after login. */
+export function completeLogin(): void {
+  currentView = 'library'
+  notify()
 }
 
 export function openLibrary(): void {
@@ -60,4 +79,8 @@ export function openEditorCanvas(): void {
   }
   currentView = 'editor'
   notify()
+}
+
+export function isMainAppView(view: AppView): view is MainAppView {
+  return view === 'library' || view === 'editor' || view === 'projection'
 }

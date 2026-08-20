@@ -1,20 +1,25 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import {
   getAppView,
+  isMainAppView,
   openEditorCanvas,
   openLibrary,
   openProjection,
   subscribeAppNav,
-  type AppView
+  type AppView,
+  type MainAppView
 } from './app-nav'
 import AppShell from './components/shell/AppShell.vue'
+import SplashPage from './pages/SplashPage.vue'
+import LoginPage from './pages/LoginPage.vue'
 import LibraryPage from './pages/LibraryPage.vue'
 import EditorPage from './pages/EditorPage.vue'
 import ProjectionPage from './pages/ProjectionPage.vue'
 
 const view = ref<AppView>(getAppView())
 const editorRef = ref<{ requestBack: () => void } | null>(null)
+const mainView = computed<MainAppView | null>(() => (isMainAppView(view.value) ? view.value : null))
 
 function syncView(): void {
   view.value = getAppView()
@@ -22,10 +27,10 @@ function syncView(): void {
 
 let unsubscribe = subscribeAppNav(syncView)
 
-function handleNavigate(target: AppView): void {
-  if (target === view.value) return
+function handleNavigate(target: MainAppView): void {
+  if (!mainView.value || target === mainView.value) return
 
-  if (view.value === 'editor' && target === 'library') {
+  if (mainView.value === 'editor' && target === 'library') {
     editorRef.value?.requestBack()
     return
   }
@@ -45,10 +50,12 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <AppShell :active-view="view" @navigate="handleNavigate">
-    <LibraryPage v-if="view === 'library'" />
-    <EditorPage v-if="view === 'editor'" ref="editorRef" />
-    <ProjectionPage v-if="view === 'projection'" />
+  <SplashPage v-if="view === 'splash'" />
+  <LoginPage v-else-if="view === 'login'" />
+  <AppShell v-else-if="mainView" :active-view="mainView" @navigate="handleNavigate">
+    <LibraryPage v-if="mainView === 'library'" />
+    <EditorPage v-if="mainView === 'editor'" ref="editorRef" />
+    <ProjectionPage v-if="mainView === 'projection'" />
   </AppShell>
 </template>
 

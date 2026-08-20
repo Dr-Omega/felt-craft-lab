@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { AppView } from '../../app-nav'
+import type { MainAppView } from '../../app-nav'
 import { psd160Assets, psdBoxStyle } from '../../ui/psd160-assets'
 
 defineProps<{
-  activeView: AppView
+  activeView: MainAppView
 }>()
 
 const emit = defineEmits<{
-  navigate: [view: AppView]
+  navigate: [view: MainAppView]
 }>()
 
 const foxStyle = computed(() => psdBoxStyle('fox-button'))
