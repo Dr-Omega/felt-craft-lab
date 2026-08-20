@@ -487,6 +487,7 @@ onUnmounted(() => {
   list-style: none;
   margin: 0;
   padding: 0;
+  padding-bottom: var(--book-scroll-fade, 40px);
   display: grid;
   gap: 8px;
   overflow-y: auto;
@@ -494,6 +495,18 @@ onUnmounted(() => {
   min-height: 0;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    #000 0,
+    #000 calc(100% - var(--book-scroll-fade, 40px)),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    #000 0,
+    #000 calc(100% - var(--book-scroll-fade, 40px)),
+    transparent 100%
+  );
 }
 
 .book-list::-webkit-scrollbar,

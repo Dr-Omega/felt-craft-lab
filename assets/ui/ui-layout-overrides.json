@@ -3,9 +3,9 @@
   "library": {
     "bookPagerOffsetY": 60,
     "bookPageLeftOffsetX": -10,
-    "bookPageLeftOffsetY": -25,
+    "bookPageLeftOffsetY": -15,
     "bookPageRightOffsetX": 20,
-    "bookPageRightOffsetY": -25,
+    "bookPageRightOffsetY": -15,
     "bookPageInsetPx": 50,
     "bookPageGapPx": 40
   },
