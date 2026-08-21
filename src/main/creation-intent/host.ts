@@ -12,6 +12,7 @@ import { canAcceptCandidate, candidateStatusForQuality } from '@shared/contracts
 import { toProviderPromptPayload } from '@shared/prompt-compiler'
 import {
   CreationIntentSession,
+  isCreationIntentBlockedError,
   LocalCreationIntentParser,
   MAX_CREATION_INTENT_SESSIONS,
   MAX_CREATION_INTENT_TEXT_CHARS,
@@ -27,6 +28,8 @@ const SESSION_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-
 export type TemporaryPngSaveResult =
   | { ok: true; ref: ResourceRef }
   | { ok: false; error: SharedError }
+
+export type TemporaryPngDeleteResult = { ok: true } | { ok: false; error: SharedError }
 
 export type GeneratedPngResult = {
   bytes: Uint8Array
@@ -57,6 +60,7 @@ export interface CreationIntentHostOptions {
   createId?: () => string
   now?: () => string
   saveTemporaryPng?: (bytes: Uint8Array) => TemporaryPngSaveResult
+  deleteTemporaryPng?: (ref: ResourceRef) => TemporaryPngDeleteResult
   readTemporaryPng?: ReadTemporaryPngFn
   ingestPersonalPng?: IngestPersonalPngFn
   generatePng?: GenerateCandidatePngFn
@@ -128,6 +132,7 @@ export class CreationIntentHost {
   private readonly createId: () => string
   private readonly now: () => string
   private readonly saveTemporaryPng?: (bytes: Uint8Array) => TemporaryPngSaveResult
+  private readonly deleteTemporaryPng?: (ref: ResourceRef) => TemporaryPngDeleteResult
   private readonly readTemporaryPng?: ReadTemporaryPngFn
   private readonly ingestPersonalPng?: IngestPersonalPngFn
   private readonly generatePng: GenerateCandidatePngFn
@@ -139,6 +144,7 @@ export class CreationIntentHost {
     this.createId = options.createId ?? (() => randomUUID())
     this.now = options.now ?? (() => new Date().toISOString())
     this.saveTemporaryPng = options.saveTemporaryPng
+    this.deleteTemporaryPng = options.deleteTemporaryPng
     this.readTemporaryPng = options.readTemporaryPng
     this.ingestPersonalPng = options.ingestPersonalPng
     this.generatePng =
@@ -164,8 +170,7 @@ export class CreationIntentHost {
     while (this.sessions.size >= MAX_CREATION_INTENT_SESSIONS) {
       const oldest = this.sessions.keys().next().value
       if (!oldest) break
-      this.sessions.delete(oldest)
-      this.acceptedBySession.delete(oldest)
+      this.evictSession(oldest)
     }
 
     const sessionId = this.createId()
@@ -177,6 +182,15 @@ export class CreationIntentHost {
     return ok(sessionId, session.getSnapshot())
   }
 
+  /** Drop a session and delete any temporary candidate preview it still owns. */
+  abandon(raw: unknown): CreationIntentIpcResult {
+    const parsed = this.readSessionRequest(raw, ['sessionId'])
+    if (!('kind' in parsed)) return parsed
+    const snapshot = parsed.session.getSnapshot()
+    this.evictSession(parsed.sessionId)
+    return ok(parsed.sessionId, snapshot)
+  }
+
   async submit(raw: unknown): Promise<CreationIntentIpcResult> {
     const parsed = this.readSessionRequest(raw, ['sessionId', 'text'])
     if (!('kind' in parsed)) return parsed
@@ -184,13 +198,28 @@ export class CreationIntentHost {
     if (typeof text !== 'string' || !text.trim()) return fail('请先说想画什么。')
     if (text.length > MAX_CREATION_INTENT_TEXT_CHARS) return fail('这句话有点长，请再说短一点。')
 
-    const snapshot = await parsed.session.submitText(text.trim())
-    return ok(parsed.sessionId, snapshot)
+    this.discardSessionCandidatePreview(parsed.session)
+    try {
+      const snapshot = await parsed.session.submitText(text.trim())
+      return ok(parsed.sessionId, snapshot)
+    } catch (error) {
+      if (isCreationIntentBlockedError(error)) {
+        return {
+          ok: false,
+          error: toSharedError(
+            { code: 'QA_BLOCKED', message: error.message, retryable: false },
+            'QA_BLOCKED'
+          )
+        }
+      }
+      throw error
+    }
   }
 
   async confirm(raw: unknown): Promise<CreationIntentIpcResult> {
     const parsed = this.readSessionRequest(raw, ['sessionId'])
     if (!('kind' in parsed)) return parsed
+    this.discardSessionCandidatePreview(parsed.session)
     const snapshot = parsed.session.confirm(this.now())
     if (!snapshot.prompt || !this.saveTemporaryPng) return ok(parsed.sessionId, snapshot)
     return this.materializeCandidate(parsed.sessionId, parsed.session, snapshot)
@@ -201,17 +230,30 @@ export class CreationIntentHost {
     const parsed = this.readSessionRequest(raw, ['sessionId'])
     if (!('kind' in parsed)) return parsed
     this.acceptedBySession.delete(parsed.sessionId)
+    const previous = parsed.session.getSnapshot().candidate
     const snapshot = parsed.session.clearCandidateForRedraw()
     if (!snapshot.prompt || snapshot.spec.confirmation.status !== 'confirmed') {
+      if (previous) parsed.session.attachCandidate(previous)
       return fail('请先确认方案再画图。')
     }
-    if (!this.saveTemporaryPng) return fail('暂时无法画图。')
-    return this.materializeCandidate(parsed.sessionId, parsed.session, snapshot)
+    if (!this.saveTemporaryPng) {
+      if (previous) parsed.session.attachCandidate(previous)
+      return fail('暂时无法画图。')
+    }
+    const next = await this.materializeCandidate(parsed.sessionId, parsed.session, snapshot)
+    if (next.ok) {
+      if (previous?.temporaryRef) this.safeDeletePreview(previous.temporaryRef)
+      return next
+    }
+    // Regenerate failed: keep the previous candidate + preview file.
+    if (previous) parsed.session.attachCandidate(previous)
+    return next
   }
 
   decideForMe(raw: unknown): CreationIntentIpcResult {
     const parsed = this.readSessionRequest(raw, ['sessionId'])
     if (!('kind' in parsed)) return parsed
+    this.discardSessionCandidatePreview(parsed.session)
     return ok(parsed.sessionId, parsed.session.decideForMe())
   }
 
@@ -310,7 +352,30 @@ export class CreationIntentHost {
       role: snapshot.spec.assetRole
     }
     this.acceptedBySession.set(parsed.sessionId, accepted)
-    return ok(parsed.sessionId, parsed.session.markCandidateAccepted(), accepted)
+    const acceptedSnapshot = parsed.session.markCandidateAccepted()
+    this.safeDeletePreview(candidate.temporaryRef)
+    return ok(parsed.sessionId, acceptedSnapshot, accepted)
+  }
+
+  private evictSession(sessionId: string): void {
+    const session = this.sessions.get(sessionId)
+    if (session) this.discardSessionCandidatePreview(session)
+    this.sessions.delete(sessionId)
+    this.acceptedBySession.delete(sessionId)
+  }
+
+  private discardSessionCandidatePreview(session: CreationIntentSession): void {
+    const ref = session.getSnapshot().candidate?.temporaryRef
+    if (ref) this.safeDeletePreview(ref)
+  }
+
+  private safeDeletePreview(ref: ResourceRef): void {
+    if (!this.deleteTemporaryPng) return
+    try {
+      this.deleteTemporaryPng(ref)
+    } catch {
+      // best-effort cleanup
+    }
   }
 
   private readSessionRequest(

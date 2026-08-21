@@ -3,8 +3,10 @@ import { join } from 'node:path'
 import { mkdirSync } from 'node:fs'
 import type { CreationIntentParser } from '@shared/creation-intent'
 import {
+  CreationIntentBlockedError,
   FallbackCreationIntentParser,
   LocalCreationIntentParser,
+  readCreationIntentBlockedMessage,
   RemoteCreationIntentParser
 } from '@shared/creation-intent'
 import { gatewayCreationIntentParse } from '../ai/gateway-client'
@@ -37,7 +39,14 @@ export function createLiveCreationIntentParser(): CreationIntentParser {
         installationId: session.session.installationId
       }
     })
-    if (!parsed.ok) throw new Error(parsed.error.message || '暂时听不懂这句话。')
+    if (!parsed.ok) {
+      if (parsed.error.code === 'QA_BLOCKED') {
+        throw new CreationIntentBlockedError(parsed.error.message)
+      }
+      throw new Error(parsed.error.message || '暂时听不懂这句话。')
+    }
+    const blocked = readCreationIntentBlockedMessage(parsed.body)
+    if (blocked) throw new CreationIntentBlockedError(blocked)
     if (parsed.status >= 400) throw new Error('暂时听不懂这句话。')
     return parsed.body
   })

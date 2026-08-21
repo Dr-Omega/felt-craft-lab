@@ -9,7 +9,7 @@ import { registerAiIpc } from './ai/ipc'
 import { registerCreationIntentIpc, CreationIntentHost, createLiveCreationIntentParser } from './creation-intent'
 import { generateCandidatePng } from './image-generation'
 import { registerPreviewIpc } from './preview'
-import { readPreviewPng, savePreviewPng } from './preview/write'
+import { readPreviewPng, savePreviewPng, deletePreviewPng } from './preview/write'
 import {
   attachFeltResourceProtocol,
   createResourceRoots,
@@ -141,6 +141,7 @@ app.whenReady().then(() => {
     new CreationIntentHost({
       parser: createLiveCreationIntentParser(),
       saveTemporaryPng: (bytes) => savePreviewPng(bytes, resourceRoots),
+      deleteTemporaryPng: (ref) => deletePreviewPng(ref, resourceRoots),
       readTemporaryPng: (ref) => readPreviewPng(ref, resourceRoots),
       ingestPersonalPng: (input) => ingestPersonalAssetPng(input, resourceRoots),
       generatePng: generateCandidatePng

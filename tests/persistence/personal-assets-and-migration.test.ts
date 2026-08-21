@@ -258,7 +258,7 @@ describe('Dexie V2 upgrade and personal asset stores', () => {
     await expect(assets.get(personalAssetId)).rejects.toMatchObject({ shared: { code: 'INVALID_ARGUMENT' } })
   })
 
-  it('persists an accepted generation as version then asset', async () => {
+  it('persists an accepted generation as version then asset in one transaction', async () => {
     await persistAcceptedGeneration(
       {
         personalAssetId,

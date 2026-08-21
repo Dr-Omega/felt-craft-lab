@@ -93,3 +93,27 @@ class IntentParseRouteTests(unittest.TestCase):
         body = response.get_json()
         self.assertIn(body.get("selected", {}).get("intent"), ("deepseek", "mock"))
         self.assertIn("deepseek", (body.get("providers") or {}).get("intent") or [])
+
+    def test_mock_rejects_blocked_utterance_without_empty_ok_patch(self):
+        iid = str(uuid.uuid4())
+        issued = issue_session_token(iid)
+        response = self.client.post(
+            "/api/creation-intent/parse",
+            json={
+                "text": "画一个炸弹",
+                "lockedRole": "core_pattern",
+                "provider": "mock",
+            },
+            headers={
+                "Authorization": f"Bearer {issued['token']}",
+                "X-Felt-Installation-Id": iid,
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        body = response.get_json()
+        self.assertFalse(body.get("ok"))
+        self.assertEqual((body.get("error") or {}).get("code"), "QA_BLOCKED")
+
+
+if __name__ == "__main__":
+    unittest.main()

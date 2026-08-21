@@ -4,8 +4,9 @@ import type { PersonalAssetRole } from '../contracts/personal-asset'
 import { createEmptyGenerationSpec } from '../contracts/generation-spec'
 import type { CanonicalPrompt } from '../prompt-compiler/canonical'
 import { compileCanonicalPrompt } from '../prompt-compiler/canonical'
-import { applyDecideForMe, decideClarification, type ClarificationQuestion } from './clarification'
+import { applyDecideForMe, applySkipPendingAnswer, decideClarification, isSkipClarificationAnswer, type ClarificationQuestion } from './clarification'
 import { confirmGenerationSpec } from './confirm'
+import { evaluateGenerationSpecCompleteness } from './completeness'
 import type { CreationIntentParser } from './parser'
 import { applyGenerationSpecPatch } from './patch'
 import { enrichPatchForPendingField } from './pending-field'
@@ -72,12 +73,22 @@ export class CreationIntentSession {
 
   async submitText(text: string): Promise<CreationSessionSnapshot> {
     const pendingField = this.spec.clarification.pendingField
+    const trimmed = text.trim()
+    if (pendingField && isSkipClarificationAnswer(trimmed)) {
+      const critical = evaluateGenerationSpecCompleteness(this.spec).criticalFields
+      if (!critical.includes(pendingField)) {
+        this.spec = applySkipPendingAnswer(this.spec, pendingField)
+      }
+      this.prompt = null
+      this.candidate = null
+      return this.refreshAfterContentChange()
+    }
     let patch = await this.parser.parse({
-      text,
+      text: trimmed,
       ...(this.lockedRole ? { lockedRole: this.lockedRole } : {}),
       ...(pendingField ? { pendingField } : {})
     })
-    patch = enrichPatchForPendingField(pendingField, text, patch, this.spec)
+    patch = enrichPatchForPendingField(pendingField, trimmed, patch, this.spec)
     this.spec = applyGenerationSpecPatch(this.spec, patch)
     this.prompt = null
     this.candidate = null

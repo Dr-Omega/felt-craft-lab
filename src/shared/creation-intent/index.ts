@@ -7,12 +7,19 @@ export {
 } from './completeness'
 export {
   applyDecideForMe,
+  applySkipPendingAnswer,
   CLARIFICATION_CHOICES,
   decideClarification,
   isSkipClarificationAnswer,
   type ClarificationDecision,
   type ClarificationQuestion
 } from './clarification'
+export {
+  CreationIntentBlockedError,
+  CREATION_INTENT_REJECT_PATTERNS,
+  isBlockedCreationIntentText,
+  isCreationIntentBlockedError
+} from './blocked'
 export {
   buildCreationPlanFields,
   EMPTY_PLAN_HINT,
@@ -27,7 +34,11 @@ export {
 export { lockAssetRole, resolveAssetRoleFromText } from './role-resolver'
 export { LocalCreationIntentParser } from './local-parser'
 export { FallbackCreationIntentParser } from './fallback-parser'
-export { RemoteCreationIntentParser, extractCreationIntentPatch } from './remote-parser'
+export {
+  RemoteCreationIntentParser,
+  extractCreationIntentPatch,
+  readCreationIntentBlockedMessage
+} from './remote-parser'
 export {
   mergeGenerationSpecPatches,
   mergePatchActions,

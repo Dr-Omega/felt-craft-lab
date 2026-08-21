@@ -516,7 +516,14 @@ def creation_intent_parse():
                 locked_role=locked_role,
                 pending_field=pending_field,
             )
-            status = 200 if result.get("ok") else 502
+            if result.get("ok"):
+                return jsonify(result), 200
+            # Content policy blocks stay 200 + ok:false so clients can read QA_BLOCKED
+            # without treating the call as an upstream outage (which triggers local fallback).
+            err_code = ((result.get("error") or {}) if isinstance(result.get("error"), dict) else {}).get(
+                "code"
+            )
+            status = 200 if err_code == "QA_BLOCKED" else 502
             return jsonify(result), status
     except UnknownIntentProvider:
         return _json_fail("INVALID_PROVIDER")

@@ -1002,6 +1002,9 @@ export function validateGenerationSpec(raw: unknown): ValidationResult<Generatio
     if (confirmation.status === 'unconfirmed' && confirmation.confirmedAt !== null) {
       errors.push({ path: 'generationSpec.confirmation.confirmedAt', message: '未确认时 confirmedAt 必须为 null。' })
     }
+    if (confirmation.status === 'confirmed' && (confirmation.confirmedAt === null || confirmation.confirmedAt === undefined)) {
+      errors.push({ path: 'generationSpec.confirmation.confirmedAt', message: '已确认时 confirmedAt 不能为空。' })
+    }
   }
   return errors.length ? failure(errors) : success(raw as GenerationSpec)
 }

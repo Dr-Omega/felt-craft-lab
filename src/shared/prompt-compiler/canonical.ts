@@ -79,17 +79,38 @@ function contentSections(content: GenerationContentSpec): Pick<
   if (content.environmentDescription?.trim()) {
     sections.environment = content.environmentDescription.trim()
   }
-  const subjectsHaveOwnColors = content.primarySubjects.some(
-    (subject) => (subject.attributes?.filter((item) => item.trim().length > 0).length ?? 0) > 0
-  )
-  // Prefer colors bound to each subject; avoid a second global color list that can mix them up.
-  if (!subjectsHaveOwnColors && content.preferredColors?.length) {
-    sections.colors = `颜色偏${content.preferredColors.join('、')}`
+  const unboundColors = unboundPreferredColors(content)
+  if (unboundColors.length) {
+    const subjectsHaveOwnColors = content.primarySubjects.some(
+      (subject) => (subject.attributes?.filter((item) => item.trim().length > 0).length ?? 0) > 0
+    )
+    sections.colors = subjectsHaveOwnColors
+      ? `另外颜色偏${unboundColors.join('、')}`
+      : `颜色偏${unboundColors.join('、')}`
   }
   if (content.requiredElements?.length) {
     sections.required = `需要有${content.requiredElements.join('、')}`
   }
   return sections
+}
+
+/** Global preferredColors that are not already listed on any subject attributes. */
+function unboundPreferredColors(content: GenerationContentSpec): string[] {
+  const bound = new Set(
+    content.primarySubjects
+      .flatMap((subject) => subject.attributes ?? [])
+      .map((item) => item.trim())
+      .filter(Boolean)
+  )
+  const seen = new Set<string>()
+  const unbound: string[] = []
+  for (const color of content.preferredColors ?? []) {
+    const trimmed = color.trim()
+    if (!trimmed || bound.has(trimmed) || seen.has(trimmed)) continue
+    seen.add(trimmed)
+    unbound.push(trimmed)
+  }
+  return unbound
 }
 
 function negativeText(content: GenerationContentSpec): string {

@@ -40,6 +40,24 @@ export function isSkipClarificationAnswer(text: string): boolean {
   return SKIP_PHRASES.has(text.trim())
 }
 
+/**
+ * Soft pending answers like「没有 / 随便」must clear the question without writing
+ * the skip phrase into the field. Soft rounds stop so we do not re-ask.
+ */
+export function applySkipPendingAnswer(spec: GenerationSpec, pendingField: string): GenerationSpec {
+  const askedFields = spec.clarification.askedFields.includes(pendingField)
+    ? spec.clarification.askedFields
+    : [...spec.clarification.askedFields, pendingField]
+  return {
+    ...spec,
+    clarification: {
+      roundCount: Math.max(spec.clarification.roundCount, DEFAULT_CLARIFICATION_MAX_ROUNDS),
+      askedFields,
+      pendingField: null
+    }
+  }
+}
+
 function questionFor(field: string): ClarificationQuestion {
   return {
     field,

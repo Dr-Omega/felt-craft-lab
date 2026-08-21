@@ -80,7 +80,12 @@ class DeepSeekIntentProvider(IntentProvider):
 
         for pattern in REJECT_PATTERNS:
             if re.search(pattern, source):
-                return ok_intent_patch(patch=sanitize_generation_spec_patch({}, locked_role))
+                # Fail closed: never return an empty ok patch (local fallback would reinterpret).
+                return err_intent(
+                    code="QA_REJECTED",
+                    message="这句话不太适合画，请换一个想法。",
+                    retryable=False,
+                )
 
         base = (os.getenv("DEEPSEEK_BASE_URL") or DEFAULT_BASE).rstrip("/")
         url = f"{base}/chat/completions"

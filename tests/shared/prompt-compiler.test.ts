@@ -80,11 +80,35 @@ describe('confirm + Prompt Compiler', () => {
     expect(courtyardPrompt.value.sections.role).toContain('满幅场景')
   })
 
-  it('rejects confirming an incomplete core pattern', () => {
-    const empty = createEmptyGenerationSpec('core_pattern')
-    const refused = confirmGenerationSpec(empty)
-    expect(refused.ok).toBe(false)
-    if (refused.ok) return
-    expect(refused.reason).toBe('NOT_READY')
+  it('compiles unbound preferredColors even when subjects already have bound colors', () => {
+    const spec = createEmptyGenerationSpec('core_pattern')
+    spec.content.primarySubjects = [
+      { name: '熊猫', attributes: ['黑白'] },
+      { name: '皮球', attributes: ['红色'] }
+    ]
+    spec.content.actionOrRelationship = '抱着皮球'
+    spec.content.preferredColors = ['金色', '红色']
+    const confirmed = confirmGenerationSpec(spec, '2026-08-18T12:00:00.000Z')
+    expect(confirmed.ok).toBe(true)
+    if (!confirmed.ok) return
+    const compiled = compileCanonicalPrompt(confirmed.value)
+    expect(compiled.ok).toBe(true)
+    if (!compiled.ok) return
+    expect(compiled.value.sections.subject).toContain('黑白熊猫')
+    expect(compiled.value.sections.subject).toContain('红色皮球')
+    // Bound「红色」must not be repeated; unbound「金色」must survive.
+    expect(compiled.value.sections.colors).toBe('另外颜色偏金色')
+    expect(compiled.value.positiveText).toContain('另外颜色偏金色')
+  })
+
+  it('rejects confirmed specs that omit confirmedAt', () => {
+    const spec = createEmptyGenerationSpec('core_pattern')
+    spec.content.primarySubjects = [{ name: '玉兔', attributes: ['白色'] }]
+    spec.content.actionOrRelationship = '抱月饼'
+    spec.confirmation = { status: 'confirmed', confirmedAt: null }
+    const compiled = compileCanonicalPrompt(spec)
+    expect(compiled.ok).toBe(false)
+    if (compiled.ok) return
+    expect(compiled.reason).toBe('INVALID_SPEC')
   })
 })

@@ -19,6 +19,8 @@ CLOUD_SIZE = "1024*1024"
 PROMPT_CHAR_LIMIT = 800
 POLL_INTERVAL_SEC = 1.0
 POLL_TIMEOUT_SEC = 80.0
+# Hard cap for downloaded image bytes (matches preview PNG ceiling).
+MAX_WAN_IMAGE_BYTES = int(os.getenv("WAN_MAX_IMAGE_BYTES", str(8 * 1024 * 1024)))
 
 
 def _api_key() -> str:
@@ -155,14 +157,54 @@ class WanDashScopeProvider(ImageProvider):
         if not image_url.startswith("https://"):
             return err_image(code="IMAGE_UPSTREAM_ERROR")
         try:
-            resp = self._get(image_url, timeout=30)
+            resp = self._get(image_url, timeout=30, stream=True)
         except requests.Timeout:
             return err_image(code="IMAGE_TIMEOUT")
         except requests.RequestException:
             return err_image(code="IMAGE_NETWORK_ERROR")
-        if resp.status_code >= 400 or not resp.content:
+        if resp.status_code >= 400:
             return err_image(code="IMAGE_UPSTREAM_ERROR")
-        return {"ok": True, "result": {"image_bytes": resp.content}}
+        content_length = resp.headers.get("Content-Length") if hasattr(resp, "headers") else None
+        try:
+            if content_length is not None and int(content_length) > MAX_WAN_IMAGE_BYTES:
+                return err_image(
+                    code="PAYLOAD_TOO_LARGE",
+                    message="画出来的图太大了，请再试一次。",
+                    retryable=False,
+                )
+        except (TypeError, ValueError):
+            pass
+        chunks: list[bytes] = []
+        total = 0
+        try:
+            iterator = resp.iter_content(64 * 1024) if hasattr(resp, "iter_content") else None
+            if iterator is None:
+                raw = getattr(resp, "content", b"") or b""
+                if len(raw) > MAX_WAN_IMAGE_BYTES:
+                    return err_image(
+                        code="PAYLOAD_TOO_LARGE",
+                        message="画出来的图太大了，请再试一次。",
+                        retryable=False,
+                    )
+                if not raw:
+                    return err_image(code="IMAGE_UPSTREAM_ERROR")
+                return {"ok": True, "result": {"image_bytes": raw}}
+            for chunk in iterator:
+                if not chunk:
+                    continue
+                total += len(chunk)
+                if total > MAX_WAN_IMAGE_BYTES:
+                    return err_image(
+                        code="PAYLOAD_TOO_LARGE",
+                        message="画出来的图太大了，请再试一次。",
+                        retryable=False,
+                    )
+                chunks.append(chunk)
+        except requests.RequestException:
+            return err_image(code="IMAGE_NETWORK_ERROR")
+        if not chunks:
+            return err_image(code="IMAGE_UPSTREAM_ERROR")
+        return {"ok": True, "result": {"image_bytes": b"".join(chunks)}}
 
 
 def _json_body(resp: Any) -> dict[str, Any]:

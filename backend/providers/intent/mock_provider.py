@@ -6,9 +6,18 @@ import re
 from typing import Any
 
 from services.intent_sanitize import sanitize_generation_spec_patch
-from services.intent_types import ok_intent_patch
+from services.intent_types import err_intent, ok_intent_patch
 
 from .base import IntentProvider
+
+REJECT_PATTERNS = (
+    r"自杀",
+    r"色情",
+    r"暴力杀人",
+    r"炸弹",
+    r"毒品",
+    r"赌博",
+)
 
 KNOWN_SUBJECTS = (
     "玉兔",
@@ -58,6 +67,13 @@ class MockIntentProvider(IntentProvider):
     ) -> dict[str, Any]:
         _ = pending_field
         source = (text or "").strip()
+        for pattern in REJECT_PATTERNS:
+            if re.search(pattern, source):
+                return err_intent(
+                    code="QA_REJECTED",
+                    message="这句话不太适合画，请换一个想法。",
+                    retryable=False,
+                )
         subjects = []
         positions: list[tuple[str, int]] = []
         for name in KNOWN_SUBJECTS:

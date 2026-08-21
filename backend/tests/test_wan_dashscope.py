@@ -20,13 +20,19 @@ from services.guards import image_provider_allowed  # noqa: E402
 
 
 class _Resp:
-    def __init__(self, status_code: int, payload=None, content: bytes = b""):
+    def __init__(self, status_code: int, payload=None, content: bytes = b"", headers=None):
         self.status_code = status_code
         self._payload = payload or {}
         self.content = content
+        self.headers = headers or {}
 
     def json(self):
         return self._payload
+
+    def iter_content(self, chunk_size=65536):
+        data = self.content or b""
+        for i in range(0, len(data), chunk_size):
+            yield data[i : i + chunk_size]
 
 
 class WanDashScopeTests(unittest.TestCase):
@@ -98,6 +104,32 @@ class WanDashScopeTests(unittest.TestCase):
         self.assertTrue(result.get("ok"))
         self.assertEqual(captured["json"]["parameters"]["prompt_extend"], False)
         self.assertEqual(captured["json"]["parameters"]["n"], 1)
+
+    def test_download_rejects_oversized_content_length(self):
+        posts = [
+            _Resp(200, {"output": {"task_id": "task-3", "task_status": "PENDING"}}),
+        ]
+
+        def post(*_args, **_kwargs):
+            return posts.pop(0)
+
+        def get(url, **_kwargs):
+            if "tasks/" in str(url):
+                return _Resp(
+                    200,
+                    {"output": {"task_status": "SUCCEEDED", "results": [{"url": "https://cdn.example/big.png"}]}},
+                )
+            return _Resp(
+                200,
+                content=b"x" * 100,
+                headers={"Content-Length": str(9 * 1024 * 1024)},
+            )
+
+        with mock.patch.dict(os.environ, {"DASHSCOPE_API_KEY": "sk-test"}):
+            provider = WanDashScopeProvider(post=post, get=get, sleep=lambda _s: None)
+            result = provider.generate(positive_prompt="熊猫坐着")
+        self.assertFalse(result.get("ok"))
+        self.assertEqual(result["error"]["code"], "INVALID_ARGUMENT")
 
 
 if __name__ == "__main__":

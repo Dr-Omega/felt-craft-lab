@@ -1,5 +1,7 @@
 import type { GenerationSpecPatch, GenerationSubject } from '../contracts/generation-spec'
 import type { CreationIntentParseInput, CreationIntentParser } from './parser'
+import { isBlockedCreationIntentText, CreationIntentBlockedError } from './blocked'
+import { isSkipClarificationAnswer } from './clarification'
 import { resolveAssetRoleFromText } from './role-resolver'
 
 /** Characters / motifs first; held props later so plan cards list them as companions. */
@@ -165,6 +167,9 @@ function environmentFrom(text: string): string | undefined {
 export class LocalCreationIntentParser implements CreationIntentParser {
   async parse(input: CreationIntentParseInput): Promise<GenerationSpecPatch> {
     const text = input.text.trim()
+    if (isBlockedCreationIntentText(text)) {
+      throw new CreationIntentBlockedError()
+    }
     const decided = input.lockedRole
       ? { role: input.lockedRole }
       : resolveAssetRoleFromText(text)
@@ -219,6 +224,7 @@ function bindPendingField(
   pendingField: string | null | undefined
 ): void {
   if (!pendingField || !text) return
+  if (isSkipClarificationAnswer(text)) return
   if (pendingField === 'content.primarySubjects' && !content.primarySubjects?.length) {
     content.primarySubjects = [{ name: text.slice(0, 20) }]
     return

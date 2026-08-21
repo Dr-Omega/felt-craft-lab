@@ -190,4 +190,172 @@ describe('CreationIntentHost IPC', () => {
     }
     expect(host.snapshot({ sessionId: first.sessionId }).ok).toBe(false)
   })
+
+  it('deletes old preview on successful regenerate, keeps it when regenerate fails', async () => {
+    const deleted: string[] = []
+    const refs = [
+      'felt-resource://preview/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.png',
+      'felt-resource://preview/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.png'
+    ]
+    let saveIndex = 0
+    const host = new CreationIntentHost({
+      createId: (() => {
+        const ids = [
+          '55555555-5555-4555-8555-555555555551',
+          '55555555-5555-4555-8555-555555555552',
+          '55555555-5555-4555-8555-555555555553'
+        ]
+        let index = 0
+        return () => ids[index++] ?? `00000000-0000-4000-8000-${String(index).padStart(12, '0')}`
+      })(),
+      now: () => '2026-08-18T14:08:00.000Z',
+      saveTemporaryPng: () => ({ ok: true, ref: refs[Math.min(saveIndex++, refs.length - 1)] }),
+      deleteTemporaryPng: (ref) => {
+        deleted.push(ref)
+        return { ok: true }
+      },
+      generatePng: async () => Uint8Array.from([0x89, 0x50, 0x4e, 0x47])
+    })
+    const started = host.start({ lockedRole: 'core_pattern' })
+    expect(started.ok).toBe(true)
+    if (!started.ok) return
+    await host.submit({ sessionId: started.sessionId, text: '白色玉兔抱月饼，不要真实毛发' })
+    const confirmed = await host.confirm({ sessionId: started.sessionId })
+    expect(confirmed.ok).toBe(true)
+    if (!confirmed.ok) return
+    expect(confirmed.snapshot.candidate?.temporaryRef).toBe(refs[0])
+
+    const redrawn = await host.regenerate({ sessionId: started.sessionId })
+    expect(redrawn.ok).toBe(true)
+    if (!redrawn.ok) return
+    expect(redrawn.snapshot.candidate?.temporaryRef).toBe(refs[1])
+    expect(deleted).toContain(refs[0])
+
+    let calls = 0
+    const kept: string[] = []
+    const flaky = new CreationIntentHost({
+      createId: (() => {
+        const ids = [
+          '77777777-7777-4777-8777-777777777771',
+          '77777777-7777-4777-8777-777777777772',
+          '77777777-7777-4777-8777-777777777773'
+        ]
+        let index = 0
+        return () => ids[index++] ?? `00000000-0000-4000-8000-${String(index).padStart(12, '0')}`
+      })(),
+      now: () => '2026-08-18T14:08:00.000Z',
+      saveTemporaryPng: () => ({ ok: true, ref: refs[0] }),
+      deleteTemporaryPng: (ref) => {
+        kept.push(ref)
+        return { ok: true }
+      },
+      generatePng: async () => {
+        calls += 1
+        if (calls === 1) return Uint8Array.from([0x89, 0x50, 0x4e, 0x47])
+        throw new Error('provider down')
+      }
+    })
+    const okStart = flaky.start({ lockedRole: 'core_pattern' })
+    expect(okStart.ok).toBe(true)
+    if (!okStart.ok) return
+    await flaky.submit({ sessionId: okStart.sessionId, text: '白色玉兔抱月饼，不要真实毛发' })
+    await flaky.confirm({ sessionId: okStart.sessionId })
+    const failed = await flaky.regenerate({ sessionId: okStart.sessionId })
+    expect(failed.ok).toBe(false)
+    const after = flaky.snapshot({ sessionId: okStart.sessionId })
+    expect(after.ok).toBe(true)
+    if (!after.ok) return
+    expect(after.snapshot.candidate?.temporaryRef).toBe(refs[0])
+    expect(kept).not.toContain(refs[0])
+  })
+
+  it('deletes preview after accept and when sessions are evicted', async () => {
+    const deleted: string[] = []
+    const previewRef = 'felt-resource://preview/cccccccccccccccccccccccccccccccc.png'
+    const png = Uint8Array.from([0x89, 0x50, 0x4e, 0x47])
+    const host = new CreationIntentHost({
+      createId: (() => {
+        const ids = [
+          '88888888-8888-4888-8888-888888888881',
+          '88888888-8888-4888-8888-888888888882',
+          '8b4f4c7d-0b51-4c72-8b37-4e44dbb8c9f1',
+          '3f2b8a91-2d60-4c2b-9e02-71c4c21d3d6a'
+        ]
+        let index = 0
+        return () => ids[index++] ?? `00000000-0000-4000-8000-${String(index).padStart(12, '0')}`
+      })(),
+      now: () => '2026-08-18T14:08:00.000Z',
+      saveTemporaryPng: () => ({ ok: true, ref: previewRef }),
+      deleteTemporaryPng: (ref) => {
+        deleted.push(ref)
+        return { ok: true }
+      },
+      readTemporaryPng: () => ({ ok: true, bytes: png }),
+      ingestPersonalPng: (input) => ({
+        ok: true,
+        ref: `felt-resource://personal/${input.personalAssetId}/${input.versionId}/source.png`
+      })
+    })
+    const started = host.start({ lockedRole: 'core_pattern' })
+    expect(started.ok).toBe(true)
+    if (!started.ok) return
+    await host.submit({ sessionId: started.sessionId, text: '白色玉兔抱月饼，不要真实毛发' })
+    await host.confirm({ sessionId: started.sessionId })
+    const accepted = await host.accept({ sessionId: started.sessionId })
+    expect(accepted.ok).toBe(true)
+    expect(deleted).toContain(previewRef)
+
+    deleted.length = 0
+    const evictionIds = Array.from({ length: MAX_CREATION_INTENT_SESSIONS + 1 }, (_, index) => {
+      const n = String(index + 1).padStart(12, '0')
+      return `bbbbbbbb-bbbb-4bbb-8bbb-${n}`
+    })
+    let saveN = 0
+    const evictionHost = new CreationIntentHost({
+      createId: () => evictionIds[saveN++] ?? `00000000-0000-4000-8000-${String(saveN).padStart(12, '0')}`,
+      now: () => '2026-08-18T14:08:00.000Z',
+      saveTemporaryPng: () => ({
+        ok: true,
+        ref: `felt-resource://preview/${String(saveN).padStart(32, 'a')}.png`
+      }),
+      deleteTemporaryPng: (ref) => {
+        deleted.push(ref)
+        return { ok: true }
+      }
+    })
+    const first = evictionHost.start({ lockedRole: 'core_pattern' })
+    expect(first.ok).toBe(true)
+    if (!first.ok) return
+    await evictionHost.submit({ sessionId: first.sessionId, text: '白色玉兔抱月饼，不要真实毛发' })
+    await evictionHost.confirm({ sessionId: first.sessionId })
+    const firstRef = evictionHost.snapshot({ sessionId: first.sessionId })
+    expect(firstRef.ok).toBe(true)
+    if (!firstRef.ok) return
+    const doomed = firstRef.snapshot.candidate?.temporaryRef
+    expect(doomed).toBeTruthy()
+    for (let i = 0; i < MAX_CREATION_INTENT_SESSIONS; i += 1) {
+      expect(evictionHost.start({}).ok).toBe(true)
+    }
+    expect(evictionHost.snapshot({ sessionId: first.sessionId }).ok).toBe(false)
+    expect(deleted).toContain(doomed)
+  })
+
+  it('returns QA_BLOCKED from submit when the parser blocks the utterance', async () => {
+    const { CreationIntentBlockedError } = await import('../../src/shared/creation-intent')
+    const host = new CreationIntentHost({
+      createId: () => '99999999-9999-4999-8999-999999999999',
+      parser: {
+        parse: async () => {
+          throw new CreationIntentBlockedError()
+        }
+      }
+    })
+    const started = host.start({ lockedRole: 'core_pattern' })
+    expect(started.ok).toBe(true)
+    if (!started.ok) return
+    const blocked = await host.submit({ sessionId: started.sessionId, text: '炸弹' })
+    expect(blocked.ok).toBe(false)
+    if (blocked.ok) return
+    expect(blocked.error.code).toBe('QA_BLOCKED')
+  })
 })
