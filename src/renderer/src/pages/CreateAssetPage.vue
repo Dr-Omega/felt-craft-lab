@@ -218,12 +218,13 @@ async function startWork(): Promise<void> {
           <p v-if="!controller.accepted" class="muted">
             喜欢这张就去编辑器装饰；不喜欢就再画一张，方案还在。
           </p>
-          <img
-            v-if="controller.candidateRef"
-            class="candidate-image"
-            :src="controller.candidateRef"
-            alt="生成的核心图案预览"
-          />
+          <div v-if="controller.candidateRef" class="candidate-stage" data-testid="candidate-stage">
+            <img
+              class="candidate-image"
+              :src="controller.candidateRef"
+              alt="生成的核心图案预览"
+            />
+          </div>
           <p v-else class="muted">图还没写好，请再试一次。</p>
           <div
             v-if="controller.quality"
@@ -515,14 +516,33 @@ textarea {
   font-size: 1rem;
 }
 
-.candidate-image {
-  display: block;
+.candidate-stage {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: min(100%, 220px);
   max-height: 160px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  /* Checkerboard so transparent PNG alpha is visible in preview. */
+  background-color: #ece8e1;
+  background-image:
+    linear-gradient(45deg, #d9d3c8 25%, transparent 25%),
+    linear-gradient(-45deg, #d9d3c8 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #d9d3c8 75%),
+    linear-gradient(-45deg, transparent 75%, #d9d3c8 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+}
+
+.candidate-image {
+  display: block;
+  width: 100%;
+  max-height: 144px;
   height: auto;
   object-fit: contain;
-  border: 1px solid var(--line);
-  background: #fff;
+  background: transparent;
 }
 
 .quality {
