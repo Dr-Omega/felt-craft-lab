@@ -19,6 +19,8 @@ const recording = ref(false)
 const transcribing = ref(false)
 const guideOpen = ref(typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(GUIDE_STORAGE_KEY) !== '1' : true)
 const guideStep = ref(0)
+/** ASR/mic failure on this page — offer「再说一次」separate from intent retry. */
+const voiceRetry = ref(false)
 const canConfirm = computed(() => controller.phase === 'ready_to_confirm')
 const canDecideForMe = computed(() => controller.phase === 'awaiting_clarification')
 const compiled = computed(
@@ -62,16 +64,26 @@ function reopenGuide(): void {
   guideOpen.value = true
 }
 
+async function retryVoice(): Promise<void> {
+  voiceRetry.value = false
+  controller.error = null
+  if (!recording.value && !transcribing.value) {
+    await toggleVoice()
+  }
+}
+
 async function toggleVoice(): Promise<void> {
   if (compiled.value || transcribing.value || controller.busy) return
   controller.error = null
   controller.retryAction = null
+  voiceRetry.value = false
   if (!recording.value) {
     try {
       await recorder.start()
       recording.value = true
     } catch (error) {
-      controller.error = error instanceof Error ? error.message : '打不开麦克风，请允许后重试。'
+      controller.error = error instanceof Error ? error.message : '打不开麦克风。请允许使用麦克风，或先在上面打字。'
+      voiceRetry.value = true
     }
     return
   }
@@ -90,11 +102,14 @@ async function toggleVoice(): Promise<void> {
     )
     if (!parsed.ok) {
       controller.error = parsed.message
+      voiceRetry.value = parsed.reason === 'empty' || parsed.reason === 'network' || parsed.reason === 'unknown'
       return
     }
     await controller.acceptUtterance(parsed.transcript)
   } catch (error) {
-    controller.error = error instanceof Error ? error.message : '语音识别暂时无法完成，请稍后重试。'
+    controller.error =
+      error instanceof Error ? error.message : '语音识别暂时用不了。请稍后再试，或先在上面打字。'
+    voiceRetry.value = true
   } finally {
     transcribing.value = false
   }
@@ -104,6 +119,7 @@ function resetAll(): void {
   recorder.cancel()
   recording.value = false
   transcribing.value = false
+  voiceRetry.value = false
   controller.reset()
 }
 
@@ -200,7 +216,7 @@ async function startWork(): Promise<void> {
           <p v-else class="muted">可以再补一句（颜色、必须有、场景、不要…），或点「就这样画」。</p>
         </div>
 
-        <div v-if="controller.error" class="error-box">
+        <div v-if="controller.error" class="error-box" data-testid="create-error">
           <p class="error">{{ controller.error }}</p>
           <button
             v-if="controller.canRetry"
@@ -210,6 +226,16 @@ async function startWork(): Promise<void> {
             @click="controller.retryLastFailure()"
           >
             再试一次
+          </button>
+          <button
+            v-else-if="voiceRetry && !compiled"
+            type="button"
+            class="primary"
+            data-testid="voice-retry"
+            :disabled="voiceBusy"
+            @click="retryVoice()"
+          >
+            再说一次
           </button>
         </div>
 

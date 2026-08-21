@@ -8,7 +8,11 @@ import {
   summarizeCreationSpec,
   type CreationIntentUiClient
 } from '../../src/renderer/src/services/creation-intent.controller'
-import { blobToBase64, parseAsrEnvelope } from '../../src/renderer/src/services/voice-input'
+import {
+  ASR_EMPTY_VOICE_MESSAGE,
+  blobToBase64,
+  parseAsrEnvelope
+} from '../../src/renderer/src/services/voice-input'
 import { createSceneWithCorePattern } from '../../src/renderer/src/catalog/ywn-catalog'
 import { createEmptyGenerationSpec } from '../../src/shared/contracts'
 
@@ -104,7 +108,8 @@ describe('voice transcript parsing', () => {
     ).toEqual({ ok: true, transcript: '白色玉兔抱月饼' })
     expect(parseAsrEnvelope({ ok: false, error: { code: 'ASR_EMPTY_TRANSCRIPT', message: '空', retryable: false } })).toEqual({
       ok: false,
-      message: '请再说一次。'
+      message: ASR_EMPTY_VOICE_MESSAGE,
+      reason: 'empty'
     })
   })
 

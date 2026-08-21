@@ -2,31 +2,53 @@ import { MAX_CREATION_INTENT_TEXT_CHARS } from '@shared/creation-intent'
 
 export type AsrParseResult =
   | { ok: true; transcript: string }
-  | { ok: false; message: string }
+  | { ok: false; message: string; reason: AsrFailReason }
 
-const EMPTY_VOICE_MESSAGE = '请再说一次。'
-const FAIL_VOICE_MESSAGE = '语音识别暂时无法完成，请稍后重试。'
+export type AsrFailReason = 'empty' | 'mic' | 'network' | 'unknown'
+
+/** Child-facing copy for create-asset voice failures. */
+export const ASR_EMPTY_VOICE_MESSAGE =
+  '没有听清。请靠近麦克风再说一次，也可以在上面打字。'
+export const ASR_FAIL_VOICE_MESSAGE =
+  '语音识别暂时用不了。请稍后再试，或先在上面打字。'
+export const ASR_MIC_VOICE_MESSAGE = '打不开麦克风。请允许使用麦克风，或先在上面打字。'
 
 export function parseAsrEnvelope(raw: unknown): AsrParseResult {
-  if (!raw || typeof raw !== 'object') return { ok: false, message: FAIL_VOICE_MESSAGE }
+  if (!raw || typeof raw !== 'object') {
+    return { ok: false, message: ASR_FAIL_VOICE_MESSAGE, reason: 'unknown' }
+  }
   const env = raw as {
     ok?: unknown
-    result?: { transcript?: unknown }
+    result?: { transcript?: unknown; empty?: unknown }
     error?: { code?: unknown; message?: unknown }
   }
   if (env.ok === false) {
     const code = env.error?.code
     if (code === 'ASR_EMPTY_TRANSCRIPT' || code === 'RECORDING_EMPTY') {
-      return { ok: false, message: EMPTY_VOICE_MESSAGE }
+      return { ok: false, message: ASR_EMPTY_VOICE_MESSAGE, reason: 'empty' }
     }
     if (code === 'MIC_PERMISSION_DENIED') {
-      return { ok: false, message: '打不开麦克风，请允许后重试。' }
+      return { ok: false, message: ASR_MIC_VOICE_MESSAGE, reason: 'mic' }
+    }
+    if (
+      code === 'ASR_TIMEOUT' ||
+      code === 'ASR_NETWORK_ERROR' ||
+      code === 'UNKNOWN' ||
+      code === 'REQUEST_CANCELLED'
+    ) {
+      return { ok: false, message: ASR_FAIL_VOICE_MESSAGE, reason: 'network' }
     }
     const message = typeof env.error?.message === 'string' ? env.error.message.trim() : ''
-    return { ok: false, message: message || FAIL_VOICE_MESSAGE }
+    return {
+      ok: false,
+      message: message || ASR_FAIL_VOICE_MESSAGE,
+      reason: 'unknown'
+    }
   }
   const transcript = typeof env.result?.transcript === 'string' ? env.result.transcript.trim() : ''
-  if (!transcript) return { ok: false, message: EMPTY_VOICE_MESSAGE }
+  if (!transcript || env.result?.empty === true) {
+    return { ok: false, message: ASR_EMPTY_VOICE_MESSAGE, reason: 'empty' }
+  }
   return { ok: true, transcript: transcript.slice(0, MAX_CREATION_INTENT_TEXT_CHARS) }
 }
 
@@ -54,7 +76,7 @@ export class MicRecorder {
     try {
       this.stream = await navigator.mediaDevices.getUserMedia({ audio: true })
     } catch {
-      throw new Error('打不开麦克风，请允许后重试。')
+      throw new Error(ASR_MIC_VOICE_MESSAGE)
     }
     const mimeType = pickRecorderMime()
     this.chunks = []
@@ -69,14 +91,14 @@ export class MicRecorder {
     const media = this.media
     if (!media) throw new Error('还没有开始说话。')
     const blob = await new Promise<Blob>((resolve, reject) => {
-      media.onerror = () => reject(new Error(FAIL_VOICE_MESSAGE))
+      media.onerror = () => reject(new Error(ASR_FAIL_VOICE_MESSAGE))
       media.onstop = () => {
         resolve(new Blob(this.chunks, { type: media.mimeType || 'audio/webm' }))
       }
       media.stop()
     })
     this.cleanup()
-    if (blob.size === 0) throw new Error(EMPTY_VOICE_MESSAGE)
+    if (blob.size === 0) throw new Error(ASR_EMPTY_VOICE_MESSAGE)
     return { blob, mimeType: blob.type || 'audio/webm' }
   }
 
