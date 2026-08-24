@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "status": "NOT_RUN",
+  "configuration": {
+    "cpuOnly": true,
+    "alphaThreshold": 128,
+    "warmRuns": 5,
+    "internalHoleErosionKernel": 5,
+    "requiredCaseCount": 15
+  },
+  "datasetStatus": {
+    "completeCases": 1,
+    "requiredCases": 15,
+    "acceptanceReady": false
+  },
+  "caseResults": [],
+  "notes": [
+    "Template only: no model weight was installed and no benchmark result is claimed.",
+    "Add reviewed source/ground_truth pairs before using --all-cases."
+  ]
+}

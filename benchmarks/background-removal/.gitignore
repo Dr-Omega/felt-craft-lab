@@ -1,0 +1,8 @@
+models/rembg-cache/
+models/*.onnx
+outputs/*/
+!outputs/.gitkeep
+results/benchmark-results.json
+results/benchmark-summary.md
+results/comparison.html
+__pycache__/

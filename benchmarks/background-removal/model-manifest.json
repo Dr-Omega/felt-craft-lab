@@ -1,0 +1,57 @@
+{
+  "models": {
+    "current-rule": {
+      "displayName": "Current Rule Algorithm",
+      "source": "repository backend/services/image_postprocess.py",
+      "license": "Project source licence",
+      "onnxAvailable": false,
+      "cpuAvailable": true,
+      "cudaRequired": false,
+      "fp16Feasibility": "not applicable",
+      "int8Feasibility": "not applicable",
+      "estimatedMobileSuitability": "high: no learned model, validate quality separately"
+    },
+    "isnet-anime": {
+      "displayName": "ISNet Anime",
+      "rembgSession": "isnet-anime",
+      "cacheFile": "isnet-anime.onnx",
+      "source": "https://github.com/SkyTNT/anime-segmentation and https://github.com/danielgatis/rembg",
+      "sourceVersion": "Record exact downloaded rembg release asset SHA-256 before reporting results",
+      "license": "Upstream code: Apache-2.0; weight redistribution licence must be verified for the exact asset",
+      "onnxAvailable": true,
+      "cpuAvailable": true,
+      "cudaRequired": false,
+      "fp16Feasibility": "possible only when the chosen ONNX Runtime CPU build and graph support it; measure separately",
+      "int8Feasibility": "not evaluated; requires accuracy regression against this dataset",
+      "estimatedMobileSuitability": "medium: approximately 176 MB reference ONNX asset; benchmark before considering deployment"
+    },
+    "birefnet-general-lite": {
+      "displayName": "BiRefNet General Lite",
+      "rembgSession": "birefnet-general-lite",
+      "cacheFile": "birefnet-general-lite.onnx",
+      "source": "https://github.com/ZhengPeng7/BiRefNet and https://huggingface.co/onnx-community/BiRefNet-ONNX",
+      "sourceVersion": "Pin exact ONNX model revision and SHA-256 before benchmark reporting",
+      "license": "BiRefNet code: MIT; verify the exact exported ONNX weight licence before redistribution",
+      "onnxAvailable": true,
+      "cpuAvailable": true,
+      "cudaRequired": false,
+      "fp16Feasibility": "ONNX FP16 exports exist; CPU provider support and accuracy must be measured",
+      "int8Feasibility": "not evaluated; requires representative quantization and accuracy regression",
+      "estimatedMobileSuitability": "candidate only: Lite/tiny backbone is expected to be the lower-cost BiRefNet variant"
+    },
+    "birefnet-general": {
+      "displayName": "BiRefNet General",
+      "rembgSession": "birefnet-general",
+      "cacheFile": "birefnet-general.onnx",
+      "source": "https://github.com/ZhengPeng7/BiRefNet and https://huggingface.co/onnx-community/BiRefNet-ONNX",
+      "sourceVersion": "Pin exact ONNX model revision and SHA-256 before benchmark reporting",
+      "license": "BiRefNet code: MIT; verify the exact exported ONNX weight licence before redistribution",
+      "onnxAvailable": true,
+      "cpuAvailable": true,
+      "cudaRequired": false,
+      "fp16Feasibility": "ONNX FP16 exports exist; CPU provider support and accuracy must be measured",
+      "int8Feasibility": "not evaluated; requires representative quantization and accuracy regression",
+      "estimatedMobileSuitability": "low pending measurement: full model is substantially heavier than Lite"
+    }
+  }
+}

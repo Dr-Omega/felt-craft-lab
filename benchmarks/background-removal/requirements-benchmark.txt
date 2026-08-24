@@ -1,0 +1,5 @@
+# Benchmark-only dependencies. Do not add these to backend/requirements.txt.
+Pillow>=10.0
+psutil>=5.9
+# Optional model adapter. Installs ONNX Runtime CPU through its dependency graph.
+rembg[cpu]>=2.0.60
