@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "reviews": [
+    {
+      "caseId": "BR-001",
+      "modelId": "current-rule",
+      "boundaryQuality": "A",
+      "criticalStructure": "PASS",
+      "visibleInternalHole": false,
+      "hardFailReasons": []
+    }
+  ]
+}

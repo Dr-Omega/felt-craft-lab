@@ -28,6 +28,7 @@ from benchmark_lib import (  # noqa: E402
     load_config,
     load_manifest,
     model_run_status,
+    model_artifact_record,
     performance_record,
     run_timed,
 )
@@ -39,8 +40,13 @@ def parse_args() -> argparse.Namespace:
     scope.add_argument("--case", help="run one case for plumbing/debugging")
     scope.add_argument("--all-cases", action="store_true", help="run the complete reviewed dataset")
     parser.add_argument("--models", nargs="+", default=["all"], help="model IDs or 'all'")
-    parser.add_argument("--allow-model-download", action="store_true", help="allow optional rembg adapter to fetch weights into benchmark-only cache")
+    parser.add_argument("--allow-model-download", action="store_true", help="debug-only: permit model preparation/download; rejected with --all-cases")
     return parser.parse_args()
+
+
+def validate_run_mode(args: argparse.Namespace) -> None:
+    if args.all_cases and args.allow_model_download:
+        raise ValueError("--allow-model-download is prepare/debug-only and is forbidden for --all-cases acceptance runs")
 
 
 def find_source(case_dir: Path) -> Path:
@@ -145,12 +151,7 @@ def initial_result(config: dict[str, Any], selected_models: list[str], args: arg
         "reproducibility": {
             "runtimeVersions": installed_runtime_versions(),
             "modelArtifacts": {
-                model_id: {
-                    "source": manifest[model_id].get("source"),
-                    "exactModelRevision": manifest[model_id].get("exactModelRevision"),
-                    "modelSha256": manifest[model_id].get("modelSha256"),
-                    "weightLicenseVerificationStatus": manifest[model_id].get("weightLicenseVerificationStatus"),
-                }
+                model_id: {"source": manifest[model_id].get("source"), **model_artifact_record(model_id, manifest[model_id])}
                 for model_id in selected_models
             },
         },
@@ -177,6 +178,14 @@ def write_results(result: dict[str, Any]) -> None:
     write_comparison_html(result)
 
 
+def write_run_result(result: dict[str, Any]) -> None:
+    """Persist raw execution only. Reviews and final reports are finalized separately."""
+    result["status"] = classify_benchmark_status(result)
+    results_dir = BENCHMARK_ROOT / "results"
+    results_dir.mkdir(exist_ok=True)
+    (results_dir / "benchmark-run.json").write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
 def mean_or_none(values: list[float | None]) -> float | None:
     observed = [value for value in values if value is not None]
     return sum(observed) / len(observed) if observed else None
@@ -195,7 +204,6 @@ def write_summary(result: dict[str, Any]) -> None:
     lines.extend([
         "## Per-model aggregate", "",
         "| Model | Cases | subjectRetention mean | backgroundClearRate mean | internalHoleRate mean | IoU mean | Hard fails | Initialize ms | First inference ms | Warm median ms | P95 ms | Process peak RSS MB | Model bytes |",
-        "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
     ])
     for model_id, model in result["models"].items():
         rows = [row for row in result["caseResults"] if row["modelId"] == model_id and row["status"] == "SUCCESS"]
@@ -207,7 +215,7 @@ def write_summary(result: dict[str, Any]) -> None:
             model_id, str(len(rows)), markdown_value(metric("subjectRetention")), markdown_value(metric("backgroundClearRate")),
             markdown_value(metric("internalHoleRate")), markdown_value(metric("foregroundIoU")), str(hard_fails),
             markdown_value(perf("initializeMs")), markdown_value(perf("firstInferenceMs")), markdown_value(perf("warmInferenceMedianMs")),
-            markdown_value(perf("warmInferenceP95Ms")), markdown_value(perf("processPeakRssMb")), markdown_value(model_bytes),
+            markdown_value(perf("warmInferenceP95Ms")), markdown_value(model.get("processPeakRssMb")), markdown_value(model_bytes),
         ]) + " |")
     lines.extend(["", "## Per-case matrix", "", "| Case | Model | Status | Retention | Clear rate | Internal hole | IoU | Boundary | Critical structure |", "| --- | --- | --- | ---: | ---: | ---: | ---: | --- | --- |"])
     for row in result["caseResults"]:
@@ -243,7 +251,7 @@ def write_comparison_html(result: dict[str, Any]) -> None:
                 cells.append(f'<figure class="missing"><figcaption>{label}<br>NOT RUN</figcaption></figure>')
         rows.append(f"<h2>{case_id}</h2><section>{''.join(cells)}</section>")
     html = """<!doctype html><html><head><meta charset=\"utf-8\"><title>Background-removal comparison</title>
-<style>body{font-family:system-ui;margin:24px;background:#f6f7f8;color:#18212b}section{display:grid;grid-template-columns:repeat(6,minmax(145px,1fr));gap:12px}figure{margin:0;background:white;padding:8px;border:1px solid #d6dbe0}img{width:100%;aspect-ratio:1;object-fit:contain;background:checkerboard}figcaption{font-size:13px;margin-top:6px}.missing{display:grid;place-items:center;min-height:150px;color:#6c7885;text-align:center}@media(max-width:900px){section{grid-template-columns:repeat(2,minmax(145px,1fr))}}</style>
+<style>body{font-family:system-ui;margin:24px;background:#f6f7f8;color:#18212b}section{display:grid;grid-template-columns:repeat(6,minmax(145px,1fr));gap:12px}figure{margin:0;background:white;padding:8px;border:1px solid #d6dbe0}img{width:100%;aspect-ratio:1;object-fit:contain;background-color:#fff;background-image:conic-gradient(#e5e7eb 25%,#fff 0 50%,#e5e7eb 0 75%,#fff 0);background-size:16px 16px}figcaption{font-size:13px;margin-top:6px}.missing{display:grid;place-items:center;min-height:150px;color:#6c7885;text-align:center}@media(max-width:900px){section{grid-template-columns:repeat(2,minmax(145px,1fr))}}</style>
 </head><body><h1>Background-removal visual comparison</h1><p>Inspect deleted subject areas, interior holes, retained background, edges and critical structures. Panels without a generated PNG are explicitly NOT RUN.</p>""" + "".join(rows) + "</body></html>"
     (BENCHMARK_ROOT / "results" / "comparison.html").write_text(html, encoding="utf-8")
 
@@ -259,20 +267,35 @@ def main() -> int:
     args = parse_args()
     config = load_config()
     manifest = load_manifest()
+    validate_run_mode(args)
     selected_models = config["modelOrder"] if args.models == ["all"] else args.models
     unknown = [model for model in selected_models if model not in manifest]
     if unknown:
         raise ValueError(f"unknown models: {', '.join(unknown)}")
     cases = load_cases(args, config)
     result = initial_result(config, selected_models, args, cases, manifest)
+    adapters = {model_id: create_adapter(model_id, allow_model_download=args.allow_model_download) for model_id in selected_models}
+    availability = {model_id: adapter.availability() for model_id, adapter in adapters.items()}
+
+    # Formal acceptance must prove every artifact is locally present and
+    # verified before *any* timed model initialization or inference begins.
+    if args.all_cases and not all(check.available for check in availability.values()):
+        for model_id in selected_models:
+            check = availability[model_id]
+            reason = check.reason or "formal acceptance preflight failed"
+            result["models"][model_id] = {"status": "NOT_RUN", "initializeStatus": "NOT_RUN", "reason": reason, "metadata": manifest[model_id], "artifact": model_artifact_record(model_id, manifest[model_id])}
+            for metadata, _source_path, _gt_path, _case_dir in cases:
+                result["caseResults"].append({"caseId": metadata["caseId"], "modelId": model_id, "status": "NOT_RUN", "reason": reason})
+        write_run_result(result)
+        return 0
 
     for model_id in selected_models:
-        adapter = create_adapter(model_id, allow_model_download=args.allow_model_download)
-        availability = adapter.availability()
-        if not availability.available:
-            result["models"][model_id] = {"status": "NOT_RUN", "initializeStatus": "NOT_RUN", "reason": availability.reason, "metadata": manifest[model_id]}
+        adapter = adapters[model_id]
+        check = availability[model_id]
+        if not check.available:
+            result["models"][model_id] = {"status": "NOT_RUN", "initializeStatus": "NOT_RUN", "reason": check.reason, "metadata": manifest[model_id], "artifact": model_artifact_record(model_id, manifest[model_id])}
             for metadata, _source_path, _gt_path, _case_dir in cases:
-                result["caseResults"].append({"caseId": metadata["caseId"], "modelId": model_id, "status": "NOT_RUN", "reason": availability.reason})
+                result["caseResults"].append({"caseId": metadata["caseId"], "modelId": model_id, "status": "NOT_RUN", "reason": check.reason})
             continue
         rss_sampler = ProcessRssSampler(int(config.get("rssSampleIntervalMs", 10)))
         rss_sampler.start()
@@ -280,11 +303,11 @@ def main() -> int:
             initialize_started = time.perf_counter()
             adapter.initialize()
             initialize_ms = (time.perf_counter() - initialize_started) * 1000
-            result["models"][model_id] = {"status": "INITIALIZED", "initializeStatus": "SUCCESS", "metadata": manifest[model_id], "modelSizeBytes": adapter.model_size_bytes, "initializeMs": initialize_ms}
+            result["models"][model_id] = {"status": "INITIALIZED", "initializeStatus": "SUCCESS", "metadata": manifest[model_id], "modelSizeBytes": adapter.model_size_bytes, "initializeMs": initialize_ms, "artifact": model_artifact_record(model_id, manifest[model_id])}
         except Exception as exc:  # noqa: BLE001
             rss_sampler.stop()
             reason = f"adapter initialization failed: {type(exc).__name__}: {exc}"
-            result["models"][model_id] = {"status": "FAILED", "initializeStatus": "ERROR", "reason": reason, "metadata": manifest[model_id]}
+            result["models"][model_id] = {"status": "FAILED", "initializeStatus": "ERROR", "reason": reason, "metadata": manifest[model_id], "artifact": model_artifact_record(model_id, manifest[model_id])}
             for metadata, _source_path, _gt_path, _case_dir in cases:
                 result["caseResults"].append({"caseId": metadata["caseId"], "modelId": model_id, "status": "ERROR", "reason": reason})
             continue
@@ -302,21 +325,16 @@ def main() -> int:
                     "modelId": model_id,
                     "status": "SUCCESS",
                     "metrics": calculate_metrics(output, ground_truth, config),
-                    "performance": performance_record(initialize_ms, first_inference_ms, warm_ms, model_size_bytes=adapter.model_size_bytes, output=output, process_peak_rss_mb=rss_sampler.peak_rss_mb),
-                    "manualReview": {
-                        "boundaryQuality": None,
-                        "criticalStructure": None,
-                        "visibleInternalHole": None,
-                        "hardFailReasons": [],
-                        "finalVerdict": "UNREVIEWED",
-                    },
+                    "performance": performance_record(initialize_ms, first_inference_ms, warm_ms, model_size_bytes=adapter.model_size_bytes, output=output),
                 })
             except Exception as exc:  # noqa: BLE001
                 result["caseResults"].append({"caseId": metadata["caseId"], "modelId": model_id, "status": "ERROR", "reason": f"{type(exc).__name__}: {exc}", "traceback": traceback.format_exc(limit=3)})
         rss_sampler.stop()
         model_rows = [row for row in result["caseResults"] if row["modelId"] == model_id]
         result["models"][model_id]["status"] = model_run_status(model_rows, len(cases))
-    write_results(result)
+        result["models"][model_id]["processPeakRssMb"] = rss_sampler.peak_rss_mb
+        result["models"][model_id]["artifact"] = model_artifact_record(model_id, manifest[model_id])
+    write_run_result(result)
     return 0
 
 

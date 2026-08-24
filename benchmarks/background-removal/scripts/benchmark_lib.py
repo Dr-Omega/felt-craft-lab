@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import hashlib
 import statistics
 import sys
 import threading
@@ -21,6 +22,7 @@ from PIL import Image, ImageChops, ImageFilter  # noqa: E402
 BENCHMARK_ROOT = Path(__file__).resolve().parent.parent
 REPO_ROOT = BENCHMARK_ROOT.parents[1]
 BACKEND_ROOT = REPO_ROOT / "backend"
+MODEL_CACHE_ROOT = BENCHMARK_ROOT / "models" / "rembg-cache"
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -150,7 +152,7 @@ class RembgAdapter(BackgroundRemover):
         self.allow_model_download = allow_model_download
         self._session: Any | None = None
         self._remove: Any | None = None
-        self.cache_root = BENCHMARK_ROOT / "models" / "rembg-cache"
+        self.cache_root = MODEL_CACHE_ROOT
 
     @property
     def _model_path(self) -> Path:
@@ -161,8 +163,9 @@ class RembgAdapter(BackgroundRemover):
         return self._model_path.stat().st_size if self._model_path.is_file() else None
 
     def availability(self) -> AdapterAvailability:
-        if not self.allow_model_download and not self._model_path.is_file():
-            return AdapterAvailability(False, f"model not cached at benchmark-only path: {self._model_path.name}")
+        artifact = model_artifact_record(self.model_id, self.metadata)
+        if not self.allow_model_download and not artifact["artifactVerified"]:
+            return AdapterAvailability(False, artifact["verificationReason"])
         try:
             import rembg  # noqa: F401 # pylint: disable=import-outside-toplevel,unused-import
         except ImportError:
@@ -178,6 +181,9 @@ class RembgAdapter(BackgroundRemover):
 
         self._remove = remove
         self._session = new_session(str(self.metadata["rembgSession"]))
+        artifact = model_artifact_record(self.model_id, self.metadata)
+        if not artifact["artifactVerified"]:
+            raise RuntimeError(artifact["verificationReason"])
 
     def remove(self, source: Image.Image) -> Image.Image:
         if self._remove is None or self._session is None:
@@ -195,6 +201,64 @@ def create_adapter(model_id: str, *, allow_model_download: bool) -> BackgroundRe
     return RembgAdapter(model_id, manifest[model_id], allow_model_download=allow_model_download)
 
 
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as file_handle:
+        for chunk in iter(lambda: file_handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def model_artifact_record(model_id: str, metadata: dict[str, Any]) -> dict[str, Any]:
+    """Inspect the local artifact; manifest values alone never verify a weight."""
+    exact_revision = metadata.get("exactModelRevision")
+    license_status = metadata.get("weightLicenseVerificationStatus")
+    if model_id == "current-rule":
+        return {
+            "modelPath": "NOT_APPLICABLE",
+            "modelSizeBytes": None,
+            "expectedSha256": "NOT_APPLICABLE",
+            "actualSha256": "NOT_APPLICABLE",
+            "actualModelSha256": "NOT_APPLICABLE",
+            "sha256Match": "NOT_APPLICABLE",
+            "exactModelRevision": exact_revision,
+            "weightLicenseVerificationStatus": license_status,
+            "artifactVerified": True,
+            "verificationReason": None,
+        }
+    cache_file = str(metadata["cacheFile"])
+    path = MODEL_CACHE_ROOT / cache_file
+    expected = metadata.get("modelSha256")
+    try:
+        display_path = str(path.relative_to(BENCHMARK_ROOT))
+    except ValueError:
+        display_path = str(path)
+    record: dict[str, Any] = {
+        "modelPath": display_path,
+        "modelSizeBytes": path.stat().st_size if path.is_file() else None,
+        "expectedSha256": expected,
+        "actualSha256": sha256_file(path) if path.is_file() else None,
+        "exactModelRevision": exact_revision,
+        "weightLicenseVerificationStatus": license_status,
+    }
+    record["actualModelSha256"] = record["actualSha256"]
+    record["sha256Match"] = bool(expected and record["actualSha256"] and str(expected).lower() == str(record["actualSha256"]).lower())
+    record["artifactVerified"] = bool(record["sha256Match"] and exact_revision and license_status == "VERIFIED")
+    if not path.is_file():
+        record["verificationReason"] = f"model artifact is not cached: {cache_file}"
+    elif not expected:
+        record["verificationReason"] = f"model artifact has no expected SHA-256 in manifest: {cache_file}"
+    elif not record["sha256Match"]:
+        record["verificationReason"] = f"model artifact SHA-256 mismatch: {cache_file}"
+    elif not exact_revision:
+        record["verificationReason"] = f"model artifact exact revision is not recorded: {cache_file}"
+    elif license_status != "VERIFIED":
+        record["verificationReason"] = f"model artifact licence is not verified: {cache_file}"
+    else:
+        record["verificationReason"] = None
+    return record
+
+
 def run_timed(adapter: BackgroundRemover, source: Image.Image, warm_runs: int) -> tuple[Image.Image, float, list[float]]:
     """Return first inference output/timing, then repeated warm timings."""
     start = time.perf_counter()
@@ -208,14 +272,13 @@ def run_timed(adapter: BackgroundRemover, source: Image.Image, warm_runs: int) -
     return first, first_inference_ms, samples
 
 
-def performance_record(initialize_ms: float, first_inference_ms: float, warm_ms: list[float], *, model_size_bytes: int | None, output: Image.Image, process_peak_rss_mb: float | None) -> dict[str, Any]:
+def performance_record(initialize_ms: float, first_inference_ms: float, warm_ms: list[float], *, model_size_bytes: int | None, output: Image.Image) -> dict[str, Any]:
     return {
         "modelSizeBytes": model_size_bytes,
         "initializeMs": initialize_ms,
         "firstInferenceMs": first_inference_ms,
         "warmInferenceMedianMs": statistics.median(warm_ms) if warm_ms else None,
         "warmInferenceP95Ms": percentile_95(warm_ms),
-        "processPeakRssMb": process_peak_rss_mb,
         "outputWidth": output.width,
         "outputHeight": output.height,
         "warmRuns": len(warm_ms),
@@ -295,9 +358,9 @@ def reproducibility_complete(reproducibility: dict[str, Any], selected_models: l
         artifact = artifacts.get(model_id, {})
         if model_id == "current-rule":
             continue
-        if not artifact.get("exactModelRevision") or not artifact.get("modelSha256"):
+        if not artifact.get("exactModelRevision") or not artifact.get("expectedSha256"):
             return False
-        if artifact.get("weightLicenseVerificationStatus") != "VERIFIED":
+        if artifact.get("weightLicenseVerificationStatus") != "VERIFIED" or artifact.get("sha256Match") is not True or artifact.get("artifactVerified") is not True:
             return False
     return True
 

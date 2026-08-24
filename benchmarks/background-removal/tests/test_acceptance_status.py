@@ -26,7 +26,10 @@ def complete_reproducibility() -> dict[str, object]:
         "modelArtifacts": {
             model_id: {
                 "exactModelRevision": "not-applicable" if model_id == "current-rule" else "revision-1",
-                "modelSha256": "not-applicable" if model_id == "current-rule" else "abc123",
+                "expectedSha256": "not-applicable" if model_id == "current-rule" else "abc123",
+                "actualModelSha256": "not-applicable" if model_id == "current-rule" else "abc123",
+                "sha256Match": "NOT_APPLICABLE" if model_id == "current-rule" else True,
+                "artifactVerified": True,
                 "weightLicenseVerificationStatus": "NOT_APPLICABLE" if model_id == "current-rule" else "VERIFIED",
             }
             for model_id in MODELS

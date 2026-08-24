@@ -3,6 +3,9 @@ models/*.onnx
 outputs/*/
 !outputs/.gitkeep
 results/benchmark-results.json
+results/benchmark-run.json
 results/benchmark-summary.md
 results/comparison.html
+results/manual-reviews.json
+results/model-preparation.json
 __pycache__/

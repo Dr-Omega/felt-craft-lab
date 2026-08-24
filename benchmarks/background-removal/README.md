@@ -49,10 +49,11 @@ python -m venv .venv-background-removal
 pip install -r benchmarks/background-removal/requirements-benchmark.txt
 ```
 
-The runner defaults to no model download.  Place weights in the benchmark-only
-cache (`benchmarks/background-removal/models/rembg-cache`) or pass
-`--allow-model-download` to allow the optional `rembg` adapter to fetch them.
-The cache and output artefacts are ignored by Git.
+The timed runner defaults to no model download and checks that every selected
+model is already present and SHA-verified in the benchmark-only cache
+(`benchmarks/background-removal/models/rembg-cache`). Use the explicit prepare
+step for download/debug only; it is not a benchmark and acceptance mode rejects
+`--allow-model-download`. The cache and output artefacts are ignored by Git.
 
 Model provenance is in `model-manifest.json`. Before an acceptance conclusion,
 the result must record installed `rembg`, `onnxruntime`, and Pillow versions;
@@ -75,15 +76,22 @@ Run only the rule algorithm on the known fixture:
 python benchmarks/background-removal/scripts/run_benchmark.py --case BR-001 --models current-rule
 ```
 
-Run all four models after installing the optional dependencies and reviewing
-their model provenance:
+Prepare/download models separately when explicitly authorized (not timed):
 
 ```powershell
-python benchmarks/background-removal/scripts/run_benchmark.py --all-cases --models all --allow-model-download
+python benchmarks/background-removal/scripts/prepare_models.py --models all
 ```
 
-The latter command fails closed when fewer than 15 valid cases are present. Use
-a single named case only for plumbing/debugging; it is never an acceptance run.
+Run a formal all-model acceptance benchmark only after cache SHA verification:
+
+```powershell
+python benchmarks/background-removal/scripts/run_benchmark.py --all-cases --models all
+```
+
+The formal command fails closed when fewer than 15 valid cases are present or a
+selected artifact is absent/unverified. It preflights every selected artifact
+before starting any timed session initialization or inference. Use a single
+named case only for plumbing/debugging; it is never an acceptance run.
 
 The only status that permits a model-selection conclusion is
 `ACCEPTANCE_COMPLETE`. It requires a valid full dataset, every selected model
@@ -121,10 +129,27 @@ sets the result's `finalVerdict` to `FAIL` when the report is written.  The
 result schema stores review fields as `null` until a person evaluates the
 rendered comparison.
 
+## Review finalization
+
+Timed execution writes only `results/benchmark-run.json`; it never writes or
+overwrites manual feedback. Copy the template to the ignored
+`results/manual-reviews.json`, complete one entry per successful case/model,
+then finalize without rerunning a model:
+
+```powershell
+python benchmarks/background-removal/scripts/finalize_benchmark.py
+```
+
+Finalization validates every review key, derives each final verdict, recomputes
+status, and writes `benchmark-results.json`, `benchmark-summary.md`, and
+`comparison.html`.
+
 ## Outputs
 
 - `outputs/<model>/<caseId>.png` — emitted only after an actual successful run.
-- `results/benchmark-results.json` — machine-readable results and environment.
+- `results/benchmark-run.json` — immutable-style raw execution result.
+- `results/manual-reviews.json` — ignored, independently persisted manual review.
+- `results/benchmark-results.json` — finalized machine-readable result.
 - `results/benchmark-summary.md` — aggregate metrics, performance and matrix.
 - `results/comparison.html` — horizontal source/GT/model inspection grid.
 
