@@ -10,7 +10,7 @@ from PIL import Image, ImageDraw
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from benchmark_lib import BENCHMARK_ROOT, calculate_metrics, load_config  # noqa: E402
+from benchmark_lib import BENCHMARK_ROOT, calculate_metrics, load_config, performance_record  # noqa: E402
 
 
 class BenchmarkMetricTests(unittest.TestCase):
@@ -43,6 +43,17 @@ class BenchmarkMetricTests(unittest.TestCase):
 
         self.assertGreater(metrics["internalHoleRate"], 0.0)
         self.assertLess(metrics["subjectRetention"], 1.0)
+
+    def test_performance_fields_separate_initialization_from_first_inference(self) -> None:
+        output = Image.new("RGBA", (4, 5))
+        record = performance_record(12.5, 34.5, [8.0, 10.0, 12.0, 14.0, 16.0], model_size_bytes=99, output=output, process_peak_rss_mb=123.25)
+
+        self.assertEqual(record["initializeMs"], 12.5)
+        self.assertEqual(record["firstInferenceMs"], 34.5)
+        self.assertEqual(record["processPeakRssMb"], 123.25)
+        self.assertNotIn("coldStartMs", record)
+        self.assertNotIn("peakRssMb", record)
+        self.assertEqual(record["warmRuns"], 5)
 
 
 if __name__ == "__main__":

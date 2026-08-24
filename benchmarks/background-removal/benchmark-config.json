@@ -2,6 +2,7 @@
   "cpuOnly": true,
   "alphaThreshold": 128,
   "warmRuns": 5,
+  "rssSampleIntervalMs": 10,
   "internalHoleErosionKernel": 5,
   "requiredCaseCount": 15,
   "modelOrder": [

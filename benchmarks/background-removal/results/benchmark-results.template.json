@@ -1,10 +1,11 @@
 {
   "schemaVersion": 1,
-  "status": "NOT_RUN",
+  "status": "PARTIAL",
   "configuration": {
     "cpuOnly": true,
     "alphaThreshold": 128,
     "warmRuns": 5,
+    "rssSampleIntervalMs": 10,
     "internalHoleErosionKernel": 5,
     "requiredCaseCount": 15
   },
@@ -13,9 +14,21 @@
     "requiredCases": 15,
     "acceptanceReady": false
   },
+  "reproducibility": {
+    "runtimeVersions": {
+      "rembg": null,
+      "onnxruntime": null,
+      "Pillow": null
+    },
+    "modelArtifacts": {
+      "exactModelRevision": null,
+      "modelSha256": null,
+      "weightLicenseVerificationStatus": "UNVERIFIED"
+    }
+  },
   "caseResults": [],
   "notes": [
-    "Template only: no model weight was installed and no benchmark result is claimed.",
+    "Template only: no model weight was installed and no benchmark result or acceptance conclusion is claimed.",
     "Add reviewed source/ground_truth pairs before using --all-cases."
   ]
 }

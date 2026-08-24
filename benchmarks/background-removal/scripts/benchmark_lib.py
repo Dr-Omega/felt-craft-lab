@@ -6,8 +6,10 @@ import json
 import os
 import statistics
 import sys
+import threading
 import time
 from dataclasses import dataclass
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from typing import Any
 
@@ -194,29 +196,110 @@ def create_adapter(model_id: str, *, allow_model_download: bool) -> BackgroundRe
 
 
 def run_timed(adapter: BackgroundRemover, source: Image.Image, warm_runs: int) -> tuple[Image.Image, float, list[float]]:
-    """Return first real output plus cold and repeated warm measurements."""
+    """Return first inference output/timing, then repeated warm timings."""
     start = time.perf_counter()
     first = adapter.remove(source)
-    cold_ms = (time.perf_counter() - start) * 1000
+    first_inference_ms = (time.perf_counter() - start) * 1000
     samples: list[float] = []
     for _ in range(warm_runs):
         started = time.perf_counter()
         adapter.remove(source)
         samples.append((time.perf_counter() - started) * 1000)
-    return first, cold_ms, samples
+    return first, first_inference_ms, samples
 
 
-def performance_record(cold_ms: float, warm_ms: list[float], *, model_size_bytes: int | None, output: Image.Image, peak_rss_mb: float | None) -> dict[str, Any]:
+def performance_record(initialize_ms: float, first_inference_ms: float, warm_ms: list[float], *, model_size_bytes: int | None, output: Image.Image, process_peak_rss_mb: float | None) -> dict[str, Any]:
     return {
         "modelSizeBytes": model_size_bytes,
-        "coldStartMs": cold_ms,
+        "initializeMs": initialize_ms,
+        "firstInferenceMs": first_inference_ms,
         "warmInferenceMedianMs": statistics.median(warm_ms) if warm_ms else None,
         "warmInferenceP95Ms": percentile_95(warm_ms),
-        "peakRssMb": peak_rss_mb,
+        "processPeakRssMb": process_peak_rss_mb,
         "outputWidth": output.width,
         "outputHeight": output.height,
         "warmRuns": len(warm_ms),
     }
+
+
+class ProcessRssSampler:
+    """High-frequency RSS sampler covering initialization and all inferences."""
+
+    def __init__(self, interval_ms: int = 10) -> None:
+        if interval_ms < 1:
+            raise ValueError("RSS sample interval must be at least 1 ms")
+        self.interval_seconds = interval_ms / 1000
+        self._stop = threading.Event()
+        self._thread: threading.Thread | None = None
+        self._peak_rss_mb: float | None = None
+        try:
+            import psutil  # pylint: disable=import-outside-toplevel
+
+            self._process: Any | None = psutil.Process()
+        except ImportError:
+            self._process = None
+
+    @property
+    def available(self) -> bool:
+        return self._process is not None
+
+    @property
+    def peak_rss_mb(self) -> float | None:
+        return self._peak_rss_mb
+
+    def _sample_once(self) -> None:
+        if self._process is None:
+            return
+        rss_mb = self._process.memory_info().rss / (1024 * 1024)
+        self._peak_rss_mb = rss_mb if self._peak_rss_mb is None else max(self._peak_rss_mb, rss_mb)
+
+    def _sample_loop(self) -> None:
+        while not self._stop.wait(self.interval_seconds):
+            self._sample_once()
+
+    def start(self) -> None:
+        self._sample_once()
+        if not self.available:
+            return
+        self._thread = threading.Thread(target=self._sample_loop, name="benchmark-rss-sampler", daemon=True)
+        self._thread.start()
+
+    def stop(self) -> None:
+        self._stop.set()
+        if self._thread is not None:
+            self._thread.join(timeout=max(1.0, self.interval_seconds * 4))
+        self._sample_once()
+
+
+def installed_runtime_versions() -> dict[str, str | None]:
+    """Report exact installed distributions without pulling in optional packages."""
+    def installed(package: str) -> str | None:
+        try:
+            return version(package)
+        except PackageNotFoundError:
+            return None
+
+    return {
+        "rembg": installed("rembg"),
+        "onnxruntime": installed("onnxruntime"),
+        "Pillow": installed("Pillow"),
+    }
+
+
+def reproducibility_complete(reproducibility: dict[str, Any], selected_models: list[str]) -> bool:
+    runtime_versions = reproducibility.get("runtimeVersions", {})
+    if not all(runtime_versions.get(package) for package in ("rembg", "onnxruntime", "Pillow")):
+        return False
+    artifacts = reproducibility.get("modelArtifacts", {})
+    for model_id in selected_models:
+        artifact = artifacts.get(model_id, {})
+        if model_id == "current-rule":
+            continue
+        if not artifact.get("exactModelRevision") or not artifact.get("modelSha256"):
+            return False
+        if artifact.get("weightLicenseVerificationStatus") != "VERIFIED":
+            return False
+    return True
 
 
 HARD_FAIL_REASONS = {
@@ -240,3 +323,56 @@ def final_verdict_for_review(review: dict[str, Any]) -> str:
     if review.get("criticalStructure") == "PARTIAL" or review.get("boundaryQuality") in {"C", "D"}:
         return "WARN"
     return "PASS"
+
+
+def manual_review_complete(review: dict[str, Any] | None) -> bool:
+    if review is None:
+        return False
+    if review.get("boundaryQuality") not in {"A", "B", "C", "D"}:
+        return False
+    if review.get("criticalStructure") not in {"PASS", "PARTIAL", "FAIL"}:
+        return False
+    if not isinstance(review.get("visibleInternalHole"), bool):
+        return False
+    return final_verdict_for_review(review) != "UNREVIEWED"
+
+
+def model_run_status(case_rows: list[dict[str, Any]], expected_case_count: int) -> str:
+    """A model cannot be run-complete when any expected case failed or is absent."""
+    if len(case_rows) != expected_case_count or any(row.get("status") != "SUCCESS" for row in case_rows):
+        return "FAILED"
+    return "RUN_COMPLETE"
+
+
+def classify_benchmark_status(result: dict[str, Any]) -> str:
+    """Return the only status allowed to make an acceptance conclusion explicit."""
+    dataset_validation = result.get("datasetValidation", {})
+    if (
+        result.get("scope") != "all-cases"
+        or not dataset_validation.get("valid")
+        or int(dataset_validation.get("completeCaseCount", 0)) < int(dataset_validation.get("requiredCaseCount", 1))
+    ):
+        return "PARTIAL"
+
+    selected_models = list(result.get("selectedModels", []))
+    case_ids = list(result.get("caseIds", []))
+    expected_pairs = {(model_id, case_id) for model_id in selected_models for case_id in case_ids}
+    rows = result.get("caseResults", [])
+    actual_pairs = {(row.get("modelId"), row.get("caseId")) for row in rows}
+    model_records = result.get("models", {})
+
+    initialized = all(
+        model_records.get(model_id, {}).get("initializeStatus") == "SUCCESS"
+        and model_records.get(model_id, {}).get("status") == "RUN_COMPLETE"
+        for model_id in selected_models
+    )
+    successful_rows = all(row.get("status") == "SUCCESS" for row in rows)
+    if not selected_models or not case_ids or actual_pairs != expected_pairs or len(rows) != len(expected_pairs) or not initialized or not successful_rows:
+        return "FAILED"
+
+    if not all(manual_review_complete(row.get("manualReview")) for row in rows):
+        return "RUN_COMPLETE_UNREVIEWED"
+
+    if not reproducibility_complete(result.get("reproducibility", {}), selected_models):
+        return "RUN_COMPLETE_UNVERIFIED"
+    return "ACCEPTANCE_COMPLETE"

@@ -21,14 +21,17 @@ directly and keeps the model adapter behind `BackgroundRemover`.
 Each case lives under `cases/BR-XXX/` and contains:
 
 ```
-source.png | source.jpg
+source.png | source.jpg | source.jpeg
 ground_truth.png  # L/RGBA image: foreground = 255, background = 0
 case.json
 ```
 
 `case.json` has `caseId`, `category`, `description`, and
-`criticalStructures`.  The acceptance dataset is not complete until it has at
-least 15 reviewed cases.  Do not treat a partial run as a model decision.
+`criticalStructures`. Before an all-case run, every discovered case is checked
+for a matching and unique `caseId`, a decodable source and GT of equal size, a
+strictly binary GT (`{0,255}`), and a non-empty `criticalStructures` list. The
+acceptance dataset is not complete until it has at least 15 valid reviewed
+cases. Do not treat a partial run as a model decision.
 
 `BR-001` is a small synthetic fixture: a cartoon doctor in a white coat on a
 light-grey background.  It exists to catch the specific failure where a light
@@ -51,9 +54,12 @@ cache (`benchmarks/background-removal/models/rembg-cache`) or pass
 `--allow-model-download` to allow the optional `rembg` adapter to fetch them.
 The cache and output artefacts are ignored by Git.
 
-Model provenance is in `model-manifest.json`.  Before a public redistribution,
-verify the weight licence and checksum at the pinned upstream release/model
-card; an open-source code licence is not automatically a weight licence.
+Model provenance is in `model-manifest.json`. Before an acceptance conclusion,
+the result must record installed `rembg`, `onnxruntime`, and Pillow versions;
+the exact model revision/source; SHA-256; and a `VERIFIED` weight-licence
+status. Before a public redistribution, verify the weight licence and checksum
+at the pinned upstream release/model card; an open-source code licence is not
+automatically a weight licence.
 
 ## Running
 
@@ -76,13 +82,24 @@ their model provenance:
 python benchmarks/background-removal/scripts/run_benchmark.py --all-cases --models all --allow-model-download
 ```
 
-The latter command fails closed when fewer than 15 cases are present.  Use a
-single named case only for plumbing/debugging; it is never an acceptance run.
+The latter command fails closed when fewer than 15 valid cases are present. Use
+a single named case only for plumbing/debugging; it is never an acceptance run.
+
+The only status that permits a model-selection conclusion is
+`ACCEPTANCE_COMPLETE`. It requires a valid full dataset, every selected model
+to initialize, every model/case result to succeed, every manual review to be
+complete, and complete reproducibility records. `RUN_COMPLETE_UNREVIEWED` and
+`RUN_COMPLETE_UNVERIFIED` are intentionally not acceptance outcomes.
 
 ## Measurement definitions
 
 The shared `benchmark-config.json` defines the alpha threshold, warm run count,
-and interior-mask erosion kernel.  No metric threshold is hidden in code.
+interior-mask erosion kernel, and RSS sampling interval. No metric threshold is
+hidden in code.
+
+Performance records distinguish `initializeMs`, `firstInferenceMs`, and warm
+inference timings. `processPeakRssMb` is high-frequency process RSS sampled
+during initialization and inference; it is not a system-wide memory value.
 
 - **subjectRetention**: fraction of GT foreground still non-transparent.
 - **backgroundClearRate**: fraction of GT background now transparent.
