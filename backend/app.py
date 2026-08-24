@@ -34,11 +34,15 @@ from services.guards import (
     check_qa_text,
     check_tts_text,
     is_dev_mode,
+    image_provider_allowed,
     qa_provider_allowed,
     rate_limit_ok,
     smoke_allowed,
     tts_provider_allowed,
 )
+from services.image_profiles import UnknownGenerationProfile, resolve_generation_profile
+from services.image_service import ImageService, image_provider_configured, selected_image_provider
+from services.style_reference_sets import StyleReferenceSetError, reference_set_summary
 from services.ops_rules import ops_rules_doc
 from services.qa_service import QaService, UnknownQaProvider
 from services.qa_types import QA_ERROR_CODES
@@ -132,6 +136,15 @@ def _is_mock_provider(name: str) -> bool:
     return (name or "").strip().lower() == "mock"
 
 
+def _image_health_profile() -> dict:
+    """Public-safe profile diagnostic; intentionally excludes prompt and paths."""
+    try:
+        profile = resolve_generation_profile("core_pattern")
+        return {"activeCorePatternProfileId": profile.profile_id, **reference_set_summary(profile.reference_set_id)}
+    except (UnknownGenerationProfile, StyleReferenceSetError):
+        return {"activeCorePatternProfileId": "unavailable", "referenceSetId": "unavailable", "referenceCount": 0}
+
+
 @app.errorhandler(RequestEntityTooLarge)
 def _payload_too_large(_err):
     return _json_fail("PAYLOAD_TOO_LARGE", 413)
@@ -184,15 +197,73 @@ def health():
                 "minimax": _configured(os.getenv("MINIMAX_API_KEY"))
                 and _configured(os.getenv("MINIMAX_GROUP_ID")),
                 "sessionHmac": session_secret_status()["configured"],
+                "seedreamArkConfigured": image_provider_configured(),
             },
             "providers": {
                 "asr": ["qwen_cloud_http", "qwen_cloud_realtime", "qwen_local"]
                 + (["mock"] if is_dev_mode() else []),
                 "qa": ["deepseek"] + (["mock"] if is_dev_mode() else []),
                 "tts": ["minimax"] + (["mock"] if is_dev_mode() else []),
+                "image": ["seedream_ark"],
             },
+            "selected": {"image": selected_image_provider()},
+            "imageProfile": _image_health_profile(),
         }
     )
+
+
+@app.post("/api/image/generate")
+def image_generate():
+    """Gateway-only Core Pattern image generation endpoint.
+
+    Profile/provider/reference values are refused when sent by a client, so a
+    Renderer cannot supply arbitrary reference URLs or alter server policy.
+    """
+    claims, err = _require_session(apply_install_rate=False)
+    if err:
+        return err
+    data = request.get_json(silent=True) or {}
+    if not isinstance(data, dict):
+        return _json_fail("INVALID_ARGUMENT")
+    forbidden = {"provider", "model", "referenceImages", "reference_images", "systemPrompt", "system_prompt", "profileId", "profile_id"}
+    if forbidden.intersection(data):
+        return _json_fail("INVALID_ARGUMENT")
+    canonical_prompt = data.get("canonicalPrompt")
+    asset_role = data.get("assetRole")
+    width = data.get("width")
+    height = data.get("height")
+    if not isinstance(canonical_prompt, str) or not isinstance(asset_role, str):
+        return _json_fail("INVALID_ARGUMENT")
+    if len(canonical_prompt.strip()) > 4000:
+        return _json_fail("TEXT_TOO_LONG")
+    # Resolve before consuming cost protection, including any misconfigured
+    # profile. A bad system configuration must not bill a caller.
+    try:
+        profile = resolve_generation_profile(asset_role)
+    except UnknownGenerationProfile:
+        return _json_fail("IMAGE_PROFILE_UNAVAILABLE")
+    if not image_provider_allowed(profile.provider):
+        return _json_fail("INVALID_PROVIDER")
+    limited = check_install_rate_limit(claims.installation_id)
+    if limited:
+        return _json_fail(limited, 429)
+    if not rate_limit_ok(f"image:{_client_bucket()}"):
+        return _json_fail("RATE_LIMITED", 429)
+    try:
+        with InflightGuard():
+            if not _is_mock_provider(profile.provider):
+                fuse_err = _consume_paid_fuse(claims.installation_id)
+                if fuse_err:
+                    return fuse_err
+            result = ImageService().generate(
+                canonical_prompt=canonical_prompt,
+                asset_role=asset_role,
+                width=width,
+                height=height,
+            )
+            return jsonify(result), (200 if result.get("ok") else 502)
+    except TimeoutError:
+        return _json_fail("RATE_LIMITED", 429)
 
 
 @app.get("/api/ready")

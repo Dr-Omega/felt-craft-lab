@@ -69,6 +69,17 @@ _LEGACY_MAP: dict[str, tuple[str, str, bool]] = {
     "UNSUPPORTED_MEDIA_TYPE": ("INVALID_ARGUMENT", "不支持的音频格式。", False),
     "TEXT_TOO_LONG": ("INVALID_ARGUMENT", "文本过长。", False),
     "SMOKE_DISABLED": ("INVALID_ARGUMENT", "冒烟接口仅在受保护的开发模式下可用。", False),
+    "IMAGE_MISSING_API_KEY": ("UNKNOWN", "图片生成服务暂时不可用，请稍后重试。", False),
+    "IMAGE_MISSING_PROMPT": ("INVALID_ARGUMENT", "图片描述不能为空。", False),
+    "IMAGE_PROFILE_UNAVAILABLE": ("INVALID_ARGUMENT", "该素材类型暂未开通图片生成。", False),
+    "IMAGE_REFERENCE_INVALID": ("UNKNOWN", "图片风格配置暂时不可用，请稍后重试。", False),
+    "IMAGE_PROVIDER_NOT_READY": ("INVALID_ARGUMENT", "该图片生成通道尚未开通。", False),
+    "IMAGE_TIMEOUT": ("UNKNOWN", "图片生成超时，请重试。", True),
+    "IMAGE_NETWORK_ERROR": ("UNKNOWN", "网络异常，请稍后重试。", True),
+    "IMAGE_UPSTREAM_ERROR": ("UNKNOWN", "图片生成服务暂时不可用，请稍后重试。", True),
+    "IMAGE_BAD_RESPONSE": ("UNKNOWN", "图片生成服务暂时不可用，请稍后重试。", True),
+    "IMAGE_NORMALIZE_FAILED": ("UNKNOWN", "图片处理暂时不可用，请稍后重试。", True),
+    "IMAGE_QUALITY_REJECTED": ("UNKNOWN", "生成图片未通过质量检查，请重试。", True),
 }
 
 

@@ -36,6 +36,10 @@ QA_PROVIDERS_PROD = frozenset({"deepseek"})
 QA_PROVIDERS_DEV_EXTRA = frozenset({"mock"})
 TTS_PROVIDERS_PROD = frozenset({"minimax"})
 TTS_PROVIDERS_DEV_EXTRA = frozenset({"mock"})
+# Image provider policy is Gateway-only. Renderer supplied names are never
+# accepted by /api/image/generate; this allowlist only validates resolved policy.
+IMAGE_PROVIDERS_PROD = frozenset({"seedream_ark", "wan_dashscope", "sd_local"})
+IMAGE_PROVIDERS_DEV_EXTRA = frozenset({"mock"})
 
 _RATE_WINDOW_SEC = float(os.getenv("AI_RATE_WINDOW_SEC", "60"))
 _RATE_MAX = int(os.getenv("AI_RATE_MAX", "30"))
@@ -80,6 +84,13 @@ def tts_provider_allowed(name: str) -> bool:
     if n in TTS_PROVIDERS_PROD:
         return True
     return is_dev_mode() and n in TTS_PROVIDERS_DEV_EXTRA
+
+
+def image_provider_allowed(name: str) -> bool:
+    n = (name or "").strip()
+    if n in IMAGE_PROVIDERS_PROD:
+        return True
+    return is_dev_mode() and n in IMAGE_PROVIDERS_DEV_EXTRA
 
 
 def check_audio_mime(mime: Optional[str]) -> Optional[str]:
