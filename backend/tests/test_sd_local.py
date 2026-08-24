@@ -114,9 +114,9 @@ class SdLocalTests(unittest.TestCase):
         self.assertEqual(result["error"]["code"], "UNKNOWN")
         self.assertIn("本地 SD", result["error"]["message"])
 
-    def test_image_service_selects_sd_local(self):
-        with mock.patch.dict(os.environ, {"IMAGE_PROVIDER": "sd_local", "APP_ENV": "development"}):
-            service = ImageService()
+    def test_image_service_keeps_explicit_legacy_sd_local_provider(self):
+        with mock.patch.dict(os.environ, {"APP_ENV": "development"}):
+            service = ImageService("sd_local")
         self.assertEqual(service.provider.name, "sd_local")
 
 

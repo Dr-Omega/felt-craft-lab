@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import os
 import time
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, Sequence
 
 import requests
 
@@ -55,8 +55,10 @@ class WanDashScopeProvider(ImageProvider):
         negative_prompt: str = "",
         width: int = 512,
         height: int = 512,
+        reference_images: Sequence[str] | None = None,
+        model: str = "",
     ) -> dict[str, Any]:
-        _ = (width, height)
+        _ = (width, height, reference_images, model)
         key = _api_key()
         if not key:
             return err_image(code="IMAGE_MISSING_API_KEY")

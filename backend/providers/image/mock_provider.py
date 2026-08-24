@@ -6,7 +6,7 @@ import hashlib
 import io
 import struct
 import zlib
-from typing import Any
+from typing import Any, Sequence
 
 from PIL import Image, ImageDraw
 
@@ -75,8 +75,10 @@ class MockImageProvider(ImageProvider):
         negative_prompt: str = "",
         width: int = 512,
         height: int = 512,
+        reference_images: Sequence[str] | None = None,
+        model: str = "",
     ) -> dict[str, Any]:
-        _ = negative_prompt
+        _ = (negative_prompt, reference_images, model)
         digest = hashlib.sha256(positive_prompt.encode("utf-8")).digest()
         color = _PALETTE[digest[0] % len(_PALETTE)]
         w = max(64, min(int(width), 768))

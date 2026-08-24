@@ -44,6 +44,9 @@ describe('GenerationSpec contract', () => {
     expect(validateGenerationSpec({ ...coreSpec(), prompt: 'cute rabbit, cinematic lighting' }).ok).toBe(false)
     expect(validateGenerationSpec({ ...coreSpec(), provider: 'minimax' }).ok).toBe(false)
     expect(validateGenerationSpec({ ...coreSpec(), model: 'qwen-image' }).ok).toBe(false)
+    expect(validateGenerationSpec({ ...coreSpec(), referenceImages: ['https://example.test/ref.png'] }).ok).toBe(false)
+    expect(validateGenerationSpec({ ...coreSpec(), profileId: 'felt-seedream45-ref8-v1' }).ok).toBe(false)
+    expect(validateGenerationSpec({ ...coreSpec(), systemPrompt: 'hidden policy' }).ok).toBe(false)
     expect(validateGenerationSpec({ ...coreSpec(), negativePrompt: 'fur, texture' }).ok).toBe(false)
     expect(
       validateGenerationSpec({

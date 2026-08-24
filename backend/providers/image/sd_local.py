@@ -10,7 +10,7 @@ import base64
 import os
 import re
 import secrets
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, Sequence
 
 import requests
 
@@ -123,7 +123,10 @@ class SdLocalProvider(ImageProvider):
         negative_prompt: str = "",
         width: int = 512,
         height: int = 512,
+        reference_images: Sequence[str] | None = None,
+        model: str = "",
     ) -> dict[str, Any]:
+        _ = (reference_images, model)
         base = _base_url()
         if not base:
             return err_image(code="IMAGE_NETWORK_ERROR", message="未配置本地 SD 地址。")

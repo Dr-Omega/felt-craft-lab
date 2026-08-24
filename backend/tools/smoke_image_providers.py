@@ -10,10 +10,12 @@ Does not print secrets. Writes a JSON summary to stdout.
 from __future__ import annotations
 
 import argparse
+import base64
 import json
 import os
 import sys
 import uuid
+import time
 from pathlib import Path
 
 BACKEND = Path(__file__).resolve().parents[1]
@@ -55,48 +57,98 @@ def _check_health(client) -> dict:
     }
 
 
-def _generate(client, provider: str) -> dict:
+def _generate(client, provider: str | None, *, prompt: str = "flat color block panda holding a red ball, plain light background") -> tuple[dict, bytes | None]:
+    payload = {
+        "positivePrompt": prompt,
+        "negativePrompt": "photo, realistic fur",
+        "width": 128,
+        "height": 128,
+        "assetRole": "core_pattern",
+    }
+    if provider:
+        payload["provider"] = provider
+    started = time.perf_counter()
     response = client.post(
         "/api/image/generate",
-        json={
-            "positivePrompt": "flat color block panda holding a red ball, plain light background",
-            "negativePrompt": "photo, realistic fur",
-            "width": 128,
-            "height": 128,
-            "provider": provider,
-            "assetRole": "core_pattern",
-        },
+        json=payload,
         headers=_auth_headers(),
     )
     body = response.get_json() or {}
     result = body.get("result") or {}
     encoded = result.get("imageBase64") or ""
     quality = result.get("quality") or {}
-    return {
+    record = {
         "ok": response.status_code == 200 and body.get("ok") is True and bool(encoded),
         "status": response.status_code,
-        "provider": result.get("provider") or provider,
+        "provider": result.get("provider") or provider or "seedream_ark",
         "imageBytesApprox": int(len(encoded) * 3 / 4) if encoded else 0,
         "qualityVerdict": quality.get("verdict"),
         "errorCode": (body.get("error") or {}).get("code") if not body.get("ok") else None,
         "errorMessage": (body.get("error") or {}).get("message") if not body.get("ok") else None,
+        "latencyMs": round((time.perf_counter() - started) * 1000),
     }
+    try:
+        image_bytes = base64.b64decode(encoded) if body.get("ok") and encoded else None
+    except Exception:  # noqa: BLE001
+        image_bytes = None
+    return record, image_bytes
+
+
+SEEDREAM_ACCEPTANCE_PROMPTS = (
+    "我想要一只熊猫抱着红色皮球",
+    "一只戴黄色围巾的小狐狸",
+    "一朵有笑脸的粉色郁金香",
+    "一只蓝色小鲸鱼吐出泡泡",
+    "一只背着书包的小兔子",
+    "一个红色苹果和两片绿叶",
+    "一只正在飞的橙色蝴蝶",
+    "一辆装满花朵的小火车",
+    "一只抱着胡萝卜的小熊",
+    "一座有彩虹和云朵的小房子",
+)
+
+
+def _seedream_smoke(client, save_dir: Path | None) -> list[dict]:
+    records: list[dict] = []
+    for index, prompt in enumerate(SEEDREAM_ACCEPTANCE_PROMPTS, start=1):
+        result, image_bytes = _generate(client, None, prompt=prompt)
+        if save_dir and result["ok"] and image_bytes:
+            # Saving is opt-in for visual evaluation; stdout never includes data,
+            # prompt text, signed URLs, paths, or Base64.
+            (save_dir / f"seedream-{index:02d}.png").write_bytes(image_bytes)
+        records.append({
+            "provider": result["provider"],
+            "profileId": "felt-seedream45-ref8-v1",
+            "referenceSetId": "felt-style-ref-v1",
+            "referenceCount": 8,
+            "success": result["ok"],
+            "qualityVerdict": result["qualityVerdict"],
+            "latencyMs": result["latencyMs"],
+            "errorCode": result["errorCode"],
+        })
+    return records
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--also-wan", action="store_true", help="Also call wan_dashscope (uses cloud quota).")
     parser.add_argument("--also-sd-local", action="store_true", help="Also call sd_local (needs WebUI).")
+    parser.add_argument("--also-seedream", action="store_true", help="Run ten real Seedream Profile prompts (uses cloud quota).")
+    parser.add_argument("--save-dir", type=Path, help="Optional directory for Seedream PNG review artifacts.")
     args = parser.parse_args()
 
-    summary: dict = {"health": {}, "mock": {}, "wan_dashscope": None, "sd_local": None}
+    summary: dict = {"health": {}, "mock": {}, "wan_dashscope": None, "sd_local": None, "seedream_ark": None}
     with app.test_client() as client:
         summary["health"] = _check_health(client)
-        summary["mock"] = _generate(client, "mock")
+        summary["mock"], _ = _generate(client, "mock")
         if args.also_wan:
-            summary["wan_dashscope"] = _generate(client, "wan_dashscope")
+            summary["wan_dashscope"], _ = _generate(client, "wan_dashscope")
         if args.also_sd_local:
-            summary["sd_local"] = _generate(client, "sd_local")
+            summary["sd_local"], _ = _generate(client, "sd_local")
+        if args.also_seedream:
+            if args.save_dir:
+                args.save_dir.mkdir(parents=True, exist_ok=True)
+            summary["seedream_ark"] = _seedream_smoke(client, args.save_dir)
 
     print(json.dumps(summary, ensure_ascii=False, indent=2))
     ok = summary["health"].get("ok") and summary["mock"].get("ok") and not summary["health"].get("leaksSecret")
@@ -104,6 +156,8 @@ def main() -> int:
         ok = ok and bool(summary["wan_dashscope"].get("ok"))
     if summary.get("sd_local") is not None:
         ok = ok and bool(summary["sd_local"].get("ok"))
+    if summary.get("seedream_ark") is not None:
+        ok = ok and all(record["success"] for record in summary["seedream_ark"])
     return 0 if ok else 1
 
 

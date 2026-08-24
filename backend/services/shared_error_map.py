@@ -64,6 +64,8 @@ _LEGACY_MAP: dict[str, tuple[str, str, bool]] = {
     "IMAGE_TIMEOUT": ("UNKNOWN", "画图超时，请再试一次。", True),
     "IMAGE_NETWORK_ERROR": ("UNKNOWN", "网络异常，请稍后重试。", True),
     "IMAGE_UPSTREAM_ERROR": ("UNKNOWN", "生图服务暂时不可用，请稍后重试。", True),
+    "IMAGE_REFERENCE_INVALID": ("UNKNOWN", "图片风格配置暂时不可用，请稍后重试。", False),
+    "IMAGE_PROFILE_UNAVAILABLE": ("INVALID_ARGUMENT", "该素材类型暂未开通图片生成。", False),
     "IMAGE_BLOCKED": ("UNKNOWN", "这张图没能画出来，请换个说法再试。", False),
     "INVALID_PROVIDER": ("INVALID_ARGUMENT", "不支持的服务通道。", False),
     "RATE_LIMITED": ("UNKNOWN", "请求过于频繁，请稍后再试。", True),

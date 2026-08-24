@@ -8,15 +8,26 @@ from typing import Any, Optional
 
 from providers.image.mock_provider import MockImageProvider
 from providers.image.sd_local import SdLocalProvider
+from providers.image.seedream_ark import SeedreamArkProvider
 from providers.image.wan_dashscope import WanDashScopeProvider
 from services.guards import image_provider_allowed
+from services.image_profiles import UnknownGenerationProfile, resolve_generation_profile
 from services.image_postprocess import normalize_rgba_png
 from services.image_quality import evaluate_felt_quality
 from services.image_types import err_image, ok_image_bytes
+from services.style_reference_sets import StyleReferenceSetError, resolve_reference_images
 
 
 class UnknownImageProvider(ValueError):
     pass
+
+
+def compose_positive_prompt(canonical_prompt: str, hidden_prompt_addon: str) -> str:
+    canonical = (canonical_prompt or "").strip()
+    addon = (hidden_prompt_addon or "").strip()
+    if not canonical:
+        return ""
+    return canonical if not addon else f"{canonical}\n\n{addon}"
 
 
 def finalize_image_bytes(
@@ -49,17 +60,9 @@ def finalize_image_bytes(
 
 class ImageService:
     def __init__(self, provider_name: Optional[str] = None) -> None:
+        self._provider_name_explicit = provider_name is not None
         name = (provider_name or os.getenv("IMAGE_PROVIDER") or "mock").strip()
-        if not image_provider_allowed(name):
-            raise UnknownImageProvider(name)
-        if name == "mock":
-            self.provider = MockImageProvider()
-        elif name == "wan_dashscope":
-            self.provider = WanDashScopeProvider()
-        elif name == "sd_local":
-            self.provider = SdLocalProvider()
-        else:
-            raise UnknownImageProvider(name)
+        self.provider = self._provider_for(name)
 
     def generate(
         self,
@@ -77,11 +80,28 @@ class ImageService:
         if len(text) > 2000:
             return err_image(code="INVALID_ARGUMENT", message="正向提示词过长。")
         try:
+            profile = None
+            references = None
+            generation_width = width
+            generation_height = height
+            # `provider_name=None` is the normal Main → Gateway path. Core
+            # Pattern policy is resolved here, after Canonical Prompt, rather
+            # than leaked into GenerationSpec or Main.
+            if asset_role == "core_pattern" and not self._is_explicit_provider():
+                profile = resolve_generation_profile(asset_role)
+                if profile.provider != getattr(self.provider, "name", ""):
+                    self.provider = self._provider_for(profile.provider)
+                text = compose_positive_prompt(text, profile.hidden_prompt_addon)
+                references = resolve_reference_images(profile.reference_set_id)
+                generation_width = profile.generation_width
+                generation_height = profile.generation_height
             raw = self.provider.generate(
                 positive_prompt=text,
                 negative_prompt=(negative_prompt or "")[:2000],
-                width=width,
-                height=height,
+                width=generation_width,
+                height=generation_height,
+                reference_images=references,
+                model=profile.model if profile else "",
             )
             if not raw.get("ok"):
                 return raw
@@ -98,5 +118,25 @@ class ImageService:
                 request_id=request_id or ((raw.get("result") or {}).get("requestId") or ""),
                 provider=str(provider_name),
             )
+        except UnknownGenerationProfile:
+            return err_image(code="IMAGE_PROFILE_UNAVAILABLE")
+        except StyleReferenceSetError:
+            return err_image(code="IMAGE_REFERENCE_INVALID")
         except Exception:  # noqa: BLE001
             return err_image(code="UNKNOWN", message="生图服务暂时不可用。")
+
+    def _is_explicit_provider(self) -> bool:
+        return bool(getattr(self, "_provider_name_explicit", False))
+
+    def _provider_for(self, name: str):
+        if not image_provider_allowed(name):
+            raise UnknownImageProvider(name)
+        if name == "mock":
+            return MockImageProvider()
+        if name == "wan_dashscope":
+            return WanDashScopeProvider()
+        if name == "sd_local":
+            return SdLocalProvider()
+        if name == "seedream_ark":
+            return SeedreamArkProvider()
+        raise UnknownImageProvider(name)

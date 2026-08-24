@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Sequence
 
 
 class ImageProvider(ABC):
@@ -17,5 +17,7 @@ class ImageProvider(ABC):
         negative_prompt: str = "",
         width: int = 512,
         height: int = 512,
+        reference_images: Sequence[str] | None = None,
+        model: str = "",
     ) -> dict[str, Any]:
         raise NotImplementedError

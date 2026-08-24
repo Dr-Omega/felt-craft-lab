@@ -58,6 +58,8 @@ from services.shared_error_map import fail
 from services.tts_cache import prune_tts_cache
 from services.tts_service import TtsService, UnknownTtsProvider
 from services.image_service import ImageService, UnknownImageProvider, finalize_image_bytes
+from services.image_profiles import UnknownGenerationProfile, resolve_generation_profile
+from services.style_reference_sets import StyleReferenceSetError, reference_set_summary
 from services.image_types import IMAGE_ERROR_CODES
 from services.tts_types import TTS_ERROR_CODES
 
@@ -101,7 +103,18 @@ def _image_key() -> str:
 
 
 def _selected_image_provider() -> str:
-    return (os.getenv("IMAGE_PROVIDER") or "mock").strip()
+    try:
+        return resolve_generation_profile("core_pattern").provider
+    except UnknownGenerationProfile:
+        return (os.getenv("IMAGE_PROVIDER") or "mock").strip()
+
+
+def _image_profile_health() -> dict[str, object]:
+    try:
+        profile = resolve_generation_profile("core_pattern")
+        return {"profileId": profile.profile_id, **reference_set_summary(profile.reference_set_id)}
+    except (UnknownGenerationProfile, StyleReferenceSetError):
+        return {"profileId": "unavailable", "referenceSetId": "unavailable", "referenceCount": 0}
 
 
 def _selected_intent_provider() -> str:
@@ -206,6 +219,7 @@ def health():
                 "minimax": _configured(os.getenv("MINIMAX_API_KEY"))
                 and _configured(os.getenv("MINIMAX_GROUP_ID")),
                 "dashscope": _configured(_image_key()),
+                "seedreamArk": _configured(os.getenv("ARK_API_KEY")),
                 # No cloud key; true when URL is set or sd_local is the selected provider.
                 "sdLocal": _configured(os.getenv("SD_LOCAL_BASE_URL"))
                 or _selected_image_provider() == "sd_local",
@@ -221,8 +235,9 @@ def health():
                 "qa": ["deepseek"] + (["mock"] if is_dev_mode() else []),
                 "intent": ["deepseek"] + (["mock"] if is_dev_mode() else []),
                 "tts": ["minimax"] + (["mock"] if is_dev_mode() else []),
-                "image": ["wan_dashscope", "sd_local"] + (["mock"] if is_dev_mode() else []),
+                "image": ["wan_dashscope", "sd_local", "seedream_ark"] + (["mock"] if is_dev_mode() else []),
             },
+            "imageProfile": _image_profile_health(),
         }
     )
 
@@ -635,6 +650,13 @@ def image_generate():
     if err:
         return err
     data = request.get_json(silent=True) or {}
+    if not isinstance(data, dict):
+        return _json_fail("INVALID_ARGUMENT")
+    # System reference/profile/prompt policy must never cross the Main/Renderer
+    # boundary. `provider` remains a legacy development-only compatibility hook.
+    forbidden = {"referenceImages", "reference_images", "profileId", "profile_id", "systemPrompt", "system_prompt", "model"}
+    if forbidden.intersection(data):
+        return _json_fail("INVALID_ARGUMENT")
     positive = data.get("positivePrompt") or data.get("positive_prompt") or ""
     negative = data.get("negativePrompt") or data.get("negative_prompt") or ""
     provider = data.get("provider")
@@ -643,7 +665,16 @@ def image_generate():
     prompt_err = check_image_prompt(str(positive))
     if prompt_err:
         return _json_fail(prompt_err)
-    resolved_name = (provider or _selected_image_provider()).strip()
+    asset_role = str(data.get("assetRole") or data.get("asset_role") or "core_pattern")
+    if provider:
+        if not is_dev_mode():
+            return _json_fail("INVALID_PROVIDER")
+        resolved_name = str(provider).strip()
+    else:
+        try:
+            resolved_name = resolve_generation_profile(asset_role).provider
+        except UnknownGenerationProfile:
+            return _json_fail("IMAGE_PROFILE_UNAVAILABLE")
     if not image_provider_allowed(resolved_name):
         return _json_fail("INVALID_PROVIDER")
     limited = check_install_rate_limit(claims.installation_id)
@@ -663,8 +694,7 @@ def image_generate():
                 h = int(height)
             except (TypeError, ValueError):
                 return _json_fail("INVALID_ARGUMENT")
-            service = ImageService(resolved_name)
-            asset_role = str(data.get("assetRole") or data.get("asset_role") or "core_pattern")
+            service = ImageService(resolved_name) if provider else ImageService()
             result = service.generate(
                 positive_prompt=str(positive),
                 negative_prompt=str(negative),
