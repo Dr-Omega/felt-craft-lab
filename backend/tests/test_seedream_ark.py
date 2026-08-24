@@ -13,7 +13,7 @@ BACKEND = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(BACKEND))
 
 from providers.image.mock_provider import solid_png  # noqa: E402
-from providers.image.seedream_ark import SeedreamArkProvider  # noqa: E402
+from providers.image.seedream_ark import SeedreamArkProvider, adapt_negative_prompt  # noqa: E402
 
 PNG = solid_png(16, 16, (244, 162, 97))
 
@@ -49,13 +49,15 @@ class SeedreamArkTests(unittest.TestCase):
         self.assertTrue(result.get("ok"))
         payload = captured["json"]
         self.assertEqual(payload["model"], "doubao-seedream-4-5-251128")
-        self.assertEqual(payload["prompt"], "panda holding a red ball")
+        self.assertTrue(payload["prompt"].startswith("panda holding a red ball"))
+        self.assertIn("必须避免出现以下内容：photo", payload["prompt"])
         self.assertEqual(payload["image"], refs)
         self.assertEqual(len(payload["image"]), 8)
         self.assertEqual(payload["sequential_image_generation"], "disabled")
         self.assertFalse(payload["watermark"])
         for key in ("guidance_scale", "steps", "sampler", "cfg_scale", "lora"):
             self.assertNotIn(key, payload)
+        self.assertNotIn("negative_prompt", payload)
         self.assertEqual(captured["timeout"], 90.0)
 
     def test_provider_does_not_own_eight_reference_policy(self):
@@ -71,6 +73,10 @@ class SeedreamArkTests(unittest.TestCase):
             )
         self.assertTrue(result.get("ok"))
         self.assertEqual(len(captured["json"]["image"]), 3)
+
+    def test_empty_negative_prompt_does_not_add_an_empty_avoidance_section(self):
+        self.assertEqual(adapt_negative_prompt("keep the panda", ""), "keep the panda")
+        self.assertEqual(adapt_negative_prompt("keep the panda", "  "), "keep the panda")
 
     def test_timeout_is_mapped_to_existing_error_envelope(self):
         def post(*_args, **_kwargs):

@@ -20,6 +20,15 @@ def _env(name: str, default: str = "") -> str:
     return (os.getenv(name) or default).strip().strip('"').strip("'")
 
 
+def adapt_negative_prompt(positive_prompt: str, negative_prompt: str) -> str:
+    """Seedream has no negative field, so express exclusions in its sole prompt."""
+    positive = positive_prompt or ""
+    negative = (negative_prompt or "").strip()
+    if not negative:
+        return positive
+    return f"{positive}\n\n必须避免出现以下内容：{negative}"
+
+
 class SeedreamArkProvider(ImageProvider):
     name = "seedream_ark"
 
@@ -36,19 +45,18 @@ class SeedreamArkProvider(ImageProvider):
         reference_images: Sequence[str] | None = None,
         model: str = "",
     ) -> dict[str, Any]:
-        _ = negative_prompt  # Seedream has no negative-prompt field.
         key = _env("ARK_API_KEY")
         if not key:
             return err_image(code="IMAGE_MISSING_API_KEY")
-        prompt = (positive_prompt or "").strip()
-        if not prompt:
+        prompt = positive_prompt or ""
+        if not prompt.strip():
             return err_image(code="INVALID_ARGUMENT", message="缺少正向提示词。")
         refs = list(reference_images or [])
         if any(not isinstance(image, str) or not image.startswith("data:image/") for image in refs):
             return err_image(code="IMAGE_REFERENCE_INVALID")
         payload: dict[str, Any] = {
             "model": (model or _env("SEEDREAM_MODEL_ID", "doubao-seedream-4-5-251128")).strip(),
-            "prompt": prompt,
+            "prompt": adapt_negative_prompt(prompt, negative_prompt),
             "size": f"{int(width)}x{int(height)}",
             "sequential_image_generation": "disabled",
             "response_format": "b64_json",

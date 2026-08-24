@@ -22,9 +22,11 @@ class GenerationProfile:
 
 
 _HIDDEN_FELT_CONSTRAINT_V1 = (
-    "Keep the composition structurally simple and easy to cut. Reduce tiny internal details "
-    "and meaningless fragments. Keep the background simple, make the requested subject and "
-    "its requested relationships clear, and do not add objects unrelated to the request."
+    "Use the provided reference images only for their overall visual language, shape treatment, "
+    "and visual expression. Do not copy or introduce their specific subjects, objects, text, or "
+    "compositions. Keep the composition structurally simple and easy to cut. Reduce tiny internal "
+    "details and meaningless fragments. Keep the background simple, make the requested subjects "
+    "and their requested relationships clear, and do not add objects unrelated to the request."
 )
 
 

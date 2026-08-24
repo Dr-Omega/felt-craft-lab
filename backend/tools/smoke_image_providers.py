@@ -27,7 +27,9 @@ os.environ.setdefault("AI_SMOKE_ENABLED", "false")
 # This script talks to a running Flask; it only sets provider per-request.
 
 from app import app  # noqa: E402
+from services.image_profiles import resolve_generation_profile  # noqa: E402
 from services.session_auth import issue_session_token  # noqa: E402
+from services.style_reference_sets import reference_set_summary  # noqa: E402
 
 
 def _auth_headers() -> dict[str, str]:
@@ -57,12 +59,19 @@ def _check_health(client) -> dict:
     }
 
 
-def _generate(client, provider: str | None, *, prompt: str = "flat color block panda holding a red ball, plain light background") -> tuple[dict, bytes | None]:
+def _generate(
+    client,
+    provider: str | None,
+    *,
+    prompt: str = "flat color block panda holding a red ball, plain light background",
+    width: int = 128,
+    height: int = 128,
+) -> tuple[dict, bytes | None]:
     payload = {
         "positivePrompt": prompt,
         "negativePrompt": "photo, realistic fur",
-        "width": 128,
-        "height": 128,
+        "width": width,
+        "height": height,
         "assetRole": "core_pattern",
     }
     if provider:
@@ -109,18 +118,19 @@ SEEDREAM_ACCEPTANCE_PROMPTS = (
 
 
 def _seedream_smoke(client, save_dir: Path | None) -> list[dict]:
+    profile = resolve_generation_profile("core_pattern")
+    reference_summary = reference_set_summary(profile.reference_set_id)
     records: list[dict] = []
     for index, prompt in enumerate(SEEDREAM_ACCEPTANCE_PROMPTS, start=1):
-        result, image_bytes = _generate(client, None, prompt=prompt)
+        result, image_bytes = _generate(client, None, prompt=prompt, width=512, height=512)
         if save_dir and result["ok"] and image_bytes:
             # Saving is opt-in for visual evaluation; stdout never includes data,
             # prompt text, signed URLs, paths, or Base64.
             (save_dir / f"seedream-{index:02d}.png").write_bytes(image_bytes)
         records.append({
             "provider": result["provider"],
-            "profileId": "felt-seedream45-ref8-v1",
-            "referenceSetId": "felt-style-ref-v1",
-            "referenceCount": 8,
+            "profileId": profile.profile_id,
+            **reference_summary,
             "success": result["ok"],
             "qualityVerdict": result["qualityVerdict"],
             "latencyMs": result["latencyMs"],

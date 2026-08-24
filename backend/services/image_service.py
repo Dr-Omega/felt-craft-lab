@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import base64
-import os
 from typing import Any, Optional
 
 from providers.image.mock_provider import MockImageProvider
@@ -61,8 +60,7 @@ def finalize_image_bytes(
 class ImageService:
     def __init__(self, provider_name: Optional[str] = None) -> None:
         self._provider_name_explicit = provider_name is not None
-        name = (provider_name or os.getenv("IMAGE_PROVIDER") or "mock").strip()
-        self.provider = self._provider_for(name)
+        self.provider = self._provider_for(provider_name.strip()) if provider_name else None
 
     def generate(
         self,
@@ -84,18 +82,20 @@ class ImageService:
             references = None
             generation_width = width
             generation_height = height
+            provider = self.provider
             # `provider_name=None` is the normal Main → Gateway path. Core
             # Pattern policy is resolved here, after Canonical Prompt, rather
             # than leaked into GenerationSpec or Main.
-            if asset_role == "core_pattern" and not self._is_explicit_provider():
+            if not self._is_explicit_provider():
                 profile = resolve_generation_profile(asset_role)
-                if profile.provider != getattr(self.provider, "name", ""):
-                    self.provider = self._provider_for(profile.provider)
+                provider = self._provider_for(profile.provider)
                 text = compose_positive_prompt(text, profile.hidden_prompt_addon)
                 references = resolve_reference_images(profile.reference_set_id)
                 generation_width = profile.generation_width
                 generation_height = profile.generation_height
-            raw = self.provider.generate(
+            if provider is None:
+                raise UnknownImageProvider("missing profile provider")
+            raw = provider.generate(
                 positive_prompt=text,
                 negative_prompt=(negative_prompt or "")[:2000],
                 width=generation_width,
@@ -109,7 +109,7 @@ class ImageService:
             if not encoded:
                 return err_image(code="UNKNOWN", message="生图结果为空。")
             image_bytes = base64.b64decode(encoded)
-            provider_name = getattr(self.provider, "name", "mock")
+            provider_name = getattr(provider, "name", "mock")
             return finalize_image_bytes(
                 image_bytes,
                 width=width,
