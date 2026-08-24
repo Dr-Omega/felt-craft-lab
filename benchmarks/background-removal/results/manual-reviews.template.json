@@ -1,5 +1,6 @@
 {
   "schemaVersion": 1,
+  "runId": "COPY_THE_EXACT_runId_FROM_benchmark-run.json",
   "reviews": [
     {
       "caseId": "BR-001",

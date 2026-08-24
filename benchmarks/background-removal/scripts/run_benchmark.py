@@ -9,6 +9,7 @@ import platform
 import sys
 import time
 import traceback
+import uuid
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -31,6 +32,7 @@ from benchmark_lib import (  # noqa: E402
     model_artifact_record,
     performance_record,
     run_timed,
+    sha256_file,
 )
 
 
@@ -135,6 +137,7 @@ def host_info() -> dict[str, Any]:
 def initial_result(config: dict[str, Any], selected_models: list[str], args: argparse.Namespace, cases: list[tuple[dict[str, Any], Path, Path, Path]], manifest: dict[str, dict[str, Any]]) -> dict[str, Any]:
     return {
         "schemaVersion": 1,
+        "runId": uuid.uuid4().hex,
         "status": "RUNNING",
         "generatedAt": datetime.now(UTC).isoformat(),
         "configuration": config,
@@ -204,12 +207,13 @@ def write_summary(result: dict[str, Any]) -> None:
     lines.extend([
         "## Per-model aggregate", "",
         "| Model | Cases | subjectRetention mean | backgroundClearRate mean | internalHoleRate mean | IoU mean | Hard fails | Initialize ms | First inference ms | Warm median ms | P95 ms | Process peak RSS MB | Model bytes |",
+        "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
     ])
     for model_id, model in result["models"].items():
         rows = [row for row in result["caseResults"] if row["modelId"] == model_id and row["status"] == "SUCCESS"]
         metric = lambda key: mean_or_none([row["metrics"].get(key) for row in rows])
         perf = lambda key: mean_or_none([row["performance"].get(key) for row in rows])
-        hard_fails = sum(row.get("manualReview", {}).get("finalVerdict") == "FAIL" for row in rows)
+        hard_fails = sum((row.get("manualReview") or {}).get("finalVerdict") == "FAIL" for row in rows)
         model_bytes = model.get("modelSizeBytes")
         lines.append("| " + " | ".join([
             model_id, str(len(rows)), markdown_value(metric("subjectRetention")), markdown_value(metric("backgroundClearRate")),
@@ -219,7 +223,7 @@ def write_summary(result: dict[str, Any]) -> None:
         ]) + " |")
     lines.extend(["", "## Per-case matrix", "", "| Case | Model | Status | Retention | Clear rate | Internal hole | IoU | Boundary | Critical structure |", "| --- | --- | --- | ---: | ---: | ---: | ---: | --- | --- |"])
     for row in result["caseResults"]:
-        review = row.get("manualReview", {})
+        review = row.get("manualReview") or {}
         metrics = row.get("metrics", {})
         lines.append("| " + " | ".join([
             row["caseId"], row["modelId"], row["status"], markdown_value(metrics.get("subjectRetention")),
@@ -243,12 +247,14 @@ def write_comparison_html(result: dict[str, Any]) -> None:
             f'<figure><img src="../cases/{case_id}/ground_truth.png"><figcaption>Ground Truth</figcaption></figure>',
         ]
         for model_id in model_order:
-            output = BENCHMARK_ROOT / "outputs" / model_id / f"{case_id}.png"
             label = manifest[model_id]["displayName"]
-            if output.is_file():
-                cells.append(f'<figure><img src="../outputs/{model_id}/{case_id}.png"><figcaption>{label}</figcaption></figure>')
+            row = next((item for item in result["caseResults"] if item.get("caseId") == case_id and item.get("modelId") == model_id), None)
+            output = verified_output_path(row)
+            if output is not None:
+                cells.append(f'<figure><img src="../{output.as_posix()}"><figcaption>{label}</figcaption></figure>')
             else:
-                cells.append(f'<figure class="missing"><figcaption>{label}<br>NOT RUN</figcaption></figure>')
+                status = row.get("status", "NOT RUN") if row else "NOT RUN"
+                cells.append(f'<figure class="missing"><figcaption>{label}<br>{status}</figcaption></figure>')
         rows.append(f"<h2>{case_id}</h2><section>{''.join(cells)}</section>")
     html = """<!doctype html><html><head><meta charset=\"utf-8\"><title>Background-removal comparison</title>
 <style>body{font-family:system-ui;margin:24px;background:#f6f7f8;color:#18212b}section{display:grid;grid-template-columns:repeat(6,minmax(145px,1fr));gap:12px}figure{margin:0;background:white;padding:8px;border:1px solid #d6dbe0}img{width:100%;aspect-ratio:1;object-fit:contain;background-color:#fff;background-image:conic-gradient(#e5e7eb 25%,#fff 0 50%,#e5e7eb 0 75%,#fff 0);background-size:16px 16px}figcaption{font-size:13px;margin-top:6px}.missing{display:grid;place-items:center;min-height:150px;color:#6c7885;text-align:center}@media(max-width:900px){section{grid-template-columns:repeat(2,minmax(145px,1fr))}}</style>
@@ -261,6 +267,23 @@ def source_filename_for_case(result: dict[str, Any], case_id: str) -> str:
     if configured:
         return configured
     return find_source(BENCHMARK_ROOT / "cases" / case_id).name
+
+
+def verified_output_path(row: dict[str, Any] | None) -> Path | None:
+    if not row or row.get("status") != "SUCCESS":
+        return None
+    stored_path = row.get("outputPath")
+    stored_sha256 = row.get("outputSha256")
+    if not isinstance(stored_path, str) or not stored_sha256:
+        return None
+    candidate = (BENCHMARK_ROOT / stored_path).resolve()
+    try:
+        relative_path = candidate.relative_to(BENCHMARK_ROOT.resolve())
+    except ValueError:
+        return None
+    if not candidate.is_file() or sha256_file(candidate).lower() != str(stored_sha256).lower():
+        return None
+    return relative_path
 
 
 def main() -> int:
@@ -319,13 +342,16 @@ def main() -> int:
                     output, first_inference_ms, warm_ms = run_timed(adapter, source, int(config["warmRuns"]))
                 output_dir = BENCHMARK_ROOT / "outputs" / model_id
                 output_dir.mkdir(parents=True, exist_ok=True)
-                output.save(output_dir / f"{metadata['caseId']}.png")
+                output_path = output_dir / f"{metadata['caseId']}.png"
+                output.save(output_path)
                 result["caseResults"].append({
                     "caseId": metadata["caseId"],
                     "modelId": model_id,
                     "status": "SUCCESS",
                     "metrics": calculate_metrics(output, ground_truth, config),
                     "performance": performance_record(initialize_ms, first_inference_ms, warm_ms, model_size_bytes=adapter.model_size_bytes, output=output),
+                    "outputPath": str(output_path.relative_to(BENCHMARK_ROOT)),
+                    "outputSha256": sha256_file(output_path),
                 })
             except Exception as exc:  # noqa: BLE001
                 result["caseResults"].append({"caseId": metadata["caseId"], "modelId": model_id, "status": "ERROR", "reason": f"{type(exc).__name__}: {exc}", "traceback": traceback.format_exc(limit=3)})

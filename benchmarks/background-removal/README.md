@@ -131,18 +131,19 @@ rendered comparison.
 
 ## Review finalization
 
-Timed execution writes only `results/benchmark-run.json`; it never writes or
-overwrites manual feedback. Copy the template to the ignored
-`results/manual-reviews.json`, complete one entry per successful case/model,
-then finalize without rerunning a model:
+Timed execution writes a unique UUID `runId` to `results/benchmark-run.json`; it
+never writes or overwrites manual feedback. Copy that exact `runId` into the
+ignored `results/manual-reviews.json`, complete one entry per successful
+case/model, then finalize without rerunning a model:
 
 ```powershell
 python benchmarks/background-removal/scripts/finalize_benchmark.py
 ```
 
-Finalization validates every review key, derives each final verdict, recomputes
-status, and writes `benchmark-results.json`, `benchmark-summary.md`, and
-`comparison.html`.
+Finalization rejects a mismatched review `runId`, validates every successful
+PNG exists and still matches its raw-run SHA-256, derives each final verdict,
+recomputes status, and writes `benchmark-results.json`,
+`benchmark-summary.md`, and `comparison.html`.
 
 ## Outputs
 
