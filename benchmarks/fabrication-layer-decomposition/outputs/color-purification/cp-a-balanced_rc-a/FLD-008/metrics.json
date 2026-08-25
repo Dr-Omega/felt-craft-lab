@@ -1,0 +1,18 @@
+{
+  "region_count_before": 2897,
+  "region_count_after": 1407,
+  "small_component_count_before": 1452,
+  "small_component_count_after": 534,
+  "within_region_color_variance_before": 32.33228107,
+  "within_region_color_variance_after": 6e-08,
+  "boundary_shift": 0.01552372,
+  "false_merge_count": null,
+  "false_split_count": null,
+  "manual_quality_grade": "PENDING_MANUAL_REVIEW",
+  "small_region_strategy": "merge_adjacent_local",
+  "boundary_shift_definition": "normalized symmetric Chamfer-like distance between internal candidate label boundaries and original Lab strong-color edges",
+  "candidateId": "CP-A",
+  "configProfile": "balanced",
+  "representativeColorMethod": "RC-A",
+  "elapsedMs": 7603.006
+}

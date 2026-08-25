@@ -1,0 +1,5 @@
+# Isolated P0-04B1 PoC dependencies. Do not add these to backend requirements.
+numpy==2.2.6
+opencv-python-headless==4.12.0.88
+Pillow==12.3.0
+scikit-image==0.25.2
