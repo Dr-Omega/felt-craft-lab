@@ -34,7 +34,26 @@ class InternalTransformSmokeResult:
 
 
 @dataclass(frozen=True)
+class InternalGenerateSmokeResult:
+    """Raw provider bytes for an explicitly internal T2I smoke flow, never an API envelope."""
+
+    raw_image_bytes: bytes
+    raw_content_type: str
+    provider_name: str
+    provider_request_id: str
+    final_envelope: dict[str, Any]
+
+
+@dataclass(frozen=True)
 class _TransformProviderResult:
+    raw_image_bytes: bytes
+    raw_content_type: str
+    provider_name: str
+    provider_request_id: str
+
+
+@dataclass(frozen=True)
+class _GenerateProviderResult:
     raw_image_bytes: bytes
     raw_content_type: str
     provider_name: str
@@ -92,6 +111,66 @@ class ImageService:
         asset_role: str = "core_pattern",
         request_id: str = "",
     ) -> dict:
+        invoked = self._invoke_generate_provider(
+            positive_prompt=positive_prompt,
+            negative_prompt=negative_prompt,
+            width=width,
+            height=height,
+            asset_role=asset_role,
+        )
+        if isinstance(invoked, dict):
+            return invoked
+        return self._finalize_generate_provider_result(
+            invoked,
+            width=width,
+            height=height,
+            asset_role=asset_role,
+            request_id=request_id,
+        )
+
+    def generate_for_internal_smoke(
+        self,
+        *,
+        positive_prompt: str,
+        negative_prompt: str = "",
+        width: int = 512,
+        height: int = 512,
+        asset_role: str = "core_pattern",
+        request_id: str = "",
+    ) -> InternalGenerateSmokeResult | dict:
+        """Run one T2I provider call, preserving raw bytes for an explicit internal smoke tool only."""
+        invoked = self._invoke_generate_provider(
+            positive_prompt=positive_prompt,
+            negative_prompt=negative_prompt,
+            width=width,
+            height=height,
+            asset_role=asset_role,
+        )
+        if isinstance(invoked, dict):
+            return invoked
+        return InternalGenerateSmokeResult(
+            raw_image_bytes=invoked.raw_image_bytes,
+            raw_content_type=invoked.raw_content_type,
+            provider_name=invoked.provider_name,
+            provider_request_id=invoked.provider_request_id,
+            final_envelope=self._finalize_generate_provider_result(
+                invoked,
+                width=width,
+                height=height,
+                asset_role=asset_role,
+                request_id=request_id,
+            ),
+        )
+
+    def _invoke_generate_provider(
+        self,
+        *,
+        positive_prompt: str,
+        negative_prompt: str,
+        width: int,
+        height: int,
+        asset_role: str,
+    ) -> _GenerateProviderResult | dict:
         text = (positive_prompt or "").strip()
         if not text:
             return err_image(code="INVALID_ARGUMENT", message="缺少正向提示词。")
@@ -125,18 +204,16 @@ class ImageService:
             )
             if not raw.get("ok"):
                 return raw
-            encoded = ((raw.get("result") or {}).get("imageBase64") or "").strip()
+            raw_result = raw.get("result") or {}
+            encoded = (raw_result.get("imageBase64") or "").strip()
             if not encoded:
                 return err_image(code="UNKNOWN", message="生图结果为空。")
             image_bytes = base64.b64decode(encoded)
-            provider_name = getattr(provider, "name", "mock")
-            return finalize_image_bytes(
-                image_bytes,
-                width=width,
-                height=height,
-                asset_role=asset_role,
-                request_id=request_id or ((raw.get("result") or {}).get("requestId") or ""),
-                provider=str(provider_name),
+            return _GenerateProviderResult(
+                raw_image_bytes=image_bytes,
+                raw_content_type=str(raw_result.get("contentType") or "image/png"),
+                provider_name=str(getattr(provider, "name", "mock")),
+                provider_request_id=str(raw_result.get("requestId") or ""),
             )
         except UnknownGenerationProfile:
             return err_image(code="IMAGE_PROFILE_UNAVAILABLE")
@@ -144,6 +221,24 @@ class ImageService:
             return err_image(code="IMAGE_REFERENCE_INVALID")
         except Exception:  # noqa: BLE001
             return err_image(code="UNKNOWN", message="生图服务暂时不可用。")
+
+    @staticmethod
+    def _finalize_generate_provider_result(
+        invoked: _GenerateProviderResult,
+        *,
+        width: int,
+        height: int,
+        asset_role: str,
+        request_id: str,
+    ) -> dict:
+        return finalize_image_bytes(
+            invoked.raw_image_bytes,
+            width=width,
+            height=height,
+            asset_role=asset_role,
+            request_id=request_id or invoked.provider_request_id,
+            provider=invoked.provider_name,
+        )
 
     def transform(
         self,

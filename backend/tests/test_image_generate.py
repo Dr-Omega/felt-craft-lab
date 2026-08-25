@@ -125,6 +125,7 @@ class ImageGenerateTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         body = response.get_json()
         result = body["result"]
+        self.assertNotIn("raw", result)
         self.assertEqual(result["width"], 512)
         self.assertEqual(result["height"], 512)
         self.assertIn(result["quality"]["verdict"], ("PASS", "WARN", "FAIL"))
