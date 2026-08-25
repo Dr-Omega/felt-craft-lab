@@ -1,0 +1,10 @@
+{
+  "fixtureId": "FLD-008",
+  "expectedColorRegions": {"approximateCount": 5, "mustKeepSeparate": [["lantern body", "top cap"], ["lantern body", "interior accent"], ["lantern body", "tassel"]], "mustMerge": []},
+  "expectedPieces": {"minReasonableCount": 3, "maxReasonableCount": 6},
+  "expectedStacking": {"requiredBelowRelations": [["lantern body", "top cap"], ["lantern body", "interior accent"], ["lantern body", "tassel"]]},
+  "voidPolicy": {"globalVoidsExpected": 0, "mustPreserveGlobalVoid": false},
+  "manufacturingNotes": ["Keep the hanging tassel as a named small structure even if a later fabrication policy chooses to simplify it."],
+  "knownDifficulty": ["Small hanging detail"],
+  "manualJudgementNotes": "A compact baseline for checking that simple structure is not unnecessarily over-segmented."
+}

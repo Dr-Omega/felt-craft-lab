@@ -1,0 +1,10 @@
+{
+  "fixtureId": "FLD-002",
+  "expectedColorRegions": {"approximateCount": 4, "mustKeepSeparate": [["envelope body", "flap"], ["flap", "round seal"]], "mustMerge": []},
+  "expectedPieces": {"minReasonableCount": 3, "maxReasonableCount": 5},
+  "expectedStacking": {"requiredBelowRelations": [["envelope body", "flap"], ["flap", "round seal"]]},
+  "voidPolicy": {"globalVoidsExpected": 0, "mustPreserveGlobalVoid": false},
+  "manufacturingNotes": ["The circular seal must remain an overlay rather than being absorbed into the flap."],
+  "knownDifficulty": ["Dark outline treatment is not a mandatory independent felt piece."],
+  "manualJudgementNotes": "Structural GT intentionally names visible regions, not stable final piece IDs."
+}

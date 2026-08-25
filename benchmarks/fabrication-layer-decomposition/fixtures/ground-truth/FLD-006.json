@@ -1,0 +1,10 @@
+{
+  "fixtureId": "FLD-006",
+  "expectedColorRegions": {"approximateCount": 7, "mustKeepSeparate": [["white rabbit silhouette", "pink inner ears"], ["white rabbit silhouette", "black eyes"], ["white rabbit silhouette", "pink cheeks"]], "mustMerge": []},
+  "expectedPieces": {"minReasonableCount": 4, "maxReasonableCount": 9},
+  "expectedStacking": {"requiredBelowRelations": [["rabbit silhouette", "inner ears"], ["rabbit silhouette", "eyes"], ["rabbit silhouette", "cheeks"]]},
+  "voidPolicy": {"globalVoidsExpected": 0, "mustPreserveGlobalVoid": false},
+  "manufacturingNotes": ["A near-white opaque subject must not be confused with transparent background.", "Face details are optional only within the stated reasonable count."],
+  "knownDifficulty": ["Near-white foreground", "Ambiguous black contour versus separate detail pieces"],
+  "manualJudgementNotes": "Use generic visible structure only; categoryHint must not influence decomposition."
+}

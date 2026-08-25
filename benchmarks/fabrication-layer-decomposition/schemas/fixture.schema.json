@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Fabrication Layer Decomposition Fixture",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["fixtureId", "fixtureType", "sourceFile", "groundTruthFile", "categoryHint", "geometryTags", "sourceCharacteristics", "benchmarkUse", "sourceAudit", "notes"],
+  "properties": {
+    "fixtureId": {"type": "string", "pattern": "^FLD-[0-9]{3}$"},
+    "fixtureType": {"enum": ["project_real", "synthetic_unit"]},
+    "sourceFile": {"type": "string", "pattern": "^fixtures/source/FLD-[0-9]{3}\\.png$"},
+    "groundTruthFile": {"type": "string", "pattern": "^fixtures/ground-truth/FLD-[0-9]{3}\\.json$"},
+    "categoryHint": {"type": ["string", "null"]},
+    "geometryTags": {"type": "array", "minItems": 1, "items": {"enum": ["G01_SIMPLE_FLAT", "G02_AI_COLOR_DRIFT", "G03_SAME_COLOR_MULTI_COMPONENT", "G04_SIMILAR_COLOR_DISTINCT_REGION", "G05_INTERNAL_OVERLAY", "G06_MULTI_LEVEL_OVERLAY", "G07_GLOBAL_VOID", "G08_THIN_FEATURE", "G09_MULTI_SUBSHAPE", "G10_HARD_AMBIGUOUS"]}},
+    "sourceCharacteristics": {"type": "object", "required": ["hasTransparentBackground", "hasColorDrift", "hasGradient", "hasShadow", "hasTexture", "hasGlobalVoid"], "additionalProperties": false, "properties": {"hasTransparentBackground": {"type": "boolean"}, "hasColorDrift": {"type": "boolean"}, "hasGradient": {"type": "boolean"}, "hasShadow": {"type": "boolean"}, "hasTexture": {"type": "boolean"}, "hasGlobalVoid": {"type": "boolean"}}},
+    "benchmarkUse": {"type": "object", "required": ["colorPurification", "genericDecomposition"], "additionalProperties": false, "properties": {"colorPurification": {"type": "boolean"}, "genericDecomposition": {"type": "boolean"}}},
+    "sourceAudit": {"type": "object", "required": ["originalSourcePath", "selectionRationale"], "additionalProperties": false, "properties": {"originalSourcePath": {"type": "string"}, "selectionRationale": {"type": "string", "minLength": 1}}},
+    "notes": {"type": "string"}
+  }
+}

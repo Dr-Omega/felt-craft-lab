@@ -1,0 +1,119 @@
+{
+  "benchmarkId": "fabrication-layer-decomposition",
+  "contractVersion": "1.0.0",
+  "purpose": "Frozen, fabrication-aware evaluation contract for future color purification and generic layer decomposition PoCs.",
+  "fixturePolicy": {
+    "categoryHintMustNotBeAlgorithmInput": true,
+    "fixtureAndGroundTruthAreFrozenDuringFormalComparison": true,
+    "groundTruthCorrectionRequiresRecordedReason": true
+  },
+  "fixtures": [
+    {
+      "fixtureId": "FLD-001",
+      "fixtureType": "project_real",
+      "sourceFile": "fixtures/source/FLD-001.png",
+      "groundTruthFile": "fixtures/ground-truth/FLD-001.json",
+      "categoryHint": "crescent moon sticker",
+      "geometryTags": ["G01_SIMPLE_FLAT"],
+      "sourceCharacteristics": {"hasTransparentBackground": true, "hasColorDrift": false, "hasGradient": false, "hasShadow": false, "hasTexture": false, "hasGlobalVoid": false},
+      "benchmarkUse": {"colorPurification": true, "genericDecomposition": true},
+      "sourceAudit": {"originalSourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/sticker_crescent_moon_001.png", "selectionRationale": "Single transparent subject with a large, simple crescent silhouette for the flat-color baseline."},
+      "notes": "Real project material snapshot; copied without modifying its source."
+    },
+    {
+      "fixtureId": "FLD-002",
+      "fixtureType": "project_real",
+      "sourceFile": "fixtures/source/FLD-002.png",
+      "groundTruthFile": "fixtures/ground-truth/FLD-002.json",
+      "categoryHint": "red envelope sticker",
+      "geometryTags": ["G05_INTERNAL_OVERLAY", "G06_MULTI_LEVEL_OVERLAY"],
+      "sourceCharacteristics": {"hasTransparentBackground": true, "hasColorDrift": false, "hasGradient": false, "hasShadow": false, "hasTexture": false, "hasGlobalVoid": false},
+      "benchmarkUse": {"colorPurification": true, "genericDecomposition": true},
+      "sourceAudit": {"originalSourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/sticker_red_envelope_001.png", "selectionRationale": "Envelope body, flap, and circular seal provide readable overlay relations without a complex scene."},
+      "notes": "Real project material snapshot; copied without modifying its source."
+    },
+    {
+      "fixtureId": "FLD-003",
+      "fixtureType": "project_real",
+      "sourceFile": "fixtures/source/FLD-003.png",
+      "groundTruthFile": "fixtures/ground-truth/FLD-003.json",
+      "categoryHint": "mooncake sticker",
+      "geometryTags": ["G04_SIMILAR_COLOR_DISTINCT_REGION", "G06_MULTI_LEVEL_OVERLAY"],
+      "sourceCharacteristics": {"hasTransparentBackground": true, "hasColorDrift": false, "hasGradient": false, "hasShadow": false, "hasTexture": false, "hasGlobalVoid": false},
+      "benchmarkUse": {"colorPurification": true, "genericDecomposition": true},
+      "sourceAudit": {"originalSourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/sticker_mooncake_001.png", "selectionRationale": "Close yellow/tan surface regions must stay distinct, with top, side wall, centre, and radial details."},
+      "notes": "Real project material snapshot; copied without modifying its source."
+    },
+    {
+      "fixtureId": "FLD-004",
+      "fixtureType": "project_real",
+      "sourceFile": "fixtures/source/FLD-004.png",
+      "groundTruthFile": "fixtures/ground-truth/FLD-004.json",
+      "categoryHint": "flower lantern sticker",
+      "geometryTags": ["G03_SAME_COLOR_MULTI_COMPONENT", "G04_SIMILAR_COLOR_DISTINCT_REGION", "G06_MULTI_LEVEL_OVERLAY"],
+      "sourceCharacteristics": {"hasTransparentBackground": true, "hasColorDrift": false, "hasGradient": false, "hasShadow": false, "hasTexture": false, "hasGlobalVoid": false},
+      "benchmarkUse": {"colorPurification": true, "genericDecomposition": true},
+      "sourceAudit": {"originalSourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/sticker_flower_lantern_001.png", "selectionRationale": "Repeated disconnected petals and close pink regions test separation while the lamp/flame establishes multiple overlay levels."},
+      "notes": "Real project material snapshot; copied without modifying its source."
+    },
+    {
+      "fixtureId": "FLD-005",
+      "fixtureType": "project_real",
+      "sourceFile": "fixtures/source/FLD-005.png",
+      "groundTruthFile": "fixtures/ground-truth/FLD-005.json",
+      "categoryHint": "firecracker sticker",
+      "geometryTags": ["G08_THIN_FEATURE", "G09_MULTI_SUBSHAPE"],
+      "sourceCharacteristics": {"hasTransparentBackground": true, "hasColorDrift": false, "hasGradient": false, "hasShadow": false, "hasTexture": false, "hasGlobalVoid": false},
+      "benchmarkUse": {"colorPurification": true, "genericDecomposition": true},
+      "sourceAudit": {"originalSourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/sticker_firecracker_001.png", "selectionRationale": "The thin curved fuse and separately bounded caps/body expose small-feature retention and multi-subshape risks."},
+      "notes": "Real project material snapshot; copied without modifying its source."
+    },
+    {
+      "fixtureId": "FLD-006",
+      "fixtureType": "project_real",
+      "sourceFile": "fixtures/source/FLD-006.png",
+      "groundTruthFile": "fixtures/ground-truth/FLD-006.json",
+      "categoryHint": "rabbit sticker",
+      "geometryTags": ["G05_INTERNAL_OVERLAY", "G09_MULTI_SUBSHAPE", "G10_HARD_AMBIGUOUS"],
+      "sourceCharacteristics": {"hasTransparentBackground": true, "hasColorDrift": false, "hasGradient": false, "hasShadow": false, "hasTexture": false, "hasGlobalVoid": false},
+      "benchmarkUse": {"colorPurification": true, "genericDecomposition": true},
+      "sourceAudit": {"originalSourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/sticker_rabbit_001.png", "selectionRationale": "Near-white subject fill against transparency plus small face and limb markings makes subject boundary and piece intent ambiguous for a generic method."},
+      "notes": "Real project material snapshot; copied without modifying its source."
+    },
+    {
+      "fixtureId": "FLD-007",
+      "fixtureType": "project_real",
+      "sourceFile": "fixtures/source/FLD-007.png",
+      "groundTruthFile": "fixtures/ground-truth/FLD-007.json",
+      "categoryHint": "window flower sticker",
+      "geometryTags": ["G07_GLOBAL_VOID", "G08_THIN_FEATURE"],
+      "sourceCharacteristics": {"hasTransparentBackground": true, "hasColorDrift": false, "hasGradient": false, "hasShadow": false, "hasTexture": false, "hasGlobalVoid": true},
+      "benchmarkUse": {"colorPurification": false, "genericDecomposition": true},
+      "sourceAudit": {"originalSourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/sticker_window_flower_001.png", "selectionRationale": "A connected red silhouette with several true interior openings provides a direct global-void preservation fixture."},
+      "notes": "Real project material snapshot; copied without modifying its source."
+    },
+    {
+      "fixtureId": "FLD-008",
+      "fixtureType": "project_real",
+      "sourceFile": "fixtures/source/FLD-008.png",
+      "groundTruthFile": "fixtures/ground-truth/FLD-008.json",
+      "categoryHint": "lantern sticker",
+      "geometryTags": ["G01_SIMPLE_FLAT", "G05_INTERNAL_OVERLAY", "G09_MULTI_SUBSHAPE"],
+      "sourceCharacteristics": {"hasTransparentBackground": true, "hasColorDrift": false, "hasGradient": false, "hasShadow": false, "hasTexture": false, "hasGlobalVoid": false},
+      "benchmarkUse": {"colorPurification": true, "genericDecomposition": true},
+      "sourceAudit": {"originalSourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/sticker_lantern_001.png", "selectionRationale": "A compact, flat reference with a main body, cap, tassel, and interior accent supports a simple but structured fabrication baseline."},
+      "notes": "Real project material snapshot; copied without modifying its source."
+    }
+  ],
+  "metricContracts": {
+    "colorPurification": ["region_count_before", "region_count_after", "small_component_count_before", "small_component_count_after", "within_region_color_variance_before", "within_region_color_variance_after", "boundary_shift", "false_merge_count", "false_split_count", "manual_quality_grade"],
+    "genericDecomposition": ["candidate_count", "selected_base_candidate", "piece_count", "layer_edge_count", "cycle_detected", "reconstruction_label_accuracy", "boundary_error", "small_piece_count", "thin_feature_count", "total_piece_area", "total_cut_perimeter", "manual_correction_count", "visual_quality_grade", "fabrication_quality_grade"]
+  },
+  "manualQualityGrades": ["A", "B", "C", "D", "F"],
+  "futureAlgorithmCandidates": {
+    "colorPurification": ["CP-A OpenCV Mean Shift", "CP-B Lab + DeltaE + Region Growing + Local Representative Color", "CP-C VTracer Watershed"],
+    "representativeColor": ["RC-A Lab Median", "RC-B Histogram Mode", "RC-C Mean Shift Mode"],
+    "genericDecomposition": ["GD-A Project Generic Geometry Algorithm"],
+    "baselines": ["BL-VTRACER VTracer Stacked", "BL-LAYERD LayerD (not a dependency in this stage)"]
+  }
+}

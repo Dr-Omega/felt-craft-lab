@@ -1,0 +1,10 @@
+{
+  "fixtureId": "FLD-007",
+  "expectedColorRegions": {"approximateCount": 2, "mustKeepSeparate": [["red flower silhouette", "transparent interior openings"]], "mustMerge": []},
+  "expectedPieces": {"minReasonableCount": 1, "maxReasonableCount": 3},
+  "expectedStacking": {"requiredBelowRelations": []},
+  "voidPolicy": {"globalVoidsExpected": 6, "mustPreserveGlobalVoid": true},
+  "manufacturingNotes": ["All true interior openings must remain voids, not white pieces or filled red regions."],
+  "knownDifficulty": ["Multiple small global voids", "Thin bridges between voids"],
+  "manualJudgementNotes": "The exact raster boundary is not frozen; global-void topology is."
+}

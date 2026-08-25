@@ -1,0 +1,10 @@
+{
+  "fixtureId": "FLD-001",
+  "expectedColorRegions": {"approximateCount": 2, "mustKeepSeparate": [["yellow crescent fill", "black contour"]], "mustMerge": []},
+  "expectedPieces": {"minReasonableCount": 1, "maxReasonableCount": 2},
+  "expectedStacking": {"requiredBelowRelations": []},
+  "voidPolicy": {"globalVoidsExpected": 0, "mustPreserveGlobalVoid": false},
+  "manufacturingNotes": ["Treat the crescent as one large cuttable base; contour handling is implementation-dependent."],
+  "knownDifficulty": [],
+  "manualJudgementNotes": "Baseline flat silhouette; do not invent a separate piece for the exterior concavity."
+}

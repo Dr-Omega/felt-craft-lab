@@ -1,0 +1,10 @@
+{
+  "fixtureId": "FLD-003",
+  "expectedColorRegions": {"approximateCount": 5, "mustKeepSeparate": [["top surface", "side wall"], ["top surface", "centre oval"], ["centre oval", "radial marks"]], "mustMerge": []},
+  "expectedPieces": {"minReasonableCount": 3, "maxReasonableCount": 7},
+  "expectedStacking": {"requiredBelowRelations": [["side wall", "top surface"], ["top surface", "centre oval"], ["top surface", "radial marks"]]},
+  "voidPolicy": {"globalVoidsExpected": 0, "mustPreserveGlobalVoid": false},
+  "manufacturingNotes": ["Similar pale yellow regions should not collapse into one surface when their boundaries communicate the pastry form."],
+  "knownDifficulty": ["Fine radial marks may be omitted only if the selected piece count remains within the stated range."],
+  "manualJudgementNotes": "Do not use class/category knowledge to assume a mooncake template."
+}

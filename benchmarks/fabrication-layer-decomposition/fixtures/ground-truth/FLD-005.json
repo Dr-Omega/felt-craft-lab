@@ -1,0 +1,10 @@
+{
+  "fixtureId": "FLD-005",
+  "expectedColorRegions": {"approximateCount": 4, "mustKeepSeparate": [["curved fuse", "top cap"], ["red body", "yellow caps"]], "mustMerge": []},
+  "expectedPieces": {"minReasonableCount": 3, "maxReasonableCount": 5},
+  "expectedStacking": {"requiredBelowRelations": [["red body", "top cap"], ["top cap", "curved fuse"]]},
+  "voidPolicy": {"globalVoidsExpected": 0, "mustPreserveGlobalVoid": false},
+  "manufacturingNotes": ["Report loss of the thin fuse explicitly; it may be too narrow for a selected fabrication policy."],
+  "knownDifficulty": ["Thin curved feature", "Near-boundary small component"],
+  "manualJudgementNotes": "A result may flag the fuse as non-fabricable, but must not silently drop it."
+}
