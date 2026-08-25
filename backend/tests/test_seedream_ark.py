@@ -74,6 +74,19 @@ class SeedreamArkTests(unittest.TestCase):
         self.assertTrue(result.get("ok"))
         self.assertEqual(len(captured["json"]["image"]), 3)
 
+    def test_provider_accepts_nine_references_and_preserves_service_order(self):
+        captured = {}
+
+        def post(_url, **kwargs):
+            captured.update(kwargs)
+            return _Response()
+
+        refs = [f"data:image/png;base64,ref-{index}" for index in range(9)]
+        with mock.patch.dict(os.environ, {"ARK_API_KEY": "test-key"}, clear=False):
+            result = SeedreamArkProvider(post=post).generate(positive_prompt="transform", reference_images=refs)
+        self.assertTrue(result.get("ok"))
+        self.assertEqual(captured["json"]["image"], refs)
+
     def test_empty_negative_prompt_does_not_add_an_empty_avoidance_section(self):
         self.assertEqual(adapt_negative_prompt("keep the panda", ""), "keep the panda")
         self.assertEqual(adapt_negative_prompt("keep the panda", "  "), "keep the panda")

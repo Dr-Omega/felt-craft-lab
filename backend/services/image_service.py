@@ -125,6 +125,58 @@ class ImageService:
         except Exception:  # noqa: BLE001
             return err_image(code="UNKNOWN", message="生图服务暂时不可用。")
 
+    def transform(
+        self,
+        *,
+        content_image: str,
+        asset_role: str = "core_pattern",
+        request_id: str = "",
+    ) -> dict:
+        """Gateway-owned I2I orchestration: one content image plus eight fixed style images."""
+        if not isinstance(content_image, str) or not content_image.startswith(
+            ("data:image/png;base64,", "data:image/jpeg;base64,")
+        ):
+            return err_image(code="INVALID_ARGUMENT", message="缺少有效图片输入。")
+        try:
+            profile = resolve_generation_profile(asset_role)
+            style_references = resolve_reference_images(profile.reference_set_id)
+            if len(style_references) != 8:
+                raise StyleReferenceSetError("reference count mismatch")
+            references = [content_image, *style_references]
+            if len(references) != 9:
+                raise StyleReferenceSetError("transform reference count mismatch")
+            # Transform is a normal production profile path: explicit/development
+            # provider construction must not replace the profile's provider policy.
+            provider = self._provider_for(profile.provider)
+            raw = provider.generate(
+                positive_prompt=profile.transform_prompt_addon,
+                negative_prompt="",
+                width=profile.generation_width,
+                height=profile.generation_height,
+                reference_images=references,
+                model=profile.model,
+            )
+            if not raw.get("ok"):
+                return raw
+            encoded = ((raw.get("result") or {}).get("imageBase64") or "").strip()
+            if not encoded:
+                return err_image(code="UNKNOWN", message="生图结果为空。")
+            image_bytes = base64.b64decode(encoded)
+            return finalize_image_bytes(
+                image_bytes,
+                width=512,
+                height=512,
+                asset_role=asset_role,
+                request_id=request_id or ((raw.get("result") or {}).get("requestId") or ""),
+                provider=str(getattr(provider, "name", "mock")),
+            )
+        except UnknownGenerationProfile:
+            return err_image(code="IMAGE_PROFILE_UNAVAILABLE")
+        except StyleReferenceSetError:
+            return err_image(code="IMAGE_REFERENCE_INVALID")
+        except Exception:  # noqa: BLE001
+            return err_image(code="UNKNOWN", message="图片转换服务暂时不可用。")
+
     def _is_explicit_provider(self) -> bool:
         return bool(getattr(self, "_provider_name_explicit", False))
 

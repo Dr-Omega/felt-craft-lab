@@ -58,6 +58,7 @@ from services.shared_error_map import fail
 from services.tts_cache import prune_tts_cache
 from services.tts_service import TtsService, UnknownTtsProvider
 from services.image_service import ImageService, UnknownImageProvider, finalize_image_bytes
+from services.image_input_guard import ImageInputError, validate_uploaded_image
 from services.image_profiles import UnknownGenerationProfile, resolve_generation_profile
 from services.style_reference_sets import StyleReferenceSetError, reference_set_summary
 from services.image_types import IMAGE_ERROR_CODES
@@ -702,6 +703,53 @@ def image_generate():
                 height=h,
                 asset_role=asset_role,
                 request_id=(data.get("requestId") or data.get("request_id") or ""),
+            )
+            status = 200 if result.get("ok") else 502
+            return jsonify(result), status
+    except UnknownImageProvider:
+        return _json_fail("INVALID_PROVIDER")
+    except TimeoutError:
+        return _json_fail("RATE_LIMITED", 429)
+
+
+@app.post("/api/image/transform")
+def image_transform():
+    """P0 I2I: trusted multipart content image + Gateway-owned style/profile policy."""
+    claims, err = _require_session(apply_install_rate=False)
+    if err:
+        return err
+    if not request.mimetype or request.mimetype.lower() != "multipart/form-data":
+        return _json_fail("INVALID_ARGUMENT")
+    allowed_form_fields = {"requestId", "request_id", "assetRole", "asset_role"}
+    forbidden = {
+        "referenceImages", "reference_images", "styleReferences", "style_references",
+        "profileId", "profile_id", "model", "systemPrompt", "system_prompt", "provider",
+    }
+    if forbidden.intersection(request.form) or set(request.form).difference(allowed_form_fields):
+        return _json_fail("INVALID_ARGUMENT")
+    if set(request.files).difference({"file"}) or len(request.files.getlist("file")) != 1:
+        return _json_fail("INVALID_ARGUMENT")
+    asset_role = str(request.form.get("assetRole") or request.form.get("asset_role") or "core_pattern")
+    if asset_role != "core_pattern":
+        return _json_fail("IMAGE_PROFILE_UNAVAILABLE")
+    try:
+        content = validate_uploaded_image(request.files.get("file"))
+    except ImageInputError as exc:
+        return _json_fail("INVALID_ARGUMENT", exc.http_status)
+    limited = check_install_rate_limit(claims.installation_id)
+    if limited:
+        return _json_fail(limited, 429)
+    if not rate_limit_ok(f"image-transform:{_client_bucket()}"):
+        return _json_fail("RATE_LIMITED", 429)
+    try:
+        with InflightGuard():
+            fuse_err = _consume_paid_fuse(claims.installation_id)
+            if fuse_err:
+                return fuse_err
+            result = ImageService().transform(
+                content_image=content.data_uri,
+                asset_role=asset_role,
+                request_id=(request.form.get("requestId") or request.form.get("request_id") or ""),
             )
             status = 200 if result.get("ok") else 502
             return jsonify(result), status

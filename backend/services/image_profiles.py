@@ -16,6 +16,7 @@ class GenerationProfile:
     provider: str
     model: str
     hidden_prompt_addon: str
+    transform_prompt_addon: str
     reference_set_id: str
     generation_width: int = 1024
     generation_height: int = 1024
@@ -27,6 +28,20 @@ _HIDDEN_FELT_CONSTRAINT_V1 = (
     "compositions. Keep the composition structurally simple and easy to cut. Reduce tiny internal "
     "details and meaningless fragments. Keep the background simple, make the requested subjects "
     "and their requested relationships clear, and do not add objects unrelated to the request."
+)
+
+# This is deliberately distinct from the T2I addon above.  In I2I, Image 1
+# carries user content while the remaining images are Gateway-owned style refs.
+_I2I_CONTENT_AND_STYLE_CONSTRAINT_V1 = (
+    "Image 1 is the user's content and structure reference. Preserve the subjects, subject count, "
+    "major silhouette, pose, relative positions, semantic relationships, and critical structures "
+    "from Image 1.\n\n"
+    "Images 2 through 9 are style references only. Use them only for visual language, shape treatment, "
+    "color-block treatment, simplification level, and overall expression. Do not copy their specific "
+    "subjects, objects, text, or compositions.\n\n"
+    "Transform the content of Image 1 into the visual language represented by Images 2 through 9. Keep "
+    "the composition structurally simple and easy to cut, use large clear color regions and minimal "
+    "perspective, reduce tiny internal details and meaningless fragments, and do not add unrelated objects."
 )
 
 
@@ -45,6 +60,7 @@ def _profiles() -> dict[str, GenerationProfile]:
             provider="seedream_ark",
             model=_seedream_model_id(),
             hidden_prompt_addon=_HIDDEN_FELT_CONSTRAINT_V1,
+            transform_prompt_addon=_I2I_CONTENT_AND_STYLE_CONSTRAINT_V1,
             reference_set_id="felt-style-ref-v1",
         )
     }
