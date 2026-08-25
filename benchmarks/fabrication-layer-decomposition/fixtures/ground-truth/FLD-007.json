@@ -1,10 +1,11 @@
 {
   "fixtureId": "FLD-007",
-  "expectedColorRegions": {"approximateCount": 2, "mustKeepSeparate": [["red flower silhouette", "transparent interior openings"]], "mustMerge": []},
-  "expectedPieces": {"minReasonableCount": 1, "maxReasonableCount": 3},
+  "expectedColorRegions": {"approximateCount": 2, "mustKeepSeparate": [["red flower silhouette", "transparent interior openings"]]},
+  "expectedPieces": {"minReasonableCount": 2, "maxReasonableCount": 12},
   "expectedStacking": {"requiredBelowRelations": []},
   "voidPolicy": {"globalVoidsExpected": 6, "mustPreserveGlobalVoid": true},
-  "manufacturingNotes": ["All true interior openings must remain voids, not white pieces or filled red regions."],
-  "knownDifficulty": ["Multiple small global voids", "Thin bridges between voids"],
-  "manualJudgementNotes": "The exact raster boundary is not frozen; global-void topology is."
+  "expectedDisposition": {"allowedOutcomes": ["MULTI_SOLID_PIECE", "MANUAL_REQUIRED"]},
+  "manufacturingNotes": ["All true interior openings must remain global voids, not white pieces or filled red regions.", "A fabrication piece must be closed and solid; no single piece may carry these holes."],
+  "knownDifficulty": ["Multiple small global voids", "Thin bridges between voids", "A generic method may need manual review rather than a holed single-piece result."],
+  "manualJudgementNotes": "The exact raster boundary is not frozen; global-void topology is. A valid automatic disposition uses multiple solid pieces to preserve the voids; otherwise it is MANUAL_REQUIRED."
 }

@@ -1,6 +1,6 @@
 {
   "fixtureId": "FLD-005",
-  "expectedColorRegions": {"approximateCount": 4, "mustKeepSeparate": [["curved fuse", "top cap"], ["red body", "yellow caps"]], "mustMerge": []},
+  "expectedColorRegions": {"approximateCount": 4, "mustKeepSeparate": [["curved fuse", "top cap"], ["red body", "yellow caps"]]},
   "expectedPieces": {"minReasonableCount": 3, "maxReasonableCount": 5},
   "expectedStacking": {"requiredBelowRelations": [["red body", "top cap"], ["top cap", "curved fuse"]]},
   "voidPolicy": {"globalVoidsExpected": 0, "mustPreserveGlobalVoid": false},

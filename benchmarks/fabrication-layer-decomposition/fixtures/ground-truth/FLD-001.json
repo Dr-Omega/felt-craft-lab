@@ -1,6 +1,6 @@
 {
   "fixtureId": "FLD-001",
-  "expectedColorRegions": {"approximateCount": 2, "mustKeepSeparate": [["yellow crescent fill", "black contour"]], "mustMerge": []},
+  "expectedColorRegions": {"approximateCount": 2, "mustKeepSeparate": [["yellow crescent fill", "black contour"]]},
   "expectedPieces": {"minReasonableCount": 1, "maxReasonableCount": 2},
   "expectedStacking": {"requiredBelowRelations": []},
   "voidPolicy": {"globalVoidsExpected": 0, "mustPreserveGlobalVoid": false},

@@ -1,6 +1,8 @@
 {
   "fixtureId": "FLD-004",
-  "expectedColorRegions": {"approximateCount": 7, "mustKeepSeparate": [["front petals", "rear petals"], ["lamp bowl", "flame"], ["lamp bowl", "petal ring"]], "mustMerge": [["rear petal left", "rear petal right"]]},
+  "expectedColorRegions": {"approximateCount": 7, "mustKeepSeparate": [["front petals", "rear petals"], ["lamp bowl", "flame"], ["lamp bowl", "petal ring"]]},
+  "expectedGeometryComponents": {"mustRemainSeparate": [["rear petal left", "rear petal right"]]},
+  "expectedColorRelations": {"mustShareColor": [["rear petal left", "rear petal right"]]},
   "expectedPieces": {"minReasonableCount": 5, "maxReasonableCount": 12},
   "expectedStacking": {"requiredBelowRelations": [["rear petals", "front petals"], ["petal ring", "lamp bowl"], ["lamp bowl", "flame"]]},
   "voidPolicy": {"globalVoidsExpected": 0, "mustPreserveGlobalVoid": false},

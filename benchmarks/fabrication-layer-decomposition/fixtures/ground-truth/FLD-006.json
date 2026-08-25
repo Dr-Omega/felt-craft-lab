@@ -1,6 +1,6 @@
 {
   "fixtureId": "FLD-006",
-  "expectedColorRegions": {"approximateCount": 7, "mustKeepSeparate": [["white rabbit silhouette", "pink inner ears"], ["white rabbit silhouette", "black eyes"], ["white rabbit silhouette", "pink cheeks"]], "mustMerge": []},
+  "expectedColorRegions": {"approximateCount": 7, "mustKeepSeparate": [["white rabbit silhouette", "pink inner ears"], ["white rabbit silhouette", "black eyes"], ["white rabbit silhouette", "pink cheeks"]]},
   "expectedPieces": {"minReasonableCount": 4, "maxReasonableCount": 9},
   "expectedStacking": {"requiredBelowRelations": [["rabbit silhouette", "inner ears"], ["rabbit silhouette", "eyes"], ["rabbit silhouette", "cheeks"]]},
   "voidPolicy": {"globalVoidsExpected": 0, "mustPreserveGlobalVoid": false},

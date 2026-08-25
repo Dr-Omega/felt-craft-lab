@@ -1,6 +1,6 @@
 {
   "fixtureId": "FLD-002",
-  "expectedColorRegions": {"approximateCount": 4, "mustKeepSeparate": [["envelope body", "flap"], ["flap", "round seal"]], "mustMerge": []},
+  "expectedColorRegions": {"approximateCount": 4, "mustKeepSeparate": [["envelope body", "flap"], ["flap", "round seal"]]},
   "expectedPieces": {"minReasonableCount": 3, "maxReasonableCount": 5},
   "expectedStacking": {"requiredBelowRelations": [["envelope body", "flap"], ["flap", "round seal"]]},
   "voidPolicy": {"globalVoidsExpected": 0, "mustPreserveGlobalVoid": false},

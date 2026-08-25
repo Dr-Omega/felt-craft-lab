@@ -6,10 +6,13 @@
   "required": ["fixtureId", "expectedColorRegions", "expectedPieces", "expectedStacking", "voidPolicy", "manufacturingNotes", "knownDifficulty", "manualJudgementNotes"],
   "properties": {
     "fixtureId": {"type": "string", "pattern": "^FLD-[0-9]{3}$"},
-    "expectedColorRegions": {"type": "object", "additionalProperties": false, "required": ["approximateCount", "mustKeepSeparate", "mustMerge"], "properties": {"approximateCount": {"type": "integer", "minimum": 1}, "mustKeepSeparate": {"type": "array", "items": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "string"}}}, "mustMerge": {"type": "array", "items": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "string"}}}}},
+    "expectedColorRegions": {"type": "object", "additionalProperties": false, "required": ["approximateCount", "mustKeepSeparate"], "properties": {"approximateCount": {"type": "integer", "minimum": 1}, "mustKeepSeparate": {"type": "array", "items": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "string"}}}}},
+    "expectedGeometryComponents": {"type": "object", "additionalProperties": false, "required": ["mustRemainSeparate"], "properties": {"mustRemainSeparate": {"type": "array", "items": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "string"}}}}},
+    "expectedColorRelations": {"type": "object", "additionalProperties": false, "required": ["mustShareColor"], "properties": {"mustShareColor": {"type": "array", "items": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "string"}}}}},
     "expectedPieces": {"type": "object", "additionalProperties": false, "required": ["minReasonableCount", "maxReasonableCount"], "properties": {"minReasonableCount": {"type": "integer", "minimum": 1}, "maxReasonableCount": {"type": "integer", "minimum": 1}}},
     "expectedStacking": {"type": "object", "additionalProperties": false, "required": ["requiredBelowRelations"], "properties": {"requiredBelowRelations": {"type": "array", "items": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "string"}}}}},
     "voidPolicy": {"type": "object", "additionalProperties": false, "required": ["globalVoidsExpected", "mustPreserveGlobalVoid"], "properties": {"globalVoidsExpected": {"type": "integer", "minimum": 0}, "mustPreserveGlobalVoid": {"type": "boolean"}}},
+    "expectedDisposition": {"type": "object", "additionalProperties": false, "required": ["allowedOutcomes"], "properties": {"allowedOutcomes": {"type": "array", "minItems": 1, "items": {"enum": ["MULTI_SOLID_PIECE", "MANUAL_REQUIRED"]}, "uniqueItems": true}}},
     "manufacturingNotes": {"type": "array", "items": {"type": "string"}},
     "knownDifficulty": {"type": "array", "items": {"type": "string"}},
     "manualJudgementNotes": {"type": "string"}

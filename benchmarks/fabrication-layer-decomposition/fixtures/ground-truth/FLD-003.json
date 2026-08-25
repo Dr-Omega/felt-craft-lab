@@ -1,6 +1,6 @@
 {
   "fixtureId": "FLD-003",
-  "expectedColorRegions": {"approximateCount": 5, "mustKeepSeparate": [["top surface", "side wall"], ["top surface", "centre oval"], ["centre oval", "radial marks"]], "mustMerge": []},
+  "expectedColorRegions": {"approximateCount": 5, "mustKeepSeparate": [["top surface", "side wall"], ["top surface", "centre oval"], ["centre oval", "radial marks"]]},
   "expectedPieces": {"minReasonableCount": 3, "maxReasonableCount": 7},
   "expectedStacking": {"requiredBelowRelations": [["side wall", "top surface"], ["top surface", "centre oval"], ["top surface", "radial marks"]]},
   "voidPolicy": {"globalVoidsExpected": 0, "mustPreserveGlobalVoid": false},

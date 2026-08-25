@@ -15,7 +15,15 @@ Formal fixtures are project-acceptable PNGs with RGBA input, a single subject, t
 
 ## Ground truth level
 
-The first GT level is structural rather than pixel-perfect: approximate color-region count, must-separate/must-merge relations, reasonable piece-count range, required below relations, void policy, manufacturing notes, known difficulty, and manual judgement notes. It deliberately avoids invented stable piece IDs where an assessor cannot define them consistently.
+The first GT level is structural rather than pixel-perfect: approximate color-region count, color-slot separation/share relations, geometry-component separation, reasonable piece-count range, required below relations, void policy, manufacturing notes, known difficulty, and manual judgement notes. It deliberately avoids invented stable piece IDs where an assessor cannot define them consistently.
+
+### Geometry is not color identity
+
+`expectedGeometryComponents.mustRemainSeparate` describes distinct connected geometry/pieces. `expectedColorRelations.mustShareColor` describes a shared ColorSlot only. They are intentionally independent: for example, FLD-004's left and right rear petals remain two disconnected geometry components while sharing the same color. Do not represent that relationship as a geometry merge, and do not infer a merge merely because two pieces share a color.
+
+### Global Void and solid-piece contract
+
+A fabrication piece is closed and solid: it must not rely on its own transparent interior holes. A Global Void is a real background area in the final assembly topology. When a fixture must preserve one or more Global Voids, an automatic outcome must use `MULTI_SOLID_PIECE` so multiple solid pieces collectively surround the void, or it must be declared `MANUAL_REQUIRED`. A single holed fabrication piece is never a valid success outcome. This benchmark records the policy only; it does not implement a Global Void split algorithm.
 
 Benchmark fixtures/GT一旦进入正式比较阶段，不得为了让算法分数更好而随算法实现修改。 If a GT is actually incorrect, record a separate correction reason and review it independently.
 
@@ -40,7 +48,7 @@ python tools/validate_benchmark.py
 python tools/inspect_fixture.py FLD-001
 ```
 
-`validate_benchmark.py` checks all fixture/GT links, schema-level contract fields, legal geometry tags, image decoding/mode/dimensions, and unknown GT references. `inspect_fixture.py` only reads one fixture and prints a compact summary; it never writes image data, Base64, or pixel dumps.
+`validate_benchmark.py` checks all fixture/GT links, strict fixture-ID path contracts, schema-level known fields (including nested objects), legal geometry tags, image decoding/mode/dimensions, declared transparency against actual alpha pixels, project-real source existence and copied-byte SHA equality, and unknown GT references. Its success count is calculated from the current manifest and GT files. `inspect_fixture.py` only reads one fixture and prints a compact summary; it never writes image data, Base64, or pixel dumps.
 
 ## Current gaps
 

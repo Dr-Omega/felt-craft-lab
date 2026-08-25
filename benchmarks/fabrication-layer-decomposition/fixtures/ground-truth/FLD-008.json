@@ -1,6 +1,6 @@
 {
   "fixtureId": "FLD-008",
-  "expectedColorRegions": {"approximateCount": 5, "mustKeepSeparate": [["lantern body", "top cap"], ["lantern body", "interior accent"], ["lantern body", "tassel"]], "mustMerge": []},
+  "expectedColorRegions": {"approximateCount": 5, "mustKeepSeparate": [["lantern body", "top cap"], ["lantern body", "interior accent"], ["lantern body", "tassel"]]},
   "expectedPieces": {"minReasonableCount": 3, "maxReasonableCount": 6},
   "expectedStacking": {"requiredBelowRelations": [["lantern body", "top cap"], ["lantern body", "interior accent"], ["lantern body", "tassel"]]},
   "voidPolicy": {"globalVoidsExpected": 0, "mustPreserveGlobalVoid": false},
