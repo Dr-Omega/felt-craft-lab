@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import base64
+from dataclasses import dataclass
 from typing import Any, Optional
 
 from providers.image.mock_provider import MockImageProvider
@@ -19,6 +20,25 @@ from services.style_reference_sets import StyleReferenceSetError, resolve_refere
 
 class UnknownImageProvider(ValueError):
     pass
+
+
+@dataclass(frozen=True)
+class InternalTransformSmokeResult:
+    """Raw provider bytes for an explicitly internal smoke flow, never an API envelope."""
+
+    raw_image_bytes: bytes
+    raw_content_type: str
+    provider_name: str
+    provider_request_id: str
+    final_envelope: dict[str, Any]
+
+
+@dataclass(frozen=True)
+class _TransformProviderResult:
+    raw_image_bytes: bytes
+    raw_content_type: str
+    provider_name: str
+    provider_request_id: str
 
 
 def compose_positive_prompt(canonical_prompt: str, hidden_prompt_addon: str) -> str:
@@ -133,6 +153,49 @@ class ImageService:
         request_id: str = "",
     ) -> dict:
         """Gateway-owned I2I orchestration: one content image plus eight fixed style images."""
+        invoked = self._invoke_transform_provider(content_image=content_image, asset_role=asset_role)
+        if isinstance(invoked, dict):
+            return invoked
+        return self._finalize_transform_provider_result(
+            invoked,
+            asset_role=asset_role,
+            request_id=request_id,
+        )
+
+    def transform_for_internal_smoke(
+        self,
+        *,
+        content_image: str,
+        asset_role: str = "core_pattern",
+        request_id: str = "",
+    ) -> InternalTransformSmokeResult | dict:
+        """Run exactly one I2I provider call and retain its raw bytes for an internal smoke tool.
+
+        This method is intentionally not used by the Flask route.  It keeps raw
+        provider material out of the production response envelope while making
+        raw-vs-final validation possible without a second paid request.
+        """
+        invoked = self._invoke_transform_provider(content_image=content_image, asset_role=asset_role)
+        if isinstance(invoked, dict):
+            return invoked
+        return InternalTransformSmokeResult(
+            raw_image_bytes=invoked.raw_image_bytes,
+            raw_content_type=invoked.raw_content_type,
+            provider_name=invoked.provider_name,
+            provider_request_id=invoked.provider_request_id,
+            final_envelope=self._finalize_transform_provider_result(
+                invoked,
+                asset_role=asset_role,
+                request_id=request_id,
+            ),
+        )
+
+    def _invoke_transform_provider(
+        self,
+        *,
+        content_image: str,
+        asset_role: str,
+    ) -> _TransformProviderResult | dict:
         if not isinstance(content_image, str) or not content_image.startswith(
             ("data:image/png;base64,", "data:image/jpeg;base64,")
         ):
@@ -158,17 +221,16 @@ class ImageService:
             )
             if not raw.get("ok"):
                 return raw
-            encoded = ((raw.get("result") or {}).get("imageBase64") or "").strip()
+            raw_result = raw.get("result") or {}
+            encoded = (raw_result.get("imageBase64") or "").strip()
             if not encoded:
                 return err_image(code="UNKNOWN", message="生图结果为空。")
             image_bytes = base64.b64decode(encoded)
-            return finalize_image_bytes(
-                image_bytes,
-                width=512,
-                height=512,
-                asset_role=asset_role,
-                request_id=request_id or ((raw.get("result") or {}).get("requestId") or ""),
-                provider=str(getattr(provider, "name", "mock")),
+            return _TransformProviderResult(
+                raw_image_bytes=image_bytes,
+                raw_content_type=str(raw_result.get("contentType") or "image/png"),
+                provider_name=str(getattr(provider, "name", "mock")),
+                provider_request_id=str(raw_result.get("requestId") or ""),
             )
         except UnknownGenerationProfile:
             return err_image(code="IMAGE_PROFILE_UNAVAILABLE")
@@ -176,6 +238,22 @@ class ImageService:
             return err_image(code="IMAGE_REFERENCE_INVALID")
         except Exception:  # noqa: BLE001
             return err_image(code="UNKNOWN", message="图片转换服务暂时不可用。")
+
+    @staticmethod
+    def _finalize_transform_provider_result(
+        invoked: _TransformProviderResult,
+        *,
+        asset_role: str,
+        request_id: str,
+    ) -> dict:
+        return finalize_image_bytes(
+            invoked.raw_image_bytes,
+            width=512,
+            height=512,
+            asset_role=asset_role,
+            request_id=request_id or invoked.provider_request_id,
+            provider=invoked.provider_name,
+        )
 
     def _is_explicit_provider(self) -> bool:
         return bool(getattr(self, "_provider_name_explicit", False))

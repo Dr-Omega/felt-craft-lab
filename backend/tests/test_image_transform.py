@@ -22,7 +22,7 @@ os.environ["AI_RATE_MAX"] = "1000"
 
 from app import app  # noqa: E402
 from providers.image.mock_provider import subject_on_backdrop_png  # noqa: E402
-from services.image_service import ImageService  # noqa: E402
+from services.image_service import ImageService, InternalTransformSmokeResult  # noqa: E402
 from services.image_types import ok_image_bytes  # noqa: E402
 from services.session_auth import issue_session_token  # noqa: E402
 from services.style_reference_sets import resolve_reference_images  # noqa: E402
@@ -181,6 +181,23 @@ class ImageTransformTests(unittest.TestCase):
         self.assertIn("一只熊猫", call["positive_prompt"])
         self.assertIn("provided reference images only", call["positive_prompt"].lower())
         self.assertNotIn("image 1 is the user's content", call["positive_prompt"].lower())
+
+    def test_internal_smoke_raw_and_final_use_one_provider_call(self):
+        provider = _CapturedSeedreamProvider()
+        content_image = "data:image/png;base64," + base64.b64encode(_png_bytes()).decode("ascii")
+        with mock.patch("services.image_service.SeedreamArkProvider", return_value=provider):
+            smoke_result = ImageService().transform_for_internal_smoke(
+                content_image=content_image,
+                request_id="i2i-smoke-test",
+            )
+        self.assertIsInstance(smoke_result, InternalTransformSmokeResult)
+        assert isinstance(smoke_result, InternalTransformSmokeResult)
+        self.assertEqual(len(provider.calls), 1, "raw and final must not trigger two Provider requests")
+        self.assertEqual(len(provider.calls[0]["reference_images"]), 9)
+        self.assertEqual(smoke_result.raw_image_bytes, subject_on_backdrop_png(128, 128, (244, 162, 97)))
+        self.assertEqual(smoke_result.provider_name, "seedream_ark")
+        self.assertTrue(smoke_result.final_envelope["ok"])
+        self.assertEqual(smoke_result.final_envelope["result"]["requestId"], "i2i-smoke-test")
 
 
 if __name__ == "__main__":
