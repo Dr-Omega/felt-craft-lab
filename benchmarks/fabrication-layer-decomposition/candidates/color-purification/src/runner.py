@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, PngImagePlugin
 
 from color_purification import (
     ColorPurificationError,
@@ -29,6 +29,12 @@ CANDIDATE_ROOT = Path(__file__).resolve().parents[1]
 CONFIG_PATH = CANDIDATE_ROOT / "configs" / "profiles.json"
 OUTPUT_ROOT = BENCHMARK_ROOT / "outputs" / "color-purification"
 REPORT_ROOT = BENCHMARK_ROOT / "reports" / "color-purification"
+
+REVIEW_ROWS = (
+    ("CP-A", "cp-a-balanced_rc-a", "cp-a-aggressive_rc-a"),
+    ("CP-B", "cp-b-balanced_rc-a", "cp-b-aggressive_rc-a"),
+)
+REVIEW_RUN_IDS = tuple(run_id for _, balanced, aggressive in REVIEW_ROWS for run_id in (balanced, aggressive))
 
 
 def _sha256(path: Path) -> str:
@@ -251,36 +257,106 @@ def _thumbnail(image: Image.Image, width: int = 220, height: int = 220) -> Image
     return canvas
 
 
+def _review_metric_lines(candidate: str, profile: str, metrics: dict[str, Any]) -> list[str]:
+    return [
+        f"{candidate} {profile}",
+        f"Local={metrics['local_region_count_after']}  Groups={metrics['color_group_count_after']}",
+        f"GT={metrics['ground_truth_approx_region_count']}  Gate={metrics['region_count_order_gate']}",
+        f"Boundary={metrics['boundary_shift']:.4f}  {metrics['boundary_shift_state']}",
+    ]
+
+
+def _open_review_image(path: Path) -> Image.Image:
+    with Image.open(path) as image:
+        return image.convert("RGBA").copy()
+
+
 def _write_contact_sheets(summary: dict[str, Any], fixtures: list[dict[str, Any]]) -> None:
-    """Single-fixture human-review views; never read by candidate algorithms."""
+    """Build read-only review material from completed candidate artifacts."""
     sheet_root = REPORT_ROOT / "contact-sheets"
     sheet_root.mkdir(parents=True, exist_ok=True)
     metrics_by_key = {(record["runId"], record["fixtureId"]): record.get("metrics") for record in summary["records"] if record["status"] == "SUCCESS"}
     for fixture in fixtures:
         fixture_id = str(fixture["fixtureId"])
-        cp_a = metrics_by_key.get(("cp-a-balanced_rc-a", fixture_id))
-        cp_b = metrics_by_key.get(("cp-b-balanced_rc-a", fixture_id))
-        if not cp_a or not cp_b:
+        metrics_by_run = {run_id: metrics_by_key.get((run_id, fixture_id)) for run_id in REVIEW_RUN_IDS}
+        if not all(metrics_by_run.values()):
             continue
         source = _load_rgba(BENCHMARK_ROOT / str(fixture["sourceFile"]))
-        views = [
-            ("Original", Image.fromarray(source, mode="RGBA")),
-            ("CP-A purified", Image.open(OUTPUT_ROOT / "cp-a-balanced_rc-a" / fixture_id / "purified.png")),
-            ("CP-A structural", Image.open(OUTPUT_ROOT / "cp-a-balanced_rc-a" / fixture_id / "structural_label_preview.png")),
-            ("CP-B purified", Image.open(OUTPUT_ROOT / "cp-b-balanced_rc-a" / fixture_id / "purified.png")),
-            ("CP-B structural", Image.open(OUTPUT_ROOT / "cp-b-balanced_rc-a" / fixture_id / "structural_label_preview.png")),
-        ]
-        width, image_height, text_height = 220, 220, 95
-        sheet = Image.new("RGBA", (width * len(views), image_height + text_height), "white")
+        cell_width, image_height, text_height = 280, 250, 92
+        row_height = image_height + text_height
+        footer_height = 78
+        sheet = Image.new("RGBA", (cell_width * 5, row_height * len(REVIEW_ROWS) + footer_height), "white")
         draw = ImageDraw.Draw(sheet)
-        for index, (caption, image) in enumerate(views):
-            sheet.alpha_composite(_thumbnail(image, width, image_height), (index * width, 0))
-            draw.text((index * width + 6, image_height + 5), caption, fill="black")
-        alpha_counts = "/".join(str(cp_a["alpha_topology"][f"alpha_ge_{threshold}"]["component_count"]) for threshold in (1, 32, 64, 128, 192, 224))
-        draw.text((6, image_height + 24), f"GT approx={cp_a['ground_truth_approx_region_count']}  alpha components >0/32/64/128/192/224={alpha_counts}", fill="black")
-        draw.text((6, image_height + 43), f"CP-A local/groups={cp_a['local_region_count_after']}/{cp_a['color_group_count_after']} fringe/orphan={cp_a['fringe_pixel_count']}/{cp_a['orphan_fringe_count']}", fill="black")
-        draw.text((6, image_height + 62), f"CP-B local/groups={cp_b['local_region_count_after']}/{cp_b['color_group_count_after']} fringe/orphan={cp_b['fringe_pixel_count']}/{cp_b['orphan_fringe_count']}", fill="black")
-        sheet.convert("RGB").save(sheet_root / f"{fixture_id}.png", format="PNG", optimize=True)
+        for row_index, (candidate, balanced_run, aggressive_run) in enumerate(REVIEW_ROWS):
+            top = row_index * row_height
+            views = [
+                ("Original", Image.fromarray(source, mode="RGBA"), []),
+                (f"{candidate} balanced purified", _open_review_image(OUTPUT_ROOT / balanced_run / fixture_id / "purified.png"), _review_metric_lines(candidate, "balanced", metrics_by_run[balanced_run])),
+                (f"{candidate} balanced structural", _open_review_image(OUTPUT_ROOT / balanced_run / fixture_id / "structural_label_preview.png"), []),
+                (f"{candidate} aggressive purified", _open_review_image(OUTPUT_ROOT / aggressive_run / fixture_id / "purified.png"), _review_metric_lines(candidate, "aggressive", metrics_by_run[aggressive_run])),
+                (f"{candidate} aggressive structural", _open_review_image(OUTPUT_ROOT / aggressive_run / fixture_id / "structural_label_preview.png"), []),
+            ]
+            for index, (caption, image, detail_lines) in enumerate(views):
+                left = index * cell_width
+                sheet.alpha_composite(_thumbnail(image, cell_width, image_height), (left, top))
+                draw.text((left + 6, top + image_height + 4), caption, fill="black")
+                for line_index, line in enumerate(detail_lines):
+                    draw.text((left + 6, top + image_height + 20 + line_index * 15), line, fill="black")
+
+        topology = metrics_by_run["cp-a-balanced_rc-a"]["alpha_topology"]
+        alpha_counts = "/".join(str(topology[f"alpha_ge_{threshold}"]["component_count"]) for threshold in (1, 32, 64, 128, 192, 224))
+        alpha_one = topology["alpha_ge_1"]
+        footer_top = row_height * len(REVIEW_ROWS) + 5
+        draw.text((6, footer_top), f"Alpha topology: geometry components={alpha_one['component_count']}  alpha components >=1/32/64/128/192/224={alpha_counts}", fill="black")
+        draw.text((6, footer_top + 18), f"Tiny opaque components: median area={alpha_one['median_component_area']}  <4px={alpha_one['components_under_4px']}  <16px={alpha_one['components_under_16px']}  <64px={alpha_one['components_under_64px']}", fill="black")
+        pnginfo = PngImagePlugin.PngInfo()
+        pnginfo.add_text("reviewRunIds", ",".join(REVIEW_RUN_IDS))
+        pnginfo.add_text("reviewLayout", "5 columns x 2 rows; original, balanced purified/structural, aggressive purified/structural")
+        sheet.convert("RGB").save(sheet_root / f"{fixture_id}.png", format="PNG", optimize=True, pnginfo=pnginfo)
+
+
+def _review_diagnostic(fixture_id: str, metrics_by_run: dict[str, dict[str, Any]]) -> str:
+    if fixture_id == "FLD-003":
+        return (
+            "CP-A balanced and aggressive each produce one local region; "
+            f"CP-B balanced and aggressive produce {metrics_by_run['cp-b-balanced_rc-a']['local_region_count_after']} and {metrics_by_run['cp-b-aggressive_rc-a']['local_region_count_after']} local regions."
+        )
+    if fixture_id == "FLD-004":
+        topology = metrics_by_run["cp-a-balanced_rc-a"]["alpha_topology"]["alpha_ge_1"]
+        return (
+            f"{topology['component_count']} opaque geometry components persist across all recorded alpha thresholds; "
+            f"{topology['components_under_64px']} are under 64 px."
+        )
+    return (
+        "Automated color-group counts (balanced/aggressive) are "
+        f"CP-A {metrics_by_run['cp-a-balanced_rc-a']['color_group_count_after']}/{metrics_by_run['cp-a-aggressive_rc-a']['color_group_count_after']} and "
+        f"CP-B {metrics_by_run['cp-b-balanced_rc-a']['color_group_count_after']}/{metrics_by_run['cp-b-aggressive_rc-a']['color_group_count_after']}."
+    )
+
+
+def _write_review_index(summary: dict[str, Any], fixtures: list[dict[str, Any]]) -> None:
+    metrics_by_key = {(record["runId"], record["fixtureId"]): record.get("metrics") for record in summary["records"] if record["status"] == "SUCCESS"}
+    sections = [
+        "# P0-04B1.3 Manual Review Index",
+        "",
+        "Status: `PROVISIONAL_PENDING_MANUAL_REVIEW`. These are review aids, not human grades or a candidate selection.",
+        "",
+    ]
+    for fixture in fixtures:
+        fixture_id = str(fixture["fixtureId"])
+        metrics_by_run = {run_id: metrics_by_key.get((run_id, fixture_id)) for run_id in REVIEW_RUN_IDS}
+        if not all(metrics_by_run.values()):
+            raise ColorPurificationError(f"review artifacts require all four completed runs for {fixture_id}")
+        sections.extend([
+            f"## {fixture_id}",
+            "",
+            f"- Contact sheet: [open {fixture_id}](contact-sheets/{fixture_id}.png)",
+            f"- B0 geometry tags: {', '.join(str(tag) for tag in fixture.get('geometryTags', []))}",
+            f"- Expected color regions (approximate): {_ground_truth_approx_region_count(fixture)}",
+            f"- Automated diagnostic: {_review_diagnostic(fixture_id, metrics_by_run)}",
+            "",
+        ])
+    (REPORT_ROOT / "REVIEW_INDEX.md").write_text("\n".join(sections), encoding="utf-8")
 
 
 def run(
@@ -318,24 +394,13 @@ def run(
 
 
 def finalize_existing_outputs() -> dict[str, Any]:
-    """Rebuild reports from completed on-disk outputs without rerunning candidates."""
+    """Regenerate manual review material without rerunning or rewriting case artifacts."""
     fixtures = _load_manifest()
-    fixture_ids = [str(fixture["fixtureId"]) for fixture in fixtures]
-    records: list[dict[str, Any]] = []
-    for run_dir in sorted(path for path in OUTPUT_ROOT.iterdir() if path.is_dir()):
-        for fixture_id in fixture_ids:
-            metrics_path = run_dir / fixture_id / "metrics.json"
-            if not metrics_path.is_file():
-                records.append({"fixtureId": fixture_id, "runId": run_dir.name, "status": "ERROR", "error": "missing metrics.json"})
-                continue
-            run_config_path = run_dir / fixture_id / "run_config.json"
-            if run_config_path.is_file():
-                run_config = _load_json(run_config_path)
-                run_config["environment"] = _environment_versions()
-                _write_json(run_config_path, run_config)
-            records.append({"fixtureId": fixture_id, "runId": run_dir.name, "status": "SUCCESS", "metrics": _load_json(metrics_path)})
-    summary = _summarize(records, len(fixtures))
-    _write_reports(summary, fixture_ids)
+    summary = _load_json(REPORT_ROOT / "summary.json")
+    if summary.get("status") != "PROVISIONAL_PENDING_MANUAL_REVIEW":
+        raise ColorPurificationError("manual review finalization requires the provisional B1.2 summary")
+    _write_contact_sheets(summary, fixtures)
+    _write_review_index(summary, fixtures)
     return summary
 
 
@@ -344,7 +409,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--candidates", default="CP-A,CP-B")
     parser.add_argument("--profiles", default="conservative,balanced,aggressive")
     parser.add_argument("--representatives", default="RC-A")
-    parser.add_argument("--finalize-existing", action="store_true", help="Regenerate reports from existing case outputs without rerunning candidates.")
+    parser.add_argument("--finalize-existing", action="store_true", help="Regenerate contact sheets and REVIEW_INDEX from existing case outputs without rerunning or rewriting them.")
     args = parser.parse_args(argv)
     summary = finalize_existing_outputs() if args.finalize_existing else run(args.candidates.split(","), args.profiles.split(","), args.representatives.split(","))
     print(json.dumps({"status": summary["status"], "runs": summary["runs"]}, ensure_ascii=False, indent=2))

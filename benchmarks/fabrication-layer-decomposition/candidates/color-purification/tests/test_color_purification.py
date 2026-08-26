@@ -326,5 +326,60 @@ class ColorPurificationTests(unittest.TestCase):
         self.assertEqual(before, hashlib.sha256(source.tobytes()).hexdigest())
 
 
+class ManualReviewArtifactTests(unittest.TestCase):
+    def _case_artifact_hashes(self) -> dict[Path, str]:
+        paths: dict[Path, str] = {}
+        for run_id in runner.REVIEW_RUN_IDS:
+            for fixture_id in [f"FLD-{index:03d}" for index in range(1, 9)]:
+                case_root = runner.OUTPUT_ROOT / run_id / fixture_id
+                for filename in ("metrics.json", "purified.png", "structural_label_map.npz", "pixel_label_map.npz"):
+                    path = case_root / filename
+                    paths[path] = hashlib.sha256(path.read_bytes()).hexdigest()
+        return paths
+
+    def test_review_finalization_generates_eight_four_run_contact_sheets_without_changing_case_artifacts(self):
+        before = self._case_artifact_hashes()
+        with tempfile.TemporaryDirectory() as temporary:
+            report_root = Path(temporary) / "reports"
+            report_root.mkdir()
+            (report_root / "summary.json").write_bytes((runner.REPORT_ROOT / "summary.json").read_bytes())
+            with mock.patch.object(runner, "REPORT_ROOT", report_root):
+                runner.finalize_existing_outputs()
+            sheets = sorted((report_root / "contact-sheets").glob("FLD-*.png"))
+            self.assertEqual(len(sheets), 8)
+            for sheet in sheets:
+                with Image.open(sheet) as image:
+                    self.assertEqual(image.info["reviewRunIds"], ",".join(runner.REVIEW_RUN_IDS))
+                    self.assertIn("5 columns x 2 rows", image.info["reviewLayout"])
+                    self.assertGreaterEqual(image.width, 1400)
+                    self.assertGreater(image.height, 700)
+        self.assertEqual(before, self._case_artifact_hashes())
+
+    def test_review_index_covers_all_fixtures_with_b0_context(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            report_root = Path(temporary) / "reports"
+            report_root.mkdir()
+            (report_root / "summary.json").write_bytes((runner.REPORT_ROOT / "summary.json").read_bytes())
+            with mock.patch.object(runner, "REPORT_ROOT", report_root):
+                runner.finalize_existing_outputs()
+            index = (report_root / "REVIEW_INDEX.md").read_text(encoding="utf-8")
+        for fixture_id in [f"FLD-{index:03d}" for index in range(1, 9)]:
+            self.assertIn(f"## {fixture_id}", index)
+            self.assertIn(f"contact-sheets/{fixture_id}.png", index)
+        self.assertIn("G03_SAME_COLOR_MULTI_COMPONENT", index)
+        self.assertIn("Expected color regions (approximate)", index)
+
+    def test_review_finalization_does_not_change_frozen_fixture_or_ground_truth_bytes(self):
+        frozen_paths = list((runner.BENCHMARK_ROOT / "fixtures" / "source").glob("*.png")) + list((runner.BENCHMARK_ROOT / "fixtures" / "ground-truth").glob("*.json"))
+        before = {path: hashlib.sha256(path.read_bytes()).hexdigest() for path in frozen_paths}
+        with tempfile.TemporaryDirectory() as temporary:
+            report_root = Path(temporary) / "reports"
+            report_root.mkdir()
+            (report_root / "summary.json").write_bytes((runner.REPORT_ROOT / "summary.json").read_bytes())
+            with mock.patch.object(runner, "REPORT_ROOT", report_root):
+                runner.finalize_existing_outputs()
+        self.assertEqual(before, {path: hashlib.sha256(path.read_bytes()).hexdigest() for path in frozen_paths})
+
+
 if __name__ == "__main__":
     unittest.main()
