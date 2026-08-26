@@ -1,0 +1,32 @@
+{
+  "region_count_before": 10458,
+  "region_count_after": 143,
+  "small_component_count_before": 10451,
+  "small_component_count_after": 142,
+  "small_component_ratio_after": 0.99300699,
+  "mean_region_area": 2132.67832168,
+  "median_region_area": 2.0,
+  "p10_region_area": 1.0,
+  "ground_truth_approx_region_count": 5,
+  "region_count_ratio_to_gt": 28.6,
+  "region_count_order_gate": "FAIL",
+  "within_region_color_variance_before": 46.11074631,
+  "within_region_color_variance_after": 0.00020147,
+  "boundary_shift": 0.01430981,
+  "false_merge_count": null,
+  "false_split_count": null,
+  "manual_quality_grade": "PENDING_MANUAL_REVIEW",
+  "small_region_strategy": "merge_adjacent_local",
+  "delta_e_method": "LAB_EUCLIDEAN_APPROX",
+  "raw_fragmentation_baseline": {
+    "method": "fixed_lab_local_edge_connected_components",
+    "deltaEThreshold": 5.0,
+    "candidateIndependent": true
+  },
+  "variance_interpretation": "within_region_color_variance_after verifies that final regions were unified; it does not establish that the proposal partition is correct",
+  "boundary_shift_definition": "normalized symmetric Chamfer-like distance between internal candidate label boundaries and original Lab strong-color edges",
+  "candidateId": "CP-A",
+  "configProfile": "aggressive",
+  "representativeColorMethod": "RC-A",
+  "elapsedMs": 2831.938
+}

@@ -1,0 +1,31 @@
+{
+  "candidateId": "CP-A",
+  "configProfile": "aggressive",
+  "representativeColorMethod": "RC-A",
+  "parameters": {
+    "meanShiftSpatialRadius": 14,
+    "meanShiftColorRadius": 32,
+    "labDeltaECell": 30.0,
+    "coreAlphaMin": 160,
+    "coreDistancePx": 1.0,
+    "histogramBinWidth": 24,
+    "densityRadius": 20.0,
+    "smallRegionArea": 800,
+    "smallRegionMergeDeltaE": 75.0,
+    "strongEdgeDeltaE": 28.0,
+    "smallRegionStrategy": "merge_adjacent_local"
+  },
+  "fixtureId": "FLD-002",
+  "sourceFile": "fixtures/source/FLD-002.png",
+  "sourceSha256": "6d3e9aca43654da4e630e4e72d236eccefac439f0c4f498e1e264b2575c3e3ab",
+  "environment": {
+    "python": "3.12.13",
+    "numpy": "2.2.6",
+    "opencv-python-headless": "4.12.0.88",
+    "Pillow": "12.3.0",
+    "scikit-image": "0.25.2",
+    "vtracer": "DEPENDENCY_UNAVAILABLE"
+  },
+  "alphaPolicy": "input alpha must be bit-identical in purified output",
+  "smallRegionStrategy": "merge_adjacent_local"
+}

@@ -18,7 +18,10 @@ from color_purification import (  # noqa: E402
     ColorPurificationError,
     apply_representatives,
     get_candidate,
+    metrics_for_run,
+    raw_local_fragmentation_baseline,
     representative_color,
+    rgb_to_lab,
 )
 import runner  # noqa: E402
 
@@ -52,6 +55,54 @@ class ColorPurificationTests(unittest.TestCase):
         source = _image()
         labels = get_candidate("CP-B").propose(source, CONFIG).label_map
         self.assertNotEqual(int(labels[3, 3]), int(labels[10, 10]))
+
+    def test_cp_b_does_not_use_felzenszwalb(self):
+        source = (ROOT / "src" / "color_purification.py").read_text(encoding="utf-8")
+        self.assertNotIn("felzenszwalb", source)
+
+    def test_cp_a_and_cp_b_have_independent_region_proposal_paths(self):
+        source = _image()
+        with (
+            mock.patch("color_purification._candidate_labels_cp_a", wraps=__import__("color_purification")._candidate_labels_cp_a) as cp_a,
+            mock.patch("color_purification._candidate_labels_cp_b", wraps=__import__("color_purification")._candidate_labels_cp_b) as cp_b,
+        ):
+            get_candidate("CP-A").propose(source, CONFIG)
+            self.assertTrue(cp_a.called)
+            self.assertFalse(cp_b.called)
+            get_candidate("CP-B").propose(source, CONFIG)
+            self.assertTrue(cp_b.called)
+
+    def test_adjacent_light_color_drift_can_merge_locally(self):
+        source = np.zeros((6, 8, 4), dtype=np.uint8)
+        source[1:5, 1:4] = (200, 50, 50, 255)
+        source[1:5, 4:7] = (205, 54, 54, 255)
+        config = {**CONFIG, "labDeltaECell": 0.5, "smallRegionArea": 100, "smallRegionMergeDeltaE": 20.0, "smallRegionStrategy": "merge_adjacent_local"}
+        labels = get_candidate("CP-B").propose(source, config).label_map
+        self.assertEqual(int(labels.max()), 1)
+
+    def test_small_region_strategy_keep_is_not_metadata_only(self):
+        source = np.zeros((6, 8, 4), dtype=np.uint8)
+        source[1:5, 1:4] = (200, 50, 50, 255)
+        source[1:5, 4:7] = (205, 54, 54, 255)
+        config = {**CONFIG, "labDeltaECell": 0.5, "smallRegionArea": 100, "smallRegionMergeDeltaE": 20.0, "smallRegionStrategy": "keep"}
+        labels = get_candidate("CP-B").propose(source, config).label_map
+        self.assertEqual(int(labels.max()), 2)
+
+    def test_merge_adjacent_local_requires_a_spatial_neighbor(self):
+        source = np.zeros((8, 10, 4), dtype=np.uint8)
+        source[1:3, 1:3] = (200, 50, 50, 255)
+        source[5:7, 7:9] = (200, 50, 50, 255)
+        config = {**CONFIG, "labDeltaECell": 0.5, "smallRegionArea": 100, "smallRegionMergeDeltaE": 100.0, "smallRegionStrategy": "merge_adjacent_local"}
+        labels = get_candidate("CP-B").propose(source, config).label_map
+        self.assertEqual(int(labels.max()), 2)
+
+    def test_small_region_without_a_legal_local_neighbor_is_kept(self):
+        source = np.zeros((6, 8, 4), dtype=np.uint8)
+        source[1:5, 1:4] = (200, 50, 50, 255)
+        source[1:5, 4:7] = (30, 180, 30, 255)
+        config = {**CONFIG, "labDeltaECell": 0.5, "smallRegionArea": 100, "smallRegionMergeDeltaE": 2.0, "smallRegionStrategy": "merge_adjacent_local"}
+        labels = get_candidate("CP-B").propose(source, config).label_map
+        self.assertEqual(int(labels.max()), 2)
 
     def test_similar_disconnected_regions_do_not_globally_merge(self):
         source = _image()
@@ -92,6 +143,63 @@ class ColorPurificationTests(unittest.TestCase):
         self.assertTrue(np.array_equal(first.label_map, second.label_map))
         self.assertTrue(np.array_equal(first_image, second_image))
 
+    def test_gt_region_ratio_and_order_gate_are_computed(self):
+        source = np.zeros((4, 4, 4), dtype=np.uint8)
+        source[..., :3] = (120, 30, 20)
+        source[..., 3] = 255
+        labels = np.ones((4, 4), dtype=np.int32)
+        labels[:, 2:] = 2
+        purified, _ = apply_representatives(source, labels, "RC-A", CONFIG)
+        metrics = metrics_for_run(source, labels, purified, CONFIG, ground_truth_approx_region_count=5)
+        self.assertEqual(metrics["ground_truth_approx_region_count"], 5)
+        self.assertEqual(metrics["region_count_ratio_to_gt"], 0.4)
+        self.assertEqual(metrics["region_count_order_gate"], "PASS")
+
+    def test_gt_region_order_gate_warn_and_fail_thresholds(self):
+        source = np.zeros((3, 20, 4), dtype=np.uint8)
+        source[..., :3] = (120, 30, 20)
+        source[..., 3] = 255
+        labels = np.tile(np.arange(1, 21, dtype=np.int32), (3, 1))
+        purified, _ = apply_representatives(source, labels, "RC-A", CONFIG)
+        warn = metrics_for_run(source, labels, purified, CONFIG, ground_truth_approx_region_count=2)
+        fail = metrics_for_run(source, labels, purified, CONFIG, ground_truth_approx_region_count=1)
+        self.assertEqual(warn["region_count_order_gate"], "WARN")
+        self.assertEqual(fail["region_count_order_gate"], "FAIL")
+
+    def test_area_and_small_component_diagnostics_are_emitted(self):
+        source = _image()
+        labels = get_candidate("CP-B").propose(source, CONFIG).label_map
+        purified, _ = apply_representatives(source, labels, "RC-A", CONFIG)
+        metrics = metrics_for_run(source, labels, purified, CONFIG, ground_truth_approx_region_count=3)
+        self.assertGreater(metrics["mean_region_area"], 0)
+        self.assertGreater(metrics["median_region_area"], 0)
+        self.assertGreater(metrics["p10_region_area"], 0)
+        self.assertIn("small_component_ratio_after", metrics)
+
+    def test_metrics_record_honest_cp_b_delta_e_method(self):
+        source = _image()
+        labels = get_candidate("CP-B").propose(source, CONFIG).label_map
+        purified, _ = apply_representatives(source, labels, "RC-A", CONFIG)
+        self.assertEqual(metrics_for_run(source, labels, purified, CONFIG, delta_e_method="CIEDE2000")["delta_e_method"], "CIEDE2000")
+
+    def test_raw_fragmentation_baseline_is_candidate_independent(self):
+        source = _image()
+        active = source[..., 3] > 0
+        baseline = raw_local_fragmentation_baseline(rgb_to_lab(source[..., :3]), active)
+        self.assertTrue(np.array_equal(
+            baseline,
+            raw_local_fragmentation_baseline(rgb_to_lab(source[..., :3]), active),
+        ))
+        self.assertNotIn("proposalMinRegionArea", (ROOT / "src" / "color_purification.py").read_text(encoding="utf-8"))
+
+    def test_fld_004_corrected_proposals_are_below_100x_gt_order(self):
+        source = runner._load_rgba(runner.BENCHMARK_ROOT / "fixtures" / "source" / "FLD-004.png")
+        configs = json.loads((ROOT / "configs" / "profiles.json").read_text(encoding="utf-8"))
+        for candidate_id in ("CP-A", "CP-B"):
+            for config in configs.values():
+                labels = get_candidate(candidate_id).propose(source, config).label_map
+                self.assertLess(int(labels.max()), 7 * 100)
+
     def test_region_metadata_contains_configurable_core_derived_fields(self):
         source = _image()
         output = get_candidate("CP-B").propose(source, CONFIG)
@@ -104,7 +212,8 @@ class ColorPurificationTests(unittest.TestCase):
             root = Path(temporary)
             source_path = root / "fixture.png"
             Image.fromarray(_image(), mode="RGBA").save(source_path)
-            fixture = {"fixtureId": "FLD-001", "sourceFile": "fixture.png"}
+            fixture = {"fixtureId": "FLD-001", "sourceFile": "fixture.png", "groundTruthFile": "ground-truth.json"}
+            (root / "ground-truth.json").write_text(json.dumps({"expectedColorRegions": {"approximateCount": 1}}))
             with mock.patch.object(runner, "BENCHMARK_ROOT", root), mock.patch.object(runner, "OUTPUT_ROOT", root / "outputs"):
                 runner._run_fixture(fixture, "CP-B", "balanced", "RC-A", CONFIG, "test-sha")
             metadata = json.loads((root / "outputs" / "cp-b-balanced_rc-a" / "FLD-001" / "run_config.json").read_text())
@@ -115,7 +224,7 @@ class ColorPurificationTests(unittest.TestCase):
         fixture = {"fixtureId": "FLD-001", "sourceFile": "fixture.png"}
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            success = {"fixtureId": "FLD-001", "runId": "cp-b-balanced_rc-a", "status": "SUCCESS", "metrics": {"elapsedMs": 1.0, "region_count_after": 1, "within_region_color_variance_before": 1.0, "within_region_color_variance_after": 0.0, "boundary_shift": 0.0}}
+            success = {"fixtureId": "FLD-001", "runId": "cp-b-balanced_rc-a", "status": "SUCCESS", "metrics": {"elapsedMs": 1.0, "region_count_after": 1, "region_count_ratio_to_gt": 1.0, "small_component_count_after": 0, "within_region_color_variance_before": 1.0, "within_region_color_variance_after": 0.0, "boundary_shift": 0.0}}
             with (
                 mock.patch.object(runner, "_load_manifest", return_value=[fixture]),
                 mock.patch.object(runner, "_sha256", return_value="same-sha"),

@@ -7,7 +7,9 @@ from typing import Any, Protocol
 
 import cv2
 import numpy as np
-from skimage.segmentation import felzenszwalb
+from scipy.sparse import coo_matrix
+from scipy.sparse.csgraph import connected_components
+from skimage.color import deltaE_ciede2000
 
 
 class ColorPurificationError(ValueError):
@@ -48,36 +50,190 @@ def lab_to_rgb(lab: np.ndarray) -> np.ndarray:
     return cv2.cvtColor(np.clip(np.rint(converted), 0, 255).astype(np.uint8), cv2.COLOR_LAB2RGB)
 
 
-def _quantized_color_codes(lab: np.ndarray, delta_e_cell: float) -> np.ndarray:
-    if delta_e_cell <= 0:
-        raise ColorPurificationError("labDeltaECell must be positive")
-    shifted = lab + np.array([0.0, 128.0, 128.0], dtype=np.float32)
-    bins = np.floor(shifted / float(delta_e_cell)).astype(np.int32)
-    return (bins[..., 0].astype(np.int64) << 32) + (bins[..., 1].astype(np.int64) << 16) + bins[..., 2].astype(np.int64)
+RAW_FRAGMENTATION_DELTA_E = 5.0
 
 
-def local_component_labels(lab: np.ndarray, active: np.ndarray, delta_e_cell: float, min_region_area: int) -> np.ndarray:
-    """Assign one label per connected local Lab graph component, never per global color."""
-    if delta_e_cell <= 0:
-        raise ColorPurificationError("labDeltaECell must be positive")
-    features = np.asarray(lab, dtype=np.float32).copy()
-    # Transparent pixels are a hard graph barrier, never a color bridge.
-    features[~active] = np.array([-1000.0, -1000.0, -1000.0], dtype=np.float32)
-    proposals = felzenszwalb(
-        features,
-        scale=float(delta_e_cell) ** 2,
-        sigma=0.0,
-        min_size=max(1, int(min_region_area)),
-        channel_axis=-1,
-    )
-    # Felzenszwalb labels are connected graph segments. Its alpha sentinel makes
-    # transparent pixels a hard separator, so disconnected foreground pieces
-    # cannot inherit a shared label merely from a similar global color.
+def _compact_labels(labels: np.ndarray) -> np.ndarray:
+    """Keep background at zero while making positive local labels consecutive."""
+    compact = np.zeros(labels.shape, dtype=np.int32)
+    foreground = labels > 0
+    if not np.any(foreground):
+        return compact
+    _, inverse = np.unique(labels[foreground], return_inverse=True)
+    compact[foreground] = inverse.astype(np.int32) + 1
+    return compact
+
+
+def _labels_from_local_edges(active: np.ndarray, local_edges: list[np.ndarray]) -> np.ndarray:
+    """Build deterministic labels from explicit 8-connected local edges only."""
+    height, width = active.shape
+    active_flat = np.flatnonzero(active.ravel())
     labels = np.zeros(active.shape, dtype=np.int32)
-    foreground_segments = proposals[active]
-    _, compact = np.unique(foreground_segments, return_inverse=True)
-    labels[active] = compact.astype(np.int32) + 1
-    return labels
+    if not len(active_flat):
+        return labels
+    index = np.full(active.size, -1, dtype=np.int32)
+    index[active_flat] = np.arange(len(active_flat), dtype=np.int32)
+    row_indices: list[np.ndarray] = []
+    col_indices: list[np.ndarray] = []
+    # Edges are provided in the fixed right, down, down-right, down-left order.
+    offsets = ((0, 1), (1, 0), (1, 1), (1, -1))
+    for edge_mask, (dy, dx) in zip(local_edges, offsets, strict=True):
+        if dy == 0:
+            ys, xs = np.where(edge_mask)
+            source_flat = ys * width + xs
+            target_flat = ys * width + (xs + dx)
+        elif dx >= 0:
+            ys, xs = np.where(edge_mask)
+            source_flat = ys * width + xs
+            target_flat = (ys + dy) * width + (xs + dx)
+        else:
+            ys, xs = np.where(edge_mask)
+            source_flat = ys * width + (xs + 1)
+            target_flat = (ys + dy) * width + xs
+        row_indices.extend((index[source_flat], index[target_flat]))
+        col_indices.extend((index[target_flat], index[source_flat]))
+    if row_indices:
+        rows = np.concatenate(row_indices)
+        cols = np.concatenate(col_indices)
+        graph = coo_matrix((np.ones(len(rows), dtype=np.uint8), (rows, cols)), shape=(len(active_flat), len(active_flat))).tocsr()
+        _, components = connected_components(graph, directed=False, return_labels=True)
+    else:
+        components = np.arange(len(active_flat), dtype=np.int32)
+    labels.ravel()[active_flat] = components.astype(np.int32) + 1
+    return _compact_labels(labels)
+
+
+def _neighbor_component_labels(lab: np.ndarray, active: np.ndarray, delta_e_threshold: float) -> np.ndarray:
+    """CP-A local extraction by Euclidean-Lab neighbour edges after Mean Shift."""
+    if delta_e_threshold <= 0:
+        raise ColorPurificationError("Lab DeltaE threshold must be positive")
+    threshold_sq = float(delta_e_threshold) ** 2
+    right = active[:, :-1] & active[:, 1:] & (np.sum((lab[:, :-1] - lab[:, 1:]) ** 2, axis=2) <= threshold_sq)
+    down = active[:-1, :] & active[1:, :] & (np.sum((lab[:-1, :] - lab[1:, :]) ** 2, axis=2) <= threshold_sq)
+    down_right = active[:-1, :-1] & active[1:, 1:] & (np.sum((lab[:-1, :-1] - lab[1:, 1:]) ** 2, axis=2) <= threshold_sq)
+    down_left = active[:-1, 1:] & active[1:, :-1] & (np.sum((lab[:-1, 1:] - lab[1:, :-1]) ** 2, axis=2) <= threshold_sq)
+    return _labels_from_local_edges(active, [right, down, down_right, down_left])
+
+
+def _ciede2000_region_grow_labels(lab: np.ndarray, active: np.ndarray, delta_e_threshold: float) -> np.ndarray:
+    """CP-B deterministic seeded 8-connected CIEDE2000 spatial region growing.
+
+    Its local edge graph is exactly the set a fixed-order seeded grower would be
+    permitted to traverse. Components are labelled by the compiled sparse graph
+    traversal, avoiding a Python per-pixel queue while retaining the same local,
+    alpha-bounded connectivity contract.
+    """
+    if delta_e_threshold <= 0:
+        raise ColorPurificationError("Lab DeltaE threshold must be positive")
+    threshold = float(delta_e_threshold)
+    right = active[:, :-1] & active[:, 1:] & (deltaE_ciede2000(lab[:, :-1], lab[:, 1:]) <= threshold)
+    down = active[:-1, :] & active[1:, :] & (deltaE_ciede2000(lab[:-1, :], lab[1:, :]) <= threshold)
+    down_right = active[:-1, :-1] & active[1:, 1:] & (deltaE_ciede2000(lab[:-1, :-1], lab[1:, 1:]) <= threshold)
+    down_left = active[:-1, 1:] & active[1:, :-1] & (deltaE_ciede2000(lab[:-1, 1:], lab[1:, :-1]) <= threshold)
+    return _labels_from_local_edges(active, [right, down, down_right, down_left])
+
+
+def _region_statistics(labels: np.ndarray, lab: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    count = int(labels.max())
+    if count == 0:
+        return np.zeros(1, dtype=np.int64), np.zeros((1, 3), dtype=np.float64)
+    flat_labels = labels.ravel()
+    areas = np.bincount(flat_labels, minlength=count + 1).astype(np.int64)
+    means = np.zeros((count + 1, 3), dtype=np.float64)
+    for channel in range(3):
+        sums = np.bincount(flat_labels, weights=lab[..., channel].ravel(), minlength=count + 1)
+        means[1:, channel] = sums[1:] / np.maximum(areas[1:], 1)
+    return areas, means
+
+
+def _adjacency_graph(labels: np.ndarray) -> dict[tuple[int, int], int]:
+    """Return only spatially touching label pairs and their shared-edge counts."""
+    graph: dict[tuple[int, int], int] = {}
+    for left, right in ((labels[:, :-1], labels[:, 1:]), (labels[:-1, :], labels[1:, :])):
+        mask = (left > 0) & (right > 0) & (left != right)
+        if not np.any(mask):
+            continue
+        pairs = np.stack((left[mask], right[mask]), axis=1)
+        pairs.sort(axis=1)
+        unique, counts = np.unique(pairs, axis=0, return_counts=True)
+        for pair, count in zip(unique, counts, strict=True):
+            key = (int(pair[0]), int(pair[1]))
+            graph[key] = graph.get(key, 0) + int(count)
+    return graph
+
+
+def _merge_local_adjacent_regions(labels: np.ndarray, lab: np.ndarray, config: dict[str, Any]) -> np.ndarray:
+    """Merge only genuinely adjacent micro-regions; never delete or globally merge."""
+    strategy = str(config["smallRegionStrategy"])
+    if strategy not in {"keep", "merge_adjacent_local"}:
+        raise ColorPurificationError("smallRegionStrategy must be keep or merge_adjacent_local")
+    if strategy == "keep" or int(labels.max()) == 0:
+        return _compact_labels(labels)
+
+    small_area = int(config["smallRegionArea"])
+    merge_delta_e = float(config.get("smallRegionMergeDeltaE", config["labDeltaECell"]))
+    result = labels.copy()
+    # A bounded local relaxation is enough for micro-islands.  Each pass applies
+    # every selected adjacency at once; never perform one full-image replacement
+    # per region.
+    for _ in range(4):
+        areas, means = _region_statistics(result, lab)
+        adjacency = _adjacency_graph(result)
+        targets: dict[int, int] = {}
+        for region_id in range(1, len(areas)):
+            if areas[region_id] >= small_area:
+                continue
+            neighbours: list[tuple[float, int, int]] = []
+            for (first, second), shared_boundary in adjacency.items():
+                if first == region_id:
+                    neighbour = second
+                elif second == region_id:
+                    neighbour = first
+                else:
+                    continue
+                # Direct merges toward a strictly larger neighbour, or toward
+                # the lower stable ID on an equal-area tie. This prevents two
+                # touching small regions from forming a swap cycle.
+                if areas[neighbour] < areas[region_id] or (areas[neighbour] == areas[region_id] and neighbour > region_id):
+                    continue
+                distance = float(np.linalg.norm(means[region_id] - means[neighbour]))
+                if distance <= merge_delta_e:
+                    # Prefer smallest Lab difference, then a larger true shared edge,
+                    # then the stable region ID.
+                    neighbours.append((distance, -shared_boundary, neighbour))
+            if neighbours:
+                targets[region_id] = min(neighbours)[2]
+        if not targets:
+            break
+        remap = np.arange(len(areas), dtype=np.int32)
+        for source, target in targets.items():
+            remap[source] = target
+        # Resolve deterministic source->target chains without permitting any
+        # relationship not present in this pass's adjacency graph.
+        for _ in range(len(remap)):
+            resolved = remap[remap]
+            if np.array_equal(resolved, remap):
+                break
+            remap = resolved
+        result = _compact_labels(remap[result])
+    return result
+
+
+def _candidate_labels_cp_a(lab: np.ndarray, active: np.ndarray, config: dict[str, Any]) -> np.ndarray:
+    return _merge_local_adjacent_regions(
+        _neighbor_component_labels(lab, active, float(config["labDeltaECell"])), lab, config,
+    )
+
+
+def _candidate_labels_cp_b(lab: np.ndarray, active: np.ndarray, config: dict[str, Any]) -> np.ndarray:
+    return _merge_local_adjacent_regions(
+        _ciede2000_region_grow_labels(lab, active, float(config["labDeltaECell"])), lab, config,
+    )
+
+
+def raw_local_fragmentation_baseline(lab: np.ndarray, active: np.ndarray) -> np.ndarray:
+    """Fixed candidate-independent pre-purification local fragmentation diagnostic."""
+    return _neighbor_component_labels(lab, active, RAW_FRAGMENTATION_DELTA_E)
 
 
 class MeanShiftLocalCandidate:
@@ -93,12 +249,7 @@ class MeanShiftLocalCandidate:
             maxLevel=1,
         )
         proposal_rgb = cv2.cvtColor(filtered_bgr, cv2.COLOR_BGR2RGB)
-        labels = local_component_labels(
-            rgb_to_lab(proposal_rgb),
-            rgba[..., 3] > 0,
-            float(config["labDeltaECell"]),
-            int(config["proposalMinRegionArea"]),
-        )
+        labels = _candidate_labels_cp_a(rgb_to_lab(proposal_rgb), rgba[..., 3] > 0, config)
         return CandidateOutput(self.candidate_id, proposal_rgb, labels)
 
 
@@ -107,14 +258,9 @@ class LabSpatialRegionGrowingCandidate:
 
     def propose(self, rgba: np.ndarray, config: dict[str, Any]) -> CandidateOutput:
         validate_rgba(rgba)
-        # Deterministic Lab ΔE-grid proposals followed by 8-connected local component growth.
+        # Deterministic Lab + DeltaE running-mean spatial region growing.
         rgb = rgba[..., :3]
-        labels = local_component_labels(
-            rgb_to_lab(rgb),
-            rgba[..., 3] > 0,
-            float(config["labDeltaECell"]),
-            int(config["proposalMinRegionArea"]),
-        )
+        labels = _candidate_labels_cp_b(rgb_to_lab(rgb), rgba[..., 3] > 0, config)
         return CandidateOutput(self.candidate_id, rgb.copy(), labels)
 
 
@@ -275,14 +421,16 @@ def boundary_shift(labels: np.ndarray, source_rgba: np.ndarray, strong_edge_delt
     return float((distance_to_reference[candidate].mean() + distance_to_candidate[reference].mean()) / (2.0 * diagonal))
 
 
-def metrics_for_run(source_rgba: np.ndarray, label_map: np.ndarray, purified_rgba: np.ndarray, config: dict[str, Any]) -> dict[str, Any]:
+def metrics_for_run(
+    source_rgba: np.ndarray,
+    label_map: np.ndarray,
+    purified_rgba: np.ndarray,
+    config: dict[str, Any],
+    ground_truth_approx_region_count: int | None = None,
+    delta_e_method: str = "LAB_EUCLIDEAN_APPROX",
+) -> dict[str, Any]:
     active = source_rgba[..., 3] > 0
-    before = local_component_labels(
-        rgb_to_lab(source_rgba[..., :3]),
-        active,
-        float(config["strongEdgeDeltaE"]),
-        int(config["proposalMinRegionArea"]),
-    )
+    before = raw_local_fragmentation_baseline(rgb_to_lab(source_rgba[..., :3]), active)
     source_lab = rgb_to_lab(source_rgba[..., :3])
     output_lab = rgb_to_lab(purified_rgba[..., :3])
     after_variances = []
@@ -292,11 +440,30 @@ def metrics_for_run(source_rgba: np.ndarray, label_map: np.ndarray, purified_rgb
         before_variances.append(float(np.mean(np.var(source_lab[region], axis=0))))
         after_variances.append(float(np.mean(np.var(output_lab[region], axis=0))))
     small_limit = int(config["smallRegionArea"])
+    areas = np.bincount(label_map[active], minlength=int(label_map.max()) + 1)[1:]
+    region_count_after = int(len(areas))
+    approximate_count = int(ground_truth_approx_region_count) if ground_truth_approx_region_count else None
+    ratio = (region_count_after / approximate_count) if approximate_count else None
+    if ratio is None:
+        order_gate = "NOT_AVAILABLE"
+    elif ratio <= 5.0:
+        order_gate = "PASS"
+    elif ratio <= 15.0:
+        order_gate = "WARN"
+    else:
+        order_gate = "FAIL"
     return {
         "region_count_before": int(np.max(before)),
-        "region_count_after": int(np.max(label_map)),
+        "region_count_after": region_count_after,
         "small_component_count_before": int(sum(np.count_nonzero(before == label) < small_limit for label in np.unique(before[before > 0]))),
-        "small_component_count_after": int(sum(np.count_nonzero(label_map == label) < small_limit for label in np.unique(label_map[label_map > 0]))),
+        "small_component_count_after": int(np.count_nonzero(areas < small_limit)),
+        "small_component_ratio_after": round(float(np.count_nonzero(areas < small_limit) / region_count_after) if region_count_after else 0.0, 8),
+        "mean_region_area": round(float(np.mean(areas)) if region_count_after else 0.0, 8),
+        "median_region_area": round(float(np.median(areas)) if region_count_after else 0.0, 8),
+        "p10_region_area": round(float(np.percentile(areas, 10)) if region_count_after else 0.0, 8),
+        "ground_truth_approx_region_count": approximate_count,
+        "region_count_ratio_to_gt": round(float(ratio), 8) if ratio is not None else None,
+        "region_count_order_gate": order_gate,
         "within_region_color_variance_before": round(float(np.mean(before_variances)) if before_variances else 0.0, 8),
         "within_region_color_variance_after": round(float(np.mean(after_variances)) if after_variances else 0.0, 8),
         "boundary_shift": round(boundary_shift(label_map, source_rgba, float(config["strongEdgeDeltaE"])), 8),
@@ -304,5 +471,12 @@ def metrics_for_run(source_rgba: np.ndarray, label_map: np.ndarray, purified_rgb
         "false_split_count": None,
         "manual_quality_grade": "PENDING_MANUAL_REVIEW",
         "small_region_strategy": config["smallRegionStrategy"],
+        "delta_e_method": delta_e_method,
+        "raw_fragmentation_baseline": {
+            "method": "fixed_lab_local_edge_connected_components",
+            "deltaEThreshold": RAW_FRAGMENTATION_DELTA_E,
+            "candidateIndependent": True,
+        },
+        "variance_interpretation": "within_region_color_variance_after verifies that final regions were unified; it does not establish that the proposal partition is correct",
         "boundary_shift_definition": "normalized symmetric Chamfer-like distance between internal candidate label boundaries and original Lab strong-color edges",
     }

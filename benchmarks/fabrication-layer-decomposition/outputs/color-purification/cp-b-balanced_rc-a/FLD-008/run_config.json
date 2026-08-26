@@ -5,13 +5,13 @@
   "parameters": {
     "meanShiftSpatialRadius": 8,
     "meanShiftColorRadius": 20,
-    "labDeltaECell": 12.0,
+    "labDeltaECell": 22.0,
     "coreAlphaMin": 200,
     "coreDistancePx": 2.0,
     "histogramBinWidth": 16,
     "densityRadius": 12.0,
-    "smallRegionArea": 48,
-    "proposalMinRegionArea": 16,
+    "smallRegionArea": 400,
+    "smallRegionMergeDeltaE": 50.0,
     "strongEdgeDeltaE": 18.0,
     "smallRegionStrategy": "merge_adjacent_local"
   },

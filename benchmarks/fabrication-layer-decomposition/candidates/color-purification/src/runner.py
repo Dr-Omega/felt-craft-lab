@@ -82,6 +82,15 @@ def _write_json(path: Path, value: Any) -> None:
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
+def _ground_truth_approx_region_count(fixture: dict[str, Any]) -> int:
+    path = BENCHMARK_ROOT / str(fixture["groundTruthFile"])
+    ground_truth = _load_json(path)
+    expected = ground_truth.get("expectedColorRegions")
+    if not isinstance(expected, dict) or not isinstance(expected.get("approximateCount"), int):
+        raise ColorPurificationError(f"{path.name} must provide expectedColorRegions.approximateCount")
+    return int(expected["approximateCount"])
+
+
 def _run_fixture(
     fixture: dict[str, Any],
     candidate_id: str,
@@ -98,7 +107,14 @@ def _run_fixture(
     purified, regions = apply_representatives(source, proposal.label_map, representative_id, config)
     if not np.array_equal(source[..., 3], purified[..., 3]):
         raise AssertionError("alpha changed during purification")
-    metrics = metrics_for_run(source, proposal.label_map, purified, config)
+    metrics = metrics_for_run(
+        source,
+        proposal.label_map,
+        purified,
+        config,
+        _ground_truth_approx_region_count(fixture),
+        "CIEDE2000" if candidate_id == "CP-B" else "LAB_EUCLIDEAN_APPROX",
+    )
     elapsed_ms = round((time.perf_counter() - started) * 1000.0, 3)
     run_id = f"{candidate_id.lower()}-{profile_name}_{representative_id.lower()}"
     case_dir = OUTPUT_ROOT / run_id / fixture_id
@@ -146,6 +162,9 @@ def _summarize(records: list[dict[str, Any]], fixture_count: int) -> dict[str, A
             aggregate.update({
                 "meanElapsedMs": round(float(np.mean([metric["elapsedMs"] for metric in metrics])), 3),
                 "meanRegionCountAfter": round(float(np.mean([metric["region_count_after"] for metric in metrics])), 3),
+                "meanGtRatio": round(float(np.mean([metric["region_count_ratio_to_gt"] for metric in metrics if metric["region_count_ratio_to_gt"] is not None])), 5),
+                "maxGtRatio": round(float(np.max([metric["region_count_ratio_to_gt"] for metric in metrics if metric["region_count_ratio_to_gt"] is not None])), 5),
+                "meanSmallComponentCount": round(float(np.mean([metric["small_component_count_after"] for metric in metrics])), 3),
                 "meanVarianceBefore": round(float(np.mean([metric["within_region_color_variance_before"] for metric in metrics])), 8),
                 "meanVarianceAfter": round(float(np.mean([metric["within_region_color_variance_after"] for metric in metrics])), 8),
                 "meanBoundaryShift": round(float(np.mean([metric["boundary_shift"] for metric in metrics])), 8),
@@ -160,12 +179,25 @@ def _write_reports(summary: dict[str, Any], fixture_ids: list[str]) -> None:
     _write_json(REPORT_ROOT / "summary.json", summary)
     rows = []
     for run in summary["runs"]:
-        rows.append(f"| {run['runId']} | {run['status']} | {run.get('meanElapsedMs', '—')} | {run.get('meanRegionCountAfter', '—')} | {run.get('meanVarianceBefore', '—')} → {run.get('meanVarianceAfter', '—')} | {run.get('meanBoundaryShift', '—')} |")
+        rows.append(f"| {run['runId']} | {run['status']} | {run.get('meanElapsedMs', '—')} | {run.get('meanRegionCountAfter', '—')} | {run.get('meanGtRatio', '—')} / {run.get('maxGtRatio', '—')} | {run.get('meanSmallComponentCount', '—')} | {run.get('meanBoundaryShift', '—')} |")
+    fixture_rows = []
+    for record in summary["records"]:
+        if record["status"] != "SUCCESS":
+            continue
+        metric = record["metrics"]
+        fixture_rows.append(
+            f"| {record['runId']} | {record['fixtureId']} | {metric.get('ground_truth_approx_region_count', '—')} | {metric.get('region_count_after', '—')} | {metric.get('region_count_ratio_to_gt', '—')} ({metric.get('region_count_order_gate', '—')}) | {metric.get('small_component_count_after', '—')} | {metric.get('boundary_shift', '—')} | {metric.get('elapsedMs', '—')} |"
+        )
     (REPORT_ROOT / "summary.md").write_text(
-        "# P0-04B1 Local Color Purification — PROVISIONAL\n\n"
+        "# P0-04B1.1 Local Color Purification — PROVISIONAL\n\n"
+        "Previous HEAD: `2301aa59d7278f54874c219c5e2689ee6153d8ea`. Its generated output is superseded because of severe over-segmentation and a CP-B contract mismatch.\n\n"
         "All conclusions are provisional until human review. `false_merge_count`, `false_split_count`, and manual grades are intentionally not fabricated.\n\n"
-        "| Run | Status | Mean ms | Mean regions after | Mean Lab variance | Mean boundary shift |\n|---|---:|---:|---:|---:|---:|\n"
+        "`within_region_color_variance_after` verifies only that each chosen region was unified. It cannot establish that its region proposal was correct; use the GT region-count diagnostics and human review for that question.\n\n"
+        "| Run | Status | Mean ms | Mean regions after | Mean / max GT ratio | Mean small components | Mean boundary shift |\n|---|---:|---:|---:|---:|---:|---:|\n"
         + "\n".join(rows)
+        + "\n\n## Per-fixture diagnostics\n\n"
+        + "| Run | Fixture | GT approx | Regions | GT ratio (gate) | Small components | Boundary shift | Elapsed ms |\n|---|---|---:|---:|---:|---:|---:|---:|\n"
+        + "\n".join(fixture_rows)
         + "\n\n## Required interpretation\n\n"
         "- Candidate stability, false merge/split risk, small-structure protection, representative-color stability, and failures require the linked manual review evidence.\n"
         "- CP-C is unavailable, not substituted.\n"
@@ -242,8 +274,6 @@ def finalize_existing_outputs() -> dict[str, Any]:
                 run_config["environment"] = _environment_versions()
                 _write_json(run_config_path, run_config)
             records.append({"fixtureId": fixture_id, "runId": run_dir.name, "status": "SUCCESS", "metrics": _load_json(metrics_path)})
-    for representative_id in ("RC-A", "RC-B", "RC-C"):
-        records.extend(_unavailable_record("CP-C", "balanced", representative_id, fixture_id) for fixture_id in fixture_ids)
     summary = _summarize(records, len(fixtures))
     _write_reports(summary, fixture_ids)
     return summary
@@ -251,9 +281,9 @@ def finalize_existing_outputs() -> dict[str, Any]:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Run isolated P0-04B1 local color purification.")
-    parser.add_argument("--candidates", default="CP-A,CP-B,CP-C")
-    parser.add_argument("--profiles", default="balanced")
-    parser.add_argument("--representatives", default="RC-A,RC-B,RC-C")
+    parser.add_argument("--candidates", default="CP-A,CP-B")
+    parser.add_argument("--profiles", default="conservative,balanced,aggressive")
+    parser.add_argument("--representatives", default="RC-A")
     parser.add_argument("--finalize-existing", action="store_true", help="Regenerate reports from existing case outputs without rerunning candidates.")
     args = parser.parse_args(argv)
     summary = finalize_existing_outputs() if args.finalize_existing else run(args.candidates.split(","), args.profiles.split(","), args.representatives.split(","))

@@ -1,0 +1,26 @@
+[
+  {
+    "regionId": 1,
+    "pixelCount": 337122,
+    "bbox": [
+      163,
+      205,
+      675,
+      612
+    ],
+    "representativeColorRgb": [
+      253,
+      248,
+      199
+    ],
+    "representativeColorLab": [
+      96.862747,
+      -6.0,
+      24.0
+    ],
+    "sourceColorVariance": 52.36568069,
+    "outputColorVariance": 0.0,
+    "componentCount": 1,
+    "corePixelCount": 333746
+  }
+]

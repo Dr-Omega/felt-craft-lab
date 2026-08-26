@@ -1,0 +1,554 @@
+[
+  {
+    "regionId": 1,
+    "pixelCount": 256574,
+    "bbox": [
+      264,
+      176,
+      488,
+      692
+    ],
+    "representativeColorRgb": [
+      254,
+      253,
+      251
+    ],
+    "representativeColorLab": [
+      99.215691,
+      0.0,
+      1.0
+    ],
+    "sourceColorVariance": 334.98348999,
+    "outputColorVariance": 0.0,
+    "componentCount": 1,
+    "corePixelCount": 251948
+  },
+  {
+    "regionId": 2,
+    "pixelCount": 1,
+    "bbox": [
+      454,
+      187,
+      1,
+      1
+    ],
+    "representativeColorRgb": [
+      226,
+      226,
+      226
+    ],
+    "representativeColorLab": [
+      89.803925,
+      0.0,
+      0.0
+    ],
+    "sourceColorVariance": 0.0,
+    "outputColorVariance": 0.0,
+    "componentCount": 1,
+    "corePixelCount": 1
+  },
+  {
+    "regionId": 3,
+    "pixelCount": 1,
+    "bbox": [
+      436,
+      192,
+      1,
+      1
+    ],
+    "representativeColorRgb": [
+      90,
+      90,
+      90
+    ],
+    "representativeColorLab": [
+      38.431374,
+      0.0,
+      0.0
+    ],
+    "sourceColorVariance": 0.0,
+    "outputColorVariance": 0.0,
+    "componentCount": 1,
+    "corePixelCount": 1
+  },
+  {
+    "regionId": 4,
+    "pixelCount": 1,
+    "bbox": [
+      569,
+      197,
+      1,
+      1
+    ],
+    "representativeColorRgb": [
+      96,
+      96,
+      96
+    ],
+    "representativeColorLab": [
+      40.784313,
+      0.0,
+      0.0
+    ],
+    "sourceColorVariance": 0.0,
+    "outputColorVariance": 0.0,
+    "componentCount": 1,
+    "corePixelCount": 1
+  },
+  {
+    "regionId": 5,
+    "pixelCount": 1,
+    "bbox": [
+      661,
+      231,
+      1,
+      1
+    ],
+    "representativeColorRgb": [
+      94,
+      94,
+      94
+    ],
+    "representativeColorLab": [
+      40.0,
+      0.0,
+      0.0
+    ],
+    "sourceColorVariance": 0.0,
+    "outputColorVariance": 0.0,
+    "componentCount": 1,
+    "corePixelCount": 1
+  },
+  {
+    "regionId": 6,
+    "pixelCount": 1,
+    "bbox": [
+      534,
+      238,
+      1,
+      1
+    ],
+    "representativeColorRgb": [
+      85,
+      85,
+      85
+    ],
+    "representativeColorLab": [
+      36.07843,
+      0.0,
+      0.0
+    ],
+    "sourceColorVariance": 0.0,
+    "outputColorVariance": 0.0,
+    "componentCount": 1,
+    "corePixelCount": 1
+  },
+  {
+    "regionId": 7,
+    "pixelCount": 1,
+    "bbox": [
+      348,
+      366,
+      1,
+      1
+    ],
+    "representativeColorRgb": [
+      95,
+      95,
+      95
+    ],
+    "representativeColorLab": [
+      40.392159,
+      0.0,
+      0.0
+    ],
+    "sourceColorVariance": 0.0,
+    "outputColorVariance": 0.0,
+    "componentCount": 1,
+    "corePixelCount": 1
+  },
+  {
+    "regionId": 8,
+    "pixelCount": 1,
+    "bbox": [
+      667,
+      370,
+      1,
+      1
+    ],
+    "representativeColorRgb": [
+      90,
+      90,
+      90
+    ],
+    "representativeColorLab": [
+      38.431374,
+      0.0,
+      0.0
+    ],
+    "sourceColorVariance": 0.0,
+    "outputColorVariance": 0.0,
+    "componentCount": 1,
+    "corePixelCount": 1
+  },
+  {
+    "regionId": 9,
+    "pixelCount": 1,
+    "bbox": [
+      286,
+      468,
+      1,
+      1
+    ],
+    "representativeColorRgb": [
+      93,
+      93,
+      93
+    ],
+    "representativeColorLab": [
+      39.607845,
+      0.0,
+      0.0
+    ],
+    "sourceColorVariance": 0.0,
+    "outputColorVariance": 0.0,
+    "componentCount": 1,
+    "corePixelCount": 1
+  },
+  {
+    "regionId": 10,
+    "pixelCount": 1,
+    "bbox": [
+      569,
+      539,
+      1,
+      1
+    ],
+    "representativeColorRgb": [
+      96,
+      96,
+      96
+    ],
+    "representativeColorLab": [
+      40.784313,
+      0.0,
+      0.0
+    ],
+    "sourceColorVariance": 0.0,
+    "outputColorVariance": 0.0,
+    "componentCount": 1,
+    "corePixelCount": 1
+  },
+  {
+    "regionId": 11,
+    "pixelCount": 1,
+    "bbox": [
+      287,
+      581,
+      1,
+      1
+    ],
+    "representativeColorRgb": [
+      81,
+      81,
+      81
+    ],
+    "representativeColorLab": [
+      34.509804,
+      0.0,
+      0.0
+    ],
+    "sourceColorVariance": 0.0,
+    "outputColorVariance": 0.0,
+    "componentCount": 1,
+    "corePixelCount": 1
+  },
+  {
+    "regionId": 12,
+    "pixelCount": 1,
+    "bbox": [
+      654,
+      634,
+      1,
+      1
+    ],
+    "representativeColorRgb": [
+      94,
+      94,
+      94
+    ],
+    "representativeColorLab": [
+      40.0,
+      0.0,
+      0.0
+    ],
+    "sourceColorVariance": 0.0,
+    "outputColorVariance": 0.0,
+    "componentCount": 1,
+    "corePixelCount": 1
+  },
+  {
+    "regionId": 13,
+    "pixelCount": 1,
+    "bbox": [
+      372,
+      654,
+      1,
+      1
+    ],
+    "representativeColorRgb": [
+      90,
+      90,
+      90
+    ],
+    "representativeColorLab": [
+      38.039215,
+      0.0,
+      0.0
+    ],
+    "sourceColorVariance": 0.0,
+    "outputColorVariance": 0.0,
+    "componentCount": 1,
+    "corePixelCount": 1
+  },
+  {
+    "regionId": 14,
+    "pixelCount": 1,
+    "bbox": [
+      704,
+      706,
+      1,
+      1
+    ],
+    "representativeColorRgb": [
+      86,
+      86,
+      86
+    ],
+    "representativeColorLab": [
+      36.470589,
+      0.0,
+      0.0
+    ],
+    "sourceColorVariance": 0.0,
+    "outputColorVariance": 0.0,
+    "componentCount": 1,
+    "corePixelCount": 1
+  },
+  {
+    "regionId": 15,
+    "pixelCount": 1,
+    "bbox": [
+      346,
+      734,
+      1,
+      1
+    ],
+    "representativeColorRgb": [
+      91,
+      91,
+      91
+    ],
+    "representativeColorLab": [
+      38.823528,
+      0.0,
+      0.0
+    ],
+    "sourceColorVariance": 0.0,
+    "outputColorVariance": 0.0,
+    "componentCount": 1,
+    "corePixelCount": 1
+  },
+  {
+    "regionId": 16,
+    "pixelCount": 2,
+    "bbox": [
+      377,
+      776,
+      2,
+      2
+    ],
+    "representativeColorRgb": [
+      95,
+      95,
+      95
+    ],
+    "representativeColorLab": [
+      40.392159,
+      0.0,
+      0.0
+    ],
+    "sourceColorVariance": 6.20274496,
+    "outputColorVariance": 0.0,
+    "componentCount": 1,
+    "corePixelCount": 2
+  },
+  {
+    "regionId": 17,
+    "pixelCount": 1,
+    "bbox": [
+      722,
+      779,
+      1,
+      1
+    ],
+    "representativeColorRgb": [
+      95,
+      95,
+      95
+    ],
+    "representativeColorLab": [
+      40.392159,
+      0.0,
+      0.0
+    ],
+    "sourceColorVariance": 0.0,
+    "outputColorVariance": 0.0,
+    "componentCount": 1,
+    "corePixelCount": 1
+  },
+  {
+    "regionId": 18,
+    "pixelCount": 1,
+    "bbox": [
+      561,
+      808,
+      1,
+      1
+    ],
+    "representativeColorRgb": [
+      94,
+      94,
+      94
+    ],
+    "representativeColorLab": [
+      40.0,
+      0.0,
+      0.0
+    ],
+    "sourceColorVariance": 0.0,
+    "outputColorVariance": 0.0,
+    "componentCount": 1,
+    "corePixelCount": 1
+  },
+  {
+    "regionId": 19,
+    "pixelCount": 1,
+    "bbox": [
+      691,
+      811,
+      1,
+      1
+    ],
+    "representativeColorRgb": [
+      79,
+      79,
+      79
+    ],
+    "representativeColorLab": [
+      33.725491,
+      0.0,
+      0.0
+    ],
+    "sourceColorVariance": 0.0,
+    "outputColorVariance": 0.0,
+    "componentCount": 1,
+    "corePixelCount": 1
+  },
+  {
+    "regionId": 20,
+    "pixelCount": 1,
+    "bbox": [
+      383,
+      818,
+      1,
+      1
+    ],
+    "representativeColorRgb": [
+      94,
+      94,
+      94
+    ],
+    "representativeColorLab": [
+      40.0,
+      0.0,
+      0.0
+    ],
+    "sourceColorVariance": 0.0,
+    "outputColorVariance": 0.0,
+    "componentCount": 1,
+    "corePixelCount": 1
+  },
+  {
+    "regionId": 21,
+    "pixelCount": 1,
+    "bbox": [
+      479,
+      839,
+      1,
+      1
+    ],
+    "representativeColorRgb": [
+      82,
+      82,
+      82
+    ],
+    "representativeColorLab": [
+      34.901962,
+      0.0,
+      0.0
+    ],
+    "sourceColorVariance": 0.0,
+    "outputColorVariance": 0.0,
+    "componentCount": 1,
+    "corePixelCount": 1
+  },
+  {
+    "regionId": 22,
+    "pixelCount": 1,
+    "bbox": [
+      636,
+      844,
+      1,
+      1
+    ],
+    "representativeColorRgb": [
+      90,
+      90,
+      90
+    ],
+    "representativeColorLab": [
+      38.431374,
+      0.0,
+      0.0
+    ],
+    "sourceColorVariance": 0.0,
+    "outputColorVariance": 0.0,
+    "componentCount": 1,
+    "corePixelCount": 1
+  },
+  {
+    "regionId": 23,
+    "pixelCount": 1,
+    "bbox": [
+      654,
+      848,
+      1,
+      1
+    ],
+    "representativeColorRgb": [
+      94,
+      94,
+      94
+    ],
+    "representativeColorLab": [
+      40.0,
+      0.0,
+      0.0
+    ],
+    "sourceColorVariance": 0.0,
+    "outputColorVariance": 0.0,
+    "componentCount": 1,
+    "corePixelCount": 1
+  }
+]
