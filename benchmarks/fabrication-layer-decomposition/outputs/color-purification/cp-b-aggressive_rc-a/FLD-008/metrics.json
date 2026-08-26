@@ -1,18 +1,78 @@
 {
   "region_count_before": 10458,
-  "region_count_after": 73,
+  "region_count_after": 38,
+  "region_count_after_semantics": "SEMANTICALLY_APPROXIMATE: local connected color regions are not one-to-one with B0 expectedColorRegions",
+  "geometry_component_count": 1,
+  "local_region_count_after": 38,
+  "color_group_count_after": 7,
   "small_component_count_before": 10451,
-  "small_component_count_after": 72,
-  "small_component_ratio_after": 0.98630137,
-  "mean_region_area": 4177.71232877,
-  "median_region_area": 1.0,
+  "small_component_count_after": 29,
+  "small_component_ratio_after": 0.76315789,
+  "mean_region_area": 8025.60526316,
+  "median_region_area": 2.0,
   "p10_region_area": 1.0,
   "ground_truth_approx_region_count": 5,
-  "region_count_ratio_to_gt": 14.6,
-  "region_count_order_gate": "WARN",
-  "within_region_color_variance_before": 22.73166187,
-  "within_region_color_variance_after": 0.00039566,
-  "boundary_shift": 0.02022855,
+  "region_count_ratio_to_gt": 7.6,
+  "region_count_ratio_to_gt_semantics": "SEMANTICALLY_APPROXIMATE",
+  "color_group_ratio_to_gt": 1.4,
+  "region_count_order_gate": "PASS",
+  "within_region_color_variance_before": 19.23790594,
+  "within_region_color_variance_after": 6.4e-07,
+  "boundary_shift": 0.00320746,
+  "boundary_shift_state": "NORMAL",
+  "fringe_pixel_count": 0,
+  "fringe_assigned_count": 0,
+  "orphan_fringe_count": 0,
+  "alpha_topology": {
+    "alpha_ge_1": {
+      "component_count": 1,
+      "largest_component_area": 304973,
+      "median_component_area": 304973.0,
+      "components_under_4px": 0,
+      "components_under_16px": 0,
+      "components_under_64px": 0
+    },
+    "alpha_ge_32": {
+      "component_count": 1,
+      "largest_component_area": 304973,
+      "median_component_area": 304973.0,
+      "components_under_4px": 0,
+      "components_under_16px": 0,
+      "components_under_64px": 0
+    },
+    "alpha_ge_64": {
+      "component_count": 1,
+      "largest_component_area": 304973,
+      "median_component_area": 304973.0,
+      "components_under_4px": 0,
+      "components_under_16px": 0,
+      "components_under_64px": 0
+    },
+    "alpha_ge_128": {
+      "component_count": 1,
+      "largest_component_area": 304973,
+      "median_component_area": 304973.0,
+      "components_under_4px": 0,
+      "components_under_16px": 0,
+      "components_under_64px": 0
+    },
+    "alpha_ge_192": {
+      "component_count": 1,
+      "largest_component_area": 304973,
+      "median_component_area": 304973.0,
+      "components_under_4px": 0,
+      "components_under_16px": 0,
+      "components_under_64px": 0
+    },
+    "alpha_ge_224": {
+      "component_count": 1,
+      "largest_component_area": 304973,
+      "median_component_area": 304973.0,
+      "components_under_4px": 0,
+      "components_under_16px": 0,
+      "components_under_64px": 0
+    }
+  },
   "false_merge_count": null,
   "false_split_count": null,
   "manual_quality_grade": "PENDING_MANUAL_REVIEW",
@@ -24,9 +84,9 @@
     "candidateIndependent": true
   },
   "variance_interpretation": "within_region_color_variance_after verifies that final regions were unified; it does not establish that the proposal partition is correct",
-  "boundary_shift_definition": "normalized symmetric Chamfer-like distance between internal candidate label boundaries and original Lab strong-color edges",
+  "boundary_shift_definition": "normalized symmetric Chamfer-like distance between structural label boundaries and structural-mask Lab strong-color edges; 1.0 with a non-NORMAL state means one side had no boundary",
   "candidateId": "CP-B",
   "configProfile": "aggressive",
   "representativeColorMethod": "RC-A",
-  "elapsedMs": 2515.29
+  "elapsedMs": 6050.397
 }

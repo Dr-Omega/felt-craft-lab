@@ -6,6 +6,11 @@
     "meanShiftSpatialRadius": 8,
     "meanShiftColorRadius": 20,
     "labDeltaECell": 22.0,
+    "localEdgeThreshold": 22.0,
+    "regionMeanThreshold": 7.0,
+    "structuralAlphaThreshold": 64,
+    "fringeMaxPropagationDistancePx": 4,
+    "colorGroupDeltaE": 3.0,
     "coreAlphaMin": 200,
     "coreDistancePx": 2.0,
     "histogramBinWidth": 16,
@@ -27,5 +32,6 @@
     "vtracer": "DEPENDENCY_UNAVAILABLE"
   },
   "alphaPolicy": "input alpha must be bit-identical in purified output",
+  "structuralLabelPolicy": "structural_label_map uses only alpha >= structuralAlphaThreshold; pixel_label_map propagates fringe or records -1 ORPHAN_FRINGE",
   "smallRegionStrategy": "merge_adjacent_local"
 }

@@ -3,17 +3,17 @@
 from __future__ import annotations
 
 import argparse
+import gzip
 import hashlib
 import importlib.metadata
 import json
-import shutil
 import sys
 import time
 from pathlib import Path
 from typing import Any
 
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageDraw
 
 from color_purification import (
     ColorPurificationError,
@@ -82,6 +82,12 @@ def _write_json(path: Path, value: Any) -> None:
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
+def _write_compact_regions(path: Path, regions: list[dict[str, Any]]) -> None:
+    """Avoid repeated multi-megabyte pretty JSON artifacts in iterative PoC commits."""
+    with gzip.open(path, "wt", encoding="utf-8") as destination:
+        json.dump(regions, destination, ensure_ascii=False, separators=(",", ":"))
+
+
 def _ground_truth_approx_region_count(fixture: dict[str, Any]) -> int:
     path = BENCHMARK_ROOT / str(fixture["groundTruthFile"])
     ground_truth = _load_json(path)
@@ -104,26 +110,37 @@ def _run_fixture(
     source = _load_rgba(source_path)
     started = time.perf_counter()
     proposal = get_candidate(candidate_id).propose(source, config)
-    purified, regions = apply_representatives(source, proposal.label_map, representative_id, config)
+    purified, regions = apply_representatives(
+        source, proposal.structural_label_map, representative_id, config, proposal.pixel_label_map,
+    )
     if not np.array_equal(source[..., 3], purified[..., 3]):
         raise AssertionError("alpha changed during purification")
     metrics = metrics_for_run(
         source,
-        proposal.label_map,
+        proposal.structural_label_map,
         purified,
         config,
         _ground_truth_approx_region_count(fixture),
         "CIEDE2000" if candidate_id == "CP-B" else "LAB_EUCLIDEAN_APPROX",
+        proposal.pixel_label_map,
+        regions,
     )
     elapsed_ms = round((time.perf_counter() - started) * 1000.0, 3)
     run_id = f"{candidate_id.lower()}-{profile_name}_{representative_id.lower()}"
     case_dir = OUTPUT_ROOT / run_id / fixture_id
     case_dir.mkdir(parents=True, exist_ok=True)
     _save_rgba(case_dir / "purified.png", purified)
-    np.savez_compressed(case_dir / "label_map.npz", labels=proposal.label_map)
-    _save_rgba(case_dir / "label_map_preview.png", label_map_preview(proposal.label_map))
-    _write_json(case_dir / "regions.json", regions)
-    metrics.update({"candidateId": candidate_id, "configProfile": profile_name, "representativeColorMethod": representative_id, "elapsedMs": elapsed_ms})
+    np.savez_compressed(case_dir / "structural_label_map.npz", labels=proposal.structural_label_map)
+    np.savez_compressed(case_dir / "pixel_label_map.npz", labels=proposal.pixel_label_map)
+    _save_rgba(case_dir / "structural_label_preview.png", label_map_preview(proposal.structural_label_map))
+    _write_compact_regions(case_dir / "regions.json.gz", regions)
+    metrics.update({
+        "candidateId": candidate_id,
+        "configProfile": profile_name,
+        "representativeColorMethod": representative_id,
+        "elapsedMs": elapsed_ms,
+        **proposal.fringe_metrics,
+    })
     _write_json(case_dir / "metrics.json", metrics)
     _write_json(case_dir / "run_config.json", {
         "candidateId": candidate_id,
@@ -135,6 +152,7 @@ def _run_fixture(
         "sourceSha256": fixture_sha256,
         "environment": _environment_versions(),
         "alphaPolicy": "input alpha must be bit-identical in purified output",
+        "structuralLabelPolicy": "structural_label_map uses only alpha >= structuralAlphaThreshold; pixel_label_map propagates fringe or records -1 ORPHAN_FRINGE",
         "smallRegionStrategy": config["smallRegionStrategy"],
     })
     return {"fixtureId": fixture_id, "runId": run_id, "status": "SUCCESS", "metrics": metrics}
@@ -161,9 +179,10 @@ def _summarize(records: list[dict[str, Any]], fixture_count: int) -> dict[str, A
             metrics = [entry["metrics"] for entry in successful]
             aggregate.update({
                 "meanElapsedMs": round(float(np.mean([metric["elapsedMs"] for metric in metrics])), 3),
-                "meanRegionCountAfter": round(float(np.mean([metric["region_count_after"] for metric in metrics])), 3),
-                "meanGtRatio": round(float(np.mean([metric["region_count_ratio_to_gt"] for metric in metrics if metric["region_count_ratio_to_gt"] is not None])), 5),
-                "maxGtRatio": round(float(np.max([metric["region_count_ratio_to_gt"] for metric in metrics if metric["region_count_ratio_to_gt"] is not None])), 5),
+                "meanLocalRegionCount": round(float(np.mean([metric.get("local_region_count_after", metric["region_count_after"]) for metric in metrics])), 3),
+                "meanColorGroupCount": round(float(np.mean([metric.get("color_group_count_after", metric["region_count_after"]) for metric in metrics])), 3),
+                "meanColorGroupGtRatio": round(float(np.mean([metric.get("color_group_ratio_to_gt", metric.get("region_count_ratio_to_gt")) for metric in metrics if metric.get("color_group_ratio_to_gt", metric.get("region_count_ratio_to_gt")) is not None])), 5),
+                "maxColorGroupGtRatio": round(float(np.max([metric.get("color_group_ratio_to_gt", metric.get("region_count_ratio_to_gt")) for metric in metrics if metric.get("color_group_ratio_to_gt", metric.get("region_count_ratio_to_gt")) is not None])), 5),
                 "meanSmallComponentCount": round(float(np.mean([metric["small_component_count_after"] for metric in metrics])), 3),
                 "meanVarianceBefore": round(float(np.mean([metric["within_region_color_variance_before"] for metric in metrics])), 8),
                 "meanVarianceAfter": round(float(np.mean([metric["within_region_color_variance_after"] for metric in metrics])), 8),
@@ -179,24 +198,24 @@ def _write_reports(summary: dict[str, Any], fixture_ids: list[str]) -> None:
     _write_json(REPORT_ROOT / "summary.json", summary)
     rows = []
     for run in summary["runs"]:
-        rows.append(f"| {run['runId']} | {run['status']} | {run.get('meanElapsedMs', '—')} | {run.get('meanRegionCountAfter', '—')} | {run.get('meanGtRatio', '—')} / {run.get('maxGtRatio', '—')} | {run.get('meanSmallComponentCount', '—')} | {run.get('meanBoundaryShift', '—')} |")
+        rows.append(f"| {run['runId']} | {run['status']} | {run.get('meanElapsedMs', '—')} | {run.get('meanLocalRegionCount', '—')} | {run.get('meanColorGroupCount', '—')} | {run.get('meanColorGroupGtRatio', '—')} / {run.get('maxColorGroupGtRatio', '—')} | {run.get('meanSmallComponentCount', '—')} | {run.get('meanBoundaryShift', '—')} |")
     fixture_rows = []
     for record in summary["records"]:
         if record["status"] != "SUCCESS":
             continue
         metric = record["metrics"]
         fixture_rows.append(
-            f"| {record['runId']} | {record['fixtureId']} | {metric.get('ground_truth_approx_region_count', '—')} | {metric.get('region_count_after', '—')} | {metric.get('region_count_ratio_to_gt', '—')} ({metric.get('region_count_order_gate', '—')}) | {metric.get('small_component_count_after', '—')} | {metric.get('boundary_shift', '—')} | {metric.get('elapsedMs', '—')} |"
+            f"| {record['runId']} | {record['fixtureId']} | {metric.get('geometry_component_count', '—')} | {metric.get('local_region_count_after', '—')} | {metric.get('color_group_count_after', '—')} | {metric.get('ground_truth_approx_region_count', '—')} | {metric.get('color_group_ratio_to_gt', '—')} ({metric.get('region_count_order_gate', '—')}) | {metric.get('fringe_pixel_count', '—')}/{metric.get('orphan_fringe_count', '—')} | {metric.get('boundary_shift', '—')} ({metric.get('boundary_shift_state', '—')}) | {metric.get('elapsedMs', '—')} |"
         )
     (REPORT_ROOT / "summary.md").write_text(
-        "# P0-04B1.1 Local Color Purification — PROVISIONAL\n\n"
+        "# P0-04B1.2 Color Region Semantics + Alpha Topology — PROVISIONAL\n\n"
         "Previous HEAD: `2301aa59d7278f54874c219c5e2689ee6153d8ea`. Its generated output is superseded because of severe over-segmentation and a CP-B contract mismatch.\n\n"
         "All conclusions are provisional until human review. `false_merge_count`, `false_split_count`, and manual grades are intentionally not fabricated.\n\n"
-        "`within_region_color_variance_after` verifies only that each chosen region was unified. It cannot establish that its region proposal was correct; use the GT region-count diagnostics and human review for that question.\n\n"
-        "| Run | Status | Mean ms | Mean regions after | Mean / max GT ratio | Mean small components | Mean boundary shift |\n|---|---:|---:|---:|---:|---:|---:|\n"
+        "`within_region_color_variance_after` verifies only that each chosen region was unified. It cannot establish that its region proposal was correct. `region_count_ratio_to_gt` is retained only as `SEMANTICALLY_APPROXIMATE`; B0 expectedColorRegions is compared diagnostically to experimental Color Groups, not directly to connected local labels.\n\n"
+        "| Run | Status | Mean ms | Mean Local Regions | Mean Color Groups | Mean / max group:GT ratio | Mean small components | Mean boundary shift |\n|---|---:|---:|---:|---:|---:|---:|---:|\n"
         + "\n".join(rows)
         + "\n\n## Per-fixture diagnostics\n\n"
-        + "| Run | Fixture | GT approx | Regions | GT ratio (gate) | Small components | Boundary shift | Elapsed ms |\n|---|---|---:|---:|---:|---:|---:|---:|\n"
+        + "| Run | Fixture | Geometry components | Local regions | Color groups | GT approx | Group:GT ratio (gate) | Fringe/orphan | Boundary shift | Elapsed ms |\n|---|---|---:|---:|---:|---:|---:|---:|---:|---:|\n"
         + "\n".join(fixture_rows)
         + "\n\n## Required interpretation\n\n"
         "- Candidate stability, false merge/split risk, small-structure protection, representative-color stability, and failures require the linked manual review evidence.\n"
@@ -211,7 +230,7 @@ def _write_reports(summary: dict[str, Any], fixture_ids: list[str]) -> None:
         sections.append(f"## {run['runId']}\n")
         for fixture_id in fixture_ids:
             base = f"../../outputs/color-purification/{run['runId']}/{fixture_id}"
-            sections.append(f"### {fixture_id}\n\n- Original: `fixtures/source/{fixture_id}.png`\n- Purified: [{fixture_id} purified]({base}/purified.png)\n- Label preview: [{fixture_id} labels]({base}/label_map_preview.png)\n\nManual grade: `PENDING_MANUAL_REVIEW`\n")
+            sections.append(f"### {fixture_id}\n\n- Original: `fixtures/source/{fixture_id}.png`\n- Purified: [{fixture_id} purified]({base}/purified.png)\n- Structural labels: [{fixture_id} structural labels]({base}/structural_label_preview.png)\n\nManual grade: `PENDING_MANUAL_REVIEW`\n")
     (REPORT_ROOT / "MANUAL_REVIEW.md").write_text(
         "# P0-04B1 Manual Review\n\n"
         "Review Original / Purified / Label Preview together. Grade only after human inspection: A direct to Generic Decomposition; B minor issue; C small repair; D clearly wrong; F unusable. No grade is assigned by this PoC.\n\n"
@@ -222,6 +241,46 @@ def _write_reports(summary: dict[str, Any], fixture_ids: list[str]) -> None:
         "# Dependency gap\n\nCP-C VTracer watershed baseline status: `DEPENDENCY_UNAVAILABLE`. It was not installed in this PoC environment and no other algorithm was used as a substitute. CP-A and CP-B remain independently runnable.\n",
         encoding="utf-8",
     )
+
+
+def _thumbnail(image: Image.Image, width: int = 220, height: int = 220) -> Image.Image:
+    canvas = Image.new("RGBA", (width, height), (240, 240, 240, 255))
+    candidate = image.convert("RGBA").copy()
+    candidate.thumbnail((width, height), Image.Resampling.LANCZOS)
+    canvas.alpha_composite(candidate, ((width - candidate.width) // 2, (height - candidate.height) // 2))
+    return canvas
+
+
+def _write_contact_sheets(summary: dict[str, Any], fixtures: list[dict[str, Any]]) -> None:
+    """Single-fixture human-review views; never read by candidate algorithms."""
+    sheet_root = REPORT_ROOT / "contact-sheets"
+    sheet_root.mkdir(parents=True, exist_ok=True)
+    metrics_by_key = {(record["runId"], record["fixtureId"]): record.get("metrics") for record in summary["records"] if record["status"] == "SUCCESS"}
+    for fixture in fixtures:
+        fixture_id = str(fixture["fixtureId"])
+        cp_a = metrics_by_key.get(("cp-a-balanced_rc-a", fixture_id))
+        cp_b = metrics_by_key.get(("cp-b-balanced_rc-a", fixture_id))
+        if not cp_a or not cp_b:
+            continue
+        source = _load_rgba(BENCHMARK_ROOT / str(fixture["sourceFile"]))
+        views = [
+            ("Original", Image.fromarray(source, mode="RGBA")),
+            ("CP-A purified", Image.open(OUTPUT_ROOT / "cp-a-balanced_rc-a" / fixture_id / "purified.png")),
+            ("CP-A structural", Image.open(OUTPUT_ROOT / "cp-a-balanced_rc-a" / fixture_id / "structural_label_preview.png")),
+            ("CP-B purified", Image.open(OUTPUT_ROOT / "cp-b-balanced_rc-a" / fixture_id / "purified.png")),
+            ("CP-B structural", Image.open(OUTPUT_ROOT / "cp-b-balanced_rc-a" / fixture_id / "structural_label_preview.png")),
+        ]
+        width, image_height, text_height = 220, 220, 95
+        sheet = Image.new("RGBA", (width * len(views), image_height + text_height), "white")
+        draw = ImageDraw.Draw(sheet)
+        for index, (caption, image) in enumerate(views):
+            sheet.alpha_composite(_thumbnail(image, width, image_height), (index * width, 0))
+            draw.text((index * width + 6, image_height + 5), caption, fill="black")
+        alpha_counts = "/".join(str(cp_a["alpha_topology"][f"alpha_ge_{threshold}"]["component_count"]) for threshold in (1, 32, 64, 128, 192, 224))
+        draw.text((6, image_height + 24), f"GT approx={cp_a['ground_truth_approx_region_count']}  alpha components >0/32/64/128/192/224={alpha_counts}", fill="black")
+        draw.text((6, image_height + 43), f"CP-A local/groups={cp_a['local_region_count_after']}/{cp_a['color_group_count_after']} fringe/orphan={cp_a['fringe_pixel_count']}/{cp_a['orphan_fringe_count']}", fill="black")
+        draw.text((6, image_height + 62), f"CP-B local/groups={cp_b['local_region_count_after']}/{cp_b['color_group_count_after']} fringe/orphan={cp_b['fringe_pixel_count']}/{cp_b['orphan_fringe_count']}", fill="black")
+        sheet.convert("RGB").save(sheet_root / f"{fixture_id}.png", format="PNG", optimize=True)
 
 
 def run(
@@ -254,6 +313,7 @@ def run(
             raise AssertionError(f"frozen fixture PNG changed during run: {fixture_id}")
     summary = _summarize(records, len(fixtures))
     _write_reports(summary, [str(fixture["fixtureId"]) for fixture in fixtures])
+    _write_contact_sheets(summary, fixtures)
     return summary
 
 

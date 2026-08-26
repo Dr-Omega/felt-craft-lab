@@ -1,6 +1,10 @@
 {
   "region_count_before": 9513,
   "region_count_after": 70,
+  "region_count_after_semantics": "SEMANTICALLY_APPROXIMATE: local connected color regions are not one-to-one with B0 expectedColorRegions",
+  "geometry_component_count": 70,
+  "local_region_count_after": 70,
+  "color_group_count_after": 11,
   "small_component_count_before": 9512,
   "small_component_count_after": 69,
   "small_component_ratio_after": 0.98571429,
@@ -9,10 +13,66 @@
   "p10_region_area": 1.0,
   "ground_truth_approx_region_count": 2,
   "region_count_ratio_to_gt": 35.0,
-  "region_count_order_gate": "FAIL",
+  "region_count_ratio_to_gt_semantics": "SEMANTICALLY_APPROXIMATE",
+  "color_group_ratio_to_gt": 5.5,
+  "region_count_order_gate": "WARN",
   "within_region_color_variance_before": 1.14878171,
   "within_region_color_variance_after": 0.00070986,
   "boundary_shift": 1.0,
+  "boundary_shift_state": "NO_CANDIDATE_BOUNDARY",
+  "fringe_pixel_count": 0,
+  "fringe_assigned_count": 0,
+  "orphan_fringe_count": 0,
+  "alpha_topology": {
+    "alpha_ge_1": {
+      "component_count": 70,
+      "largest_component_area": 411259,
+      "median_component_area": 1.0,
+      "components_under_4px": 69,
+      "components_under_16px": 69,
+      "components_under_64px": 69
+    },
+    "alpha_ge_32": {
+      "component_count": 70,
+      "largest_component_area": 411259,
+      "median_component_area": 1.0,
+      "components_under_4px": 69,
+      "components_under_16px": 69,
+      "components_under_64px": 69
+    },
+    "alpha_ge_64": {
+      "component_count": 70,
+      "largest_component_area": 411259,
+      "median_component_area": 1.0,
+      "components_under_4px": 69,
+      "components_under_16px": 69,
+      "components_under_64px": 69
+    },
+    "alpha_ge_128": {
+      "component_count": 70,
+      "largest_component_area": 411259,
+      "median_component_area": 1.0,
+      "components_under_4px": 69,
+      "components_under_16px": 69,
+      "components_under_64px": 69
+    },
+    "alpha_ge_192": {
+      "component_count": 70,
+      "largest_component_area": 411259,
+      "median_component_area": 1.0,
+      "components_under_4px": 69,
+      "components_under_16px": 69,
+      "components_under_64px": 69
+    },
+    "alpha_ge_224": {
+      "component_count": 70,
+      "largest_component_area": 411259,
+      "median_component_area": 1.0,
+      "components_under_4px": 69,
+      "components_under_16px": 69,
+      "components_under_64px": 69
+    }
+  },
   "false_merge_count": null,
   "false_split_count": null,
   "manual_quality_grade": "PENDING_MANUAL_REVIEW",
@@ -24,9 +84,9 @@
     "candidateIndependent": true
   },
   "variance_interpretation": "within_region_color_variance_after verifies that final regions were unified; it does not establish that the proposal partition is correct",
-  "boundary_shift_definition": "normalized symmetric Chamfer-like distance between internal candidate label boundaries and original Lab strong-color edges",
+  "boundary_shift_definition": "normalized symmetric Chamfer-like distance between structural label boundaries and structural-mask Lab strong-color edges; 1.0 with a non-NORMAL state means one side had no boundary",
   "candidateId": "CP-A",
   "configProfile": "aggressive",
   "representativeColorMethod": "RC-A",
-  "elapsedMs": 2609.722
+  "elapsedMs": 2517.27
 }

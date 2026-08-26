@@ -1,18 +1,78 @@
 {
   "region_count_before": 5011,
-  "region_count_after": 8,
+  "region_count_after": 13,
+  "region_count_after_semantics": "SEMANTICALLY_APPROXIMATE: local connected color regions are not one-to-one with B0 expectedColorRegions",
+  "geometry_component_count": 1,
+  "local_region_count_after": 13,
+  "color_group_count_after": 6,
   "small_component_count_before": 5009,
   "small_component_count_after": 7,
-  "small_component_ratio_after": 0.875,
-  "mean_region_area": 51111.5,
-  "median_region_area": 5.5,
-  "p10_region_area": 1.7,
+  "small_component_ratio_after": 0.53846154,
+  "mean_region_area": 31453.23076923,
+  "median_region_area": 86.0,
+  "p10_region_area": 3.0,
   "ground_truth_approx_region_count": 4,
-  "region_count_ratio_to_gt": 2.0,
+  "region_count_ratio_to_gt": 3.25,
+  "region_count_ratio_to_gt_semantics": "SEMANTICALLY_APPROXIMATE",
+  "color_group_ratio_to_gt": 1.5,
   "region_count_order_gate": "PASS",
-  "within_region_color_variance_before": 59.53257497,
-  "within_region_color_variance_after": 0.00677136,
-  "boundary_shift": 0.13031614,
+  "within_region_color_variance_before": 34.28176249,
+  "within_region_color_variance_after": 1.321e-05,
+  "boundary_shift": 0.00272533,
+  "boundary_shift_state": "NORMAL",
+  "fringe_pixel_count": 0,
+  "fringe_assigned_count": 0,
+  "orphan_fringe_count": 0,
+  "alpha_topology": {
+    "alpha_ge_1": {
+      "component_count": 1,
+      "largest_component_area": 408892,
+      "median_component_area": 408892.0,
+      "components_under_4px": 0,
+      "components_under_16px": 0,
+      "components_under_64px": 0
+    },
+    "alpha_ge_32": {
+      "component_count": 1,
+      "largest_component_area": 408892,
+      "median_component_area": 408892.0,
+      "components_under_4px": 0,
+      "components_under_16px": 0,
+      "components_under_64px": 0
+    },
+    "alpha_ge_64": {
+      "component_count": 1,
+      "largest_component_area": 408892,
+      "median_component_area": 408892.0,
+      "components_under_4px": 0,
+      "components_under_16px": 0,
+      "components_under_64px": 0
+    },
+    "alpha_ge_128": {
+      "component_count": 1,
+      "largest_component_area": 408892,
+      "median_component_area": 408892.0,
+      "components_under_4px": 0,
+      "components_under_16px": 0,
+      "components_under_64px": 0
+    },
+    "alpha_ge_192": {
+      "component_count": 1,
+      "largest_component_area": 408892,
+      "median_component_area": 408892.0,
+      "components_under_4px": 0,
+      "components_under_16px": 0,
+      "components_under_64px": 0
+    },
+    "alpha_ge_224": {
+      "component_count": 1,
+      "largest_component_area": 408892,
+      "median_component_area": 408892.0,
+      "components_under_4px": 0,
+      "components_under_16px": 0,
+      "components_under_64px": 0
+    }
+  },
   "false_merge_count": null,
   "false_split_count": null,
   "manual_quality_grade": "PENDING_MANUAL_REVIEW",
@@ -24,9 +84,9 @@
     "candidateIndependent": true
   },
   "variance_interpretation": "within_region_color_variance_after verifies that final regions were unified; it does not establish that the proposal partition is correct",
-  "boundary_shift_definition": "normalized symmetric Chamfer-like distance between internal candidate label boundaries and original Lab strong-color edges",
+  "boundary_shift_definition": "normalized symmetric Chamfer-like distance between structural label boundaries and structural-mask Lab strong-color edges; 1.0 with a non-NORMAL state means one side had no boundary",
   "candidateId": "CP-B",
   "configProfile": "aggressive",
   "representativeColorMethod": "RC-A",
-  "elapsedMs": 1374.585
+  "elapsedMs": 5640.203
 }
