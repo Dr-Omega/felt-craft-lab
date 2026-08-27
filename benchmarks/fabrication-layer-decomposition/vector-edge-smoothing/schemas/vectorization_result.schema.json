@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schemaVersion", "caseId", "profile", "route", "inputSha256", "geometry", "metrics", "hardGate"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {"const": "1.0.0-poc"},
+    "caseId": {"type": "string", "pattern": "^FLD-[0-9]{3}$"},
+    "profile": {"type": "string"},
+    "route": {"enum": ["V0_EXACT_PIXEL_BOUNDARY", "V1_SIMPLIFIED_POLYGON", "V2_SMOOTH_BEZIER"]},
+    "tolerancePx": {"type": ["number", "null"]},
+    "inputSha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "geometry": {"type": "array"},
+    "metrics": {"type": "object"},
+    "hardGate": {"type": "object"}
+  }
+}

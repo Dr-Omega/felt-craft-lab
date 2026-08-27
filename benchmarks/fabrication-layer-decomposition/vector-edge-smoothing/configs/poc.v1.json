@@ -1,0 +1,19 @@
+{
+  "configVersion": "1.0.0-poc",
+  "primaryProfile": "cp-b-aggressive_rc-a",
+  "regressionProfile": "cp-b-balanced_rc-a",
+  "evidenceTolerancesPx": [0.5, 1.0, 2.0],
+  "reviewTolerancePx": 1.0,
+  "cornerDetection": {
+    "spans": [2, 4, 8],
+    "persistentTurnDegrees": 42.0,
+    "requiredScaleCount": 2
+  },
+  "bezier": {
+    "maxReparameterizationIterations": 4,
+    "maxRecursionDepth": 18,
+    "maxHandleToArcLengthRatio": 0.75,
+    "validationFlatnessPx": 0.0625
+  },
+  "status": "POC_COMPARISON_VALUES_NOT_PRODUCTION_FROZEN"
+}

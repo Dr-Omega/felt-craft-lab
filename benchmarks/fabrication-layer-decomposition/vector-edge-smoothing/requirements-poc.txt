@@ -1,0 +1,2 @@
+-r ../candidates/color-purification/requirements-poc.txt
+scipy==1.18.1

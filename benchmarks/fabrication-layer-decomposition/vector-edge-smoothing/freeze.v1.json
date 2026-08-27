@@ -1,0 +1,95 @@
+{
+  "schemaVersion": "1.0.0",
+  "status": "TOLERANCE_FREEZE_APPROVED",
+  "freezeTimestamp": "2026-08-27T17:08:39+08:00",
+  "scope": "P0-04C_VECTOR_EDGE_SMOOTHING_FREEZE_BASELINE",
+  "primaryRoute": "V2_SMOOTH_BEZIER",
+  "defaultTolerance": {
+    "value": 0.5,
+    "unit": "source_pixel",
+    "coordinateSystem": "structural_label_map",
+    "display": "0.5 source pixel",
+    "resolutionNormalization": "NOT_DEFINED_REQUIRES_REVALIDATION"
+  },
+  "fallbackLadder": [
+    "V2_SMOOTH_BEZIER",
+    "V1_SIMPLIFIED_POLYGON",
+    "V0_EXACT_PIXEL_BOUNDARY"
+  ],
+  "routeDisposition": {
+    "V0_EXACT_PIXEL_BOUNDARY": "KEEP_EXACT_GEOMETRY_FALLBACK",
+    "V1_SIMPLIFIED_POLYGON": "KEEP_INTERMEDIATE_FALLBACK_NOT_PRIMARY",
+    "V2_SMOOTH_BEZIER": "PRIMARY_ROUTE",
+    "V2_1_SOURCE_PIXEL": "BENCHMARK_ONLY",
+    "V2_2_SOURCE_PIXELS": "BENCHMARK_FUTURE_EXPERIMENT_ONLY"
+  },
+  "geometryContract": {
+    "geometryTruth": "structural_label_map",
+    "labelMapMutationByVectorization": "FORBIDDEN",
+    "sharedBoundaryFitCount": 1,
+    "adjacentRegionReference": "SHARED_BOUNDARY_WITH_DIRECTION",
+    "junctionMovement": "FORBIDDEN",
+    "multipleFourConnectedPathComponents": "ALLOWED",
+    "diagonalPointTouchSharedEdge": "FORBIDDEN"
+  },
+  "safetyContract": {
+    "preserveTopology": true,
+    "preserveRegionAdjacency": true,
+    "preserveHoles": true,
+    "allowNewSelfIntersection": false,
+    "allowNewIllegalInterEdgeCrossing": false,
+    "allowNewRegionAdjacency": false,
+    "unprovenLocalGeometry": "FAIL_CLOSED",
+    "tinyHoleDeletion": "FORBIDDEN"
+  },
+  "externalDecision": {
+    "vectorReview": "PRIMARY_ROUTE_APPROVED",
+    "toleranceReview": "TOLERANCE_FREEZE_APPROVED"
+  },
+  "evidence": {
+    "configVersion": "1.0.0-poc",
+    "config": {"path": "configs/poc.v1.json", "sha256": "6c412647d4c5bd68e57de10cff8efc48da7bb57a1745daac8030398fad5302c2"},
+    "pocManifest": {"path": "manifest.v1.json", "sha256": "c39104631bee5a15bbc23158c84dce6e91e77e81429f8ad55844272e6b088298"},
+    "summary": {"path": "reports/summary.json", "sha256": "fe7f5b43b0366b989b2f7462cb3da487f867a1b59d2e17a29a3d2d5b35ffcb54"},
+    "caseMetrics": {"path": "reports/case-metrics.json", "sha256": "ce90e7db5433761536ab75055fead5157600713548ed781010687fe82b6bd1c4"},
+    "toleranceMetrics": {"path": "reports/V2_TOLERANCE_METRICS.json", "sha256": "bea14ad79ed8502c9b7b3f9b1e1cbf56d1481207bb7a21b830db868ac6caec2e"},
+    "toleranceReview": {"path": "reports/V2_TOLERANCE_REVIEW.md", "sha256": "00b10033d76f4042b5ba616f64e26eb7fa37d28562788cd1d0ace7f507ad68c1"},
+    "holeReview": {"path": "reports/FLD-007_HOLE_REVIEW.png", "sha256": "2e77e15459ddb8ebeda06e5b7879ceff0cf1cc9bf2dd5f3bef9dc5abf853d619"},
+    "routeArtifactCount": 112,
+    "routeArtifactAggregateSha256": "5054ae02b65c65eb81f6cef50501056459c9f0fecbbc9b553aeb67c14e5399e4",
+    "inputArtifactCount": 32,
+    "inputArtifactAggregateSha256": "1f131b7911276a268a6ad22f069778679bf800aa16b8c13dc1a848dfe6a8d43b",
+    "caseMetricsSha256": "ce90e7db5433761536ab75055fead5157600713548ed781010687fe82b6bd1c4",
+    "v0ByteIdenticalCount": 16,
+    "hardGatePassCount": 112,
+    "fld007StructuralHoleCount": 29,
+    "fld007RetainedHoleCount": 29,
+    "v2DefaultToleranceAggregate": {
+      "caseProfileCount": 16,
+      "medianSymmetricMaxDeviationSourcePixels": 0.56174213,
+      "maxSymmetricMaxDeviationSourcePixels": 0.56249905,
+      "medianAreaErrorRatio": 0.0,
+      "maxAreaErrorRatio": 0.0,
+      "totalLineCount": 86420,
+      "totalCubicCount": 5473,
+      "totalSegmentCount": 91893,
+      "medianFallbackRatio": 0.18332013
+    }
+  },
+  "productionIntegration": false,
+  "nonGoals": [
+    "PRODUCTION_BACKEND_INTEGRATION",
+    "ELECTRON_UI_INTEGRATION",
+    "COLOR_LAYER_GROUPING",
+    "B2_FABRICATION_DECOMPOSITION"
+  ],
+  "futureRevalidationTriggers": [
+    "STRUCTURAL_LABEL_MAP_RESOLUTION_CHANGE",
+    "COORDINATE_SYSTEM_CHANGE",
+    "V2_BEZIER_FITTER_CHANGE",
+    "CORNER_DETECTOR_CHANGE",
+    "RDP_CHANGE",
+    "HARD_GATE_OR_FALLBACK_CHANGE",
+    "NEW_FIXTURE_OR_TOPOLOGY_CLASS"
+  ]
+}

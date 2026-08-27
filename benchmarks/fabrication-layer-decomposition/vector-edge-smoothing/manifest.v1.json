@@ -1,0 +1,46 @@
+{
+  "manifestVersion": "1.0.0-poc",
+  "scope": "P0-04C label-to-vector evidence only; no production, B2, material, repair, or region merge semantics",
+  "geometryInput": "structural_label_map",
+  "zeroTopology": "4-connected; canvas-touching OUTER, interior HOLE",
+  "alphaPolicy": "AUDIT_ONLY_FAIL_CLOSED_ON_STRUCTURAL_ALPHA_TOPOLOGY_MISMATCH",
+  "representativeColor": "RC-A",
+  "profiles": [
+    "cp-b-aggressive_rc-a",
+    "cp-b-balanced_rc-a"
+  ],
+  "fixtures": [
+    "FLD-001",
+    "FLD-002",
+    "FLD-003",
+    "FLD-004",
+    "FLD-005",
+    "FLD-006",
+    "FLD-007",
+    "FLD-008"
+  ],
+  "inputArtifacts": [
+    {"profile":"cp-b-aggressive_rc-a","caseId":"FLD-001","structuralLabelMap":"../outputs/color-purification/cp-b-aggressive_rc-a/FLD-001/structural_label_map.npz","sha256":"867a3d2d59a421a2475ae6d2a307421bbf226d48cc1ed059c6c885a5d3d122a0"},
+    {"profile":"cp-b-aggressive_rc-a","caseId":"FLD-002","structuralLabelMap":"../outputs/color-purification/cp-b-aggressive_rc-a/FLD-002/structural_label_map.npz","sha256":"df45eb93135f265f258b58f4086042f1396a25598aec53ec72660ae9624fc785"},
+    {"profile":"cp-b-aggressive_rc-a","caseId":"FLD-003","structuralLabelMap":"../outputs/color-purification/cp-b-aggressive_rc-a/FLD-003/structural_label_map.npz","sha256":"2206f7bb239c0e4f07e9a5575c1739d1cd8ca5aed47c42602fc0c6e92f076123"},
+    {"profile":"cp-b-aggressive_rc-a","caseId":"FLD-004","structuralLabelMap":"../outputs/color-purification/cp-b-aggressive_rc-a/FLD-004/structural_label_map.npz","sha256":"c17162dab7c0abb7724447b87407b92e152bd4d9480fb21f8ae476473a9687fa"},
+    {"profile":"cp-b-aggressive_rc-a","caseId":"FLD-005","structuralLabelMap":"../outputs/color-purification/cp-b-aggressive_rc-a/FLD-005/structural_label_map.npz","sha256":"50662e06003f01b0145b4b595784351e4e0b2161da8cc714587baf100b78a66e"},
+    {"profile":"cp-b-aggressive_rc-a","caseId":"FLD-006","structuralLabelMap":"../outputs/color-purification/cp-b-aggressive_rc-a/FLD-006/structural_label_map.npz","sha256":"381acb7bdebc65bb98815791c11dc51097c7ecab3f33743ecef09269d5e50765"},
+    {"profile":"cp-b-aggressive_rc-a","caseId":"FLD-007","structuralLabelMap":"../outputs/color-purification/cp-b-aggressive_rc-a/FLD-007/structural_label_map.npz","sha256":"f4bd1991d3f7dfdcba52834a15cb35faf1b93eb7f122eaec0f874b60af6f9ac4"},
+    {"profile":"cp-b-aggressive_rc-a","caseId":"FLD-008","structuralLabelMap":"../outputs/color-purification/cp-b-aggressive_rc-a/FLD-008/structural_label_map.npz","sha256":"5d6e70b1948ec6155fe53c5e99c9f1f3745e84cb479e8d2b1765252082670fc7"},
+    {"profile":"cp-b-balanced_rc-a","caseId":"FLD-001","structuralLabelMap":"../outputs/color-purification/cp-b-balanced_rc-a/FLD-001/structural_label_map.npz","sha256":"fdfc682b89107c957e35ecd9836910ad0fc97bb291b66d7d84fa28a453e74089"},
+    {"profile":"cp-b-balanced_rc-a","caseId":"FLD-002","structuralLabelMap":"../outputs/color-purification/cp-b-balanced_rc-a/FLD-002/structural_label_map.npz","sha256":"58764f0451ce792a202b7dcd62cb36cf3cb380bda9dd44ef591192ad7f28cf9b"},
+    {"profile":"cp-b-balanced_rc-a","caseId":"FLD-003","structuralLabelMap":"../outputs/color-purification/cp-b-balanced_rc-a/FLD-003/structural_label_map.npz","sha256":"18fec1fad0ccbf72fbb3cc4c511e6d7c616f33a98d6e9b1917b33b3e08c7ea07"},
+    {"profile":"cp-b-balanced_rc-a","caseId":"FLD-004","structuralLabelMap":"../outputs/color-purification/cp-b-balanced_rc-a/FLD-004/structural_label_map.npz","sha256":"9331c869d3542599dbfe5af5c60d2ba4f490dc889f3cf3644eee7fd8cafc7ebd"},
+    {"profile":"cp-b-balanced_rc-a","caseId":"FLD-005","structuralLabelMap":"../outputs/color-purification/cp-b-balanced_rc-a/FLD-005/structural_label_map.npz","sha256":"e77e6444e317f1d611fb9a93ad5ca0ca7104880fe8497674e97db82f880babaa"},
+    {"profile":"cp-b-balanced_rc-a","caseId":"FLD-006","structuralLabelMap":"../outputs/color-purification/cp-b-balanced_rc-a/FLD-006/structural_label_map.npz","sha256":"e0c362caf72816c88ebebea0133d45172c8b7c7c86fa880ca3c45150980970be"},
+    {"profile":"cp-b-balanced_rc-a","caseId":"FLD-007","structuralLabelMap":"../outputs/color-purification/cp-b-balanced_rc-a/FLD-007/structural_label_map.npz","sha256":"fdaabbcda9ecbd2dc4ab9bcd7e4b34a9e2118585f0509e5035858de8b338d66c"},
+    {"profile":"cp-b-balanced_rc-a","caseId":"FLD-008","structuralLabelMap":"../outputs/color-purification/cp-b-balanced_rc-a/FLD-008/structural_label_map.npz","sha256":"3828947fa0f3191fd429825a90d83b5c2ee92a9468c7e7077769d3430595caa0"}
+  ],
+  "routes": [
+    "V0_EXACT_PIXEL_BOUNDARY",
+    "V1_SIMPLIFIED_POLYGON",
+    "V2_SMOOTH_BEZIER"
+  ],
+  "finalStatus": "POC_EVIDENCE_COMPLETE_PENDING_EXTERNAL_VECTOR_REVIEW"
+}
