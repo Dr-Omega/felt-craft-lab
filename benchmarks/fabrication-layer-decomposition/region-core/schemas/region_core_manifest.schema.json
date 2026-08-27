@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","required":["regionCoreVersion","b0FrozenCommit","fixtures","scope"],"properties":{"regionCoreVersion":{"type":"string"},"b0FrozenCommit":{"const":"7ab146b"},"scope":{"type":"string"},"fixtures":{"type":"array","minItems":10}}}

@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object", "required": ["fixtureId", "regions", "relations"], "additionalProperties": false,
+  "properties": {
+    "fixtureId": {"type":"string", "pattern":"^(FLD|RCF)-[0-9]{3}$"},
+    "regions": {"type":"array", "minItems":1, "items":{"type":"object", "required":["regionKey","kind","anchors"], "additionalProperties":false, "properties":{"regionKey":{"type":"string","minLength":1},"kind":{"enum":["SUBJECT_REGION","HOLE"]},"anchors":{"type":"array","minItems":1,"items":{"type":"array","minItems":2,"maxItems":2,"items":{"type":"integer","minimum":0}}}}}},
+    "relations": {"type":"array", "items":{"type":"object", "required":["relationId","type","regionKeys"], "additionalProperties":false, "properties":{"relationId":{"type":"string","minLength":1},"type":{"enum":["MUST_MERGE","MUST_SEPARATE","PROTECTED_BOUNDARY","HOLE","UNCERTAIN"]},"regionKeys":{"type":"array","minItems":1,"maxItems":2,"items":{"type":"string"}},"notes":{"type":"string"}}}}
+  }
+}

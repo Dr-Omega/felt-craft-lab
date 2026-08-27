@@ -1,0 +1,3162 @@
+{
+  "packetVersion": "1.0.0",
+  "gate1": {
+    "status": "PENDING_EXTERNAL_GATE_1_REVIEW",
+    "aggregate": [
+      {
+        "profile": "cp-b-aggressive_rc-a",
+        "representativeMethod": "RC-A",
+        "meanCoreDeltaE00": 2.388946,
+        "medianCoreDeltaE00": 0.254645,
+        "p95CoreDeltaE00": 6.149519,
+        "contaminationDrift": 21.45363,
+        "determinism": "PASS: 8 largest-region sentinels, not per-region triple execution",
+        "mustMergePairInversionCount": "NOT_AVAILABLE",
+        "mustSeparatePairInversionCount": "NOT_AVAILABLE",
+        "protectedBoundaryPairInversionCount": "NOT_AVAILABLE",
+        "totalRelationInversionCount": "NOT_AVAILABLE",
+        "runtimeMs": 9376.1702,
+        "evaluatedRegionCount": 707
+      },
+      {
+        "profile": "cp-b-aggressive_rc-a",
+        "representativeMethod": "RC-B",
+        "meanCoreDeltaE00": 2.506522,
+        "medianCoreDeltaE00": 0.347882,
+        "p95CoreDeltaE00": 6.284868,
+        "contaminationDrift": 23.523312,
+        "determinism": "PASS: 8 largest-region sentinels, not per-region triple execution",
+        "mustMergePairInversionCount": "NOT_AVAILABLE",
+        "mustSeparatePairInversionCount": "NOT_AVAILABLE",
+        "protectedBoundaryPairInversionCount": "NOT_AVAILABLE",
+        "totalRelationInversionCount": "NOT_AVAILABLE",
+        "runtimeMs": 16706.115,
+        "evaluatedRegionCount": 707
+      },
+      {
+        "profile": "cp-b-aggressive_rc-a",
+        "representativeMethod": "RC-C",
+        "meanCoreDeltaE00": 2.409012,
+        "medianCoreDeltaE00": 0.254645,
+        "p95CoreDeltaE00": 6.264702,
+        "contaminationDrift": 23.318821,
+        "determinism": "PASS: 8 largest-region sentinels, not per-region triple execution",
+        "mustMergePairInversionCount": "NOT_AVAILABLE",
+        "mustSeparatePairInversionCount": "NOT_AVAILABLE",
+        "protectedBoundaryPairInversionCount": "NOT_AVAILABLE",
+        "totalRelationInversionCount": "NOT_AVAILABLE",
+        "runtimeMs": 10540.0369,
+        "evaluatedRegionCount": 707
+      },
+      {
+        "profile": "cp-b-aggressive_rc-a",
+        "representativeMethod": "RC-D",
+        "meanCoreDeltaE00": 2.39712,
+        "medianCoreDeltaE00": 0.254644,
+        "p95CoreDeltaE00": 6.470078,
+        "contaminationDrift": 23.126166,
+        "determinism": "PASS: 8 largest-region sentinels, not per-region triple execution",
+        "mustMergePairInversionCount": "NOT_AVAILABLE",
+        "mustSeparatePairInversionCount": "NOT_AVAILABLE",
+        "protectedBoundaryPairInversionCount": "NOT_AVAILABLE",
+        "totalRelationInversionCount": "NOT_AVAILABLE",
+        "runtimeMs": 18252.2432,
+        "evaluatedRegionCount": 707
+      },
+      {
+        "profile": "cp-b-balanced_rc-a",
+        "representativeMethod": "RC-A",
+        "meanCoreDeltaE00": 5.104376,
+        "medianCoreDeltaE00": 1.545824,
+        "p95CoreDeltaE00": 9.250283,
+        "contaminationDrift": 21.520136,
+        "determinism": "PASS: 8 largest-region sentinels, not per-region triple execution",
+        "mustMergePairInversionCount": "NOT_AVAILABLE",
+        "mustSeparatePairInversionCount": "NOT_AVAILABLE",
+        "protectedBoundaryPairInversionCount": "NOT_AVAILABLE",
+        "totalRelationInversionCount": "NOT_AVAILABLE",
+        "runtimeMs": 27337.1684,
+        "evaluatedRegionCount": 2222
+      },
+      {
+        "profile": "cp-b-balanced_rc-a",
+        "representativeMethod": "RC-B",
+        "meanCoreDeltaE00": 5.911893,
+        "medianCoreDeltaE00": 1.519147,
+        "p95CoreDeltaE00": 12.313415,
+        "contaminationDrift": 19.461587,
+        "determinism": "PASS: 8 largest-region sentinels, not per-region triple execution",
+        "mustMergePairInversionCount": "NOT_AVAILABLE",
+        "mustSeparatePairInversionCount": "NOT_AVAILABLE",
+        "protectedBoundaryPairInversionCount": "NOT_AVAILABLE",
+        "totalRelationInversionCount": "NOT_AVAILABLE",
+        "runtimeMs": 34323.398,
+        "evaluatedRegionCount": 2222
+      },
+      {
+        "profile": "cp-b-balanced_rc-a",
+        "representativeMethod": "RC-C",
+        "meanCoreDeltaE00": 5.564036,
+        "medianCoreDeltaE00": 1.44461,
+        "p95CoreDeltaE00": 12.368578,
+        "contaminationDrift": 25.933991,
+        "determinism": "PASS: 8 largest-region sentinels, not per-region triple execution",
+        "mustMergePairInversionCount": "NOT_AVAILABLE",
+        "mustSeparatePairInversionCount": "NOT_AVAILABLE",
+        "protectedBoundaryPairInversionCount": "NOT_AVAILABLE",
+        "totalRelationInversionCount": "NOT_AVAILABLE",
+        "runtimeMs": 28595.2204,
+        "evaluatedRegionCount": 2222
+      },
+      {
+        "profile": "cp-b-balanced_rc-a",
+        "representativeMethod": "RC-D",
+        "meanCoreDeltaE00": 5.072564,
+        "medianCoreDeltaE00": 1.612931,
+        "p95CoreDeltaE00": 10.812572,
+        "contaminationDrift": 23.485303,
+        "determinism": "PASS: 8 largest-region sentinels, not per-region triple execution",
+        "mustMergePairInversionCount": "NOT_AVAILABLE",
+        "mustSeparatePairInversionCount": "NOT_AVAILABLE",
+        "protectedBoundaryPairInversionCount": "NOT_AVAILABLE",
+        "totalRelationInversionCount": "NOT_AVAILABLE",
+        "runtimeMs": 36419.7674,
+        "evaluatedRegionCount": 2222
+      }
+    ],
+    "caseLevel": [
+      {
+        "fixture": "FLD-001",
+        "profile": "cp-b-aggressive_rc-a",
+        "representativeMethod": "RC-A",
+        "evaluatedRegionCount": 108,
+        "meanCoreDeltaE00": 1.799333,
+        "medianCoreDeltaE00": 0.0,
+        "p95CoreDeltaE00": 3.595153,
+        "contaminationDrift": 29.854128,
+        "runtimeMs": 1739.8719,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-001",
+        "profile": "cp-b-aggressive_rc-a",
+        "representativeMethod": "RC-B",
+        "evaluatedRegionCount": 108,
+        "meanCoreDeltaE00": 1.820203,
+        "medianCoreDeltaE00": 0.0,
+        "p95CoreDeltaE00": 3.688189,
+        "contaminationDrift": 32.285891,
+        "runtimeMs": 2015.1265,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-001",
+        "profile": "cp-b-aggressive_rc-a",
+        "representativeMethod": "RC-C",
+        "evaluatedRegionCount": 108,
+        "meanCoreDeltaE00": 1.799978,
+        "medianCoreDeltaE00": 0.0,
+        "p95CoreDeltaE00": 3.668866,
+        "contaminationDrift": 31.870521,
+        "runtimeMs": 1779.4326,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-001",
+        "profile": "cp-b-aggressive_rc-a",
+        "representativeMethod": "RC-D",
+        "evaluatedRegionCount": 108,
+        "meanCoreDeltaE00": 1.803288,
+        "medianCoreDeltaE00": 0.0,
+        "p95CoreDeltaE00": 4.105806,
+        "contaminationDrift": 31.853776,
+        "runtimeMs": 2064.3382,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-002",
+        "profile": "cp-b-aggressive_rc-a",
+        "representativeMethod": "RC-A",
+        "evaluatedRegionCount": 13,
+        "meanCoreDeltaE00": 3.406003,
+        "medianCoreDeltaE00": 1.451027,
+        "p95CoreDeltaE00": 8.835545,
+        "contaminationDrift": 3.628474,
+        "runtimeMs": 317.4624,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-002",
+        "profile": "cp-b-aggressive_rc-a",
+        "representativeMethod": "RC-B",
+        "evaluatedRegionCount": 13,
+        "meanCoreDeltaE00": 3.395934,
+        "medianCoreDeltaE00": 1.451027,
+        "p95CoreDeltaE00": 8.598868,
+        "contaminationDrift": 3.318878,
+        "runtimeMs": 1676.0139,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-002",
+        "profile": "cp-b-aggressive_rc-a",
+        "representativeMethod": "RC-C",
+        "evaluatedRegionCount": 13,
+        "meanCoreDeltaE00": 3.411259,
+        "medianCoreDeltaE00": 1.451027,
+        "p95CoreDeltaE00": 8.830332,
+        "contaminationDrift": 3.323408,
+        "runtimeMs": 418.5085,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-002",
+        "profile": "cp-b-aggressive_rc-a",
+        "representativeMethod": "RC-D",
+        "evaluatedRegionCount": 13,
+        "meanCoreDeltaE00": 3.387383,
+        "medianCoreDeltaE00": 1.321559,
+        "p95CoreDeltaE00": 8.842913,
+        "contaminationDrift": 3.617494,
+        "runtimeMs": 1138.1029,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-003",
+        "profile": "cp-b-aggressive_rc-a",
+        "representativeMethod": "RC-A",
+        "evaluatedRegionCount": 18,
+        "meanCoreDeltaE00": 2.298208,
+        "medianCoreDeltaE00": 1.668861,
+        "p95CoreDeltaE00": 6.504089,
+        "contaminationDrift": 0.143808,
+        "runtimeMs": 481.8591,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [
+          {
+            "distance": 1.4997045993804932,
+            "mappingStatus": "MAPPED",
+            "method": "RC-A",
+            "relationId": "fld003-top-side-separate",
+            "type": "MUST_SEPARATE"
+          }
+        ],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-003",
+        "profile": "cp-b-aggressive_rc-a",
+        "representativeMethod": "RC-B",
+        "evaluatedRegionCount": 18,
+        "meanCoreDeltaE00": 2.307354,
+        "medianCoreDeltaE00": 1.668861,
+        "p95CoreDeltaE00": 6.53988,
+        "contaminationDrift": 0.006392,
+        "runtimeMs": 1429.8621,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [
+          {
+            "distance": 1.4997045993804932,
+            "mappingStatus": "MAPPED",
+            "method": "RC-B",
+            "relationId": "fld003-top-side-separate",
+            "type": "MUST_SEPARATE"
+          }
+        ],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-003",
+        "profile": "cp-b-aggressive_rc-a",
+        "representativeMethod": "RC-C",
+        "evaluatedRegionCount": 18,
+        "meanCoreDeltaE00": 2.28931,
+        "medianCoreDeltaE00": 1.668861,
+        "p95CoreDeltaE00": 6.43206,
+        "contaminationDrift": 0.042135,
+        "runtimeMs": 753.7323,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [
+          {
+            "distance": 1.4997045993804932,
+            "mappingStatus": "MAPPED",
+            "method": "RC-C",
+            "relationId": "fld003-top-side-separate",
+            "type": "MUST_SEPARATE"
+          }
+        ],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-003",
+        "profile": "cp-b-aggressive_rc-a",
+        "representativeMethod": "RC-D",
+        "evaluatedRegionCount": 18,
+        "meanCoreDeltaE00": 2.289638,
+        "medianCoreDeltaE00": 1.661551,
+        "p95CoreDeltaE00": 6.462762,
+        "contaminationDrift": 0.204683,
+        "runtimeMs": 2633.3172,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [
+          {
+            "distance": 1.0034912824630737,
+            "mappingStatus": "MAPPED",
+            "method": "RC-D",
+            "relationId": "fld003-top-side-separate",
+            "type": "MUST_SEPARATE"
+          }
+        ],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-004",
+        "profile": "cp-b-aggressive_rc-a",
+        "representativeMethod": "RC-A",
+        "evaluatedRegionCount": 330,
+        "meanCoreDeltaE00": 3.265988,
+        "medianCoreDeltaE00": 0.937524,
+        "p95CoreDeltaE00": 8.879997,
+        "contaminationDrift": 18.325614,
+        "runtimeMs": 3915.189,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [
+          {
+            "distance": 14.78734302520752,
+            "mappingStatus": "MAPPED",
+            "method": "RC-A",
+            "relationId": "fld004-disconnected-preserve",
+            "type": "MUST_SEPARATE"
+          }
+        ],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-004",
+        "profile": "cp-b-aggressive_rc-a",
+        "representativeMethod": "RC-B",
+        "evaluatedRegionCount": 330,
+        "meanCoreDeltaE00": 3.490483,
+        "medianCoreDeltaE00": 0.965081,
+        "p95CoreDeltaE00": 9.114911,
+        "contaminationDrift": 20.374372,
+        "runtimeMs": 4679.0501,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [
+          {
+            "distance": 14.719067573547363,
+            "mappingStatus": "MAPPED",
+            "method": "RC-B",
+            "relationId": "fld004-disconnected-preserve",
+            "type": "MUST_SEPARATE"
+          }
+        ],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-004",
+        "profile": "cp-b-aggressive_rc-a",
+        "representativeMethod": "RC-C",
+        "evaluatedRegionCount": 330,
+        "meanCoreDeltaE00": 3.311325,
+        "medianCoreDeltaE00": 0.937524,
+        "p95CoreDeltaE00": 9.092819,
+        "contaminationDrift": 20.250572,
+        "runtimeMs": 4235.1488,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [
+          {
+            "distance": 14.78734302520752,
+            "mappingStatus": "MAPPED",
+            "method": "RC-C",
+            "relationId": "fld004-disconnected-preserve",
+            "type": "MUST_SEPARATE"
+          }
+        ],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-004",
+        "profile": "cp-b-aggressive_rc-a",
+        "representativeMethod": "RC-D",
+        "evaluatedRegionCount": 330,
+        "meanCoreDeltaE00": 3.288723,
+        "medianCoreDeltaE00": 0.94128,
+        "p95CoreDeltaE00": 9.193518,
+        "contaminationDrift": 19.861186,
+        "runtimeMs": 5839.5961,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [
+          {
+            "distance": 14.719067573547363,
+            "mappingStatus": "MAPPED",
+            "method": "RC-D",
+            "relationId": "fld004-disconnected-preserve",
+            "type": "MUST_SEPARATE"
+          }
+        ],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-005",
+        "profile": "cp-b-aggressive_rc-a",
+        "representativeMethod": "RC-A",
+        "evaluatedRegionCount": 68,
+        "meanCoreDeltaE00": 0.852146,
+        "medianCoreDeltaE00": 0.124686,
+        "p95CoreDeltaE00": 1.928432,
+        "contaminationDrift": 22.124846,
+        "runtimeMs": 534.9401,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-005",
+        "profile": "cp-b-aggressive_rc-a",
+        "representativeMethod": "RC-B",
+        "evaluatedRegionCount": 68,
+        "meanCoreDeltaE00": 0.854008,
+        "medianCoreDeltaE00": 0.124686,
+        "p95CoreDeltaE00": 1.93583,
+        "contaminationDrift": 24.917209,
+        "runtimeMs": 954.2716,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-005",
+        "profile": "cp-b-aggressive_rc-a",
+        "representativeMethod": "RC-C",
+        "evaluatedRegionCount": 68,
+        "meanCoreDeltaE00": 0.852584,
+        "medianCoreDeltaE00": 0.124686,
+        "p95CoreDeltaE00": 1.931581,
+        "contaminationDrift": 24.938148,
+        "runtimeMs": 641.5283,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-005",
+        "profile": "cp-b-aggressive_rc-a",
+        "representativeMethod": "RC-D",
+        "evaluatedRegionCount": 68,
+        "meanCoreDeltaE00": 0.851031,
+        "medianCoreDeltaE00": 0.124686,
+        "p95CoreDeltaE00": 2.220263,
+        "contaminationDrift": 24.99289,
+        "runtimeMs": 1428.3702,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-006",
+        "profile": "cp-b-aggressive_rc-a",
+        "representativeMethod": "RC-A",
+        "evaluatedRegionCount": 28,
+        "meanCoreDeltaE00": 2.163724,
+        "medianCoreDeltaE00": 0.722607,
+        "p95CoreDeltaE00": 5.675186,
+        "contaminationDrift": 13.468292,
+        "runtimeMs": 564.4129,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-006",
+        "profile": "cp-b-aggressive_rc-a",
+        "representativeMethod": "RC-B",
+        "evaluatedRegionCount": 28,
+        "meanCoreDeltaE00": 2.393643,
+        "medianCoreDeltaE00": 0.722607,
+        "p95CoreDeltaE00": 6.053176,
+        "contaminationDrift": 17.354563,
+        "runtimeMs": 1485.8766,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-006",
+        "profile": "cp-b-aggressive_rc-a",
+        "representativeMethod": "RC-C",
+        "evaluatedRegionCount": 28,
+        "meanCoreDeltaE00": 2.163724,
+        "medianCoreDeltaE00": 0.722607,
+        "p95CoreDeltaE00": 5.675186,
+        "contaminationDrift": 16.388726,
+        "runtimeMs": 736.619,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-006",
+        "profile": "cp-b-aggressive_rc-a",
+        "representativeMethod": "RC-D",
+        "evaluatedRegionCount": 28,
+        "meanCoreDeltaE00": 2.161687,
+        "medianCoreDeltaE00": 0.719654,
+        "p95CoreDeltaE00": 6.423926,
+        "contaminationDrift": 15.727044,
+        "runtimeMs": 1747.9919,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-007",
+        "profile": "cp-b-aggressive_rc-a",
+        "representativeMethod": "RC-A",
+        "evaluatedRegionCount": 104,
+        "meanCoreDeltaE00": 1.241359,
+        "medianCoreDeltaE00": 0.0,
+        "p95CoreDeltaE00": 3.07546,
+        "contaminationDrift": 31.12668,
+        "runtimeMs": 1316.4692,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [
+          {
+            "distance": null,
+            "mappingStatus": "UNMAPPED",
+            "method": "RC-A",
+            "relationId": "fld007-hole-preserve",
+            "type": "HOLE"
+          }
+        ],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-007",
+        "profile": "cp-b-aggressive_rc-a",
+        "representativeMethod": "RC-B",
+        "evaluatedRegionCount": 104,
+        "meanCoreDeltaE00": 1.223642,
+        "medianCoreDeltaE00": 0.0,
+        "p95CoreDeltaE00": 3.057692,
+        "contaminationDrift": 32.763047,
+        "runtimeMs": 3046.9595,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [
+          {
+            "distance": null,
+            "mappingStatus": "UNMAPPED",
+            "method": "RC-B",
+            "relationId": "fld007-hole-preserve",
+            "type": "HOLE"
+          }
+        ],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-007",
+        "profile": "cp-b-aggressive_rc-a",
+        "representativeMethod": "RC-C",
+        "evaluatedRegionCount": 104,
+        "meanCoreDeltaE00": 1.231235,
+        "medianCoreDeltaE00": 0.0,
+        "p95CoreDeltaE00": 3.125962,
+        "contaminationDrift": 32.39223,
+        "runtimeMs": 1358.7004,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [
+          {
+            "distance": null,
+            "mappingStatus": "UNMAPPED",
+            "method": "RC-C",
+            "relationId": "fld007-hole-preserve",
+            "type": "HOLE"
+          }
+        ],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-007",
+        "profile": "cp-b-aggressive_rc-a",
+        "representativeMethod": "RC-D",
+        "evaluatedRegionCount": 104,
+        "meanCoreDeltaE00": 1.225755,
+        "medianCoreDeltaE00": 0.0,
+        "p95CoreDeltaE00": 3.108161,
+        "contaminationDrift": 32.435111,
+        "runtimeMs": 1780.0956,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [
+          {
+            "distance": null,
+            "mappingStatus": "UNMAPPED",
+            "method": "RC-D",
+            "relationId": "fld007-hole-preserve",
+            "type": "HOLE"
+          }
+        ],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-008",
+        "profile": "cp-b-aggressive_rc-a",
+        "representativeMethod": "RC-A",
+        "evaluatedRegionCount": 38,
+        "meanCoreDeltaE00": 2.200084,
+        "medianCoreDeltaE00": 0.765607,
+        "p95CoreDeltaE00": 4.926648,
+        "contaminationDrift": 19.14429,
+        "runtimeMs": 505.9656,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-008",
+        "profile": "cp-b-aggressive_rc-a",
+        "representativeMethod": "RC-B",
+        "evaluatedRegionCount": 38,
+        "meanCoreDeltaE00": 2.25361,
+        "medianCoreDeltaE00": 0.760039,
+        "p95CoreDeltaE00": 4.961259,
+        "contaminationDrift": 20.78019,
+        "runtimeMs": 1418.9547,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-008",
+        "profile": "cp-b-aggressive_rc-a",
+        "representativeMethod": "RC-C",
+        "evaluatedRegionCount": 38,
+        "meanCoreDeltaE00": 2.207214,
+        "medianCoreDeltaE00": 0.765607,
+        "p95CoreDeltaE00": 4.904007,
+        "contaminationDrift": 20.901811,
+        "runtimeMs": 616.367,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-008",
+        "profile": "cp-b-aggressive_rc-a",
+        "representativeMethod": "RC-D",
+        "evaluatedRegionCount": 38,
+        "meanCoreDeltaE00": 2.200128,
+        "medianCoreDeltaE00": 0.765607,
+        "p95CoreDeltaE00": 5.570354,
+        "contaminationDrift": 20.841136,
+        "runtimeMs": 1620.4311,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-001",
+        "profile": "cp-b-balanced_rc-a",
+        "representativeMethod": "RC-A",
+        "evaluatedRegionCount": 497,
+        "meanCoreDeltaE00": 3.331256,
+        "medianCoreDeltaE00": 0.0,
+        "p95CoreDeltaE00": 5.211129,
+        "contaminationDrift": 30.182984,
+        "runtimeMs": 8284.6788,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-001",
+        "profile": "cp-b-balanced_rc-a",
+        "representativeMethod": "RC-B",
+        "evaluatedRegionCount": 497,
+        "meanCoreDeltaE00": 3.889891,
+        "medianCoreDeltaE00": 0.0,
+        "p95CoreDeltaE00": 7.513723,
+        "contaminationDrift": 28.447312,
+        "runtimeMs": 8658.6506,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-001",
+        "profile": "cp-b-balanced_rc-a",
+        "representativeMethod": "RC-C",
+        "evaluatedRegionCount": 497,
+        "meanCoreDeltaE00": 3.677354,
+        "medianCoreDeltaE00": 0.0,
+        "p95CoreDeltaE00": 7.533752,
+        "contaminationDrift": 34.287103,
+        "runtimeMs": 8330.0374,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-001",
+        "profile": "cp-b-balanced_rc-a",
+        "representativeMethod": "RC-D",
+        "evaluatedRegionCount": 497,
+        "meanCoreDeltaE00": 3.297021,
+        "medianCoreDeltaE00": 0.0,
+        "p95CoreDeltaE00": 6.481257,
+        "contaminationDrift": 31.835477,
+        "runtimeMs": 8748.5218,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-002",
+        "profile": "cp-b-balanced_rc-a",
+        "representativeMethod": "RC-A",
+        "evaluatedRegionCount": 74,
+        "meanCoreDeltaE00": 6.916274,
+        "medianCoreDeltaE00": 6.343152,
+        "p95CoreDeltaE00": 12.452532,
+        "contaminationDrift": 10.451754,
+        "runtimeMs": 722.1449,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-002",
+        "profile": "cp-b-balanced_rc-a",
+        "representativeMethod": "RC-B",
+        "evaluatedRegionCount": 74,
+        "meanCoreDeltaE00": 7.654318,
+        "medianCoreDeltaE00": 6.259969,
+        "p95CoreDeltaE00": 16.062778,
+        "contaminationDrift": 7.181345,
+        "runtimeMs": 2019.373,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-002",
+        "profile": "cp-b-balanced_rc-a",
+        "representativeMethod": "RC-C",
+        "evaluatedRegionCount": 74,
+        "meanCoreDeltaE00": 7.402334,
+        "medianCoreDeltaE00": 6.022186,
+        "p95CoreDeltaE00": 16.062975,
+        "contaminationDrift": 12.724893,
+        "runtimeMs": 774.3097,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-002",
+        "profile": "cp-b-balanced_rc-a",
+        "representativeMethod": "RC-D",
+        "evaluatedRegionCount": 74,
+        "meanCoreDeltaE00": 6.90812,
+        "medianCoreDeltaE00": 6.335386,
+        "p95CoreDeltaE00": 14.306251,
+        "contaminationDrift": 12.231632,
+        "runtimeMs": 1404.2293,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-003",
+        "profile": "cp-b-balanced_rc-a",
+        "representativeMethod": "RC-A",
+        "evaluatedRegionCount": 18,
+        "meanCoreDeltaE00": 2.401188,
+        "medianCoreDeltaE00": 1.711682,
+        "p95CoreDeltaE00": 7.17025,
+        "contaminationDrift": 0.133307,
+        "runtimeMs": 429.9862,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [
+          {
+            "distance": 1.4997045993804932,
+            "mappingStatus": "MAPPED",
+            "method": "RC-A",
+            "relationId": "fld003-top-side-separate",
+            "type": "MUST_SEPARATE"
+          }
+        ],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-003",
+        "profile": "cp-b-balanced_rc-a",
+        "representativeMethod": "RC-B",
+        "evaluatedRegionCount": 18,
+        "meanCoreDeltaE00": 2.466346,
+        "medianCoreDeltaE00": 1.711682,
+        "p95CoreDeltaE00": 7.386523,
+        "contaminationDrift": 0.0,
+        "runtimeMs": 1321.4066,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [
+          {
+            "distance": 1.4997045993804932,
+            "mappingStatus": "MAPPED",
+            "method": "RC-B",
+            "relationId": "fld003-top-side-separate",
+            "type": "MUST_SEPARATE"
+          }
+        ],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-003",
+        "profile": "cp-b-balanced_rc-a",
+        "representativeMethod": "RC-C",
+        "evaluatedRegionCount": 18,
+        "meanCoreDeltaE00": 2.397772,
+        "medianCoreDeltaE00": 1.711682,
+        "p95CoreDeltaE00": 7.170872,
+        "contaminationDrift": 0.062993,
+        "runtimeMs": 709.7568,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [
+          {
+            "distance": 1.4997045993804932,
+            "mappingStatus": "MAPPED",
+            "method": "RC-C",
+            "relationId": "fld003-top-side-separate",
+            "type": "MUST_SEPARATE"
+          }
+        ],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-003",
+        "profile": "cp-b-balanced_rc-a",
+        "representativeMethod": "RC-D",
+        "evaluatedRegionCount": 18,
+        "meanCoreDeltaE00": 2.401678,
+        "medianCoreDeltaE00": 1.711682,
+        "p95CoreDeltaE00": 7.18592,
+        "contaminationDrift": 0.127286,
+        "runtimeMs": 2409.489,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [
+          {
+            "distance": 1.4997045993804932,
+            "mappingStatus": "MAPPED",
+            "method": "RC-D",
+            "relationId": "fld003-top-side-separate",
+            "type": "MUST_SEPARATE"
+          }
+        ],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-004",
+        "profile": "cp-b-balanced_rc-a",
+        "representativeMethod": "RC-A",
+        "evaluatedRegionCount": 513,
+        "meanCoreDeltaE00": 5.086373,
+        "medianCoreDeltaE00": 1.997112,
+        "p95CoreDeltaE00": 12.156498,
+        "contaminationDrift": 16.443595,
+        "runtimeMs": 5369.6043,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [
+          {
+            "distance": 20.454294204711914,
+            "mappingStatus": "MAPPED",
+            "method": "RC-A",
+            "relationId": "fld004-disconnected-preserve",
+            "type": "MUST_SEPARATE"
+          }
+        ],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-004",
+        "profile": "cp-b-balanced_rc-a",
+        "representativeMethod": "RC-B",
+        "evaluatedRegionCount": 513,
+        "meanCoreDeltaE00": 5.844646,
+        "medianCoreDeltaE00": 1.99119,
+        "p95CoreDeltaE00": 14.21179,
+        "contaminationDrift": 17.698469,
+        "runtimeMs": 6024.4289,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [
+          {
+            "distance": 20.454294204711914,
+            "mappingStatus": "MAPPED",
+            "method": "RC-B",
+            "relationId": "fld004-disconnected-preserve",
+            "type": "MUST_SEPARATE"
+          }
+        ],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-004",
+        "profile": "cp-b-balanced_rc-a",
+        "representativeMethod": "RC-C",
+        "evaluatedRegionCount": 513,
+        "meanCoreDeltaE00": 5.38863,
+        "medianCoreDeltaE00": 1.669375,
+        "p95CoreDeltaE00": 14.103683,
+        "contaminationDrift": 19.31811,
+        "runtimeMs": 5627.4182,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [
+          {
+            "distance": 20.454294204711914,
+            "mappingStatus": "MAPPED",
+            "method": "RC-C",
+            "relationId": "fld004-disconnected-preserve",
+            "type": "MUST_SEPARATE"
+          }
+        ],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-004",
+        "profile": "cp-b-balanced_rc-a",
+        "representativeMethod": "RC-D",
+        "evaluatedRegionCount": 513,
+        "meanCoreDeltaE00": 5.065597,
+        "medianCoreDeltaE00": 1.943511,
+        "p95CoreDeltaE00": 12.944147,
+        "contaminationDrift": 17.75333,
+        "runtimeMs": 7371.0278,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [
+          {
+            "distance": 20.454294204711914,
+            "mappingStatus": "MAPPED",
+            "method": "RC-D",
+            "relationId": "fld004-disconnected-preserve",
+            "type": "MUST_SEPARATE"
+          }
+        ],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-005",
+        "profile": "cp-b-balanced_rc-a",
+        "representativeMethod": "RC-A",
+        "evaluatedRegionCount": 200,
+        "meanCoreDeltaE00": 3.812037,
+        "medianCoreDeltaE00": 0.246814,
+        "p95CoreDeltaE00": 5.826929,
+        "contaminationDrift": 23.289835,
+        "runtimeMs": 1502.9696,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-005",
+        "profile": "cp-b-balanced_rc-a",
+        "representativeMethod": "RC-B",
+        "evaluatedRegionCount": 200,
+        "meanCoreDeltaE00": 4.704076,
+        "medianCoreDeltaE00": 0.246814,
+        "p95CoreDeltaE00": 8.996408,
+        "contaminationDrift": 20.909097,
+        "runtimeMs": 1890.3196,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-005",
+        "profile": "cp-b-balanced_rc-a",
+        "representativeMethod": "RC-C",
+        "evaluatedRegionCount": 200,
+        "meanCoreDeltaE00": 4.238026,
+        "medianCoreDeltaE00": 0.246814,
+        "p95CoreDeltaE00": 8.599042,
+        "contaminationDrift": 28.158479,
+        "runtimeMs": 1632.9786,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-005",
+        "profile": "cp-b-balanced_rc-a",
+        "representativeMethod": "RC-D",
+        "evaluatedRegionCount": 200,
+        "meanCoreDeltaE00": 3.780099,
+        "medianCoreDeltaE00": 0.246814,
+        "p95CoreDeltaE00": 7.325265,
+        "contaminationDrift": 25.792224,
+        "runtimeMs": 2441.8397,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-006",
+        "profile": "cp-b-balanced_rc-a",
+        "representativeMethod": "RC-A",
+        "evaluatedRegionCount": 421,
+        "meanCoreDeltaE00": 7.170174,
+        "medianCoreDeltaE00": 5.89078,
+        "p95CoreDeltaE00": 11.63543,
+        "contaminationDrift": 19.5055,
+        "runtimeMs": 6586.4027,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-006",
+        "profile": "cp-b-balanced_rc-a",
+        "representativeMethod": "RC-B",
+        "evaluatedRegionCount": 421,
+        "meanCoreDeltaE00": 8.216928,
+        "medianCoreDeltaE00": 5.660511,
+        "p95CoreDeltaE00": 16.298152,
+        "contaminationDrift": 13.999702,
+        "runtimeMs": 7490.1538,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-006",
+        "profile": "cp-b-balanced_rc-a",
+        "representativeMethod": "RC-C",
+        "evaluatedRegionCount": 421,
+        "meanCoreDeltaE00": 7.829277,
+        "medianCoreDeltaE00": 4.125947,
+        "p95CoreDeltaE00": 16.55703,
+        "contaminationDrift": 26.071359,
+        "runtimeMs": 6772.8404,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-006",
+        "profile": "cp-b-balanced_rc-a",
+        "representativeMethod": "RC-D",
+        "evaluatedRegionCount": 421,
+        "meanCoreDeltaE00": 7.125437,
+        "medianCoreDeltaE00": 5.822735,
+        "p95CoreDeltaE00": 14.34141,
+        "contaminationDrift": 22.463775,
+        "runtimeMs": 7814.5309,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-007",
+        "profile": "cp-b-balanced_rc-a",
+        "representativeMethod": "RC-A",
+        "evaluatedRegionCount": 121,
+        "meanCoreDeltaE00": 2.1961,
+        "medianCoreDeltaE00": 0.0,
+        "p95CoreDeltaE00": 4.799145,
+        "contaminationDrift": 26.125498,
+        "runtimeMs": 1227.1745,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [
+          {
+            "distance": null,
+            "mappingStatus": "UNMAPPED",
+            "method": "RC-A",
+            "relationId": "fld007-hole-preserve",
+            "type": "HOLE"
+          }
+        ],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-007",
+        "profile": "cp-b-balanced_rc-a",
+        "representativeMethod": "RC-B",
+        "evaluatedRegionCount": 121,
+        "meanCoreDeltaE00": 2.237181,
+        "medianCoreDeltaE00": 0.0,
+        "p95CoreDeltaE00": 4.854174,
+        "contaminationDrift": 28.26003,
+        "runtimeMs": 2909.1617,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [
+          {
+            "distance": null,
+            "mappingStatus": "UNMAPPED",
+            "method": "RC-B",
+            "relationId": "fld007-hole-preserve",
+            "type": "HOLE"
+          }
+        ],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-007",
+        "profile": "cp-b-balanced_rc-a",
+        "representativeMethod": "RC-C",
+        "evaluatedRegionCount": 121,
+        "meanCoreDeltaE00": 2.212454,
+        "medianCoreDeltaE00": 0.0,
+        "p95CoreDeltaE00": 4.960792,
+        "contaminationDrift": 27.569435,
+        "runtimeMs": 1310.0357,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [
+          {
+            "distance": null,
+            "mappingStatus": "UNMAPPED",
+            "method": "RC-C",
+            "relationId": "fld007-hole-preserve",
+            "type": "HOLE"
+          }
+        ],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-007",
+        "profile": "cp-b-balanced_rc-a",
+        "representativeMethod": "RC-D",
+        "evaluatedRegionCount": 121,
+        "meanCoreDeltaE00": 2.170504,
+        "medianCoreDeltaE00": 0.0,
+        "p95CoreDeltaE00": 4.88158,
+        "contaminationDrift": 27.623262,
+        "runtimeMs": 1777.1024,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [
+          {
+            "distance": null,
+            "mappingStatus": "UNMAPPED",
+            "method": "RC-D",
+            "relationId": "fld007-hole-preserve",
+            "type": "HOLE"
+          }
+        ],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-008",
+        "profile": "cp-b-balanced_rc-a",
+        "representativeMethod": "RC-A",
+        "evaluatedRegionCount": 378,
+        "meanCoreDeltaE00": 6.548084,
+        "medianCoreDeltaE00": 4.024698,
+        "p95CoreDeltaE00": 10.66869,
+        "contaminationDrift": 20.038199,
+        "runtimeMs": 3214.2074,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-008",
+        "profile": "cp-b-balanced_rc-a",
+        "representativeMethod": "RC-B",
+        "evaluatedRegionCount": 378,
+        "meanCoreDeltaE00": 7.732787,
+        "medianCoreDeltaE00": 3.433218,
+        "p95CoreDeltaE00": 15.253119,
+        "contaminationDrift": 15.871536,
+        "runtimeMs": 4009.9038,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-008",
+        "profile": "cp-b-balanced_rc-a",
+        "representativeMethod": "RC-C",
+        "evaluatedRegionCount": 378,
+        "meanCoreDeltaE00": 7.325145,
+        "medianCoreDeltaE00": 3.388871,
+        "p95CoreDeltaE00": 15.595783,
+        "contaminationDrift": 25.894262,
+        "runtimeMs": 3437.8436,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      },
+      {
+        "fixture": "FLD-008",
+        "profile": "cp-b-balanced_rc-a",
+        "representativeMethod": "RC-D",
+        "evaluatedRegionCount": 378,
+        "meanCoreDeltaE00": 6.510785,
+        "medianCoreDeltaE00": 3.969069,
+        "p95CoreDeltaE00": 12.916763,
+        "contaminationDrift": 22.193419,
+        "runtimeMs": 4453.0265,
+        "determinism": "PASS: largest-region sentinel, three real evaluations",
+        "relationDistances": [],
+        "relationInversion": "NOT_AVAILABLE: existing reports define no inversion threshold/order."
+      }
+    ],
+    "failureEvidence": [
+      {
+        "kind": "MUST_SEPARATE_PAIR_DISTANCE",
+        "fixture": "FLD-003",
+        "profile": "cp-b-aggressive_rc-a",
+        "values": {
+          "RC-A": [
+            {
+              "distance": 1.4997045993804932,
+              "mappingStatus": "MAPPED",
+              "method": "RC-A",
+              "relationId": "fld003-top-side-separate",
+              "type": "MUST_SEPARATE"
+            }
+          ],
+          "RC-B": [
+            {
+              "distance": 1.4997045993804932,
+              "mappingStatus": "MAPPED",
+              "method": "RC-B",
+              "relationId": "fld003-top-side-separate",
+              "type": "MUST_SEPARATE"
+            }
+          ],
+          "RC-C": [
+            {
+              "distance": 1.4997045993804932,
+              "mappingStatus": "MAPPED",
+              "method": "RC-C",
+              "relationId": "fld003-top-side-separate",
+              "type": "MUST_SEPARATE"
+            }
+          ],
+          "RC-D": [
+            {
+              "distance": 1.0034912824630737,
+              "mappingStatus": "MAPPED",
+              "method": "RC-D",
+              "relationId": "fld003-top-side-separate",
+              "type": "MUST_SEPARATE"
+            }
+          ]
+        },
+        "visualArtifact": "RC-A uses existing purified output; RC-B/RC-C/RC-D raster artifact NOT_AVAILABLE",
+        "note": "No prior safety threshold or inversion criterion exists; listed for external review."
+      },
+      {
+        "kind": "MUST_SEPARATE_PAIR_DISTANCE",
+        "fixture": "FLD-004",
+        "profile": "cp-b-aggressive_rc-a",
+        "values": {
+          "RC-A": [
+            {
+              "distance": 14.78734302520752,
+              "mappingStatus": "MAPPED",
+              "method": "RC-A",
+              "relationId": "fld004-disconnected-preserve",
+              "type": "MUST_SEPARATE"
+            }
+          ],
+          "RC-B": [
+            {
+              "distance": 14.719067573547363,
+              "mappingStatus": "MAPPED",
+              "method": "RC-B",
+              "relationId": "fld004-disconnected-preserve",
+              "type": "MUST_SEPARATE"
+            }
+          ],
+          "RC-C": [
+            {
+              "distance": 14.78734302520752,
+              "mappingStatus": "MAPPED",
+              "method": "RC-C",
+              "relationId": "fld004-disconnected-preserve",
+              "type": "MUST_SEPARATE"
+            }
+          ],
+          "RC-D": [
+            {
+              "distance": 14.719067573547363,
+              "mappingStatus": "MAPPED",
+              "method": "RC-D",
+              "relationId": "fld004-disconnected-preserve",
+              "type": "MUST_SEPARATE"
+            }
+          ]
+        },
+        "visualArtifact": "RC-A uses existing purified output; RC-B/RC-C/RC-D raster artifact NOT_AVAILABLE",
+        "note": "No prior safety threshold or inversion criterion exists; listed for external review."
+      },
+      {
+        "kind": "RUNTIME_COMPARISON",
+        "fixture": "ALL",
+        "profile": "cp-b-aggressive_rc-a",
+        "values": {
+          "RC-A": 9376.1702,
+          "RC-B": 16706.115,
+          "RC-C": 10540.0369,
+          "RC-D": 18252.2432
+        },
+        "visualArtifact": "NOT_AVAILABLE",
+        "note": "No prior runtime anomaly threshold exists; listed for external review."
+      },
+      {
+        "kind": "MUST_SEPARATE_PAIR_DISTANCE",
+        "fixture": "FLD-003",
+        "profile": "cp-b-balanced_rc-a",
+        "values": {
+          "RC-A": [
+            {
+              "distance": 1.4997045993804932,
+              "mappingStatus": "MAPPED",
+              "method": "RC-A",
+              "relationId": "fld003-top-side-separate",
+              "type": "MUST_SEPARATE"
+            }
+          ],
+          "RC-B": [
+            {
+              "distance": 1.4997045993804932,
+              "mappingStatus": "MAPPED",
+              "method": "RC-B",
+              "relationId": "fld003-top-side-separate",
+              "type": "MUST_SEPARATE"
+            }
+          ],
+          "RC-C": [
+            {
+              "distance": 1.4997045993804932,
+              "mappingStatus": "MAPPED",
+              "method": "RC-C",
+              "relationId": "fld003-top-side-separate",
+              "type": "MUST_SEPARATE"
+            }
+          ],
+          "RC-D": [
+            {
+              "distance": 1.4997045993804932,
+              "mappingStatus": "MAPPED",
+              "method": "RC-D",
+              "relationId": "fld003-top-side-separate",
+              "type": "MUST_SEPARATE"
+            }
+          ]
+        },
+        "visualArtifact": "RC-A uses existing purified output; RC-B/RC-C/RC-D raster artifact NOT_AVAILABLE",
+        "note": "No prior safety threshold or inversion criterion exists; listed for external review."
+      },
+      {
+        "kind": "MUST_SEPARATE_PAIR_DISTANCE",
+        "fixture": "FLD-004",
+        "profile": "cp-b-balanced_rc-a",
+        "values": {
+          "RC-A": [
+            {
+              "distance": 20.454294204711914,
+              "mappingStatus": "MAPPED",
+              "method": "RC-A",
+              "relationId": "fld004-disconnected-preserve",
+              "type": "MUST_SEPARATE"
+            }
+          ],
+          "RC-B": [
+            {
+              "distance": 20.454294204711914,
+              "mappingStatus": "MAPPED",
+              "method": "RC-B",
+              "relationId": "fld004-disconnected-preserve",
+              "type": "MUST_SEPARATE"
+            }
+          ],
+          "RC-C": [
+            {
+              "distance": 20.454294204711914,
+              "mappingStatus": "MAPPED",
+              "method": "RC-C",
+              "relationId": "fld004-disconnected-preserve",
+              "type": "MUST_SEPARATE"
+            }
+          ],
+          "RC-D": [
+            {
+              "distance": 20.454294204711914,
+              "mappingStatus": "MAPPED",
+              "method": "RC-D",
+              "relationId": "fld004-disconnected-preserve",
+              "type": "MUST_SEPARATE"
+            }
+          ]
+        },
+        "visualArtifact": "RC-A uses existing purified output; RC-B/RC-C/RC-D raster artifact NOT_AVAILABLE",
+        "note": "No prior safety threshold or inversion criterion exists; listed for external review."
+      },
+      {
+        "kind": "RUNTIME_COMPARISON",
+        "fixture": "ALL",
+        "profile": "cp-b-balanced_rc-a",
+        "values": {
+          "RC-A": 27337.1684,
+          "RC-B": 34323.398,
+          "RC-C": 28595.2204,
+          "RC-D": 36419.7674
+        },
+        "visualArtifact": "NOT_AVAILABLE",
+        "note": "No prior runtime anomaly threshold exists; listed for external review."
+      }
+    ],
+    "visualReviewIndex": [
+      {
+        "fixture": "FLD-001",
+        "original": "fixtures/source/FLD-001.png",
+        "RC-A": "outputs/color-purification/cp-b-aggressive_rc-a/FLD-001/purified.png",
+        "RC-B": "NOT_AVAILABLE",
+        "RC-C": "NOT_AVAILABLE",
+        "RC-D": "NOT_AVAILABLE",
+        "existingStructuralReview": "reports/color-purification/contact-sheets/FLD-001.png"
+      },
+      {
+        "fixture": "FLD-002",
+        "original": "fixtures/source/FLD-002.png",
+        "RC-A": "outputs/color-purification/cp-b-aggressive_rc-a/FLD-002/purified.png",
+        "RC-B": "NOT_AVAILABLE",
+        "RC-C": "NOT_AVAILABLE",
+        "RC-D": "NOT_AVAILABLE",
+        "existingStructuralReview": "reports/color-purification/contact-sheets/FLD-002.png"
+      },
+      {
+        "fixture": "FLD-003",
+        "original": "fixtures/source/FLD-003.png",
+        "RC-A": "outputs/color-purification/cp-b-aggressive_rc-a/FLD-003/purified.png",
+        "RC-B": "NOT_AVAILABLE",
+        "RC-C": "NOT_AVAILABLE",
+        "RC-D": "NOT_AVAILABLE",
+        "existingStructuralReview": "reports/color-purification/contact-sheets/FLD-003.png"
+      },
+      {
+        "fixture": "FLD-004",
+        "original": "fixtures/source/FLD-004.png",
+        "RC-A": "outputs/color-purification/cp-b-aggressive_rc-a/FLD-004/purified.png",
+        "RC-B": "NOT_AVAILABLE",
+        "RC-C": "NOT_AVAILABLE",
+        "RC-D": "NOT_AVAILABLE",
+        "existingStructuralReview": "reports/color-purification/contact-sheets/FLD-004.png"
+      },
+      {
+        "fixture": "FLD-005",
+        "original": "fixtures/source/FLD-005.png",
+        "RC-A": "outputs/color-purification/cp-b-aggressive_rc-a/FLD-005/purified.png",
+        "RC-B": "NOT_AVAILABLE",
+        "RC-C": "NOT_AVAILABLE",
+        "RC-D": "NOT_AVAILABLE",
+        "existingStructuralReview": "reports/color-purification/contact-sheets/FLD-005.png"
+      },
+      {
+        "fixture": "FLD-006",
+        "original": "fixtures/source/FLD-006.png",
+        "RC-A": "outputs/color-purification/cp-b-aggressive_rc-a/FLD-006/purified.png",
+        "RC-B": "NOT_AVAILABLE",
+        "RC-C": "NOT_AVAILABLE",
+        "RC-D": "NOT_AVAILABLE",
+        "existingStructuralReview": "reports/color-purification/contact-sheets/FLD-006.png"
+      },
+      {
+        "fixture": "FLD-007",
+        "original": "fixtures/source/FLD-007.png",
+        "RC-A": "outputs/color-purification/cp-b-aggressive_rc-a/FLD-007/purified.png",
+        "RC-B": "NOT_AVAILABLE",
+        "RC-C": "NOT_AVAILABLE",
+        "RC-D": "NOT_AVAILABLE",
+        "existingStructuralReview": "reports/color-purification/contact-sheets/FLD-007.png"
+      },
+      {
+        "fixture": "FLD-008",
+        "original": "fixtures/source/FLD-008.png",
+        "RC-A": "outputs/color-purification/cp-b-aggressive_rc-a/FLD-008/purified.png",
+        "RC-B": "NOT_AVAILABLE",
+        "RC-C": "NOT_AVAILABLE",
+        "RC-D": "NOT_AVAILABLE",
+        "existingStructuralReview": "reports/color-purification/contact-sheets/FLD-008.png"
+      }
+    ]
+  },
+  "gate2": {
+    "currentRepresentative": "RC-A",
+    "status": [
+      "PENDING_EXTERNAL_GATE_2_REVIEW",
+      "PROVISIONAL_UNTIL_GATE_1_RC_FREEZE"
+    ],
+    "aggregate": [
+      {
+        "profile": "cp-b-aggressive_rc-a",
+        "policy": "STRICT",
+        "safeMergeCount": 0,
+        "preserveCount": 0,
+        "uncertainCount": 388,
+        "thresholds": {
+          "areaRatioMax": 4.1924619534077726e-05,
+          "derivation": "unlabelled_full_scope_quantiles",
+          "persistenceMax": 0.9064730186553149,
+          "representativeDeltaEMax": 68.6346172219494,
+          "sharedBoundaryMin": 2.0,
+          "sourceBoundaryP90Max": 51.69643802642822
+        },
+        "thresholdSource": "unlabelled_full_scope_quantiles"
+      },
+      {
+        "profile": "cp-b-aggressive_rc-a",
+        "policy": "CONSERVATIVE",
+        "safeMergeCount": 3,
+        "preserveCount": 0,
+        "uncertainCount": 385,
+        "thresholds": {
+          "areaRatioMax": 5.165022467847735e-05,
+          "derivation": "unlabelled_full_scope_quantiles",
+          "persistenceMax": 0.934652888953573,
+          "representativeDeltaEMax": 75.64696065991858,
+          "sharedBoundaryMin": 1.5,
+          "sourceBoundaryP90Max": 60.121263122558595
+        },
+        "thresholdSource": "unlabelled_full_scope_quantiles"
+      },
+      {
+        "profile": "cp-b-aggressive_rc-a",
+        "policy": "MODERATE",
+        "safeMergeCount": 16,
+        "preserveCount": 0,
+        "uncertainCount": 372,
+        "thresholds": {
+          "areaRatioMax": 8.795626519561228e-05,
+          "derivation": "unlabelled_full_scope_quantiles",
+          "persistenceMax": 0.9965834428383705,
+          "representativeDeltaEMax": 79.81986281710961,
+          "sharedBoundaryMin": 1.1950000000000007,
+          "sourceBoundaryP90Max": 63.882650756835936
+        },
+        "thresholdSource": "unlabelled_full_scope_quantiles"
+      },
+      {
+        "profile": "cp-b-balanced_rc-a",
+        "policy": "STRICT",
+        "safeMergeCount": 12,
+        "preserveCount": 0,
+        "uncertainCount": 1932,
+        "thresholds": {
+          "areaRatioMax": 3.328673190866121e-05,
+          "derivation": "unlabelled_full_scope_quantiles",
+          "persistenceMax": 0.6835242618981093,
+          "representativeDeltaEMax": 45.198583164384985,
+          "sharedBoundaryMin": 2.0,
+          "sourceBoundaryP90Max": 45.18686790466309
+        },
+        "thresholdSource": "unlabelled_full_scope_quantiles"
+      },
+      {
+        "profile": "cp-b-balanced_rc-a",
+        "policy": "CONSERVATIVE",
+        "safeMergeCount": 65,
+        "preserveCount": 0,
+        "uncertainCount": 1879,
+        "thresholds": {
+          "areaRatioMax": 4.8088482808367394e-05,
+          "derivation": "unlabelled_full_scope_quantiles",
+          "persistenceMax": 0.7365738212270162,
+          "representativeDeltaEMax": 51.5124521148354,
+          "sharedBoundaryMin": 2.0,
+          "sourceBoundaryP90Max": 52.975918197631835
+        },
+        "thresholdSource": "unlabelled_full_scope_quantiles"
+      },
+      {
+        "profile": "cp-b-balanced_rc-a",
+        "policy": "MODERATE",
+        "safeMergeCount": 223,
+        "preserveCount": 0,
+        "uncertainCount": 1721,
+        "thresholds": {
+          "areaRatioMax": 5.410124141067241e-05,
+          "derivation": "unlabelled_full_scope_quantiles",
+          "persistenceMax": 0.7365738212270162,
+          "representativeDeltaEMax": 57.29401022908049,
+          "sharedBoundaryMin": 1.5,
+          "sourceBoundaryP90Max": 57.929249382019044
+        },
+        "thresholdSource": "unlabelled_full_scope_quantiles"
+      }
+    ],
+    "relationTotals": [
+      {
+        "profile": "cp-b-aggressive_rc-a",
+        "policy": "STRICT",
+        "byType": {
+          "MUST_MERGE": {
+            "total": 0,
+            "safe": 0,
+            "preserve": 0,
+            "uncertain": 0,
+            "notEvaluable": 0
+          },
+          "MUST_SEPARATE": {
+            "total": 2,
+            "safe": 0,
+            "preserve": 0,
+            "uncertain": 0,
+            "notEvaluable": 2
+          },
+          "PROTECTED_BOUNDARY": {
+            "total": 0,
+            "safe": 0,
+            "preserve": 0,
+            "uncertain": 0,
+            "notEvaluable": 0
+          },
+          "HOLE": {
+            "total": 1,
+            "safe": 0,
+            "preserve": 0,
+            "uncertain": 0,
+            "notEvaluable": 1
+          }
+        },
+        "safeMergePrecision": "NOT_AVAILABLE",
+        "mustMergeRecall": "NOT_AVAILABLE",
+        "falseSafeMergeCount": 0,
+        "holeViolationCount": "NOT_AVAILABLE: no structural pair mapped for HOLE relation"
+      },
+      {
+        "profile": "cp-b-aggressive_rc-a",
+        "policy": "CONSERVATIVE",
+        "byType": {
+          "MUST_MERGE": {
+            "total": 0,
+            "safe": 0,
+            "preserve": 0,
+            "uncertain": 0,
+            "notEvaluable": 0
+          },
+          "MUST_SEPARATE": {
+            "total": 2,
+            "safe": 0,
+            "preserve": 0,
+            "uncertain": 0,
+            "notEvaluable": 2
+          },
+          "PROTECTED_BOUNDARY": {
+            "total": 0,
+            "safe": 0,
+            "preserve": 0,
+            "uncertain": 0,
+            "notEvaluable": 0
+          },
+          "HOLE": {
+            "total": 1,
+            "safe": 0,
+            "preserve": 0,
+            "uncertain": 0,
+            "notEvaluable": 1
+          }
+        },
+        "safeMergePrecision": "NOT_AVAILABLE",
+        "mustMergeRecall": "NOT_AVAILABLE",
+        "falseSafeMergeCount": 0,
+        "holeViolationCount": "NOT_AVAILABLE: no structural pair mapped for HOLE relation"
+      },
+      {
+        "profile": "cp-b-aggressive_rc-a",
+        "policy": "MODERATE",
+        "byType": {
+          "MUST_MERGE": {
+            "total": 0,
+            "safe": 0,
+            "preserve": 0,
+            "uncertain": 0,
+            "notEvaluable": 0
+          },
+          "MUST_SEPARATE": {
+            "total": 2,
+            "safe": 0,
+            "preserve": 0,
+            "uncertain": 0,
+            "notEvaluable": 2
+          },
+          "PROTECTED_BOUNDARY": {
+            "total": 0,
+            "safe": 0,
+            "preserve": 0,
+            "uncertain": 0,
+            "notEvaluable": 0
+          },
+          "HOLE": {
+            "total": 1,
+            "safe": 0,
+            "preserve": 0,
+            "uncertain": 0,
+            "notEvaluable": 1
+          }
+        },
+        "safeMergePrecision": "NOT_AVAILABLE",
+        "mustMergeRecall": "NOT_AVAILABLE",
+        "falseSafeMergeCount": 0,
+        "holeViolationCount": "NOT_AVAILABLE: no structural pair mapped for HOLE relation"
+      },
+      {
+        "profile": "cp-b-balanced_rc-a",
+        "policy": "STRICT",
+        "byType": {
+          "MUST_MERGE": {
+            "total": 0,
+            "safe": 0,
+            "preserve": 0,
+            "uncertain": 0,
+            "notEvaluable": 0
+          },
+          "MUST_SEPARATE": {
+            "total": 2,
+            "safe": 0,
+            "preserve": 0,
+            "uncertain": 0,
+            "notEvaluable": 2
+          },
+          "PROTECTED_BOUNDARY": {
+            "total": 0,
+            "safe": 0,
+            "preserve": 0,
+            "uncertain": 0,
+            "notEvaluable": 0
+          },
+          "HOLE": {
+            "total": 1,
+            "safe": 0,
+            "preserve": 0,
+            "uncertain": 0,
+            "notEvaluable": 1
+          }
+        },
+        "safeMergePrecision": "NOT_AVAILABLE",
+        "mustMergeRecall": "NOT_AVAILABLE",
+        "falseSafeMergeCount": 0,
+        "holeViolationCount": "NOT_AVAILABLE: no structural pair mapped for HOLE relation"
+      },
+      {
+        "profile": "cp-b-balanced_rc-a",
+        "policy": "CONSERVATIVE",
+        "byType": {
+          "MUST_MERGE": {
+            "total": 0,
+            "safe": 0,
+            "preserve": 0,
+            "uncertain": 0,
+            "notEvaluable": 0
+          },
+          "MUST_SEPARATE": {
+            "total": 2,
+            "safe": 0,
+            "preserve": 0,
+            "uncertain": 0,
+            "notEvaluable": 2
+          },
+          "PROTECTED_BOUNDARY": {
+            "total": 0,
+            "safe": 0,
+            "preserve": 0,
+            "uncertain": 0,
+            "notEvaluable": 0
+          },
+          "HOLE": {
+            "total": 1,
+            "safe": 0,
+            "preserve": 0,
+            "uncertain": 0,
+            "notEvaluable": 1
+          }
+        },
+        "safeMergePrecision": "NOT_AVAILABLE",
+        "mustMergeRecall": "NOT_AVAILABLE",
+        "falseSafeMergeCount": 0,
+        "holeViolationCount": "NOT_AVAILABLE: no structural pair mapped for HOLE relation"
+      },
+      {
+        "profile": "cp-b-balanced_rc-a",
+        "policy": "MODERATE",
+        "byType": {
+          "MUST_MERGE": {
+            "total": 0,
+            "safe": 0,
+            "preserve": 0,
+            "uncertain": 0,
+            "notEvaluable": 0
+          },
+          "MUST_SEPARATE": {
+            "total": 2,
+            "safe": 0,
+            "preserve": 0,
+            "uncertain": 0,
+            "notEvaluable": 2
+          },
+          "PROTECTED_BOUNDARY": {
+            "total": 0,
+            "safe": 0,
+            "preserve": 0,
+            "uncertain": 0,
+            "notEvaluable": 0
+          },
+          "HOLE": {
+            "total": 1,
+            "safe": 0,
+            "preserve": 0,
+            "uncertain": 0,
+            "notEvaluable": 1
+          }
+        },
+        "safeMergePrecision": "NOT_AVAILABLE",
+        "mustMergeRecall": "NOT_AVAILABLE",
+        "falseSafeMergeCount": 0,
+        "holeViolationCount": "NOT_AVAILABLE: no structural pair mapped for HOLE relation"
+      }
+    ],
+    "relationEvidence": [
+      {
+        "fixture": "FLD-003",
+        "profile": "cp-b-aggressive_rc-a",
+        "policy": "STRICT",
+        "relationId": "fld003-top-side-separate",
+        "relationType": "MUST_SEPARATE",
+        "regionPairs": [
+          [
+            3,
+            18
+          ]
+        ],
+        "matchingEdgeCount": 0,
+        "representativeDeltaE00": "NOT_AVAILABLE: no direct GT RAG edge",
+        "sourceBoundaryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "exactBoundaryPersistence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "tolerance1PxBoundaryPersistence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "sharedBoundaryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "geometryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "vetoes": [],
+        "finalDecision": "NOT_EVALUABLE_NON_ADJACENT",
+        "falseSafeMerge": false,
+        "falsePreserve": false
+      },
+      {
+        "fixture": "FLD-003",
+        "profile": "cp-b-aggressive_rc-a",
+        "policy": "CONSERVATIVE",
+        "relationId": "fld003-top-side-separate",
+        "relationType": "MUST_SEPARATE",
+        "regionPairs": [
+          [
+            3,
+            18
+          ]
+        ],
+        "matchingEdgeCount": 0,
+        "representativeDeltaE00": "NOT_AVAILABLE: no direct GT RAG edge",
+        "sourceBoundaryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "exactBoundaryPersistence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "tolerance1PxBoundaryPersistence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "sharedBoundaryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "geometryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "vetoes": [],
+        "finalDecision": "NOT_EVALUABLE_NON_ADJACENT",
+        "falseSafeMerge": false,
+        "falsePreserve": false
+      },
+      {
+        "fixture": "FLD-003",
+        "profile": "cp-b-aggressive_rc-a",
+        "policy": "MODERATE",
+        "relationId": "fld003-top-side-separate",
+        "relationType": "MUST_SEPARATE",
+        "regionPairs": [
+          [
+            3,
+            18
+          ]
+        ],
+        "matchingEdgeCount": 0,
+        "representativeDeltaE00": "NOT_AVAILABLE: no direct GT RAG edge",
+        "sourceBoundaryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "exactBoundaryPersistence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "tolerance1PxBoundaryPersistence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "sharedBoundaryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "geometryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "vetoes": [],
+        "finalDecision": "NOT_EVALUABLE_NON_ADJACENT",
+        "falseSafeMerge": false,
+        "falsePreserve": false
+      },
+      {
+        "fixture": "FLD-004",
+        "profile": "cp-b-aggressive_rc-a",
+        "policy": "STRICT",
+        "relationId": "fld004-disconnected-preserve",
+        "relationType": "MUST_SEPARATE",
+        "regionPairs": [
+          [
+            14,
+            326
+          ]
+        ],
+        "matchingEdgeCount": 0,
+        "representativeDeltaE00": "NOT_AVAILABLE: no direct GT RAG edge",
+        "sourceBoundaryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "exactBoundaryPersistence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "tolerance1PxBoundaryPersistence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "sharedBoundaryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "geometryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "vetoes": [],
+        "finalDecision": "NOT_EVALUABLE_NON_ADJACENT",
+        "falseSafeMerge": false,
+        "falsePreserve": false
+      },
+      {
+        "fixture": "FLD-004",
+        "profile": "cp-b-aggressive_rc-a",
+        "policy": "CONSERVATIVE",
+        "relationId": "fld004-disconnected-preserve",
+        "relationType": "MUST_SEPARATE",
+        "regionPairs": [
+          [
+            14,
+            326
+          ]
+        ],
+        "matchingEdgeCount": 0,
+        "representativeDeltaE00": "NOT_AVAILABLE: no direct GT RAG edge",
+        "sourceBoundaryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "exactBoundaryPersistence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "tolerance1PxBoundaryPersistence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "sharedBoundaryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "geometryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "vetoes": [],
+        "finalDecision": "NOT_EVALUABLE_NON_ADJACENT",
+        "falseSafeMerge": false,
+        "falsePreserve": false
+      },
+      {
+        "fixture": "FLD-004",
+        "profile": "cp-b-aggressive_rc-a",
+        "policy": "MODERATE",
+        "relationId": "fld004-disconnected-preserve",
+        "relationType": "MUST_SEPARATE",
+        "regionPairs": [
+          [
+            14,
+            326
+          ]
+        ],
+        "matchingEdgeCount": 0,
+        "representativeDeltaE00": "NOT_AVAILABLE: no direct GT RAG edge",
+        "sourceBoundaryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "exactBoundaryPersistence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "tolerance1PxBoundaryPersistence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "sharedBoundaryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "geometryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "vetoes": [],
+        "finalDecision": "NOT_EVALUABLE_NON_ADJACENT",
+        "falseSafeMerge": false,
+        "falsePreserve": false
+      },
+      {
+        "fixture": "FLD-007",
+        "profile": "cp-b-aggressive_rc-a",
+        "policy": "STRICT",
+        "relationId": "fld007-hole-preserve",
+        "relationType": "HOLE",
+        "regionPairs": [],
+        "matchingEdgeCount": 0,
+        "representativeDeltaE00": "NOT_AVAILABLE: no direct GT RAG edge",
+        "sourceBoundaryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "exactBoundaryPersistence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "tolerance1PxBoundaryPersistence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "sharedBoundaryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "geometryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "vetoes": [],
+        "finalDecision": "NOT_EVALUABLE_NON_ADJACENT",
+        "falseSafeMerge": false,
+        "falsePreserve": false
+      },
+      {
+        "fixture": "FLD-007",
+        "profile": "cp-b-aggressive_rc-a",
+        "policy": "CONSERVATIVE",
+        "relationId": "fld007-hole-preserve",
+        "relationType": "HOLE",
+        "regionPairs": [],
+        "matchingEdgeCount": 0,
+        "representativeDeltaE00": "NOT_AVAILABLE: no direct GT RAG edge",
+        "sourceBoundaryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "exactBoundaryPersistence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "tolerance1PxBoundaryPersistence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "sharedBoundaryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "geometryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "vetoes": [],
+        "finalDecision": "NOT_EVALUABLE_NON_ADJACENT",
+        "falseSafeMerge": false,
+        "falsePreserve": false
+      },
+      {
+        "fixture": "FLD-007",
+        "profile": "cp-b-aggressive_rc-a",
+        "policy": "MODERATE",
+        "relationId": "fld007-hole-preserve",
+        "relationType": "HOLE",
+        "regionPairs": [],
+        "matchingEdgeCount": 0,
+        "representativeDeltaE00": "NOT_AVAILABLE: no direct GT RAG edge",
+        "sourceBoundaryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "exactBoundaryPersistence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "tolerance1PxBoundaryPersistence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "sharedBoundaryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "geometryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "vetoes": [],
+        "finalDecision": "NOT_EVALUABLE_NON_ADJACENT",
+        "falseSafeMerge": false,
+        "falsePreserve": false
+      },
+      {
+        "fixture": "FLD-003",
+        "profile": "cp-b-balanced_rc-a",
+        "policy": "STRICT",
+        "relationId": "fld003-top-side-separate",
+        "relationType": "MUST_SEPARATE",
+        "regionPairs": [
+          [
+            2,
+            18
+          ]
+        ],
+        "matchingEdgeCount": 0,
+        "representativeDeltaE00": "NOT_AVAILABLE: no direct GT RAG edge",
+        "sourceBoundaryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "exactBoundaryPersistence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "tolerance1PxBoundaryPersistence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "sharedBoundaryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "geometryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "vetoes": [],
+        "finalDecision": "NOT_EVALUABLE_NON_ADJACENT",
+        "falseSafeMerge": false,
+        "falsePreserve": false
+      },
+      {
+        "fixture": "FLD-003",
+        "profile": "cp-b-balanced_rc-a",
+        "policy": "CONSERVATIVE",
+        "relationId": "fld003-top-side-separate",
+        "relationType": "MUST_SEPARATE",
+        "regionPairs": [
+          [
+            2,
+            18
+          ]
+        ],
+        "matchingEdgeCount": 0,
+        "representativeDeltaE00": "NOT_AVAILABLE: no direct GT RAG edge",
+        "sourceBoundaryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "exactBoundaryPersistence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "tolerance1PxBoundaryPersistence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "sharedBoundaryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "geometryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "vetoes": [],
+        "finalDecision": "NOT_EVALUABLE_NON_ADJACENT",
+        "falseSafeMerge": false,
+        "falsePreserve": false
+      },
+      {
+        "fixture": "FLD-003",
+        "profile": "cp-b-balanced_rc-a",
+        "policy": "MODERATE",
+        "relationId": "fld003-top-side-separate",
+        "relationType": "MUST_SEPARATE",
+        "regionPairs": [
+          [
+            2,
+            18
+          ]
+        ],
+        "matchingEdgeCount": 0,
+        "representativeDeltaE00": "NOT_AVAILABLE: no direct GT RAG edge",
+        "sourceBoundaryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "exactBoundaryPersistence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "tolerance1PxBoundaryPersistence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "sharedBoundaryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "geometryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "vetoes": [],
+        "finalDecision": "NOT_EVALUABLE_NON_ADJACENT",
+        "falseSafeMerge": false,
+        "falsePreserve": false
+      },
+      {
+        "fixture": "FLD-004",
+        "profile": "cp-b-balanced_rc-a",
+        "policy": "STRICT",
+        "relationId": "fld004-disconnected-preserve",
+        "relationType": "MUST_SEPARATE",
+        "regionPairs": [
+          [
+            16,
+            509
+          ]
+        ],
+        "matchingEdgeCount": 0,
+        "representativeDeltaE00": "NOT_AVAILABLE: no direct GT RAG edge",
+        "sourceBoundaryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "exactBoundaryPersistence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "tolerance1PxBoundaryPersistence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "sharedBoundaryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "geometryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "vetoes": [],
+        "finalDecision": "NOT_EVALUABLE_NON_ADJACENT",
+        "falseSafeMerge": false,
+        "falsePreserve": false
+      },
+      {
+        "fixture": "FLD-004",
+        "profile": "cp-b-balanced_rc-a",
+        "policy": "CONSERVATIVE",
+        "relationId": "fld004-disconnected-preserve",
+        "relationType": "MUST_SEPARATE",
+        "regionPairs": [
+          [
+            16,
+            509
+          ]
+        ],
+        "matchingEdgeCount": 0,
+        "representativeDeltaE00": "NOT_AVAILABLE: no direct GT RAG edge",
+        "sourceBoundaryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "exactBoundaryPersistence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "tolerance1PxBoundaryPersistence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "sharedBoundaryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "geometryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "vetoes": [],
+        "finalDecision": "NOT_EVALUABLE_NON_ADJACENT",
+        "falseSafeMerge": false,
+        "falsePreserve": false
+      },
+      {
+        "fixture": "FLD-004",
+        "profile": "cp-b-balanced_rc-a",
+        "policy": "MODERATE",
+        "relationId": "fld004-disconnected-preserve",
+        "relationType": "MUST_SEPARATE",
+        "regionPairs": [
+          [
+            16,
+            509
+          ]
+        ],
+        "matchingEdgeCount": 0,
+        "representativeDeltaE00": "NOT_AVAILABLE: no direct GT RAG edge",
+        "sourceBoundaryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "exactBoundaryPersistence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "tolerance1PxBoundaryPersistence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "sharedBoundaryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "geometryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "vetoes": [],
+        "finalDecision": "NOT_EVALUABLE_NON_ADJACENT",
+        "falseSafeMerge": false,
+        "falsePreserve": false
+      },
+      {
+        "fixture": "FLD-007",
+        "profile": "cp-b-balanced_rc-a",
+        "policy": "STRICT",
+        "relationId": "fld007-hole-preserve",
+        "relationType": "HOLE",
+        "regionPairs": [],
+        "matchingEdgeCount": 0,
+        "representativeDeltaE00": "NOT_AVAILABLE: no direct GT RAG edge",
+        "sourceBoundaryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "exactBoundaryPersistence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "tolerance1PxBoundaryPersistence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "sharedBoundaryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "geometryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "vetoes": [],
+        "finalDecision": "NOT_EVALUABLE_NON_ADJACENT",
+        "falseSafeMerge": false,
+        "falsePreserve": false
+      },
+      {
+        "fixture": "FLD-007",
+        "profile": "cp-b-balanced_rc-a",
+        "policy": "CONSERVATIVE",
+        "relationId": "fld007-hole-preserve",
+        "relationType": "HOLE",
+        "regionPairs": [],
+        "matchingEdgeCount": 0,
+        "representativeDeltaE00": "NOT_AVAILABLE: no direct GT RAG edge",
+        "sourceBoundaryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "exactBoundaryPersistence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "tolerance1PxBoundaryPersistence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "sharedBoundaryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "geometryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "vetoes": [],
+        "finalDecision": "NOT_EVALUABLE_NON_ADJACENT",
+        "falseSafeMerge": false,
+        "falsePreserve": false
+      },
+      {
+        "fixture": "FLD-007",
+        "profile": "cp-b-balanced_rc-a",
+        "policy": "MODERATE",
+        "relationId": "fld007-hole-preserve",
+        "relationType": "HOLE",
+        "regionPairs": [],
+        "matchingEdgeCount": 0,
+        "representativeDeltaE00": "NOT_AVAILABLE: no direct GT RAG edge",
+        "sourceBoundaryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "exactBoundaryPersistence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "tolerance1PxBoundaryPersistence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "sharedBoundaryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "geometryEvidence": "NOT_AVAILABLE: no direct GT RAG edge",
+        "vetoes": [],
+        "finalDecision": "NOT_EVALUABLE_NON_ADJACENT",
+        "falseSafeMerge": false,
+        "falsePreserve": false
+      }
+    ],
+    "unlabeledEdgeDistribution": [
+      {
+        "profile": "cp-b-aggressive_rc-a",
+        "metric": "representativeDeltaE00",
+        "count": 388,
+        "min": 1.362756,
+        "p10": 40.099879,
+        "p25": 74.076609,
+        "median": 81.33514,
+        "p75": 87.856138,
+        "p90": 94.86611,
+        "max": 99.164731
+      },
+      {
+        "profile": "cp-b-aggressive_rc-a",
+        "metric": "sourceBoundaryP90DeltaE00",
+        "count": 388,
+        "min": 2.611969,
+        "p10": 33.287964,
+        "p25": 58.880901,
+        "median": 65.198044,
+        "p75": 71.915405,
+        "p90": 76.762344,
+        "max": 87.258301
+      },
+      {
+        "profile": "cp-b-aggressive_rc-a",
+        "metric": "exactBoundaryPersistence",
+        "count": 388,
+        "min": 0.504488,
+        "p10": 0.594922,
+        "p25": 0.781019,
+        "median": 0.931143,
+        "p75": 0.954017,
+        "p90": 0.954017,
+        "max": 0.954017
+      },
+      {
+        "profile": "cp-b-aggressive_rc-a",
+        "metric": "tolerance1PxBoundaryPersistence",
+        "count": 388,
+        "min": 0.82144,
+        "p10": 0.906473,
+        "p25": 0.926023,
+        "median": 0.996583,
+        "p75": 0.99851,
+        "p90": 0.99851,
+        "max": 0.99851
+      },
+      {
+        "profile": "cp-b-aggressive_rc-a",
+        "metric": "sharedBoundaryToSmallerPerimeter",
+        "count": 388,
+        "min": 0.008865,
+        "p10": 0.154282,
+        "p25": 0.769231,
+        "median": 1.046154,
+        "p75": 1.5,
+        "p90": 2.0,
+        "max": 2.0
+      },
+      {
+        "profile": "cp-b-balanced_rc-a",
+        "metric": "representativeDeltaE00",
+        "count": 1944,
+        "min": 2.401627,
+        "p10": 42.429093,
+        "p25": 49.383085,
+        "median": 59.360393,
+        "p75": 72.400606,
+        "p90": 84.066928,
+        "max": 99.164731
+      },
+      {
+        "profile": "cp-b-balanced_rc-a",
+        "metric": "sourceBoundaryP90DeltaE00",
+        "count": 1944,
+        "min": 3.265674,
+        "p10": 41.66787,
+        "p25": 51.159233,
+        "median": 59.366749,
+        "p75": 66.570824,
+        "p90": 73.21801,
+        "max": 87.258301
+      },
+      {
+        "profile": "cp-b-balanced_rc-a",
+        "metric": "exactBoundaryPersistence",
+        "count": 1944,
+        "min": 0.524371,
+        "p10": 0.580982,
+        "p25": 0.582116,
+        "median": 0.645003,
+        "p75": 0.83277,
+        "p90": 0.876214,
+        "max": 0.876214
+      },
+      {
+        "profile": "cp-b-balanced_rc-a",
+        "metric": "tolerance1PxBoundaryPersistence",
+        "count": 1944,
+        "min": 0.61916,
+        "p10": 0.683524,
+        "p25": 0.736574,
+        "median": 0.795179,
+        "p75": 0.923077,
+        "p90": 0.923433,
+        "max": 0.951302
+      },
+      {
+        "profile": "cp-b-balanced_rc-a",
+        "metric": "sharedBoundaryToSmallerPerimeter",
+        "count": 1944,
+        "min": 0.000817,
+        "p10": 1.0,
+        "p25": 1.2,
+        "median": 1.5,
+        "p75": 2.0,
+        "p90": 2.0,
+        "max": 2.0
+      }
+    ]
+  },
+  "syntheticStress": [
+    {
+      "fixture": "RCF-001",
+      "description": "AI drift",
+      "relationGroundTruth": {
+        "fixtureId": "RCF-001",
+        "regions": [
+          {
+            "regionKey": "left_drift",
+            "kind": "SUBJECT_REGION",
+            "anchors": [
+              [
+                24,
+                32
+              ]
+            ]
+          },
+          {
+            "regionKey": "right_drift",
+            "kind": "SUBJECT_REGION",
+            "anchors": [
+              [
+                72,
+                32
+              ]
+            ]
+          }
+        ],
+        "relations": [
+          {
+            "relationId": "rcf001-drift-merge",
+            "type": "MUST_MERGE",
+            "regionKeys": [
+              "left_drift",
+              "right_drift"
+            ],
+            "notes": "Synthetic low-amplitude AI-style color drift in one semantic fill."
+          }
+        ]
+      },
+      "gate1": "NOT_AVAILABLE: no CP-B map/run exists; rerun is prohibited.",
+      "gate2": "NOT_AVAILABLE: no CP-B map/run exists; rerun is prohibited."
+    },
+    {
+      "fixture": "RCF-002",
+      "description": "intentional shadow",
+      "relationGroundTruth": {
+        "fixtureId": "RCF-002",
+        "regions": [
+          {
+            "regionKey": "lit_surface",
+            "kind": "SUBJECT_REGION",
+            "anchors": [
+              [
+                24,
+                32
+              ]
+            ]
+          },
+          {
+            "regionKey": "intentional_shadow",
+            "kind": "SUBJECT_REGION",
+            "anchors": [
+              [
+                72,
+                32
+              ]
+            ]
+          }
+        ],
+        "relations": [
+          {
+            "relationId": "rcf002-shadow-protected",
+            "type": "PROTECTED_BOUNDARY",
+            "regionKeys": [
+              "lit_surface",
+              "intentional_shadow"
+            ],
+            "notes": "Synthetic intentional shadow boundary must not become a SAFE_MERGE."
+          }
+        ]
+      },
+      "gate1": "NOT_AVAILABLE: no CP-B map/run exists; rerun is prohibited.",
+      "gate2": "NOT_AVAILABLE: no CP-B map/run exists; rerun is prohibited."
+    }
+  ],
+  "projectRealFixtures": [
+    {
+      "fixture": "FLD-001",
+      "profile": "cp-b-aggressive_rc-a",
+      "rawRegionCount": 108,
+      "relationGT": [],
+      "gate1": {
+        "RC-A": {
+          "meanCoreDeltaE00": 1.799333,
+          "contaminationDrift": 29.854128
+        },
+        "RC-B": {
+          "meanCoreDeltaE00": 1.820203,
+          "contaminationDrift": 32.285891
+        },
+        "RC-C": {
+          "meanCoreDeltaE00": 1.799978,
+          "contaminationDrift": 31.870521
+        },
+        "RC-D": {
+          "meanCoreDeltaE00": 1.803288,
+          "contaminationDrift": 31.853776
+        }
+      },
+      "gate2Counts": {
+        "STRICT": {
+          "SAFE_MERGE": 0,
+          "PRESERVE": 0,
+          "UNCERTAIN": 71
+        },
+        "CONSERVATIVE": {
+          "SAFE_MERGE": 0,
+          "PRESERVE": 0,
+          "UNCERTAIN": 71
+        },
+        "MODERATE": {
+          "SAFE_MERGE": 0,
+          "PRESERVE": 0,
+          "UNCERTAIN": 71
+        }
+      },
+      "notFinalG02OrShadowEvidence": true
+    },
+    {
+      "fixture": "FLD-001",
+      "profile": "cp-b-balanced_rc-a",
+      "rawRegionCount": 497,
+      "relationGT": [],
+      "gate1": {
+        "RC-A": {
+          "meanCoreDeltaE00": 3.331256,
+          "contaminationDrift": 30.182984
+        },
+        "RC-B": {
+          "meanCoreDeltaE00": 3.889891,
+          "contaminationDrift": 28.447312
+        },
+        "RC-C": {
+          "meanCoreDeltaE00": 3.677354,
+          "contaminationDrift": 34.287103
+        },
+        "RC-D": {
+          "meanCoreDeltaE00": 3.297021,
+          "contaminationDrift": 31.835477
+        }
+      },
+      "gate2Counts": {
+        "STRICT": {
+          "SAFE_MERGE": 0,
+          "PRESERVE": 0,
+          "UNCERTAIN": 494
+        },
+        "CONSERVATIVE": {
+          "SAFE_MERGE": 33,
+          "PRESERVE": 0,
+          "UNCERTAIN": 461
+        },
+        "MODERATE": {
+          "SAFE_MERGE": 170,
+          "PRESERVE": 0,
+          "UNCERTAIN": 324
+        }
+      },
+      "notFinalG02OrShadowEvidence": true
+    },
+    {
+      "fixture": "FLD-002",
+      "profile": "cp-b-aggressive_rc-a",
+      "rawRegionCount": 13,
+      "relationGT": [],
+      "gate1": {
+        "RC-A": {
+          "meanCoreDeltaE00": 3.406003,
+          "contaminationDrift": 3.628474
+        },
+        "RC-B": {
+          "meanCoreDeltaE00": 3.395934,
+          "contaminationDrift": 3.318878
+        },
+        "RC-C": {
+          "meanCoreDeltaE00": 3.411259,
+          "contaminationDrift": 3.323408
+        },
+        "RC-D": {
+          "meanCoreDeltaE00": 3.387383,
+          "contaminationDrift": 3.617494
+        }
+      },
+      "gate2Counts": {
+        "STRICT": {
+          "SAFE_MERGE": 0,
+          "PRESERVE": 0,
+          "UNCERTAIN": 14
+        },
+        "CONSERVATIVE": {
+          "SAFE_MERGE": 0,
+          "PRESERVE": 0,
+          "UNCERTAIN": 14
+        },
+        "MODERATE": {
+          "SAFE_MERGE": 2,
+          "PRESERVE": 0,
+          "UNCERTAIN": 12
+        }
+      },
+      "notFinalG02OrShadowEvidence": true
+    },
+    {
+      "fixture": "FLD-002",
+      "profile": "cp-b-balanced_rc-a",
+      "rawRegionCount": 74,
+      "relationGT": [],
+      "gate1": {
+        "RC-A": {
+          "meanCoreDeltaE00": 6.916274,
+          "contaminationDrift": 10.451754
+        },
+        "RC-B": {
+          "meanCoreDeltaE00": 7.654318,
+          "contaminationDrift": 7.181345
+        },
+        "RC-C": {
+          "meanCoreDeltaE00": 7.402334,
+          "contaminationDrift": 12.724893
+        },
+        "RC-D": {
+          "meanCoreDeltaE00": 6.90812,
+          "contaminationDrift": 12.231632
+        }
+      },
+      "gate2Counts": {
+        "STRICT": {
+          "SAFE_MERGE": 0,
+          "PRESERVE": 0,
+          "UNCERTAIN": 74
+        },
+        "CONSERVATIVE": {
+          "SAFE_MERGE": 0,
+          "PRESERVE": 0,
+          "UNCERTAIN": 74
+        },
+        "MODERATE": {
+          "SAFE_MERGE": 0,
+          "PRESERVE": 0,
+          "UNCERTAIN": 74
+        }
+      },
+      "notFinalG02OrShadowEvidence": true
+    },
+    {
+      "fixture": "FLD-003",
+      "profile": "cp-b-aggressive_rc-a",
+      "rawRegionCount": 18,
+      "relationGT": [
+        "fld003-top-side-separate"
+      ],
+      "gate1": {
+        "RC-A": {
+          "meanCoreDeltaE00": 2.298208,
+          "contaminationDrift": 0.143808
+        },
+        "RC-B": {
+          "meanCoreDeltaE00": 2.307354,
+          "contaminationDrift": 0.006392
+        },
+        "RC-C": {
+          "meanCoreDeltaE00": 2.28931,
+          "contaminationDrift": 0.042135
+        },
+        "RC-D": {
+          "meanCoreDeltaE00": 2.289638,
+          "contaminationDrift": 0.204683
+        }
+      },
+      "gate2Counts": {
+        "STRICT": {
+          "SAFE_MERGE": 0,
+          "PRESERVE": 0,
+          "UNCERTAIN": 17
+        },
+        "CONSERVATIVE": {
+          "SAFE_MERGE": 0,
+          "PRESERVE": 0,
+          "UNCERTAIN": 17
+        },
+        "MODERATE": {
+          "SAFE_MERGE": 0,
+          "PRESERVE": 0,
+          "UNCERTAIN": 17
+        }
+      },
+      "notFinalG02OrShadowEvidence": true
+    },
+    {
+      "fixture": "FLD-003",
+      "profile": "cp-b-balanced_rc-a",
+      "rawRegionCount": 18,
+      "relationGT": [
+        "fld003-top-side-separate"
+      ],
+      "gate1": {
+        "RC-A": {
+          "meanCoreDeltaE00": 2.401188,
+          "contaminationDrift": 0.133307
+        },
+        "RC-B": {
+          "meanCoreDeltaE00": 2.466346,
+          "contaminationDrift": 0.0
+        },
+        "RC-C": {
+          "meanCoreDeltaE00": 2.397772,
+          "contaminationDrift": 0.062993
+        },
+        "RC-D": {
+          "meanCoreDeltaE00": 2.401678,
+          "contaminationDrift": 0.127286
+        }
+      },
+      "gate2Counts": {
+        "STRICT": {
+          "SAFE_MERGE": 0,
+          "PRESERVE": 0,
+          "UNCERTAIN": 17
+        },
+        "CONSERVATIVE": {
+          "SAFE_MERGE": 0,
+          "PRESERVE": 0,
+          "UNCERTAIN": 17
+        },
+        "MODERATE": {
+          "SAFE_MERGE": 0,
+          "PRESERVE": 0,
+          "UNCERTAIN": 17
+        }
+      },
+      "notFinalG02OrShadowEvidence": true
+    },
+    {
+      "fixture": "FLD-004",
+      "profile": "cp-b-aggressive_rc-a",
+      "rawRegionCount": 330,
+      "relationGT": [
+        "fld004-disconnected-preserve"
+      ],
+      "gate1": {
+        "RC-A": {
+          "meanCoreDeltaE00": 3.265988,
+          "contaminationDrift": 18.325614
+        },
+        "RC-B": {
+          "meanCoreDeltaE00": 3.490483,
+          "contaminationDrift": 20.374372
+        },
+        "RC-C": {
+          "meanCoreDeltaE00": 3.311325,
+          "contaminationDrift": 20.250572
+        },
+        "RC-D": {
+          "meanCoreDeltaE00": 3.288723,
+          "contaminationDrift": 19.861186
+        }
+      },
+      "gate2Counts": {
+        "STRICT": {
+          "SAFE_MERGE": 0,
+          "PRESERVE": 0,
+          "UNCERTAIN": 181
+        },
+        "CONSERVATIVE": {
+          "SAFE_MERGE": 0,
+          "PRESERVE": 0,
+          "UNCERTAIN": 181
+        },
+        "MODERATE": {
+          "SAFE_MERGE": 0,
+          "PRESERVE": 0,
+          "UNCERTAIN": 181
+        }
+      },
+      "notFinalG02OrShadowEvidence": true
+    },
+    {
+      "fixture": "FLD-004",
+      "profile": "cp-b-balanced_rc-a",
+      "rawRegionCount": 513,
+      "relationGT": [
+        "fld004-disconnected-preserve"
+      ],
+      "gate1": {
+        "RC-A": {
+          "meanCoreDeltaE00": 5.086373,
+          "contaminationDrift": 16.443595
+        },
+        "RC-B": {
+          "meanCoreDeltaE00": 5.844646,
+          "contaminationDrift": 17.698469
+        },
+        "RC-C": {
+          "meanCoreDeltaE00": 5.38863,
+          "contaminationDrift": 19.31811
+        },
+        "RC-D": {
+          "meanCoreDeltaE00": 5.065597,
+          "contaminationDrift": 17.75333
+        }
+      },
+      "gate2Counts": {
+        "STRICT": {
+          "SAFE_MERGE": 0,
+          "PRESERVE": 0,
+          "UNCERTAIN": 360
+        },
+        "CONSERVATIVE": {
+          "SAFE_MERGE": 0,
+          "PRESERVE": 0,
+          "UNCERTAIN": 360
+        },
+        "MODERATE": {
+          "SAFE_MERGE": 0,
+          "PRESERVE": 0,
+          "UNCERTAIN": 360
+        }
+      },
+      "notFinalG02OrShadowEvidence": true
+    },
+    {
+      "fixture": "FLD-005",
+      "profile": "cp-b-aggressive_rc-a",
+      "rawRegionCount": 68,
+      "relationGT": [],
+      "gate1": {
+        "RC-A": {
+          "meanCoreDeltaE00": 0.852146,
+          "contaminationDrift": 22.124846
+        },
+        "RC-B": {
+          "meanCoreDeltaE00": 0.854008,
+          "contaminationDrift": 24.917209
+        },
+        "RC-C": {
+          "meanCoreDeltaE00": 0.852584,
+          "contaminationDrift": 24.938148
+        },
+        "RC-D": {
+          "meanCoreDeltaE00": 0.851031,
+          "contaminationDrift": 24.99289
+        }
+      },
+      "gate2Counts": {
+        "STRICT": {
+          "SAFE_MERGE": 0,
+          "PRESERVE": 0,
+          "UNCERTAIN": 29
+        },
+        "CONSERVATIVE": {
+          "SAFE_MERGE": 0,
+          "PRESERVE": 0,
+          "UNCERTAIN": 29
+        },
+        "MODERATE": {
+          "SAFE_MERGE": 0,
+          "PRESERVE": 0,
+          "UNCERTAIN": 29
+        }
+      },
+      "notFinalG02OrShadowEvidence": true
+    },
+    {
+      "fixture": "FLD-005",
+      "profile": "cp-b-balanced_rc-a",
+      "rawRegionCount": 200,
+      "relationGT": [],
+      "gate1": {
+        "RC-A": {
+          "meanCoreDeltaE00": 3.812037,
+          "contaminationDrift": 23.289835
+        },
+        "RC-B": {
+          "meanCoreDeltaE00": 4.704076,
+          "contaminationDrift": 20.909097
+        },
+        "RC-C": {
+          "meanCoreDeltaE00": 4.238026,
+          "contaminationDrift": 28.158479
+        },
+        "RC-D": {
+          "meanCoreDeltaE00": 3.780099,
+          "contaminationDrift": 25.792224
+        }
+      },
+      "gate2Counts": {
+        "STRICT": {
+          "SAFE_MERGE": 0,
+          "PRESERVE": 0,
+          "UNCERTAIN": 164
+        },
+        "CONSERVATIVE": {
+          "SAFE_MERGE": 0,
+          "PRESERVE": 0,
+          "UNCERTAIN": 164
+        },
+        "MODERATE": {
+          "SAFE_MERGE": 0,
+          "PRESERVE": 0,
+          "UNCERTAIN": 164
+        }
+      },
+      "notFinalG02OrShadowEvidence": true
+    },
+    {
+      "fixture": "FLD-006",
+      "profile": "cp-b-aggressive_rc-a",
+      "rawRegionCount": 28,
+      "relationGT": [],
+      "gate1": {
+        "RC-A": {
+          "meanCoreDeltaE00": 2.163724,
+          "contaminationDrift": 13.468292
+        },
+        "RC-B": {
+          "meanCoreDeltaE00": 2.393643,
+          "contaminationDrift": 17.354563
+        },
+        "RC-C": {
+          "meanCoreDeltaE00": 2.163724,
+          "contaminationDrift": 16.388726
+        },
+        "RC-D": {
+          "meanCoreDeltaE00": 2.161687,
+          "contaminationDrift": 15.727044
+        }
+      },
+      "gate2Counts": {
+        "STRICT": {
+          "SAFE_MERGE": 0,
+          "PRESERVE": 0,
+          "UNCERTAIN": 26
+        },
+        "CONSERVATIVE": {
+          "SAFE_MERGE": 0,
+          "PRESERVE": 0,
+          "UNCERTAIN": 26
+        },
+        "MODERATE": {
+          "SAFE_MERGE": 5,
+          "PRESERVE": 0,
+          "UNCERTAIN": 21
+        }
+      },
+      "notFinalG02OrShadowEvidence": true
+    },
+    {
+      "fixture": "FLD-006",
+      "profile": "cp-b-balanced_rc-a",
+      "rawRegionCount": 421,
+      "relationGT": [],
+      "gate1": {
+        "RC-A": {
+          "meanCoreDeltaE00": 7.170174,
+          "contaminationDrift": 19.5055
+        },
+        "RC-B": {
+          "meanCoreDeltaE00": 8.216928,
+          "contaminationDrift": 13.999702
+        },
+        "RC-C": {
+          "meanCoreDeltaE00": 7.829277,
+          "contaminationDrift": 26.071359
+        },
+        "RC-D": {
+          "meanCoreDeltaE00": 7.125437,
+          "contaminationDrift": 22.463775
+        }
+      },
+      "gate2Counts": {
+        "STRICT": {
+          "SAFE_MERGE": 12,
+          "PRESERVE": 0,
+          "UNCERTAIN": 407
+        },
+        "CONSERVATIVE": {
+          "SAFE_MERGE": 32,
+          "PRESERVE": 0,
+          "UNCERTAIN": 387
+        },
+        "MODERATE": {
+          "SAFE_MERGE": 53,
+          "PRESERVE": 0,
+          "UNCERTAIN": 366
+        }
+      },
+      "notFinalG02OrShadowEvidence": true
+    },
+    {
+      "fixture": "FLD-007",
+      "profile": "cp-b-aggressive_rc-a",
+      "rawRegionCount": 104,
+      "relationGT": [
+        "fld007-hole-preserve"
+      ],
+      "gate1": {
+        "RC-A": {
+          "meanCoreDeltaE00": 1.241359,
+          "contaminationDrift": 31.12668
+        },
+        "RC-B": {
+          "meanCoreDeltaE00": 1.223642,
+          "contaminationDrift": 32.763047
+        },
+        "RC-C": {
+          "meanCoreDeltaE00": 1.231235,
+          "contaminationDrift": 32.39223
+        },
+        "RC-D": {
+          "meanCoreDeltaE00": 1.225755,
+          "contaminationDrift": 32.435111
+        }
+      },
+      "gate2Counts": {
+        "STRICT": {
+          "SAFE_MERGE": 0,
+          "PRESERVE": 0,
+          "UNCERTAIN": 11
+        },
+        "CONSERVATIVE": {
+          "SAFE_MERGE": 0,
+          "PRESERVE": 0,
+          "UNCERTAIN": 11
+        },
+        "MODERATE": {
+          "SAFE_MERGE": 0,
+          "PRESERVE": 0,
+          "UNCERTAIN": 11
+        }
+      },
+      "notFinalG02OrShadowEvidence": true
+    },
+    {
+      "fixture": "FLD-007",
+      "profile": "cp-b-balanced_rc-a",
+      "rawRegionCount": 121,
+      "relationGT": [
+        "fld007-hole-preserve"
+      ],
+      "gate1": {
+        "RC-A": {
+          "meanCoreDeltaE00": 2.1961,
+          "contaminationDrift": 26.125498
+        },
+        "RC-B": {
+          "meanCoreDeltaE00": 2.237181,
+          "contaminationDrift": 28.26003
+        },
+        "RC-C": {
+          "meanCoreDeltaE00": 2.212454,
+          "contaminationDrift": 27.569435
+        },
+        "RC-D": {
+          "meanCoreDeltaE00": 2.170504,
+          "contaminationDrift": 27.623262
+        }
+      },
+      "gate2Counts": {
+        "STRICT": {
+          "SAFE_MERGE": 0,
+          "PRESERVE": 0,
+          "UNCERTAIN": 27
+        },
+        "CONSERVATIVE": {
+          "SAFE_MERGE": 0,
+          "PRESERVE": 0,
+          "UNCERTAIN": 27
+        },
+        "MODERATE": {
+          "SAFE_MERGE": 0,
+          "PRESERVE": 0,
+          "UNCERTAIN": 27
+        }
+      },
+      "notFinalG02OrShadowEvidence": true
+    },
+    {
+      "fixture": "FLD-008",
+      "profile": "cp-b-aggressive_rc-a",
+      "rawRegionCount": 38,
+      "relationGT": [],
+      "gate1": {
+        "RC-A": {
+          "meanCoreDeltaE00": 2.200084,
+          "contaminationDrift": 19.14429
+        },
+        "RC-B": {
+          "meanCoreDeltaE00": 2.25361,
+          "contaminationDrift": 20.78019
+        },
+        "RC-C": {
+          "meanCoreDeltaE00": 2.207214,
+          "contaminationDrift": 20.901811
+        },
+        "RC-D": {
+          "meanCoreDeltaE00": 2.200128,
+          "contaminationDrift": 20.841136
+        }
+      },
+      "gate2Counts": {
+        "STRICT": {
+          "SAFE_MERGE": 0,
+          "PRESERVE": 0,
+          "UNCERTAIN": 39
+        },
+        "CONSERVATIVE": {
+          "SAFE_MERGE": 3,
+          "PRESERVE": 0,
+          "UNCERTAIN": 36
+        },
+        "MODERATE": {
+          "SAFE_MERGE": 9,
+          "PRESERVE": 0,
+          "UNCERTAIN": 30
+        }
+      },
+      "notFinalG02OrShadowEvidence": true
+    },
+    {
+      "fixture": "FLD-008",
+      "profile": "cp-b-balanced_rc-a",
+      "rawRegionCount": 378,
+      "relationGT": [],
+      "gate1": {
+        "RC-A": {
+          "meanCoreDeltaE00": 6.548084,
+          "contaminationDrift": 20.038199
+        },
+        "RC-B": {
+          "meanCoreDeltaE00": 7.732787,
+          "contaminationDrift": 15.871536
+        },
+        "RC-C": {
+          "meanCoreDeltaE00": 7.325145,
+          "contaminationDrift": 25.894262
+        },
+        "RC-D": {
+          "meanCoreDeltaE00": 6.510785,
+          "contaminationDrift": 22.193419
+        }
+      },
+      "gate2Counts": {
+        "STRICT": {
+          "SAFE_MERGE": 0,
+          "PRESERVE": 0,
+          "UNCERTAIN": 389
+        },
+        "CONSERVATIVE": {
+          "SAFE_MERGE": 0,
+          "PRESERVE": 0,
+          "UNCERTAIN": 389
+        },
+        "MODERATE": {
+          "SAFE_MERGE": 0,
+          "PRESERVE": 0,
+          "UNCERTAIN": 389
+        }
+      },
+      "notFinalG02OrShadowEvidence": true
+    }
+  ],
+  "freezeState": {
+    "repairApply": "NOT_EXECUTED",
+    "regionCore": [
+      "IMPLEMENTATION_COMPLETE",
+      "FREEZE_CANDIDATE",
+      "BLOCKED_DATA_G02_SHADOW"
+    ],
+    "b13FormalManualReview": "PENDING_B1_3_MANUAL_REVIEW"
+  },
+  "sourceReports": [
+    "region-core/reports/representative-color/cp-b-aggressive_rc-a/case-metrics/FLD-001.json",
+    "region-core/reports/representative-color/cp-b-aggressive_rc-a/case-metrics/FLD-002.json",
+    "region-core/reports/representative-color/cp-b-aggressive_rc-a/case-metrics/FLD-003.json",
+    "region-core/reports/representative-color/cp-b-aggressive_rc-a/case-metrics/FLD-004.json",
+    "region-core/reports/representative-color/cp-b-aggressive_rc-a/case-metrics/FLD-005.json",
+    "region-core/reports/representative-color/cp-b-aggressive_rc-a/case-metrics/FLD-006.json",
+    "region-core/reports/representative-color/cp-b-aggressive_rc-a/case-metrics/FLD-007.json",
+    "region-core/reports/representative-color/cp-b-aggressive_rc-a/case-metrics/FLD-008.json",
+    "region-core/reports/representative-color/cp-b-balanced_rc-a/case-metrics/FLD-001.json",
+    "region-core/reports/representative-color/cp-b-balanced_rc-a/case-metrics/FLD-002.json",
+    "region-core/reports/representative-color/cp-b-balanced_rc-a/case-metrics/FLD-003.json",
+    "region-core/reports/representative-color/cp-b-balanced_rc-a/case-metrics/FLD-004.json",
+    "region-core/reports/representative-color/cp-b-balanced_rc-a/case-metrics/FLD-005.json",
+    "region-core/reports/representative-color/cp-b-balanced_rc-a/case-metrics/FLD-006.json",
+    "region-core/reports/representative-color/cp-b-balanced_rc-a/case-metrics/FLD-007.json",
+    "region-core/reports/representative-color/cp-b-balanced_rc-a/case-metrics/FLD-008.json",
+    "region-core/reports/repair-evidence-cp-b-aggressive_rc-a.json",
+    "region-core/reports/repair-evidence-cp-b-balanced_rc-a.json"
+  ]
+}

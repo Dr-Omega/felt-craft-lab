@@ -1,0 +1,169 @@
+{
+  "evaluatedRegionCount": 2937,
+  "mismatches": [],
+  "records": [
+    {
+      "fixtureId": "FLD-001",
+      "fixtureKind": "project_real",
+      "profile": "cp-b-balanced_rc-a",
+      "regionCount": 497,
+      "result": "PASS",
+      "runCountPerRegion": 3
+    },
+    {
+      "fixtureId": "FLD-001",
+      "fixtureKind": "project_real",
+      "profile": "cp-b-aggressive_rc-a",
+      "regionCount": 108,
+      "result": "PASS",
+      "runCountPerRegion": 3
+    },
+    {
+      "fixtureId": "FLD-002",
+      "fixtureKind": "project_real",
+      "profile": "cp-b-balanced_rc-a",
+      "regionCount": 74,
+      "result": "PASS",
+      "runCountPerRegion": 3
+    },
+    {
+      "fixtureId": "FLD-002",
+      "fixtureKind": "project_real",
+      "profile": "cp-b-aggressive_rc-a",
+      "regionCount": 13,
+      "result": "PASS",
+      "runCountPerRegion": 3
+    },
+    {
+      "fixtureId": "FLD-003",
+      "fixtureKind": "project_real",
+      "profile": "cp-b-balanced_rc-a",
+      "regionCount": 18,
+      "result": "PASS",
+      "runCountPerRegion": 3
+    },
+    {
+      "fixtureId": "FLD-003",
+      "fixtureKind": "project_real",
+      "profile": "cp-b-aggressive_rc-a",
+      "regionCount": 18,
+      "result": "PASS",
+      "runCountPerRegion": 3
+    },
+    {
+      "fixtureId": "FLD-004",
+      "fixtureKind": "project_real",
+      "profile": "cp-b-balanced_rc-a",
+      "regionCount": 513,
+      "result": "PASS",
+      "runCountPerRegion": 3
+    },
+    {
+      "fixtureId": "FLD-004",
+      "fixtureKind": "project_real",
+      "profile": "cp-b-aggressive_rc-a",
+      "regionCount": 330,
+      "result": "PASS",
+      "runCountPerRegion": 3
+    },
+    {
+      "fixtureId": "FLD-005",
+      "fixtureKind": "project_real",
+      "profile": "cp-b-balanced_rc-a",
+      "regionCount": 200,
+      "result": "PASS",
+      "runCountPerRegion": 3
+    },
+    {
+      "fixtureId": "FLD-005",
+      "fixtureKind": "project_real",
+      "profile": "cp-b-aggressive_rc-a",
+      "regionCount": 68,
+      "result": "PASS",
+      "runCountPerRegion": 3
+    },
+    {
+      "fixtureId": "FLD-006",
+      "fixtureKind": "project_real",
+      "profile": "cp-b-balanced_rc-a",
+      "regionCount": 421,
+      "result": "PASS",
+      "runCountPerRegion": 3
+    },
+    {
+      "fixtureId": "FLD-006",
+      "fixtureKind": "project_real",
+      "profile": "cp-b-aggressive_rc-a",
+      "regionCount": 28,
+      "result": "PASS",
+      "runCountPerRegion": 3
+    },
+    {
+      "fixtureId": "FLD-007",
+      "fixtureKind": "project_real",
+      "profile": "cp-b-balanced_rc-a",
+      "regionCount": 121,
+      "result": "PASS",
+      "runCountPerRegion": 3
+    },
+    {
+      "fixtureId": "FLD-007",
+      "fixtureKind": "project_real",
+      "profile": "cp-b-aggressive_rc-a",
+      "regionCount": 104,
+      "result": "PASS",
+      "runCountPerRegion": 3
+    },
+    {
+      "fixtureId": "FLD-008",
+      "fixtureKind": "project_real",
+      "profile": "cp-b-balanced_rc-a",
+      "regionCount": 378,
+      "result": "PASS",
+      "runCountPerRegion": 3
+    },
+    {
+      "fixtureId": "FLD-008",
+      "fixtureKind": "project_real",
+      "profile": "cp-b-aggressive_rc-a",
+      "regionCount": 38,
+      "result": "PASS",
+      "runCountPerRegion": 3
+    },
+    {
+      "fixtureId": "RCF-001",
+      "fixtureKind": "synthetic",
+      "profile": "cp-b-balanced_rc-a",
+      "regionCount": 2,
+      "result": "PASS",
+      "runCountPerRegion": 3
+    },
+    {
+      "fixtureId": "RCF-001",
+      "fixtureKind": "synthetic",
+      "profile": "cp-b-aggressive_rc-a",
+      "regionCount": 2,
+      "result": "PASS",
+      "runCountPerRegion": 3
+    },
+    {
+      "fixtureId": "RCF-002",
+      "fixtureKind": "synthetic",
+      "profile": "cp-b-balanced_rc-a",
+      "regionCount": 2,
+      "result": "PASS",
+      "runCountPerRegion": 3
+    },
+    {
+      "fixtureId": "RCF-002",
+      "fixtureKind": "synthetic",
+      "profile": "cp-b-aggressive_rc-a",
+      "regionCount": 2,
+      "result": "PASS",
+      "runCountPerRegion": 3
+    }
+  ],
+  "representativeMethod": "RC-A",
+  "scope": "every existing project-real and synthetic structural region; no proposal rerun",
+  "status": "PASS"
+}

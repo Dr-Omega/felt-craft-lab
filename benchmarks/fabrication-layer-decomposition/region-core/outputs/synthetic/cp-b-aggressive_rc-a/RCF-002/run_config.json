@@ -1,0 +1,24 @@
+{
+  "fixtureId": "RCF-002",
+  "candidate": "CP-B",
+  "profile": "aggressive",
+  "representativeMethod": "RC-A",
+  "parameters": {
+    "meanShiftSpatialRadius": 14,
+    "meanShiftColorRadius": 32,
+    "labDeltaECell": 30.0,
+    "localEdgeThreshold": 30.0,
+    "regionMeanThreshold": 10.0,
+    "structuralAlphaThreshold": 64,
+    "fringeMaxPropagationDistancePx": 4,
+    "colorGroupDeltaE": 3.0,
+    "coreAlphaMin": 160,
+    "coreDistancePx": 1.0,
+    "histogramBinWidth": 24,
+    "densityRadius": 20.0,
+    "smallRegionArea": 800,
+    "smallRegionMergeDeltaE": 75.0,
+    "strongEdgeDeltaE": 28.0,
+    "smallRegionStrategy": "merge_adjacent_local"
+  }
+}

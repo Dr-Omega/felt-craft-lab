@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "region_core_frozen_contract.schema.json",
+  "title": "P0-04B Region Core Frozen Contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contractVersion", "status", "fixtureId", "profile", "candidateId", "representativeColorMethod", "productionIntegrationStatus", "dimensions", "connectivity", "regionIdSemantics", "legacyMetadataDisposition", "artifacts", "regions", "adjacency", "topology", "provenance"],
+  "properties": {
+    "contractVersion": {"const": "1.0.0"},
+    "status": {"const": "REGION_CORE_FROZEN"},
+    "fixtureId": {"pattern": "^FLD-00[1-8]$"},
+    "profile": {"const": "cp-b-aggressive_rc-a"},
+    "candidateId": {"const": "CP-B"},
+    "representativeColorMethod": {"const": "RC-A"},
+    "productionIntegrationStatus": {"const": "NOT_INTEGRATED"},
+    "dimensions": {"type": "object", "additionalProperties": false, "required": ["width", "height"], "properties": {"width": {"type": "integer", "minimum": 1}, "height": {"type": "integer", "minimum": 1}}},
+    "connectivity": {"type": "object", "additionalProperties": false, "required": ["proposalConnectivity", "componentConnectivity", "adjacencyConnectivity", "voidConnectivity"], "properties": {"proposalConnectivity": {"const": 8}, "componentConnectivity": {"const": 4}, "adjacencyConnectivity": {"const": 4}, "voidConnectivity": {"const": 4}}},
+    "regionIdSemantics": {"type": "object"},
+    "legacyMetadataDisposition": {"const": "LEGACY_COMPONENT_METADATA_SUPERSEDED"},
+    "artifacts": {"type": "object", "required": ["source", "structuralLabelMap", "pixelLabelMap", "legacyRegions", "purifiedRaster", "runConfig", "metrics"]},
+    "regions": {"type": "array", "minItems": 1, "items": {"type": "object", "additionalProperties": false, "required": ["regionId", "area", "assignedPixelCount", "bbox", "componentCount", "components", "perimeterEdgeCount", "representativeColorMethod", "representativeColorRgb", "representativeColorLab", "corePixelCount", "sourceRegionIds"], "properties": {"regionId": {"type": "integer", "minimum": 1}, "area": {"type": "integer", "minimum": 1}, "assignedPixelCount": {"type": "integer", "minimum": 0}, "bbox": {"$ref": "#/$defs/bbox"}, "componentCount": {"type": "integer", "minimum": 1}, "components": {"type": "array", "minItems": 1, "items": {"type": "object", "additionalProperties": false, "required": ["componentId", "area", "bbox"], "properties": {"componentId": {"type": "integer", "minimum": 1}, "area": {"type": "integer", "minimum": 1}, "bbox": {"$ref": "#/$defs/bbox"}}}}, "perimeterEdgeCount": {"type": "integer", "minimum": 1}, "representativeColorMethod": {"const": "RC-A"}, "representativeColorRgb": {"$ref": "#/$defs/rgb"}, "representativeColorLab": {"$ref": "#/$defs/lab"}, "corePixelCount": {"type": "integer", "minimum": 1}, "sourceRegionIds": {"type": "array", "minItems": 1, "maxItems": 1, "items": {"type": "integer", "minimum": 1}}}}},
+    "adjacency": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["regionA", "regionB", "uniqueSharedEdgeCount", "sharedBoundaryCoverage"], "properties": {"regionA": {"type": "integer", "minimum": 1}, "regionB": {"type": "integer", "minimum": 1}, "uniqueSharedEdgeCount": {"type": "integer", "minimum": 1}, "sharedBoundaryCoverage": {"type": "number", "minimum": 0, "maximum": 1}}}},
+    "topology": {"type": "object"},
+    "provenance": {"type": "object"}
+  },
+  "$defs": {
+    "bbox": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"type": "integer", "minimum": 0}},
+    "rgb": {"type": "array", "minItems": 3, "maxItems": 3, "items": {"type": "integer", "minimum": 0, "maximum": 255}},
+    "lab": {"type": "array", "minItems": 3, "maxItems": 3, "items": {"type": "number"}}
+  }
+}

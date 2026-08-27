@@ -1,0 +1,4304 @@
+{
+  "candidates": [
+    {
+      "areaRatio": 0.0005374032674118659,
+      "boundaryOverlay": "cp-b-balanced_rc-a/FLD-001/edge-1-4-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 0.0,
+        "tolerance1px": 0.0
+      },
+      "fixture": "FLD-001",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-balanced_rc-a/FLD-001/edge-1-4-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "MODERATE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "STRICT": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        }
+      },
+      "profile": "cp-b-balanced_rc-a",
+      "regionA": 1,
+      "regionB": 4,
+      "representativeColorA": [
+        159,
+        159,
+        159
+      ],
+      "representativeColorB": [
+        3,
+        3,
+        3
+      ],
+      "representativeDeltaE00": 51.99392989185326,
+      "selectionReasons": [
+        "LOWEST_BOUNDARY_PERSISTENCE"
+      ],
+      "sharedBoundaryCoverage": 0.5,
+      "sourceBoundaryEvidence": {
+        "mean": 49.428184509277344,
+        "median": 47.68495559692383,
+        "p90": 73.50369262695312
+      }
+    },
+    {
+      "areaRatio": 0.00032065812315483364,
+      "boundaryOverlay": "cp-b-balanced_rc-a/FLD-001/edge-15-190-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 0.5172413793103449,
+        "tolerance1px": 1.0
+      },
+      "fixture": "FLD-001",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-balanced_rc-a/FLD-001/edge-15-190-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "MODERATE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "STRICT": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        }
+      },
+      "profile": "cp-b-balanced_rc-a",
+      "regionA": 15,
+      "regionB": 190,
+      "representativeColorA": [
+        249,
+        207,
+        0
+      ],
+      "representativeColorB": [
+        174,
+        147,
+        80
+      ],
+      "representativeDeltaE00": 20.697901396862317,
+      "selectionReasons": [
+        "LOWEST_REPRESENTATIVE_DELTA_E"
+      ],
+      "sharedBoundaryCoverage": 0.48333333333333334,
+      "sourceBoundaryEvidence": {
+        "mean": 25.727947235107422,
+        "median": 20.874540328979492,
+        "p90": 38.12401580810547
+      }
+    },
+    {
+      "areaRatio": 1.1057176660511506e-05,
+      "boundaryOverlay": "cp-b-balanced_rc-a/FLD-001/edge-15-389-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 0.6666666666666666,
+        "tolerance1px": 1.0
+      },
+      "fixture": "FLD-001",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-balanced_rc-a/FLD-001/edge-15-389-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "MODERATE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "STRICT": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        }
+      },
+      "profile": "cp-b-balanced_rc-a",
+      "regionA": 15,
+      "regionB": 389,
+      "representativeColorA": [
+        249,
+        207,
+        0
+      ],
+      "representativeColorB": [
+        156,
+        128,
+        54
+      ],
+      "representativeDeltaE00": 25.346759384045782,
+      "selectionReasons": [
+        "WEAKEST_SOURCE_BOUNDARY"
+      ],
+      "sharedBoundaryCoverage": 0.5,
+      "sourceBoundaryEvidence": {
+        "mean": 23.711544036865234,
+        "median": 23.711544036865234,
+        "p90": 24.40703582763672
+      }
+    },
+    {
+      "areaRatio": 0.0012869214667803705,
+      "boundaryOverlay": "cp-b-balanced_rc-a/FLD-002/edge-1-3-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 0.0,
+        "tolerance1px": 0.0
+      },
+      "fixture": "FLD-002",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-balanced_rc-a/FLD-002/edge-1-3-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "MODERATE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "STRICT": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        }
+      },
+      "profile": "cp-b-balanced_rc-a",
+      "regionA": 1,
+      "regionB": 3,
+      "representativeColorA": [
+        178,
+        178,
+        178
+      ],
+      "representativeColorB": [
+        2,
+        2,
+        2
+      ],
+      "representativeDeltaE00": 60.49939944749454,
+      "selectionReasons": [
+        "LOWEST_BOUNDARY_PERSISTENCE"
+      ],
+      "sharedBoundaryCoverage": 0.49404761904761907,
+      "sourceBoundaryEvidence": {
+        "mean": 60.330196380615234,
+        "median": 60.68010711669922,
+        "p90": 72.64555358886719
+      }
+    },
+    {
+      "areaRatio": 0.007225366307465695,
+      "boundaryOverlay": "cp-b-balanced_rc-a/FLD-002/edge-3-46-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 0.8285101822079314,
+        "tolerance1px": 1.0
+      },
+      "fixture": "FLD-002",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-balanced_rc-a/FLD-002/edge-3-46-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "MODERATE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "STRICT": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        }
+      },
+      "profile": "cp-b-balanced_rc-a",
+      "regionA": 3,
+      "regionB": 46,
+      "representativeColorA": [
+        2,
+        2,
+        2
+      ],
+      "representativeColorB": [
+        92,
+        11,
+        4
+      ],
+      "representativeDeltaE00": 26.061536731415913,
+      "selectionReasons": [
+        "LOWEST_REPRESENTATIVE_DELTA_E",
+        "WEAKEST_SOURCE_BOUNDARY"
+      ],
+      "sharedBoundaryCoverage": 0.5,
+      "sourceBoundaryEvidence": {
+        "mean": 17.03801155090332,
+        "median": 16.21530532836914,
+        "p90": 23.44349479675293
+      }
+    },
+    {
+      "areaRatio": 0.00860441961034908,
+      "boundaryOverlay": "cp-b-balanced_rc-a/FLD-003/edge-1-3-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 0.0,
+        "tolerance1px": 0.0
+      },
+      "fixture": "FLD-003",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-balanced_rc-a/FLD-003/edge-1-3-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "MODERATE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "STRICT": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        }
+      },
+      "profile": "cp-b-balanced_rc-a",
+      "regionA": 1,
+      "regionB": 3,
+      "representativeColorA": [
+        227,
+        176,
+        121
+      ],
+      "representativeColorB": [
+        253,
+        240,
+        215
+      ],
+      "representativeDeltaE00": 18.401016833162803,
+      "selectionReasons": [
+        "LOWEST_BOUNDARY_PERSISTENCE"
+      ],
+      "sharedBoundaryCoverage": 0.4978494623655914,
+      "sourceBoundaryEvidence": {
+        "mean": 9.840312957763672,
+        "median": 10.208248138427734,
+        "p90": 14.015606880187988
+      }
+    },
+    {
+      "areaRatio": 0.008242054943243505,
+      "boundaryOverlay": "cp-b-balanced_rc-a/FLD-003/edge-2-4-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 0.8698224852071006,
+        "tolerance1px": 1.0
+      },
+      "fixture": "FLD-003",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-balanced_rc-a/FLD-003/edge-2-4-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "MODERATE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": true
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "STRICT": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        }
+      },
+      "profile": "cp-b-balanced_rc-a",
+      "regionA": 2,
+      "regionB": 4,
+      "representativeColorA": [
+        253,
+        249,
+        202
+      ],
+      "representativeColorB": [
+        235,
+        190,
+        132
+      ],
+      "representativeDeltaE00": 17.369620097541777,
+      "selectionReasons": [
+        "LOWEST_REPRESENTATIVE_DELTA_E"
+      ],
+      "sharedBoundaryCoverage": 1.0,
+      "sourceBoundaryEvidence": {
+        "mean": 6.929997444152832,
+        "median": 7.399080276489258,
+        "p90": 9.8473539352417
+      }
+    },
+    {
+      "areaRatio": 0.011919716700676986,
+      "boundaryOverlay": "cp-b-balanced_rc-a/FLD-003/edge-2-13-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 0.8080568720379147,
+        "tolerance1px": 1.0
+      },
+      "fixture": "FLD-003",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-balanced_rc-a/FLD-003/edge-2-13-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "MODERATE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": true
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "STRICT": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        }
+      },
+      "profile": "cp-b-balanced_rc-a",
+      "regionA": 2,
+      "regionB": 13,
+      "representativeColorA": [
+        253,
+        249,
+        202
+      ],
+      "representativeColorB": [
+        233,
+        186,
+        131
+      ],
+      "representativeDeltaE00": 18.383444685439912,
+      "selectionReasons": [
+        "WEAKEST_SOURCE_BOUNDARY"
+      ],
+      "sharedBoundaryCoverage": 1.0,
+      "sourceBoundaryEvidence": {
+        "mean": 5.983486652374268,
+        "median": 5.729012489318848,
+        "p90": 8.222968101501465
+      }
+    },
+    {
+      "areaRatio": 9.951946316358156e-05,
+      "boundaryOverlay": "cp-b-balanced_rc-a/FLD-004/edge-3-69-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 0.0,
+        "tolerance1px": 0.0
+      },
+      "fixture": "FLD-004",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-balanced_rc-a/FLD-004/edge-3-69-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "MODERATE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "STRICT": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        }
+      },
+      "profile": "cp-b-balanced_rc-a",
+      "regionA": 3,
+      "regionB": 69,
+      "representativeColorA": [
+        4,
+        2,
+        0
+      ],
+      "representativeColorB": [
+        165,
+        165,
+        165
+      ],
+      "representativeDeltaE00": 54.69360753225271,
+      "selectionReasons": [
+        "LOWEST_BOUNDARY_PERSISTENCE"
+      ],
+      "sharedBoundaryCoverage": 0.5,
+      "sourceBoundaryEvidence": {
+        "mean": 39.131839752197266,
+        "median": 35.86910629272461,
+        "p90": 65.24649810791016
+      }
+    },
+    {
+      "areaRatio": 0.5057875155022736,
+      "boundaryOverlay": "cp-b-balanced_rc-a/FLD-004/edge-16-82-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 0.04918032786885246,
+        "tolerance1px": 0.5737704918032787
+      },
+      "fixture": "FLD-004",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-balanced_rc-a/FLD-004/edge-16-82-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": true,
+              "sufficientSharedBoundaryCoverage": false,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": true,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "MODERATE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": true,
+              "sufficientSharedBoundaryCoverage": false,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": true,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": true
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "STRICT": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": true,
+              "sufficientSharedBoundaryCoverage": false,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": true,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        }
+      },
+      "profile": "cp-b-balanced_rc-a",
+      "regionA": 16,
+      "regionB": 82,
+      "representativeColorA": [
+        253,
+        204,
+        209
+      ],
+      "representativeColorB": [
+        254,
+        222,
+        222
+      ],
+      "representativeDeltaE00": 6.004010439519696,
+      "selectionReasons": [
+        "LOWEST_REPRESENTATIVE_DELTA_E",
+        "WEAKEST_SOURCE_BOUNDARY"
+      ],
+      "sharedBoundaryCoverage": 0.06711409395973154,
+      "sourceBoundaryEvidence": {
+        "mean": 4.775463104248047,
+        "median": 4.56478214263916,
+        "p90": 8.244091033935547
+      }
+    },
+    {
+      "areaRatio": 0.00019235393123346957,
+      "boundaryOverlay": "cp-b-balanced_rc-a/FLD-005/edge-1-3-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 0.0,
+        "tolerance1px": 0.0
+      },
+      "fixture": "FLD-005",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-balanced_rc-a/FLD-005/edge-1-3-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "MODERATE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "STRICT": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        }
+      },
+      "profile": "cp-b-balanced_rc-a",
+      "regionA": 1,
+      "regionB": 3,
+      "representativeColorA": [
+        192,
+        192,
+        192
+      ],
+      "representativeColorB": [
+        4,
+        2,
+        0
+      ],
+      "representativeDeltaE00": 66.87770645073527,
+      "selectionReasons": [
+        "LOWEST_BOUNDARY_PERSISTENCE"
+      ],
+      "sharedBoundaryCoverage": 0.4,
+      "sourceBoundaryEvidence": {
+        "mean": 67.42422485351562,
+        "median": 66.61404418945312,
+        "p90": 77.02747344970703
+      }
+    },
+    {
+      "areaRatio": 0.2809413799159675,
+      "boundaryOverlay": "cp-b-balanced_rc-a/FLD-005/edge-3-125-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 0.9459334565619224,
+        "tolerance1px": 1.0
+      },
+      "fixture": "FLD-005",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-balanced_rc-a/FLD-005/edge-3-125-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "MODERATE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "STRICT": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        }
+      },
+      "profile": "cp-b-balanced_rc-a",
+      "regionA": 3,
+      "regionB": 125,
+      "representativeColorA": [
+        4,
+        2,
+        0
+      ],
+      "representativeColorB": [
+        243,
+        61,
+        65
+      ],
+      "representativeDeltaE00": 49.903408684172,
+      "selectionReasons": [
+        "WEAKEST_SOURCE_BOUNDARY"
+      ],
+      "sharedBoundaryCoverage": 1.0,
+      "sourceBoundaryEvidence": {
+        "mean": 23.47920036315918,
+        "median": 25.340816497802734,
+        "p90": 30.608613967895508
+      }
+    },
+    {
+      "areaRatio": 0.0037045748559332,
+      "boundaryOverlay": "cp-b-balanced_rc-a/FLD-005/edge-127-128-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 0.5040650406504065,
+        "tolerance1px": 1.0
+      },
+      "fixture": "FLD-005",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-balanced_rc-a/FLD-005/edge-127-128-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "MODERATE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "STRICT": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        }
+      },
+      "profile": "cp-b-balanced_rc-a",
+      "regionA": 127,
+      "regionB": 128,
+      "representativeColorA": [
+        255,
+        232,
+        66
+      ],
+      "representativeColorB": [
+        154,
+        147,
+        80
+      ],
+      "representativeDeltaE00": 25.680307679314136,
+      "selectionReasons": [
+        "LOWEST_REPRESENTATIVE_DELTA_E"
+      ],
+      "sharedBoundaryCoverage": 0.484375,
+      "sourceBoundaryEvidence": {
+        "mean": 27.341455459594727,
+        "median": 25.98294448852539,
+        "p90": 32.120018005371094
+      }
+    },
+    {
+      "areaRatio": 0.00016643365954330605,
+      "boundaryOverlay": "cp-b-balanced_rc-a/FLD-006/edge-2-5-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 0.0,
+        "tolerance1px": 0.0
+      },
+      "fixture": "FLD-006",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-balanced_rc-a/FLD-006/edge-2-5-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "MODERATE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "STRICT": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        }
+      },
+      "profile": "cp-b-balanced_rc-a",
+      "regionA": 2,
+      "regionB": 5,
+      "representativeColorA": [
+        173,
+        173,
+        173
+      ],
+      "representativeColorB": [
+        3,
+        3,
+        3
+      ],
+      "representativeDeltaE00": 57.93163371586627,
+      "selectionReasons": [
+        "LOWEST_BOUNDARY_PERSISTENCE"
+      ],
+      "sharedBoundaryCoverage": 0.5,
+      "sourceBoundaryEvidence": {
+        "mean": 44.374847412109375,
+        "median": 50.046913146972656,
+        "p90": 58.28083038330078
+      }
+    },
+    {
+      "areaRatio": 0.006776081312975755,
+      "boundaryOverlay": "cp-b-balanced_rc-a/FLD-006/edge-24-233-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 0.07258064516129033,
+        "tolerance1px": 0.49193548387096775
+      },
+      "fixture": "FLD-006",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-balanced_rc-a/FLD-006/edge-24-233-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": true,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": true
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "MODERATE": {
+          "decision": "SAFE_MERGE",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": true
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": true,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": true
+            }
+          },
+          "triggeredRoutes": [
+            "COHERENT_SPLIT_REPAIR"
+          ],
+          "vetoes": []
+        },
+        "STRICT": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": true
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        }
+      },
+      "profile": "cp-b-balanced_rc-a",
+      "regionA": 24,
+      "regionB": 233,
+      "representativeColorA": [
+        254,
+        253,
+        251
+      ],
+      "representativeColorB": [
+        253,
+        225,
+        213
+      ],
+      "representativeDeltaE00": 11.743696203584385,
+      "selectionReasons": [
+        "SAFE_MERGE_CANDIDATE",
+        "WEAKEST_SOURCE_BOUNDARY"
+      ],
+      "sharedBoundaryCoverage": 1.0,
+      "sourceBoundaryEvidence": {
+        "mean": 2.242180109024048,
+        "median": 2.117663860321045,
+        "p90": 3.265674352645874
+      }
+    },
+    {
+      "areaRatio": 0.007191641855257819,
+      "boundaryOverlay": "cp-b-balanced_rc-a/FLD-006/edge-24-234-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 0.10714285714285714,
+        "tolerance1px": 0.5674603174603174
+      },
+      "fixture": "FLD-006",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-balanced_rc-a/FLD-006/edge-24-234-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": true,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": true
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "MODERATE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": true
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": true,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": true
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "STRICT": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": true
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        }
+      },
+      "profile": "cp-b-balanced_rc-a",
+      "regionA": 24,
+      "regionB": 234,
+      "representativeColorA": [
+        254,
+        253,
+        251
+      ],
+      "representativeColorB": [
+        253,
+        227,
+        216
+      ],
+      "representativeDeltaE00": 10.880169137607568,
+      "selectionReasons": [
+        "LOWEST_REPRESENTATIVE_DELTA_E"
+      ],
+      "sharedBoundaryCoverage": 1.0,
+      "sourceBoundaryEvidence": {
+        "mean": 2.372007369995117,
+        "median": 2.275660514831543,
+        "p90": 3.612544298171997
+      }
+    },
+    {
+      "areaRatio": 0.0009489277116857951,
+      "boundaryOverlay": "cp-b-balanced_rc-a/FLD-007/edge-2-69-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 0.0,
+        "tolerance1px": 0.0
+      },
+      "fixture": "FLD-007",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-balanced_rc-a/FLD-007/edge-2-69-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "PRESERVE",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": false,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": [
+            "TOPOLOGY_GLOBAL_VOID"
+          ]
+        },
+        "MODERATE": {
+          "decision": "PRESERVE",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": false,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": [
+            "TOPOLOGY_GLOBAL_VOID"
+          ]
+        },
+        "STRICT": {
+          "decision": "PRESERVE",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": false,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": false,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": [
+            "TOPOLOGY_GLOBAL_VOID"
+          ]
+        }
+      },
+      "profile": "cp-b-balanced_rc-a",
+      "regionA": 2,
+      "regionB": 69,
+      "representativeColorA": [
+        253,
+        35,
+        10
+      ],
+      "representativeColorB": [
+        255,
+        228,
+        217
+      ],
+      "representativeDeltaE00": 38.182523842690514,
+      "selectionReasons": [
+        "LOWEST_BOUNDARY_PERSISTENCE"
+      ],
+      "sharedBoundaryCoverage": 0.04741379310344827,
+      "sourceBoundaryEvidence": {
+        "mean": 24.87775421142578,
+        "median": 27.59572982788086,
+        "p90": 34.51152038574219
+      }
+    },
+    {
+      "areaRatio": 0.0020976296784633365,
+      "boundaryOverlay": "cp-b-balanced_rc-a/FLD-007/edge-2-89-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 0.004830917874396135,
+        "tolerance1px": 0.21497584541062803
+      },
+      "fixture": "FLD-007",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-balanced_rc-a/FLD-007/edge-2-89-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "PRESERVE",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": [
+            "TOPOLOGY_GLOBAL_VOID"
+          ]
+        },
+        "MODERATE": {
+          "decision": "PRESERVE",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": true
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": [
+            "TOPOLOGY_GLOBAL_VOID"
+          ]
+        },
+        "STRICT": {
+          "decision": "PRESERVE",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": [
+            "TOPOLOGY_GLOBAL_VOID"
+          ]
+        }
+      },
+      "profile": "cp-b-balanced_rc-a",
+      "regionA": 2,
+      "regionB": 89,
+      "representativeColorA": [
+        253,
+        35,
+        10
+      ],
+      "representativeColorB": [
+        213,
+        128,
+        119
+      ],
+      "representativeDeltaE00": 18.059674580615052,
+      "selectionReasons": [
+        "WEAKEST_SOURCE_BOUNDARY"
+      ],
+      "sharedBoundaryCoverage": 0.5,
+      "sourceBoundaryEvidence": {
+        "mean": 5.737826347351074,
+        "median": 5.356396675109863,
+        "p90": 9.244182586669922
+      }
+    },
+    {
+      "areaRatio": 0.6896551724137931,
+      "boundaryOverlay": "cp-b-balanced_rc-a/FLD-007/edge-18-82-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 0.6666666666666666,
+        "tolerance1px": 1.0
+      },
+      "fixture": "FLD-007",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-balanced_rc-a/FLD-007/edge-18-82-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "PRESERVE",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": true,
+              "sufficientSharedBoundaryCoverage": false,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": true,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": false,
+              "sufficientSharedBoundaryCoverage": false,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": [
+            "TOPOLOGY_GLOBAL_VOID"
+          ]
+        },
+        "MODERATE": {
+          "decision": "PRESERVE",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": true,
+              "sufficientSharedBoundaryCoverage": false,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": true,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": false,
+              "sufficientSharedBoundaryCoverage": false,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": [
+            "TOPOLOGY_GLOBAL_VOID"
+          ]
+        },
+        "STRICT": {
+          "decision": "PRESERVE",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": true,
+              "sufficientSharedBoundaryCoverage": false,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": true,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": false,
+              "sufficientSharedBoundaryCoverage": false,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": [
+            "TOPOLOGY_GLOBAL_VOID"
+          ]
+        }
+      },
+      "profile": "cp-b-balanced_rc-a",
+      "regionA": 18,
+      "regionB": 82,
+      "representativeColorA": [
+        255,
+        249,
+        238
+      ],
+      "representativeColorB": [
+        255,
+        249,
+        230
+      ],
+      "representativeDeltaE00": 3.6189448339004353,
+      "selectionReasons": [
+        "LOWEST_REPRESENTATIVE_DELTA_E"
+      ],
+      "sharedBoundaryCoverage": 0.0019455252918287938,
+      "sourceBoundaryEvidence": {
+        "mean": 11.832687377929688,
+        "median": 11.832687377929688,
+        "p90": 13.33705997467041
+      }
+    },
+    {
+      "areaRatio": 3.651434100743067e-05,
+      "boundaryOverlay": "cp-b-balanced_rc-a/FLD-008/edge-1-3-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 0.0,
+        "tolerance1px": 0.0
+      },
+      "fixture": "FLD-008",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-balanced_rc-a/FLD-008/edge-1-3-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "MODERATE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "STRICT": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        }
+      },
+      "profile": "cp-b-balanced_rc-a",
+      "regionA": 1,
+      "regionB": 3,
+      "representativeColorA": [
+        181,
+        181,
+        181
+      ],
+      "representativeColorB": [
+        2,
+        2,
+        2
+      ],
+      "representativeDeltaE00": 61.96460980921556,
+      "selectionReasons": [
+        "LOWEST_BOUNDARY_PERSISTENCE"
+      ],
+      "sharedBoundaryCoverage": 0.5,
+      "sourceBoundaryEvidence": {
+        "mean": 43.97818374633789,
+        "median": 49.81539535522461,
+        "p90": 62.87515640258789
+      }
+    },
+    {
+      "areaRatio": 0.006092783010570419,
+      "boundaryOverlay": "cp-b-balanced_rc-a/FLD-008/edge-48-217-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 0.3050847457627119,
+        "tolerance1px": 0.7476459510357816
+      },
+      "fixture": "FLD-008",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-balanced_rc-a/FLD-008/edge-48-217-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": true
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "MODERATE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": true
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "STRICT": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        }
+      },
+      "profile": "cp-b-balanced_rc-a",
+      "regionA": 48,
+      "regionB": 217,
+      "representativeColorA": [
+        250,
+        31,
+        24
+      ],
+      "representativeColorB": [
+        79,
+        1,
+        1
+      ],
+      "representativeDeltaE00": 35.12294315273715,
+      "selectionReasons": [
+        "WEAKEST_SOURCE_BOUNDARY"
+      ],
+      "sharedBoundaryCoverage": 0.5012722646310432,
+      "sourceBoundaryEvidence": {
+        "mean": 4.257321357727051,
+        "median": 4.230365753173828,
+        "p90": 5.97596549987793
+      }
+    },
+    {
+      "areaRatio": 0.37965331059960217,
+      "boundaryOverlay": "cp-b-balanced_rc-a/FLD-008/edge-51-159-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 0.6859504132231405,
+        "tolerance1px": 0.9917355371900827
+      },
+      "fixture": "FLD-008",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-balanced_rc-a/FLD-008/edge-51-159-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": true,
+              "sufficientSharedBoundaryCoverage": false,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": true,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "MODERATE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": true,
+              "sufficientSharedBoundaryCoverage": false,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": true,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "STRICT": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": true,
+              "sufficientSharedBoundaryCoverage": false,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": true,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        }
+      },
+      "profile": "cp-b-balanced_rc-a",
+      "regionA": 51,
+      "regionB": 159,
+      "representativeColorA": [
+        21,
+        2,
+        2
+      ],
+      "representativeColorB": [
+        15,
+        1,
+        2
+      ],
+      "representativeDeltaE00": 2.401626992666889,
+      "selectionReasons": [
+        "LOWEST_REPRESENTATIVE_DELTA_E"
+      ],
+      "sharedBoundaryCoverage": 0.11413043478260869,
+      "sourceBoundaryEvidence": {
+        "mean": 10.344953536987305,
+        "median": 11.077413558959961,
+        "p90": 15.112039566040039
+      }
+    },
+    {
+      "areaRatio": 0.0001033004493569547,
+      "boundaryOverlay": "cp-b-aggressive_rc-a/FLD-001/edge-1-45-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 0.0,
+        "tolerance1px": 0.0
+      },
+      "fixture": "FLD-001",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-aggressive_rc-a/FLD-001/edge-1-45-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "MODERATE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "STRICT": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        }
+      },
+      "profile": "cp-b-aggressive_rc-a",
+      "regionA": 1,
+      "regionB": 45,
+      "representativeColorA": [
+        3,
+        3,
+        3
+      ],
+      "representativeColorB": [
+        212,
+        208,
+        211
+      ],
+      "representativeDeltaE00": 75.99283165746098,
+      "selectionReasons": [
+        "LOWEST_BOUNDARY_PERSISTENCE"
+      ],
+      "sharedBoundaryCoverage": 0.5,
+      "sourceBoundaryEvidence": {
+        "mean": 54.81646728515625,
+        "median": 67.41532897949219,
+        "p90": 79.49154663085938
+      }
+    },
+    {
+      "areaRatio": 0.0002066008987139094,
+      "boundaryOverlay": "cp-b-aggressive_rc-a/FLD-001/edge-1-68-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 1.0,
+        "tolerance1px": 1.0
+      },
+      "fixture": "FLD-001",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-aggressive_rc-a/FLD-001/edge-1-68-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "MODERATE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "STRICT": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        }
+      },
+      "profile": "cp-b-aggressive_rc-a",
+      "regionA": 1,
+      "regionB": 68,
+      "representativeColorA": [
+        3,
+        3,
+        3
+      ],
+      "representativeColorB": [
+        170,
+        173,
+        159
+      ],
+      "representativeDeltaE00": 57.96536978481265,
+      "selectionReasons": [
+        "LOWEST_REPRESENTATIVE_DELTA_E"
+      ],
+      "sharedBoundaryCoverage": 0.4,
+      "sourceBoundaryEvidence": {
+        "mean": 56.40876388549805,
+        "median": 63.436424255371094,
+        "p90": 71.00829315185547
+      }
+    },
+    {
+      "areaRatio": 0.0003099013480708641,
+      "boundaryOverlay": "cp-b-aggressive_rc-a/FLD-001/edge-1-70-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 1.0,
+        "tolerance1px": 1.0
+      },
+      "fixture": "FLD-001",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-aggressive_rc-a/FLD-001/edge-1-70-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "MODERATE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "STRICT": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        }
+      },
+      "profile": "cp-b-aggressive_rc-a",
+      "regionA": 1,
+      "regionB": 70,
+      "representativeColorA": [
+        3,
+        3,
+        3
+      ],
+      "representativeColorB": [
+        252,
+        245,
+        232
+      ],
+      "representativeDeltaE00": 95.57600088682437,
+      "selectionReasons": [
+        "WEAKEST_SOURCE_BOUNDARY"
+      ],
+      "sharedBoundaryCoverage": 0.2777777777777778,
+      "sourceBoundaryEvidence": {
+        "mean": 47.36137008666992,
+        "median": 47.57046127319336,
+        "p90": 57.400001525878906
+      }
+    },
+    {
+      "areaRatio": 0.02406167386933878,
+      "boundaryOverlay": "cp-b-aggressive_rc-a/FLD-002/edge-1-6-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 0.3943452380952381,
+        "tolerance1px": 0.8883928571428571
+      },
+      "fixture": "FLD-002",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-aggressive_rc-a/FLD-002/edge-1-6-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "MODERATE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "STRICT": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        }
+      },
+      "profile": "cp-b-aggressive_rc-a",
+      "regionA": 1,
+      "regionB": 6,
+      "representativeColorA": [
+        2,
+        2,
+        2
+      ],
+      "representativeColorB": [
+        72,
+        0,
+        0
+      ],
+      "representativeDeltaE00": 23.78106646334722,
+      "selectionReasons": [
+        "WEAKEST_SOURCE_BOUNDARY"
+      ],
+      "sharedBoundaryCoverage": 0.5167883211678832,
+      "sourceBoundaryEvidence": {
+        "mean": 11.406994819641113,
+        "median": 11.595403671264648,
+        "p90": 14.99388313293457
+      }
+    },
+    {
+      "areaRatio": 0.04210792927134286,
+      "boundaryOverlay": "cp-b-aggressive_rc-a/FLD-002/edge-1-8-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 0.3086472602739726,
+        "tolerance1px": 0.745291095890411
+      },
+      "fixture": "FLD-002",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-aggressive_rc-a/FLD-002/edge-1-8-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "MODERATE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "STRICT": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        }
+      },
+      "profile": "cp-b-aggressive_rc-a",
+      "regionA": 1,
+      "regionB": 8,
+      "representativeColorA": [
+        2,
+        2,
+        2
+      ],
+      "representativeColorB": [
+        67,
+        5,
+        2
+      ],
+      "representativeDeltaE00": 22.948584982568015,
+      "selectionReasons": [
+        "LOWEST_BOUNDARY_PERSISTENCE",
+        "LOWEST_REPRESENTATIVE_DELTA_E"
+      ],
+      "sharedBoundaryCoverage": 0.5043653458697113,
+      "sourceBoundaryEvidence": {
+        "mean": 10.768712997436523,
+        "median": 10.045440673828125,
+        "p90": 16.839609146118164
+      }
+    },
+    {
+      "areaRatio": 0.01393696621570554,
+      "boundaryOverlay": "cp-b-aggressive_rc-a/FLD-003/edge-1-2-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 0.0,
+        "tolerance1px": 0.0
+      },
+      "fixture": "FLD-003",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-aggressive_rc-a/FLD-003/edge-1-2-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "MODERATE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "STRICT": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        }
+      },
+      "profile": "cp-b-aggressive_rc-a",
+      "regionA": 1,
+      "regionB": 2,
+      "representativeColorA": [
+        253,
+        243,
+        217
+      ],
+      "representativeColorB": [
+        227,
+        176,
+        123
+      ],
+      "representativeDeltaE00": 19.22237698921675,
+      "selectionReasons": [
+        "LOWEST_BOUNDARY_PERSISTENCE"
+      ],
+      "sharedBoundaryCoverage": 0.4944620253164557,
+      "sourceBoundaryEvidence": {
+        "mean": 8.877063751220703,
+        "median": 8.613012313842773,
+        "p90": 13.373831748962402
+      }
+    },
+    {
+      "areaRatio": 0.007987292686511481,
+      "boundaryOverlay": "cp-b-aggressive_rc-a/FLD-003/edge-3-4-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 0.875,
+        "tolerance1px": 1.0
+      },
+      "fixture": "FLD-003",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-aggressive_rc-a/FLD-003/edge-3-4-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "MODERATE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": true
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "STRICT": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        }
+      },
+      "profile": "cp-b-aggressive_rc-a",
+      "regionA": 3,
+      "regionB": 4,
+      "representativeColorA": [
+        253,
+        249,
+        202
+      ],
+      "representativeColorB": [
+        235,
+        190,
+        132
+      ],
+      "representativeDeltaE00": 17.369620097541777,
+      "selectionReasons": [
+        "LOWEST_REPRESENTATIVE_DELTA_E"
+      ],
+      "sharedBoundaryCoverage": 1.0,
+      "sourceBoundaryEvidence": {
+        "mean": 6.855357646942139,
+        "median": 7.268415451049805,
+        "p90": 9.831226348876953
+      }
+    },
+    {
+      "areaRatio": 0.011424146156715996,
+      "boundaryOverlay": "cp-b-aggressive_rc-a/FLD-003/edge-3-13-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 0.8119047619047619,
+        "tolerance1px": 1.0
+      },
+      "fixture": "FLD-003",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-aggressive_rc-a/FLD-003/edge-3-13-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "MODERATE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": true
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "STRICT": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        }
+      },
+      "profile": "cp-b-aggressive_rc-a",
+      "regionA": 3,
+      "regionB": 13,
+      "representativeColorA": [
+        253,
+        249,
+        202
+      ],
+      "representativeColorB": [
+        233,
+        186,
+        131
+      ],
+      "representativeDeltaE00": 18.383444685439912,
+      "selectionReasons": [
+        "WEAKEST_SOURCE_BOUNDARY"
+      ],
+      "sharedBoundaryCoverage": 1.0,
+      "sourceBoundaryEvidence": {
+        "mean": 6.066972732543945,
+        "median": 5.819614410400391,
+        "p90": 8.200797080993652
+      }
+    },
+    {
+      "areaRatio": 2.7949746356051818e-05,
+      "boundaryOverlay": "cp-b-aggressive_rc-a/FLD-004/edge-3-58-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 0.0,
+        "tolerance1px": 0.0
+      },
+      "fixture": "FLD-004",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-aggressive_rc-a/FLD-004/edge-3-58-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "MODERATE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "STRICT": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        }
+      },
+      "profile": "cp-b-aggressive_rc-a",
+      "regionA": 3,
+      "regionB": 58,
+      "representativeColorA": [
+        4,
+        2,
+        0
+      ],
+      "representativeColorB": [
+        226,
+        226,
+        226
+      ],
+      "representativeDeltaE00": 84.38978132245825,
+      "selectionReasons": [
+        "LOWEST_BOUNDARY_PERSISTENCE"
+      ],
+      "sharedBoundaryCoverage": 0.25,
+      "sourceBoundaryEvidence": {
+        "mean": 47.762786865234375,
+        "median": 47.762786865234375,
+        "p90": 64.84872436523438
+      }
+    },
+    {
+      "areaRatio": 1.3974873178025909e-05,
+      "boundaryOverlay": "cp-b-aggressive_rc-a/FLD-004/edge-3-153-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 1.0,
+        "tolerance1px": 1.0
+      },
+      "fixture": "FLD-004",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-aggressive_rc-a/FLD-004/edge-3-153-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "MODERATE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "STRICT": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        }
+      },
+      "profile": "cp-b-aggressive_rc-a",
+      "regionA": 3,
+      "regionB": 153,
+      "representativeColorA": [
+        4,
+        2,
+        0
+      ],
+      "representativeColorB": [
+        243,
+        245,
+        245
+      ],
+      "representativeDeltaE00": 95.12792327149003,
+      "selectionReasons": [
+        "WEAKEST_SOURCE_BOUNDARY"
+      ],
+      "sharedBoundaryCoverage": 0.25,
+      "sourceBoundaryEvidence": {
+        "mean": 33.370521545410156,
+        "median": 33.370521545410156,
+        "p90": 33.370521545410156
+      }
+    },
+    {
+      "areaRatio": 0.00018167335131433681,
+      "boundaryOverlay": "cp-b-aggressive_rc-a/FLD-004/edge-3-246-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 0.8666666666666667,
+        "tolerance1px": 1.0
+      },
+      "fixture": "FLD-004",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-aggressive_rc-a/FLD-004/edge-3-246-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "MODERATE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "STRICT": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        }
+      },
+      "profile": "cp-b-aggressive_rc-a",
+      "regionA": 3,
+      "regionB": 246,
+      "representativeColorA": [
+        4,
+        2,
+        0
+      ],
+      "representativeColorB": [
+        155,
+        155,
+        155
+      ],
+      "representativeDeltaE00": 50.25424937731779,
+      "selectionReasons": [
+        "LOWEST_REPRESENTATIVE_DELTA_E"
+      ],
+      "sharedBoundaryCoverage": 0.32142857142857145,
+      "sourceBoundaryEvidence": {
+        "mean": 42.49367141723633,
+        "median": 46.675228118896484,
+        "p90": 61.90267562866211
+      }
+    },
+    {
+      "areaRatio": 0.09689025957337445,
+      "boundaryOverlay": "cp-b-aggressive_rc-a/FLD-005/edge-1-20-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 0.18744271310724106,
+        "tolerance1px": 0.7071494042163153
+      },
+      "fixture": "FLD-005",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-aggressive_rc-a/FLD-005/edge-1-20-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "MODERATE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "STRICT": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        }
+      },
+      "profile": "cp-b-aggressive_rc-a",
+      "regionA": 1,
+      "regionB": 20,
+      "representativeColorA": [
+        4,
+        2,
+        0
+      ],
+      "representativeColorB": [
+        41,
+        0,
+        0
+      ],
+      "representativeDeltaE00": 17.768455622371143,
+      "selectionReasons": [
+        "LOWEST_REPRESENTATIVE_DELTA_E",
+        "WEAKEST_SOURCE_BOUNDARY"
+      ],
+      "sharedBoundaryCoverage": 0.508347245409015,
+      "sourceBoundaryEvidence": {
+        "mean": 11.076375961303711,
+        "median": 11.493363380432129,
+        "p90": 15.65372085571289
+      }
+    },
+    {
+      "areaRatio": 0.00010280133641737343,
+      "boundaryOverlay": "cp-b-aggressive_rc-a/FLD-005/edge-1-28-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 0.0,
+        "tolerance1px": 0.0
+      },
+      "fixture": "FLD-005",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-aggressive_rc-a/FLD-005/edge-1-28-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "MODERATE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "STRICT": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        }
+      },
+      "profile": "cp-b-aggressive_rc-a",
+      "regionA": 1,
+      "regionB": 28,
+      "representativeColorA": [
+        4,
+        2,
+        0
+      ],
+      "representativeColorB": [
+        211,
+        208,
+        213
+      ],
+      "representativeDeltaE00": 75.44494141950143,
+      "selectionReasons": [
+        "LOWEST_BOUNDARY_PERSISTENCE"
+      ],
+      "sharedBoundaryCoverage": 0.5,
+      "sourceBoundaryEvidence": {
+        "mean": 54.09878158569336,
+        "median": 67.40855407714844,
+        "p90": 78.34479522705078
+      }
+    },
+    {
+      "areaRatio": 6.368818265770787e-05,
+      "boundaryOverlay": "cp-b-aggressive_rc-a/FLD-006/edge-2-3-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 0.0,
+        "tolerance1px": 0.0
+      },
+      "fixture": "FLD-006",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-aggressive_rc-a/FLD-006/edge-2-3-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "MODERATE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "STRICT": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        }
+      },
+      "profile": "cp-b-aggressive_rc-a",
+      "regionA": 2,
+      "regionB": 3,
+      "representativeColorA": [
+        3,
+        3,
+        3
+      ],
+      "representativeColorB": [
+        209,
+        209,
+        209
+      ],
+      "representativeDeltaE00": 75.64696065991858,
+      "selectionReasons": [
+        "LOWEST_BOUNDARY_PERSISTENCE"
+      ],
+      "sharedBoundaryCoverage": 0.5,
+      "sourceBoundaryEvidence": {
+        "mean": 46.990203857421875,
+        "median": 63.66564178466797,
+        "p90": 64.75568389892578
+      }
+    },
+    {
+      "areaRatio": 0.005756232284322989,
+      "boundaryOverlay": "cp-b-aggressive_rc-a/FLD-006/edge-6-21-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 0.1134453781512605,
+        "tolerance1px": 0.5210084033613446
+      },
+      "fixture": "FLD-006",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-aggressive_rc-a/FLD-006/edge-6-21-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": true
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": true,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": true
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "MODERATE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": true
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": true,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": true
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "STRICT": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": true
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        }
+      },
+      "profile": "cp-b-aggressive_rc-a",
+      "regionA": 6,
+      "regionB": 21,
+      "representativeColorA": [
+        254,
+        253,
+        251
+      ],
+      "representativeColorB": [
+        255,
+        227,
+        216
+      ],
+      "representativeDeltaE00": 11.55983131916966,
+      "selectionReasons": [
+        "LOWEST_REPRESENTATIVE_DELTA_E",
+        "WEAKEST_SOURCE_BOUNDARY"
+      ],
+      "sharedBoundaryCoverage": 1.0,
+      "sourceBoundaryEvidence": {
+        "mean": 1.782728672027588,
+        "median": 1.5462785959243774,
+        "p90": 2.611968994140625
+      }
+    },
+    {
+      "areaRatio": 0.005257165007146837,
+      "boundaryOverlay": "cp-b-aggressive_rc-a/FLD-006/edge-6-22-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 0.07692307692307693,
+        "tolerance1px": 0.49145299145299143
+      },
+      "fixture": "FLD-006",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-aggressive_rc-a/FLD-006/edge-6-22-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": true,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": true
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "MODERATE": {
+          "decision": "SAFE_MERGE",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": true
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": true,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": true
+            }
+          },
+          "triggeredRoutes": [
+            "COHERENT_SPLIT_REPAIR"
+          ],
+          "vetoes": []
+        },
+        "STRICT": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": true
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        }
+      },
+      "profile": "cp-b-aggressive_rc-a",
+      "regionA": 6,
+      "regionB": 22,
+      "representativeColorA": [
+        254,
+        253,
+        251
+      ],
+      "representativeColorB": [
+        253,
+        225,
+        213
+      ],
+      "representativeDeltaE00": 11.743696203584385,
+      "selectionReasons": [
+        "SAFE_MERGE_CANDIDATE"
+      ],
+      "sharedBoundaryCoverage": 1.0,
+      "sourceBoundaryEvidence": {
+        "mean": 2.0335590839385986,
+        "median": 2.167299747467041,
+        "p90": 3.3813083171844482
+      }
+    },
+    {
+      "areaRatio": 0.0002939839519348591,
+      "boundaryOverlay": "cp-b-aggressive_rc-a/FLD-007/edge-1-49-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 0.8173076923076923,
+        "tolerance1px": 1.0
+      },
+      "fixture": "FLD-007",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-aggressive_rc-a/FLD-007/edge-1-49-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "PRESERVE",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": [
+            "TOPOLOGY_GLOBAL_VOID"
+          ]
+        },
+        "MODERATE": {
+          "decision": "PRESERVE",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": [
+            "TOPOLOGY_GLOBAL_VOID"
+          ]
+        },
+        "STRICT": {
+          "decision": "PRESERVE",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": [
+            "TOPOLOGY_GLOBAL_VOID"
+          ]
+        }
+      },
+      "profile": "cp-b-aggressive_rc-a",
+      "regionA": 1,
+      "regionB": 49,
+      "representativeColorA": [
+        253,
+        35,
+        10
+      ],
+      "representativeColorB": [
+        254,
+        204,
+        191
+      ],
+      "representativeDeltaE00": 32.48640417168362,
+      "selectionReasons": [
+        "LOWEST_REPRESENTATIVE_DELTA_E",
+        "WEAKEST_SOURCE_BOUNDARY"
+      ],
+      "sharedBoundaryCoverage": 0.4722222222222222,
+      "sourceBoundaryEvidence": {
+        "mean": 20.742765426635742,
+        "median": 23.699291229248047,
+        "p90": 29.921714782714844
+      }
+    },
+    {
+      "areaRatio": 0.0017515514447211352,
+      "boundaryOverlay": "cp-b-aggressive_rc-a/FLD-007/edge-1-52-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 0.8611111111111112,
+        "tolerance1px": 0.9592592592592593
+      },
+      "fixture": "FLD-007",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-aggressive_rc-a/FLD-007/edge-1-52-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "PRESERVE",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": [
+            "TOPOLOGY_GLOBAL_VOID"
+          ]
+        },
+        "MODERATE": {
+          "decision": "PRESERVE",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": [
+            "TOPOLOGY_GLOBAL_VOID"
+          ]
+        },
+        "STRICT": {
+          "decision": "PRESERVE",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": [
+            "TOPOLOGY_GLOBAL_VOID"
+          ]
+        }
+      },
+      "profile": "cp-b-aggressive_rc-a",
+      "regionA": 1,
+      "regionB": 52,
+      "representativeColorA": [
+        253,
+        35,
+        10
+      ],
+      "representativeColorB": [
+        255,
+        234,
+        219
+      ],
+      "representativeDeltaE00": 39.86129605828611,
+      "selectionReasons": [
+        "LOWEST_BOUNDARY_PERSISTENCE"
+      ],
+      "sharedBoundaryCoverage": 0.4930555555555556,
+      "sourceBoundaryEvidence": {
+        "mean": 25.156089782714844,
+        "median": 25.7393798828125,
+        "p90": 33.2879638671875
+      }
+    },
+    {
+      "areaRatio": 3.468669245044139e-05,
+      "boundaryOverlay": "cp-b-aggressive_rc-a/FLD-008/edge-1-4-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 0.0,
+        "tolerance1px": 0.0
+      },
+      "fixture": "FLD-008",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-aggressive_rc-a/FLD-008/edge-1-4-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "MODERATE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "STRICT": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": true,
+              "smallAreaRatio": true,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        }
+      },
+      "profile": "cp-b-aggressive_rc-a",
+      "regionA": 1,
+      "regionB": 4,
+      "representativeColorA": [
+        2,
+        2,
+        2
+      ],
+      "representativeColorB": [
+        205,
+        205,
+        205
+      ],
+      "representativeDeltaE00": 73.51446969277565,
+      "selectionReasons": [
+        "LOWEST_BOUNDARY_PERSISTENCE"
+      ],
+      "sharedBoundaryCoverage": 0.5,
+      "sourceBoundaryEvidence": {
+        "mean": 43.5878791809082,
+        "median": 54.95109176635742,
+        "p90": 59.34757614135742
+      }
+    },
+    {
+      "areaRatio": 0.12329384831509392,
+      "boundaryOverlay": "cp-b-aggressive_rc-a/FLD-008/edge-1-9-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 0.1539685345589535,
+        "tolerance1px": 0.6096871133109422
+      },
+      "fixture": "FLD-008",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-aggressive_rc-a/FLD-008/edge-1-9-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "MODERATE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": true,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "STRICT": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": false,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        }
+      },
+      "profile": "cp-b-aggressive_rc-a",
+      "regionA": 1,
+      "regionB": 9,
+      "representativeColorA": [
+        2,
+        2,
+        2
+      ],
+      "representativeColorB": [
+        72,
+        2,
+        2
+      ],
+      "representativeDeltaE00": 23.60360308695415,
+      "selectionReasons": [
+        "WEAKEST_SOURCE_BOUNDARY"
+      ],
+      "sharedBoundaryCoverage": 0.5013798294029101,
+      "sourceBoundaryEvidence": {
+        "mean": 8.668274879455566,
+        "median": 8.652209281921387,
+        "p90": 13.386271476745605
+      }
+    },
+    {
+      "areaRatio": 0.18511745674497115,
+      "boundaryOverlay": "cp-b-aggressive_rc-a/FLD-008/edge-9-14-boundary-overlay.png",
+      "boundaryPersistence": {
+        "exact": 0.5416666666666666,
+        "tolerance1px": 1.0
+      },
+      "fixture": "FLD-008",
+      "humanRelation": "PENDING",
+      "originalCrop": "cp-b-aggressive_rc-a/FLD-008/edge-9-14-original.png",
+      "policyEvaluations": {
+        "CONSERVATIVE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": true,
+              "sufficientSharedBoundaryCoverage": false,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": true,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": false,
+              "sufficientSharedBoundaryCoverage": false,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "MODERATE": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": true,
+              "sufficientSharedBoundaryCoverage": false,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": true,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": false,
+              "sufficientSharedBoundaryCoverage": true,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        },
+        "STRICT": {
+          "decision": "UNCERTAIN",
+          "routeChecks": {
+            "COHERENT_SPLIT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": true,
+              "sufficientSharedBoundaryCoverage": false,
+              "weakOriginalBoundary": false
+            },
+            "TINY_FRAGMENT_REPAIR": {
+              "lowBoundaryPersistence": false,
+              "nearRepresentativeColor": true,
+              "smallAbsoluteArea": false,
+              "smallAreaRatio": false,
+              "sufficientSharedBoundaryCoverage": false,
+              "weakOriginalBoundary": false
+            }
+          },
+          "triggeredRoutes": [],
+          "vetoes": []
+        }
+      },
+      "profile": "cp-b-aggressive_rc-a",
+      "regionA": 9,
+      "regionB": 14,
+      "representativeColorA": [
+        72,
+        2,
+        2
+      ],
+      "representativeColorB": [
+        77,
+        2,
+        2
+      ],
+      "representativeDeltaE00": 1.3627562483009743,
+      "selectionReasons": [
+        "LOWEST_REPRESENTATIVE_DELTA_E"
+      ],
+      "sharedBoundaryCoverage": 0.012755102040816327,
+      "sourceBoundaryEvidence": {
+        "mean": 11.83110523223877,
+        "median": 12.395167350769043,
+        "p90": 15.46656608581543
+      }
+    }
+  ],
+  "semanticLabelsGenerated": false,
+  "status": "PENDING_HUMAN_RELATION_LABELS"
+}

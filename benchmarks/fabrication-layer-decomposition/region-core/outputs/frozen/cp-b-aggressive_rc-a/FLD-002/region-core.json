@@ -1,0 +1,748 @@
+{
+  "adjacency": [
+    {
+      "regionA": 1,
+      "regionB": 2,
+      "sharedBoundaryCoverage": 0.5,
+      "uniqueSharedEdgeCount": 4
+    },
+    {
+      "regionA": 1,
+      "regionB": 3,
+      "sharedBoundaryCoverage": 0.5,
+      "uniqueSharedEdgeCount": 4
+    },
+    {
+      "regionA": 1,
+      "regionB": 4,
+      "sharedBoundaryCoverage": 1.0,
+      "uniqueSharedEdgeCount": 1662
+    },
+    {
+      "regionA": 1,
+      "regionB": 5,
+      "sharedBoundaryCoverage": 0.5,
+      "uniqueSharedEdgeCount": 2
+    },
+    {
+      "regionA": 1,
+      "regionB": 6,
+      "sharedBoundaryCoverage": 0.51678832,
+      "uniqueSharedEdgeCount": 708
+    },
+    {
+      "regionA": 1,
+      "regionB": 7,
+      "sharedBoundaryCoverage": 0.20756116,
+      "uniqueSharedEdgeCount": 560
+    },
+    {
+      "regionA": 1,
+      "regionB": 8,
+      "sharedBoundaryCoverage": 0.50436535,
+      "uniqueSharedEdgeCount": 1502
+    },
+    {
+      "regionA": 1,
+      "regionB": 9,
+      "sharedBoundaryCoverage": 1.0,
+      "uniqueSharedEdgeCount": 558
+    },
+    {
+      "regionA": 1,
+      "regionB": 10,
+      "sharedBoundaryCoverage": 0.48387097,
+      "uniqueSharedEdgeCount": 30
+    },
+    {
+      "regionA": 1,
+      "regionB": 11,
+      "sharedBoundaryCoverage": 0.5,
+      "uniqueSharedEdgeCount": 4
+    },
+    {
+      "regionA": 1,
+      "regionB": 12,
+      "sharedBoundaryCoverage": 0.42857143,
+      "uniqueSharedEdgeCount": 6
+    },
+    {
+      "regionA": 1,
+      "regionB": 13,
+      "sharedBoundaryCoverage": 0.49425287,
+      "uniqueSharedEdgeCount": 86
+    },
+    {
+      "regionA": 6,
+      "regionB": 7,
+      "sharedBoundaryCoverage": 0.48321168,
+      "uniqueSharedEdgeCount": 662
+    },
+    {
+      "regionA": 7,
+      "regionB": 8,
+      "sharedBoundaryCoverage": 0.54707191,
+      "uniqueSharedEdgeCount": 1476
+    }
+  ],
+  "artifacts": {
+    "legacyRegions": {
+      "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-aggressive_rc-a/FLD-002/regions.json.gz",
+      "sha256": "7ed4496ed27c1bd0c054104620b33fa08ba2af378473e60c9ae672792189dc1e",
+      "sizeBytes": 902
+    },
+    "metrics": {
+      "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-aggressive_rc-a/FLD-002/metrics.json",
+      "sha256": "06e0a1d52e331bc30f5085a19f1211ee3699cff6c9f69c797cc4b763ab47b0af",
+      "sizeBytes": 3393
+    },
+    "pixelLabelMap": {
+      "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-aggressive_rc-a/FLD-002/pixel_label_map.npz",
+      "sha256": "df45eb93135f265f258b58f4086042f1396a25598aec53ec72660ae9624fc785",
+      "sizeBytes": 7315
+    },
+    "purifiedRaster": {
+      "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-aggressive_rc-a/FLD-002/purified.png",
+      "sha256": "b956afb04e915abbae77a91f564e5300ffdb712d062aecdbc0a6686873149908",
+      "sizeBytes": 15004
+    },
+    "runConfig": {
+      "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-aggressive_rc-a/FLD-002/run_config.json",
+      "sha256": "7ef3654c7dcb976b3a3a50359b70ea00bbec63edef071dab163e77cee251f995",
+      "sizeBytes": 1323
+    },
+    "source": {
+      "path": "benchmarks/fabrication-layer-decomposition/fixtures/source/FLD-002.png",
+      "sha256": "6d3e9aca43654da4e630e4e72d236eccefac439f0c4f498e1e264b2575c3e3ab",
+      "sizeBytes": 210658
+    },
+    "structuralLabelMap": {
+      "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-aggressive_rc-a/FLD-002/structural_label_map.npz",
+      "sha256": "df45eb93135f265f258b58f4086042f1396a25598aec53ec72660ae9624fc785",
+      "sizeBytes": 7315
+    }
+  },
+  "candidateId": "CP-B",
+  "connectivity": {
+    "adjacencyConnectivity": 4,
+    "componentConnectivity": 4,
+    "proposalConnectivity": 8,
+    "voidConnectivity": 4
+  },
+  "contractVersion": "1.0.0",
+  "dimensions": {
+    "height": 737,
+    "width": 591
+  },
+  "fixtureId": "FLD-002",
+  "legacyMetadataDisposition": "LEGACY_COMPONENT_METADATA_SUPERSEDED",
+  "productionIntegrationStatus": "NOT_INTEGRATED",
+  "profile": "cp-b-aggressive_rc-a",
+  "provenance": {
+    "artifactGenerationCommit": "c18eb15d23357794dd8178b1daae8bf6e0ac74b7",
+    "candidateSourceGitBlob": "8945e305be3f0cb309d442da3f352321c7167175",
+    "p0_04cUpstreamBaselineCommit": "4dc782343fbf02836d9cf36a8bd42975eec41d2f",
+    "runConfigSha256": "7ef3654c7dcb976b3a3a50359b70ea00bbec63edef071dab163e77cee251f995",
+    "sourceSha256": "6d3e9aca43654da4e630e4e72d236eccefac439f0c4f498e1e264b2575c3e3ab"
+  },
+  "regionIdSemantics": {
+    "backgroundId": 0,
+    "lineage": "identity-only; no repair or merged Region IDs",
+    "oneRegionMayContainMultipleFourConnectedComponents": true,
+    "orphanFringeId": -1,
+    "scope": "fixture-and-profile-local"
+  },
+  "regions": [
+    {
+      "area": 63171,
+      "assignedPixelCount": 63171,
+      "bbox": [
+        8,
+        8,
+        575,
+        721
+      ],
+      "componentCount": 1,
+      "components": [
+        {
+          "area": 63171,
+          "bbox": [
+            8,
+            8,
+            575,
+            721
+          ],
+          "componentId": 1
+        }
+      ],
+      "corePixelCount": 57711,
+      "perimeterEdgeCount": 7582,
+      "regionId": 1,
+      "representativeColorLab": [
+        0.392157,
+        0.0,
+        0.0
+      ],
+      "representativeColorMethod": "RC-A",
+      "representativeColorRgb": [
+        2,
+        2,
+        2
+      ],
+      "sourceRegionIds": [
+        1
+      ]
+    },
+    {
+      "area": 3,
+      "assignedPixelCount": 3,
+      "bbox": [
+        84,
+        16,
+        3,
+        1
+      ],
+      "componentCount": 1,
+      "components": [
+        {
+          "area": 3,
+          "bbox": [
+            84,
+            16,
+            3,
+            1
+          ],
+          "componentId": 1
+        }
+      ],
+      "corePixelCount": 3,
+      "perimeterEdgeCount": 8,
+      "regionId": 2,
+      "representativeColorLab": [
+        79.607841,
+        0.0,
+        1.0
+      ],
+      "representativeColorMethod": "RC-A",
+      "representativeColorRgb": [
+        198,
+        197,
+        195
+      ],
+      "sourceRegionIds": [
+        2
+      ]
+    },
+    {
+      "area": 3,
+      "assignedPixelCount": 3,
+      "bbox": [
+        74,
+        17,
+        3,
+        1
+      ],
+      "componentCount": 1,
+      "components": [
+        {
+          "area": 3,
+          "bbox": [
+            74,
+            17,
+            3,
+            1
+          ],
+          "componentId": 1
+        }
+      ],
+      "corePixelCount": 3,
+      "perimeterEdgeCount": 8,
+      "regionId": 3,
+      "representativeColorLab": [
+        85.882355,
+        0.0,
+        1.0
+      ],
+      "representativeColorMethod": "RC-A",
+      "representativeColorRgb": [
+        216,
+        215,
+        213
+      ],
+      "sourceRegionIds": [
+        3
+      ]
+    },
+    {
+      "area": 91128,
+      "assignedPixelCount": 91128,
+      "bbox": [
+        27,
+        28,
+        536,
+        228
+      ],
+      "componentCount": 1,
+      "components": [
+        {
+          "area": 91128,
+          "bbox": [
+            27,
+            28,
+            536,
+            228
+          ],
+          "componentId": 1
+        }
+      ],
+      "corePixelCount": 90037,
+      "perimeterEdgeCount": 1662,
+      "regionId": 4,
+      "representativeColorLab": [
+        57.64706,
+        64.0,
+        51.0
+      ],
+      "representativeColorMethod": "RC-A",
+      "representativeColorRgb": [
+        249,
+        77,
+        52
+      ],
+      "sourceRegionIds": [
+        4
+      ]
+    },
+    {
+      "area": 1,
+      "assignedPixelCount": 1,
+      "bbox": [
+        9,
+        44,
+        1,
+        1
+      ],
+      "componentCount": 1,
+      "components": [
+        {
+          "area": 1,
+          "bbox": [
+            9,
+            44,
+            1,
+            1
+          ],
+          "componentId": 1
+        }
+      ],
+      "corePixelCount": 1,
+      "perimeterEdgeCount": 4,
+      "regionId": 5,
+      "representativeColorLab": [
+        79.215691,
+        1.0,
+        0.0
+      ],
+      "representativeColorMethod": "RC-A",
+      "representativeColorRgb": [
+        198,
+        196,
+        196
+      ],
+      "sourceRegionIds": [
+        5
+      ]
+    },
+    {
+      "area": 1520,
+      "assignedPixelCount": 1520,
+      "bbox": [
+        24,
+        118,
+        87,
+        591
+      ],
+      "componentCount": 1,
+      "components": [
+        {
+          "area": 1520,
+          "bbox": [
+            24,
+            118,
+            87,
+            591
+          ],
+          "componentId": 1
+        }
+      ],
+      "corePixelCount": 217,
+      "perimeterEdgeCount": 1370,
+      "regionId": 6,
+      "representativeColorLab": [
+        11.764706,
+        32.0,
+        19.0
+      ],
+      "representativeColorMethod": "RC-A",
+      "representativeColorRgb": [
+        72,
+        0,
+        0
+      ],
+      "sourceRegionIds": [
+        6
+      ]
+    },
+    {
+      "area": 234947,
+      "assignedPixelCount": 234947,
+      "bbox": [
+        27,
+        121,
+        535,
+        587
+      ],
+      "componentCount": 1,
+      "components": [
+        {
+          "area": 234947,
+          "bbox": [
+            27,
+            121,
+            535,
+            587
+          ],
+          "componentId": 1
+        }
+      ],
+      "corePixelCount": 233147,
+      "perimeterEdgeCount": 2698,
+      "regionId": 7,
+      "representativeColorLab": [
+        57.254902,
+        65.0,
+        52.0
+      ],
+      "representativeColorMethod": "RC-A",
+      "representativeColorRgb": [
+        249,
+        74,
+        49
+      ],
+      "sourceRegionIds": [
+        7
+      ]
+    },
+    {
+      "area": 2660,
+      "assignedPixelCount": 2660,
+      "bbox": [
+        28,
+        121,
+        537,
+        488
+      ],
+      "componentCount": 6,
+      "components": [
+        {
+          "area": 277,
+          "bbox": [
+            28,
+            121,
+            82,
+            104
+          ],
+          "componentId": 1
+        },
+        {
+          "area": 1486,
+          "bbox": [
+            386,
+            126,
+            179,
+            483
+          ],
+          "componentId": 2
+        },
+        {
+          "area": 19,
+          "bbox": [
+            110,
+            225,
+            10,
+            7
+          ],
+          "componentId": 3
+        },
+        {
+          "area": 68,
+          "bbox": [
+            120,
+            232,
+            30,
+            17
+          ],
+          "componentId": 4
+        },
+        {
+          "area": 278,
+          "bbox": [
+            150,
+            249,
+            79,
+            80
+          ],
+          "componentId": 5
+        },
+        {
+          "area": 532,
+          "bbox": [
+            229,
+            273,
+            157,
+            90
+          ],
+          "componentId": 6
+        }
+      ],
+      "corePixelCount": 501,
+      "perimeterEdgeCount": 2978,
+      "regionId": 8,
+      "representativeColorLab": [
+        11.372549,
+        29.0,
+        17.0
+      ],
+      "representativeColorMethod": "RC-A",
+      "representativeColorRgb": [
+        67,
+        5,
+        2
+      ],
+      "sourceRegionIds": [
+        8
+      ]
+    },
+    {
+      "area": 15334,
+      "assignedPixelCount": 15334,
+      "bbox": [
+        227,
+        209,
+        142,
+        137
+      ],
+      "componentCount": 1,
+      "components": [
+        {
+          "area": 15334,
+          "bbox": [
+            227,
+            209,
+            142,
+            137
+          ],
+          "componentId": 1
+        }
+      ],
+      "corePixelCount": 15010,
+      "perimeterEdgeCount": 558,
+      "regionId": 9,
+      "representativeColorLab": [
+        81.568626,
+        9.0,
+        68.0
+      ],
+      "representativeColorMethod": "RC-A",
+      "representativeColorRgb": [
+        252,
+        194,
+        67
+      ],
+      "sourceRegionIds": [
+        9
+      ]
+    },
+    {
+      "area": 30,
+      "assignedPixelCount": 30,
+      "bbox": [
+        582,
+        470,
+        1,
+        30
+      ],
+      "componentCount": 1,
+      "components": [
+        {
+          "area": 30,
+          "bbox": [
+            582,
+            470,
+            1,
+            30
+          ],
+          "componentId": 1
+        }
+      ],
+      "corePixelCount": 30,
+      "perimeterEdgeCount": 62,
+      "regionId": 10,
+      "representativeColorLab": [
+        87.647064,
+        0.0,
+        0.0
+      ],
+      "representativeColorMethod": "RC-A",
+      "representativeColorRgb": [
+        220,
+        220,
+        220
+      ],
+      "sourceRegionIds": [
+        10
+      ]
+    },
+    {
+      "area": 3,
+      "assignedPixelCount": 3,
+      "bbox": [
+        577,
+        691,
+        1,
+        3
+      ],
+      "componentCount": 1,
+      "components": [
+        {
+          "area": 3,
+          "bbox": [
+            577,
+            691,
+            1,
+            3
+          ],
+          "componentId": 1
+        }
+      ],
+      "corePixelCount": 3,
+      "perimeterEdgeCount": 8,
+      "regionId": 11,
+      "representativeColorLab": [
+        81.568626,
+        0.0,
+        0.0
+      ],
+      "representativeColorMethod": "RC-A",
+      "representativeColorRgb": [
+        203,
+        203,
+        203
+      ],
+      "sourceRegionIds": [
+        11
+      ]
+    },
+    {
+      "area": 6,
+      "assignedPixelCount": 6,
+      "bbox": [
+        237,
+        728,
+        6,
+        1
+      ],
+      "componentCount": 1,
+      "components": [
+        {
+          "area": 6,
+          "bbox": [
+            237,
+            728,
+            6,
+            1
+          ],
+          "componentId": 1
+        }
+      ],
+      "corePixelCount": 6,
+      "perimeterEdgeCount": 14,
+      "regionId": 12,
+      "representativeColorLab": [
+        89.803925,
+        0.0,
+        1.0
+      ],
+      "representativeColorMethod": "RC-A",
+      "representativeColorRgb": [
+        227,
+        226,
+        224
+      ],
+      "sourceRegionIds": [
+        12
+      ]
+    },
+    {
+      "area": 86,
+      "assignedPixelCount": 86,
+      "bbox": [
+        249,
+        728,
+        86,
+        1
+      ],
+      "componentCount": 1,
+      "components": [
+        {
+          "area": 86,
+          "bbox": [
+            249,
+            728,
+            86,
+            1
+          ],
+          "componentId": 1
+        }
+      ],
+      "corePixelCount": 86,
+      "perimeterEdgeCount": 174,
+      "regionId": 13,
+      "representativeColorLab": [
+        83.92157,
+        0.0,
+        0.0
+      ],
+      "representativeColorMethod": "RC-A",
+      "representativeColorRgb": [
+        209,
+        209,
+        209
+      ],
+      "sourceRegionIds": [
+        13
+      ]
+    }
+  ],
+  "representativeColorMethod": "RC-A",
+  "status": "REGION_CORE_FROZEN",
+  "topology": {
+    "holeCount": 0,
+    "transparentComponentCount": 1,
+    "voidConnectivity": 4,
+    "voids": [
+      {
+        "area": 26675,
+        "bbox": [
+          0,
+          0,
+          591,
+          737
+        ],
+        "kind": "EXTERIOR_BACKGROUND",
+        "touchesCanvasEdge": true,
+        "voidId": 1
+      }
+    ]
+  }
+}

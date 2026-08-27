@@ -1,0 +1,1 @@
+{"fixtureId":"FLD-003","regions":[{"regionKey":"top_surface","kind":"SUBJECT_REGION","anchors":[[500,260]]},{"regionKey":"side_wall","kind":"SUBJECT_REGION","anchors":[[500,700]]}],"relations":[{"relationId":"fld003-top-side-separate","type":"MUST_SEPARATE","regionKeys":["top_surface","side_wall"],"notes":"Close pale yellow surfaces encode the pastry form."}]}

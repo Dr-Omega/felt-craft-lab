@@ -1,0 +1,1 @@
+{"fixtureId":"FLD-007","regions":[{"regionKey":"flower_shell","kind":"SUBJECT_REGION","anchors":[[380,300]]},{"regionKey":"central_void","kind":"HOLE","anchors":[[411,413]]}],"relations":[{"relationId":"fld007-hole-preserve","type":"HOLE","regionKeys":["flower_shell","central_void"],"notes":"True transparent interior opening is protected negative space."}]}

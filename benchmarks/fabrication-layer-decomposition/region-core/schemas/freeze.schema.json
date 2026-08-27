@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "region_core_freeze.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "status", "freezeTimestamp", "scope", "governance", "connectivity", "legacyMetadataDisposition", "regionRepairDisposition", "upstreamBaselines", "primaryFrozenContracts", "balancedRegressionEvidence", "evidence", "prohibitedFrozenSemantics", "futureRevalidationTriggers"],
+  "properties": {
+    "schemaVersion": {"const": "1.0.0"},
+    "status": {"const": "REGION_CORE_FROZEN"},
+    "freezeTimestamp": {"type": "string", "format": "date-time"},
+    "scope": {"const": "P0-04B_REGION_CORE_RAW_LABEL_FREEZE"},
+    "governance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primaryFrozenProfile", "balancedStatus", "representativeColor", "productionIntegrationStatus"],
+      "properties": {
+        "primaryFrozenProfile": {"const": "cp-b-aggressive_rc-a"},
+        "balancedStatus": {"const": "REGRESSION_EVIDENCE_ONLY"},
+        "representativeColor": {"type": "object"},
+        "productionIntegrationStatus": {"const": "NOT_INTEGRATED"}
+      }
+    },
+    "connectivity": {"type": "object"},
+    "legacyMetadataDisposition": {"const": "LEGACY_COMPONENT_METADATA_SUPERSEDED"},
+    "regionRepairDisposition": {"type": "object"},
+    "upstreamBaselines": {"type": "object"},
+    "primaryFrozenContracts": {"type": "array", "minItems": 8, "maxItems": 8},
+    "balancedRegressionEvidence": {"type": "array", "minItems": 8, "maxItems": 8},
+    "evidence": {"type": "object"},
+    "prohibitedFrozenSemantics": {"type": "array", "minItems": 10, "items": {"type": "string"}},
+    "futureRevalidationTriggers": {"type": "array", "minItems": 1, "items": {"type": "string"}}
+  }
+}

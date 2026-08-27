@@ -1,0 +1,2806 @@
+{
+  "caseId": "FLD-006",
+  "determinismScope": "three real evaluations of the largest structural region per method",
+  "regions": [
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.25269433856010437,
+      "coreDistance": {
+        "mean": 1.042330265045166,
+        "median": 0.8886807560920715,
+        "p95": 1.975110411643982
+      },
+      "corePixelCount": 12,
+      "medoidSampleCount": null,
+      "method": "RC-A",
+      "regionId": 1,
+      "representativeLab": [
+        87.25489807128906,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        218,
+        218,
+        218
+      ],
+      "runtimeMs": 10.8144
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.12622672319412231,
+      "coreDistance": {
+        "mean": 1.042330265045166,
+        "median": 0.8886807560920715,
+        "p95": 1.975110411643982
+      },
+      "corePixelCount": 12,
+      "medoidSampleCount": null,
+      "method": "RC-B",
+      "regionId": 1,
+      "representativeLab": [
+        87.25489807128906,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        218,
+        218,
+        218
+      ],
+      "runtimeMs": 13.689
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.12622672319412231,
+      "coreDistance": {
+        "mean": 1.042330265045166,
+        "median": 0.8886807560920715,
+        "p95": 1.975110411643982
+      },
+      "corePixelCount": 12,
+      "medoidSampleCount": null,
+      "method": "RC-C",
+      "regionId": 1,
+      "representativeLab": [
+        87.25489807128906,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        218,
+        218,
+        218
+      ],
+      "runtimeMs": 13.4389
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 1.0423210859298706,
+        "median": 0.7624590396881104,
+        "p95": 2.101306676864624
+      },
+      "corePixelCount": 12,
+      "medoidSampleCount": 12,
+      "method": "RC-D",
+      "regionId": 1,
+      "representativeLab": [
+        87.05882263183594,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        218,
+        218,
+        218
+      ],
+      "runtimeMs": 12.3721
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 5.79916524887085,
+        "median": 0.4504670798778534,
+        "p95": 43.18013000488281
+      },
+      "corePixelCount": 26478,
+      "medoidSampleCount": null,
+      "method": "RC-A",
+      "regionId": 2,
+      "representativeLab": [
+        0.7843137383460999,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        3,
+        3,
+        3
+      ],
+      "runtimeMs": 29.0636
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 5.79916524887085,
+        "median": 0.4504670798778534,
+        "p95": 43.18013000488281
+      },
+      "corePixelCount": 26478,
+      "medoidSampleCount": null,
+      "method": "RC-B",
+      "regionId": 2,
+      "representativeLab": [
+        0.7843137383460999,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        3,
+        3,
+        3
+      ],
+      "runtimeMs": 62.759
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 5.79916524887085,
+        "median": 0.4504670798778534,
+        "p95": 43.18013000488281
+      },
+      "corePixelCount": 26478,
+      "medoidSampleCount": null,
+      "method": "RC-C",
+      "regionId": 2,
+      "representativeLab": [
+        0.7843137383460999,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        3,
+        3,
+        3
+      ],
+      "runtimeMs": 46.8339
+    },
+    {
+      "approximateMedoid": true,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 5.79916524887085,
+        "median": 0.4504670798778534,
+        "p95": 43.18013000488281
+      },
+      "corePixelCount": 26478,
+      "medoidSampleCount": 512,
+      "method": "RC-D",
+      "regionId": 2,
+      "representativeLab": [
+        0.7843137383460999,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        3,
+        3,
+        3
+      ],
+      "runtimeMs": 115.8672
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 26.29437255859375,
+      "coreDistance": {
+        "mean": 4.697992324829102,
+        "median": 4.697992324829102,
+        "p95": 4.848040580749512
+      },
+      "corePixelCount": 2,
+      "medoidSampleCount": null,
+      "method": "RC-A",
+      "regionId": 3,
+      "representativeLab": [
+        83.92156982421875,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        209,
+        209,
+        209
+      ],
+      "runtimeMs": 12.4808
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 36.674217224121094,
+      "coreDistance": {
+        "mean": 4.697992324829102,
+        "median": 4.697992324829102,
+        "p95": 4.848040580749512
+      },
+      "corePixelCount": 2,
+      "medoidSampleCount": null,
+      "method": "RC-B",
+      "regionId": 3,
+      "representativeLab": [
+        83.92156982421875,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        209,
+        209,
+        209
+      ],
+      "runtimeMs": 14.8659
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 36.674217224121094,
+      "coreDistance": {
+        "mean": 4.697992324829102,
+        "median": 4.697992324829102,
+        "p95": 4.848040580749512
+      },
+      "corePixelCount": 2,
+      "medoidSampleCount": null,
+      "method": "RC-C",
+      "regionId": 3,
+      "representativeLab": [
+        83.92156982421875,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        209,
+        209,
+        209
+      ],
+      "runtimeMs": 15.4105
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 34.60880661010742,
+      "coreDistance": {
+        "mean": 4.691936016082764,
+        "median": 4.691936016082764,
+        "p95": 8.914678573608398
+      },
+      "corePixelCount": 2,
+      "medoidSampleCount": 2,
+      "method": "RC-D",
+      "regionId": 3,
+      "representativeLab": [
+        76.86274719238281,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        190,
+        190,
+        190
+      ],
+      "runtimeMs": 16.3953
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 38.60688018798828,
+      "coreDistance": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0
+      },
+      "corePixelCount": 1,
+      "medoidSampleCount": null,
+      "method": "RC-A",
+      "regionId": 4,
+      "representativeLab": [
+        89.80392456054688,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        226,
+        226,
+        226
+      ],
+      "runtimeMs": 14.5124
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 38.60688018798828,
+      "coreDistance": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0
+      },
+      "corePixelCount": 1,
+      "medoidSampleCount": null,
+      "method": "RC-B",
+      "regionId": 4,
+      "representativeLab": [
+        89.80392456054688,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        226,
+        226,
+        226
+      ],
+      "runtimeMs": 14.1509
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 38.60688018798828,
+      "coreDistance": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0
+      },
+      "corePixelCount": 1,
+      "medoidSampleCount": null,
+      "method": "RC-C",
+      "regionId": 4,
+      "representativeLab": [
+        89.80392456054688,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        226,
+        226,
+        226
+      ],
+      "runtimeMs": 17.7556
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 38.60688018798828,
+      "coreDistance": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0
+      },
+      "corePixelCount": 1,
+      "medoidSampleCount": 1,
+      "method": "RC-D",
+      "regionId": 4,
+      "representativeLab": [
+        89.80392456054688,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        226,
+        226,
+        226
+      ],
+      "runtimeMs": 17.075
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 38.47405242919922,
+      "coreDistance": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0
+      },
+      "corePixelCount": 1,
+      "medoidSampleCount": null,
+      "method": "RC-A",
+      "regionId": 5,
+      "representativeLab": [
+        89.4117660522461,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        225,
+        225,
+        225
+      ],
+      "runtimeMs": 17.1634
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 38.47405242919922,
+      "coreDistance": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0
+      },
+      "corePixelCount": 1,
+      "medoidSampleCount": null,
+      "method": "RC-B",
+      "regionId": 5,
+      "representativeLab": [
+        89.4117660522461,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        225,
+        225,
+        225
+      ],
+      "runtimeMs": 17.1587
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 38.47405242919922,
+      "coreDistance": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0
+      },
+      "corePixelCount": 1,
+      "medoidSampleCount": null,
+      "method": "RC-C",
+      "regionId": 5,
+      "representativeLab": [
+        89.4117660522461,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        225,
+        225,
+        225
+      ],
+      "runtimeMs": 16.3683
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 38.47405242919922,
+      "coreDistance": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0
+      },
+      "corePixelCount": 1,
+      "medoidSampleCount": 1,
+      "method": "RC-D",
+      "regionId": 5,
+      "representativeLab": [
+        89.4117660522461,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        225,
+        225,
+        225
+      ],
+      "runtimeMs": 17.0758
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": true,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 0.8746155500411987,
+        "median": 0.22638638317584991,
+        "p95": 1.8116644620895386
+      },
+      "corePixelCount": 202733,
+      "medoidSampleCount": null,
+      "method": "RC-A",
+      "regionId": 6,
+      "representativeLab": [
+        99.21569061279297,
+        0.0,
+        1.0
+      ],
+      "representativeRgb": [
+        254,
+        253,
+        251
+      ],
+      "runtimeMs": 130.4562
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": true,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 0.8746155500411987,
+        "median": 0.22638638317584991,
+        "p95": 1.8116644620895386
+      },
+      "corePixelCount": 202733,
+      "medoidSampleCount": null,
+      "method": "RC-B",
+      "regionId": 6,
+      "representativeLab": [
+        99.21569061279297,
+        0.0,
+        1.0
+      ],
+      "representativeRgb": [
+        254,
+        253,
+        251
+      ],
+      "runtimeMs": 1010.5286
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": true,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 0.8746155500411987,
+        "median": 0.22638638317584991,
+        "p95": 1.8116644620895386
+      },
+      "corePixelCount": 202733,
+      "medoidSampleCount": null,
+      "method": "RC-C",
+      "regionId": 6,
+      "representativeLab": [
+        99.21569061279297,
+        0.0,
+        1.0
+      ],
+      "representativeRgb": [
+        254,
+        253,
+        251
+      ],
+      "runtimeMs": 173.9174
+    },
+    {
+      "approximateMedoid": true,
+      "byteIdenticalDeterminism": true,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 0.8746155500411987,
+        "median": 0.22638638317584991,
+        "p95": 1.8116644620895386
+      },
+      "corePixelCount": 202733,
+      "medoidSampleCount": 512,
+      "method": "RC-D",
+      "regionId": 6,
+      "representativeLab": [
+        99.21569061279297,
+        0.0,
+        1.0
+      ],
+      "representativeRgb": [
+        253,
+        253,
+        251
+      ],
+      "runtimeMs": 465.5533
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 27.61444854736328,
+      "coreDistance": {
+        "mean": 1.639664888381958,
+        "median": 1.639664888381958,
+        "p95": 1.6579362154006958
+      },
+      "corePixelCount": 2,
+      "medoidSampleCount": null,
+      "method": "RC-A",
+      "regionId": 7,
+      "representativeLab": [
+        87.2549057006836,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        218,
+        218,
+        218
+      ],
+      "runtimeMs": 16.7514
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 37.75251388549805,
+      "coreDistance": {
+        "mean": 1.639664888381958,
+        "median": 1.639664888381958,
+        "p95": 1.6579362154006958
+      },
+      "corePixelCount": 2,
+      "medoidSampleCount": null,
+      "method": "RC-B",
+      "regionId": 7,
+      "representativeLab": [
+        87.2549057006836,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        218,
+        218,
+        218
+      ],
+      "runtimeMs": 19.5091
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 37.75251388549805,
+      "coreDistance": {
+        "mean": 1.639664888381958,
+        "median": 1.639664888381958,
+        "p95": 1.6579362154006958
+      },
+      "corePixelCount": 2,
+      "medoidSampleCount": null,
+      "method": "RC-C",
+      "regionId": 7,
+      "representativeLab": [
+        87.2549057006836,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        218,
+        218,
+        218
+      ],
+      "runtimeMs": 19.1041
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 38.60688018798828,
+      "coreDistance": {
+        "mean": 1.6394087076187134,
+        "median": 1.6394087076187134,
+        "p95": 3.1148765087127686
+      },
+      "corePixelCount": 2,
+      "medoidSampleCount": 2,
+      "method": "RC-D",
+      "regionId": 7,
+      "representativeLab": [
+        89.80392456054688,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        226,
+        226,
+        226
+      ],
+      "runtimeMs": 18.2286
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 37.302459716796875,
+      "coreDistance": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0
+      },
+      "corePixelCount": 1,
+      "medoidSampleCount": null,
+      "method": "RC-A",
+      "regionId": 8,
+      "representativeLab": [
+        85.88235473632812,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        215,
+        215,
+        215
+      ],
+      "runtimeMs": 20.1374
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 37.302459716796875,
+      "coreDistance": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0
+      },
+      "corePixelCount": 1,
+      "medoidSampleCount": null,
+      "method": "RC-B",
+      "regionId": 8,
+      "representativeLab": [
+        85.88235473632812,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        215,
+        215,
+        215
+      ],
+      "runtimeMs": 17.7526
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 37.302459716796875,
+      "coreDistance": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0
+      },
+      "corePixelCount": 1,
+      "medoidSampleCount": null,
+      "method": "RC-C",
+      "regionId": 8,
+      "representativeLab": [
+        85.88235473632812,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        215,
+        215,
+        215
+      ],
+      "runtimeMs": 18.7288
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 37.302459716796875,
+      "coreDistance": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0
+      },
+      "corePixelCount": 1,
+      "medoidSampleCount": 1,
+      "method": "RC-D",
+      "regionId": 8,
+      "representativeLab": [
+        85.88235473632812,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        215,
+        215,
+        215
+      ],
+      "runtimeMs": 14.3741
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 0.6027367115020752,
+        "median": 0.0,
+        "p95": 2.1896586418151855
+      },
+      "corePixelCount": 5653,
+      "medoidSampleCount": null,
+      "method": "RC-A",
+      "regionId": 9,
+      "representativeLab": [
+        91.76470947265625,
+        8.0,
+        9.0
+      ],
+      "representativeRgb": [
+        254,
+        226,
+        215
+      ],
+      "runtimeMs": 16.075
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 0.6027367115020752,
+        "median": 0.0,
+        "p95": 2.1896586418151855
+      },
+      "corePixelCount": 5653,
+      "medoidSampleCount": null,
+      "method": "RC-B",
+      "regionId": 9,
+      "representativeLab": [
+        91.76470947265625,
+        8.0,
+        9.0
+      ],
+      "representativeRgb": [
+        254,
+        226,
+        215
+      ],
+      "runtimeMs": 22.8011
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 0.6027367115020752,
+        "median": 0.0,
+        "p95": 2.1896586418151855
+      },
+      "corePixelCount": 5653,
+      "medoidSampleCount": null,
+      "method": "RC-C",
+      "regionId": 9,
+      "representativeLab": [
+        91.76470947265625,
+        8.0,
+        9.0
+      ],
+      "representativeRgb": [
+        254,
+        226,
+        215
+      ],
+      "runtimeMs": 38.9972
+    },
+    {
+      "approximateMedoid": true,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 0.6027367115020752,
+        "median": 0.0,
+        "p95": 2.1896586418151855
+      },
+      "corePixelCount": 5653,
+      "medoidSampleCount": 512,
+      "method": "RC-D",
+      "regionId": 9,
+      "representativeLab": [
+        91.76470947265625,
+        8.0,
+        9.0
+      ],
+      "representativeRgb": [
+        254,
+        226,
+        215
+      ],
+      "runtimeMs": 113.9814
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 0.6228459477424622,
+        "median": 0.24208031594753265,
+        "p95": 2.189755916595459
+      },
+      "corePixelCount": 5507,
+      "medoidSampleCount": null,
+      "method": "RC-A",
+      "regionId": 10,
+      "representativeLab": [
+        91.76470947265625,
+        8.0,
+        9.0
+      ],
+      "representativeRgb": [
+        254,
+        226,
+        215
+      ],
+      "runtimeMs": 19.4858
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 0.6228459477424622,
+        "median": 0.24208031594753265,
+        "p95": 2.189755916595459
+      },
+      "corePixelCount": 5507,
+      "medoidSampleCount": null,
+      "method": "RC-B",
+      "regionId": 10,
+      "representativeLab": [
+        91.76470947265625,
+        8.0,
+        9.0
+      ],
+      "representativeRgb": [
+        254,
+        226,
+        215
+      ],
+      "runtimeMs": 26.4861
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 0.6228459477424622,
+        "median": 0.24208031594753265,
+        "p95": 2.189755916595459
+      },
+      "corePixelCount": 5507,
+      "medoidSampleCount": null,
+      "method": "RC-C",
+      "regionId": 10,
+      "representativeLab": [
+        91.76470947265625,
+        8.0,
+        9.0
+      ],
+      "representativeRgb": [
+        254,
+        226,
+        215
+      ],
+      "runtimeMs": 36.2419
+    },
+    {
+      "approximateMedoid": true,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 0.6228459477424622,
+        "median": 0.24208031594753265,
+        "p95": 2.189755916595459
+      },
+      "corePixelCount": 5507,
+      "medoidSampleCount": 512,
+      "method": "RC-D",
+      "regionId": 10,
+      "representativeLab": [
+        91.76470947265625,
+        8.0,
+        9.0
+      ],
+      "representativeRgb": [
+        253,
+        225,
+        214
+      ],
+      "runtimeMs": 153.0639
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.2551344335079193,
+      "coreDistance": {
+        "mean": 1.0108476877212524,
+        "median": 0.7683658599853516,
+        "p95": 2.498378276824951
+      },
+      "corePixelCount": 13,
+      "medoidSampleCount": null,
+      "method": "RC-A",
+      "regionId": 11,
+      "representativeLab": [
+        86.2745132446289,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        216,
+        216,
+        216
+      ],
+      "runtimeMs": 14.9765
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.12744687497615814,
+      "coreDistance": {
+        "mean": 1.0108476877212524,
+        "median": 0.7683658599853516,
+        "p95": 2.498378276824951
+      },
+      "corePixelCount": 13,
+      "medoidSampleCount": null,
+      "method": "RC-B",
+      "regionId": 11,
+      "representativeLab": [
+        86.2745132446289,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        216,
+        216,
+        216
+      ],
+      "runtimeMs": 15.671
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.12744687497615814,
+      "coreDistance": {
+        "mean": 1.0108476877212524,
+        "median": 0.7683658599853516,
+        "p95": 2.498378276824951
+      },
+      "corePixelCount": 13,
+      "medoidSampleCount": null,
+      "method": "RC-C",
+      "regionId": 11,
+      "representativeLab": [
+        86.2745132446289,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        216,
+        216,
+        216
+      ],
+      "runtimeMs": 17.957
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.2551344335079193,
+      "coreDistance": {
+        "mean": 1.0108476877212524,
+        "median": 0.7683658599853516,
+        "p95": 2.498378276824951
+      },
+      "corePixelCount": 13,
+      "medoidSampleCount": 13,
+      "method": "RC-D",
+      "regionId": 11,
+      "representativeLab": [
+        86.2745132446289,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        216,
+        216,
+        216
+      ],
+      "runtimeMs": 16.1367
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 2.4871456623077393,
+        "median": 2.2275350093841553,
+        "p95": 4.933265209197998
+      },
+      "corePixelCount": 3,
+      "medoidSampleCount": null,
+      "method": "RC-A",
+      "regionId": 12,
+      "representativeLab": [
+        87.45098114013672,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        219,
+        219,
+        219
+      ],
+      "runtimeMs": 12.7313
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 1.1232080459594727,
+      "coreDistance": {
+        "mean": 2.4871456623077393,
+        "median": 2.2275350093841553,
+        "p95": 4.933265209197998
+      },
+      "corePixelCount": 3,
+      "medoidSampleCount": null,
+      "method": "RC-B",
+      "regionId": 12,
+      "representativeLab": [
+        87.45098114013672,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        219,
+        219,
+        219
+      ],
+      "runtimeMs": 11.6659
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 1.1232080459594727,
+      "coreDistance": {
+        "mean": 2.4871456623077393,
+        "median": 2.2275350093841553,
+        "p95": 4.933265209197998
+      },
+      "corePixelCount": 3,
+      "medoidSampleCount": null,
+      "method": "RC-C",
+      "regionId": 12,
+      "representativeLab": [
+        87.45098114013672,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        219,
+        219,
+        219
+      ],
+      "runtimeMs": 13.0654
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 2.4871456623077393,
+        "median": 2.2275350093841553,
+        "p95": 4.933265209197998
+      },
+      "corePixelCount": 3,
+      "medoidSampleCount": 3,
+      "method": "RC-D",
+      "regionId": 12,
+      "representativeLab": [
+        87.45098114013672,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        219,
+        219,
+        219
+      ],
+      "runtimeMs": 13.1373
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 26.887447357177734,
+      "coreDistance": {
+        "mean": 2.2663111686706543,
+        "median": 2.2663111686706543,
+        "p95": 2.3012099266052246
+      },
+      "corePixelCount": 2,
+      "medoidSampleCount": null,
+      "method": "RC-A",
+      "regionId": 13,
+      "representativeLab": [
+        87.45098114013672,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        219,
+        219,
+        219
+      ],
+      "runtimeMs": 14.7515
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 37.817420959472656,
+      "coreDistance": {
+        "mean": 2.2663111686706543,
+        "median": 2.2663111686706543,
+        "p95": 2.3012099266052246
+      },
+      "corePixelCount": 2,
+      "medoidSampleCount": null,
+      "method": "RC-B",
+      "regionId": 13,
+      "representativeLab": [
+        87.45098114013672,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        219,
+        219,
+        219
+      ],
+      "runtimeMs": 16.0532
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 37.817420959472656,
+      "coreDistance": {
+        "mean": 2.2663111686706543,
+        "median": 2.2663111686706543,
+        "p95": 2.3012099266052246
+      },
+      "corePixelCount": 2,
+      "medoidSampleCount": null,
+      "method": "RC-C",
+      "regionId": 13,
+      "representativeLab": [
+        87.45098114013672,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        219,
+        219,
+        219
+      ],
+      "runtimeMs": 14.8641
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 36.674217224121094,
+      "coreDistance": {
+        "mean": 2.2656357288360596,
+        "median": 2.2656357288360596,
+        "p95": 4.304708003997803
+      },
+      "corePixelCount": 2,
+      "medoidSampleCount": 2,
+      "method": "RC-D",
+      "regionId": 13,
+      "representativeLab": [
+        83.92156982421875,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        209,
+        209,
+        209
+      ],
+      "runtimeMs": 15.6889
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 27.513151168823242,
+      "coreDistance": {
+        "mean": 3.4043431282043457,
+        "median": 3.4043431282043457,
+        "p95": 3.4831924438476562
+      },
+      "corePixelCount": 2,
+      "medoidSampleCount": null,
+      "method": "RC-A",
+      "regionId": 14,
+      "representativeLab": [
+        83.52941131591797,
+        0.0,
+        1.0
+      ],
+      "representativeRgb": [
+        209,
+        208,
+        206
+      ],
+      "runtimeMs": 17.842
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 37.75636291503906,
+      "coreDistance": {
+        "mean": 3.4043431282043457,
+        "median": 3.4043431282043457,
+        "p95": 3.4831924438476562
+      },
+      "corePixelCount": 2,
+      "medoidSampleCount": null,
+      "method": "RC-B",
+      "regionId": 14,
+      "representativeLab": [
+        83.52941131591797,
+        0.0,
+        1.0
+      ],
+      "representativeRgb": [
+        209,
+        208,
+        206
+      ],
+      "runtimeMs": 12.5739
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 37.75636291503906,
+      "coreDistance": {
+        "mean": 3.4043431282043457,
+        "median": 3.4043431282043457,
+        "p95": 3.4831924438476562
+      },
+      "corePixelCount": 2,
+      "medoidSampleCount": null,
+      "method": "RC-C",
+      "regionId": 14,
+      "representativeLab": [
+        83.52941131591797,
+        0.0,
+        1.0
+      ],
+      "representativeRgb": [
+        209,
+        208,
+        206
+      ],
+      "runtimeMs": 12.6708
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 36.291282653808594,
+      "coreDistance": {
+        "mean": 3.402034044265747,
+        "median": 3.402034044265747,
+        "p95": 6.463864803314209
+      },
+      "corePixelCount": 2,
+      "medoidSampleCount": 2,
+      "method": "RC-D",
+      "regionId": 14,
+      "representativeLab": [
+        78.4313735961914,
+        0.0,
+        1.0
+      ],
+      "representativeRgb": [
+        194,
+        194,
+        192
+      ],
+      "runtimeMs": 16.7496
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 26.29437255859375,
+      "coreDistance": {
+        "mean": 4.697992324829102,
+        "median": 4.697992324829102,
+        "p95": 4.848040580749512
+      },
+      "corePixelCount": 2,
+      "medoidSampleCount": null,
+      "method": "RC-A",
+      "regionId": 15,
+      "representativeLab": [
+        83.92156982421875,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        209,
+        209,
+        209
+      ],
+      "runtimeMs": 15.8229
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 36.674217224121094,
+      "coreDistance": {
+        "mean": 4.697992324829102,
+        "median": 4.697992324829102,
+        "p95": 4.848040580749512
+      },
+      "corePixelCount": 2,
+      "medoidSampleCount": null,
+      "method": "RC-B",
+      "regionId": 15,
+      "representativeLab": [
+        83.92156982421875,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        209,
+        209,
+        209
+      ],
+      "runtimeMs": 17.1794
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 36.674217224121094,
+      "coreDistance": {
+        "mean": 4.697992324829102,
+        "median": 4.697992324829102,
+        "p95": 4.848040580749512
+      },
+      "corePixelCount": 2,
+      "medoidSampleCount": null,
+      "method": "RC-C",
+      "regionId": 15,
+      "representativeLab": [
+        83.92156982421875,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        209,
+        209,
+        209
+      ],
+      "runtimeMs": 15.656
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 34.60880661010742,
+      "coreDistance": {
+        "mean": 4.691936016082764,
+        "median": 4.691936016082764,
+        "p95": 8.914678573608398
+      },
+      "corePixelCount": 2,
+      "medoidSampleCount": 2,
+      "method": "RC-D",
+      "regionId": 15,
+      "representativeLab": [
+        76.86274719238281,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        190,
+        190,
+        190
+      ],
+      "runtimeMs": 18.1927
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 37.302459716796875,
+      "coreDistance": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0
+      },
+      "corePixelCount": 1,
+      "medoidSampleCount": null,
+      "method": "RC-A",
+      "regionId": 16,
+      "representativeLab": [
+        85.88235473632812,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        215,
+        215,
+        215
+      ],
+      "runtimeMs": 18.1101
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 37.302459716796875,
+      "coreDistance": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0
+      },
+      "corePixelCount": 1,
+      "medoidSampleCount": null,
+      "method": "RC-B",
+      "regionId": 16,
+      "representativeLab": [
+        85.88235473632812,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        215,
+        215,
+        215
+      ],
+      "runtimeMs": 17.9631
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 37.302459716796875,
+      "coreDistance": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0
+      },
+      "corePixelCount": 1,
+      "medoidSampleCount": null,
+      "method": "RC-C",
+      "regionId": 16,
+      "representativeLab": [
+        85.88235473632812,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        215,
+        215,
+        215
+      ],
+      "runtimeMs": 13.2924
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 37.302459716796875,
+      "coreDistance": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0
+      },
+      "corePixelCount": 1,
+      "medoidSampleCount": 1,
+      "method": "RC-D",
+      "regionId": 16,
+      "representativeLab": [
+        85.88235473632812,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        214,
+        214,
+        214
+      ],
+      "runtimeMs": 16.6201
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 2.7832229137420654,
+        "median": 3.7836663722991943,
+        "p95": 4.487768173217773
+      },
+      "corePixelCount": 3,
+      "medoidSampleCount": null,
+      "method": "RC-A",
+      "regionId": 17,
+      "representativeLab": [
+        83.13725280761719,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        207,
+        207,
+        207
+      ],
+      "runtimeMs": 14.7589
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 2.3230807781219482,
+      "coreDistance": {
+        "mean": 2.7832229137420654,
+        "median": 3.7836663722991943,
+        "p95": 4.487768173217773
+      },
+      "corePixelCount": 3,
+      "medoidSampleCount": null,
+      "method": "RC-B",
+      "regionId": 17,
+      "representativeLab": [
+        83.13725280761719,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        207,
+        207,
+        207
+      ],
+      "runtimeMs": 16.8857
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 2.3230807781219482,
+      "coreDistance": {
+        "mean": 2.7832229137420654,
+        "median": 3.7836663722991943,
+        "p95": 4.487768173217773
+      },
+      "corePixelCount": 3,
+      "medoidSampleCount": null,
+      "method": "RC-C",
+      "regionId": 17,
+      "representativeLab": [
+        83.13725280761719,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        207,
+        207,
+        207
+      ],
+      "runtimeMs": 15.0554
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 2.7832229137420654,
+        "median": 3.7836663722991943,
+        "p95": 4.487768173217773
+      },
+      "corePixelCount": 3,
+      "medoidSampleCount": 3,
+      "method": "RC-D",
+      "regionId": 17,
+      "representativeLab": [
+        83.13725280761719,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        207,
+        207,
+        207
+      ],
+      "runtimeMs": 12.6661
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 36.428409576416016,
+      "coreDistance": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0
+      },
+      "corePixelCount": 1,
+      "medoidSampleCount": null,
+      "method": "RC-A",
+      "regionId": 18,
+      "representativeLab": [
+        83.13725280761719,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        207,
+        207,
+        207
+      ],
+      "runtimeMs": 13.6573
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 36.428409576416016,
+      "coreDistance": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0
+      },
+      "corePixelCount": 1,
+      "medoidSampleCount": null,
+      "method": "RC-B",
+      "regionId": 18,
+      "representativeLab": [
+        83.13725280761719,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        207,
+        207,
+        207
+      ],
+      "runtimeMs": 14.2997
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 36.428409576416016,
+      "coreDistance": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0
+      },
+      "corePixelCount": 1,
+      "medoidSampleCount": null,
+      "method": "RC-C",
+      "regionId": 18,
+      "representativeLab": [
+        83.13725280761719,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        207,
+        207,
+        207
+      ],
+      "runtimeMs": 14.7768
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 36.428409576416016,
+      "coreDistance": {
+        "mean": 0.0,
+        "median": 0.0,
+        "p95": 0.0
+      },
+      "corePixelCount": 1,
+      "medoidSampleCount": 1,
+      "method": "RC-D",
+      "regionId": 18,
+      "representativeLab": [
+        83.13725280761719,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        207,
+        207,
+        207
+      ],
+      "runtimeMs": 13.3345
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 2.068887948989868,
+        "median": 0.22485220432281494,
+        "p95": 11.854801177978516
+      },
+      "corePixelCount": 748,
+      "medoidSampleCount": null,
+      "method": "RC-A",
+      "regionId": 19,
+      "representativeLab": [
+        0.3921568691730499,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        2,
+        2,
+        2
+      ],
+      "runtimeMs": 13.161
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 2.068887948989868,
+        "median": 0.22485220432281494,
+        "p95": 11.854801177978516
+      },
+      "corePixelCount": 748,
+      "medoidSampleCount": null,
+      "method": "RC-B",
+      "regionId": 19,
+      "representativeLab": [
+        0.3921568691730499,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        2,
+        2,
+        2
+      ],
+      "runtimeMs": 13.0463
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 2.068887948989868,
+        "median": 0.22485220432281494,
+        "p95": 11.854801177978516
+      },
+      "corePixelCount": 748,
+      "medoidSampleCount": null,
+      "method": "RC-C",
+      "regionId": 19,
+      "representativeLab": [
+        0.3921568691730499,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        2,
+        2,
+        2
+      ],
+      "runtimeMs": 24.62
+    },
+    {
+      "approximateMedoid": true,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 2.068887948989868,
+        "median": 0.22485220432281494,
+        "p95": 11.854801177978516
+      },
+      "corePixelCount": 748,
+      "medoidSampleCount": 512,
+      "method": "RC-D",
+      "regionId": 19,
+      "representativeLab": [
+        0.3921568691730499,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        2,
+        2,
+        2
+      ],
+      "runtimeMs": 93.4259
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 1.7948410511016846,
+        "median": 0.22485220432281494,
+        "p95": 9.148905754089355
+      },
+      "corePixelCount": 741,
+      "medoidSampleCount": null,
+      "method": "RC-A",
+      "regionId": 20,
+      "representativeLab": [
+        0.3921568691730499,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        2,
+        2,
+        2
+      ],
+      "runtimeMs": 18.424
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 1.7948410511016846,
+        "median": 0.22485220432281494,
+        "p95": 9.148905754089355
+      },
+      "corePixelCount": 741,
+      "medoidSampleCount": null,
+      "method": "RC-B",
+      "regionId": 20,
+      "representativeLab": [
+        0.3921568691730499,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        2,
+        2,
+        2
+      ],
+      "runtimeMs": 14.5782
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 1.7948410511016846,
+        "median": 0.22485220432281494,
+        "p95": 9.148905754089355
+      },
+      "corePixelCount": 741,
+      "medoidSampleCount": null,
+      "method": "RC-C",
+      "regionId": 20,
+      "representativeLab": [
+        0.3921568691730499,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        2,
+        2,
+        2
+      ],
+      "runtimeMs": 24.8125
+    },
+    {
+      "approximateMedoid": true,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 1.7948410511016846,
+        "median": 0.22485220432281494,
+        "p95": 9.148905754089355
+      },
+      "corePixelCount": 741,
+      "medoidSampleCount": 512,
+      "method": "RC-D",
+      "regionId": 20,
+      "representativeLab": [
+        0.3921568691730499,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        1,
+        1,
+        1
+      ],
+      "runtimeMs": 107.8802
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.24119959771633148,
+      "coreDistance": {
+        "mean": 1.32145094871521,
+        "median": 1.0884954929351807,
+        "p95": 2.5552656650543213
+      },
+      "corePixelCount": 1084,
+      "medoidSampleCount": null,
+      "method": "RC-A",
+      "regionId": 21,
+      "representativeLab": [
+        92.15686798095703,
+        8.0,
+        9.0
+      ],
+      "representativeRgb": [
+        255,
+        227,
+        216
+      ],
+      "runtimeMs": 15.6014
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 1.32145094871521,
+        "median": 1.0884954929351807,
+        "p95": 2.5552656650543213
+      },
+      "corePixelCount": 1084,
+      "medoidSampleCount": null,
+      "method": "RC-B",
+      "regionId": 21,
+      "representativeLab": [
+        92.15686798095703,
+        8.0,
+        9.0
+      ],
+      "representativeRgb": [
+        255,
+        227,
+        216
+      ],
+      "runtimeMs": 19.8185
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 1.32145094871521,
+        "median": 1.0884954929351807,
+        "p95": 2.5552656650543213
+      },
+      "corePixelCount": 1084,
+      "medoidSampleCount": null,
+      "method": "RC-C",
+      "regionId": 21,
+      "representativeLab": [
+        92.15686798095703,
+        8.0,
+        9.0
+      ],
+      "representativeRgb": [
+        255,
+        227,
+        216
+      ],
+      "runtimeMs": 32.6364
+    },
+    {
+      "approximateMedoid": true,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 1.2850559949874878,
+        "median": 1.088689923286438,
+        "p95": 2.5891096591949463
+      },
+      "corePixelCount": 1084,
+      "medoidSampleCount": 512,
+      "method": "RC-D",
+      "regionId": 21,
+      "representativeLab": [
+        91.76470947265625,
+        8.0,
+        9.0
+      ],
+      "representativeRgb": [
+        253,
+        225,
+        214
+      ],
+      "runtimeMs": 128.4969
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 0.8585892915725708,
+        "median": 0.2429676204919815,
+        "p95": 2.589437484741211
+      },
+      "corePixelCount": 994,
+      "medoidSampleCount": null,
+      "method": "RC-A",
+      "regionId": 22,
+      "representativeLab": [
+        91.37255096435547,
+        8.0,
+        9.0
+      ],
+      "representativeRgb": [
+        253,
+        225,
+        213
+      ],
+      "runtimeMs": 13.4223
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 0.8585892915725708,
+        "median": 0.2429676204919815,
+        "p95": 2.589437484741211
+      },
+      "corePixelCount": 994,
+      "medoidSampleCount": null,
+      "method": "RC-B",
+      "regionId": 22,
+      "representativeLab": [
+        91.37255096435547,
+        8.0,
+        9.0
+      ],
+      "representativeRgb": [
+        253,
+        225,
+        213
+      ],
+      "runtimeMs": 12.3045
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 0.8585892915725708,
+        "median": 0.2429676204919815,
+        "p95": 2.589437484741211
+      },
+      "corePixelCount": 994,
+      "medoidSampleCount": null,
+      "method": "RC-C",
+      "regionId": 22,
+      "representativeLab": [
+        91.37255096435547,
+        8.0,
+        9.0
+      ],
+      "representativeRgb": [
+        253,
+        225,
+        213
+      ],
+      "runtimeMs": 26.9076
+    },
+    {
+      "approximateMedoid": true,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 0.8585892915725708,
+        "median": 0.2429676204919815,
+        "p95": 2.589437484741211
+      },
+      "corePixelCount": 994,
+      "medoidSampleCount": 512,
+      "method": "RC-D",
+      "regionId": 22,
+      "representativeLab": [
+        91.37255096435547,
+        8.0,
+        9.0
+      ],
+      "representativeRgb": [
+        252,
+        224,
+        213
+      ],
+      "runtimeMs": 100.6799
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.45509853959083557,
+      "coreDistance": {
+        "mean": 3.727861166000366,
+        "median": 0.6768485903739929,
+        "p95": 23.494464874267578
+      },
+      "corePixelCount": 592,
+      "medoidSampleCount": null,
+      "method": "RC-A",
+      "regionId": 23,
+      "representativeLab": [
+        1.1764706373214722,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        4,
+        4,
+        4
+      ],
+      "runtimeMs": 17.6395
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 3.727861166000366,
+        "median": 0.6768485903739929,
+        "p95": 23.494464874267578
+      },
+      "corePixelCount": 592,
+      "medoidSampleCount": null,
+      "method": "RC-B",
+      "regionId": 23,
+      "representativeLab": [
+        1.1764706373214722,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        4,
+        4,
+        4
+      ],
+      "runtimeMs": 12.1639
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 3.727861166000366,
+        "median": 0.6768485903739929,
+        "p95": 23.494464874267578
+      },
+      "corePixelCount": 592,
+      "medoidSampleCount": null,
+      "method": "RC-C",
+      "regionId": 23,
+      "representativeLab": [
+        1.1764706373214722,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        4,
+        4,
+        4
+      ],
+      "runtimeMs": 26.3617
+    },
+    {
+      "approximateMedoid": true,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.45509853959083557,
+      "coreDistance": {
+        "mean": 3.727861166000366,
+        "median": 0.6768485903739929,
+        "p95": 23.494464874267578
+      },
+      "corePixelCount": 592,
+      "medoidSampleCount": 512,
+      "method": "RC-D",
+      "regionId": 23,
+      "representativeLab": [
+        1.1764706373214722,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        5,
+        5,
+        5
+      ],
+      "runtimeMs": 95.9274
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 26.423967361450195,
+      "coreDistance": {
+        "mean": 3.6521315574645996,
+        "median": 3.6521315574645996,
+        "p95": 3.7428512573242188
+      },
+      "corePixelCount": 2,
+      "medoidSampleCount": null,
+      "method": "RC-A",
+      "regionId": 24,
+      "representativeLab": [
+        83.92156982421875,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        209,
+        209,
+        209
+      ],
+      "runtimeMs": 15.0649
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 36.674217224121094,
+      "coreDistance": {
+        "mean": 3.6521315574645996,
+        "median": 3.6521315574645996,
+        "p95": 3.7428512573242188
+      },
+      "corePixelCount": 2,
+      "medoidSampleCount": null,
+      "method": "RC-B",
+      "regionId": 24,
+      "representativeLab": [
+        83.92156982421875,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        209,
+        209,
+        209
+      ],
+      "runtimeMs": 12.4586
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 36.674217224121094,
+      "coreDistance": {
+        "mean": 3.6521315574645996,
+        "median": 3.6521315574645996,
+        "p95": 3.7428512573242188
+      },
+      "corePixelCount": 2,
+      "medoidSampleCount": null,
+      "method": "RC-C",
+      "regionId": 24,
+      "representativeLab": [
+        83.92156982421875,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        209,
+        209,
+        209
+      ],
+      "runtimeMs": 11.8229
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 35.03544235229492,
+      "coreDistance": {
+        "mean": 3.6492841243743896,
+        "median": 3.6492841243743896,
+        "p95": 6.9336395263671875
+      },
+      "corePixelCount": 2,
+      "medoidSampleCount": 2,
+      "method": "RC-D",
+      "regionId": 24,
+      "representativeLab": [
+        78.4313735961914,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        194,
+        194,
+        194
+      ],
+      "runtimeMs": 12.5078
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 8.370553016662598,
+        "median": 10.26270580291748,
+        "p95": 11.660564422607422
+      },
+      "corePixelCount": 3,
+      "medoidSampleCount": null,
+      "method": "RC-A",
+      "regionId": 25,
+      "representativeLab": [
+        80.0,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        198,
+        198,
+        198
+      ],
+      "runtimeMs": 11.8689
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 32.38176727294922,
+      "coreDistance": {
+        "mean": 14.8082914352417,
+        "median": 19.619609832763672,
+        "p95": 22.24428367614746
+      },
+      "corePixelCount": 3,
+      "medoidSampleCount": null,
+      "method": "RC-B",
+      "regionId": 25,
+      "representativeLab": [
+        65.49019622802734,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        159,
+        159,
+        159
+      ],
+      "runtimeMs": 14.88
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 5.338332653045654,
+      "coreDistance": {
+        "mean": 8.370553016662598,
+        "median": 10.26270580291748,
+        "p95": 11.660564422607422
+      },
+      "corePixelCount": 3,
+      "medoidSampleCount": null,
+      "method": "RC-C",
+      "regionId": 25,
+      "representativeLab": [
+        80.0,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        198,
+        198,
+        198
+      ],
+      "runtimeMs": 14.7389
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 8.370553016662598,
+        "median": 10.26270580291748,
+        "p95": 11.660564422607422
+      },
+      "corePixelCount": 3,
+      "medoidSampleCount": 3,
+      "method": "RC-D",
+      "regionId": 25,
+      "representativeLab": [
+        80.0,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        198,
+        198,
+        198
+      ],
+      "runtimeMs": 12.6596
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.22485314309597015,
+      "coreDistance": {
+        "mean": 1.6244021654129028,
+        "median": 0.22485314309597015,
+        "p95": 6.597594738006592
+      },
+      "corePixelCount": 2284,
+      "medoidSampleCount": null,
+      "method": "RC-A",
+      "regionId": 26,
+      "representativeLab": [
+        100.0,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        255,
+        255,
+        255
+      ],
+      "runtimeMs": 17.762
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 1.6244021654129028,
+        "median": 0.22485314309597015,
+        "p95": 6.597594738006592
+      },
+      "corePixelCount": 2284,
+      "medoidSampleCount": null,
+      "method": "RC-B",
+      "regionId": 26,
+      "representativeLab": [
+        100.0,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        255,
+        255,
+        255
+      ],
+      "runtimeMs": 18.2768
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 1.6244021654129028,
+        "median": 0.22485314309597015,
+        "p95": 6.597594738006592
+      },
+      "corePixelCount": 2284,
+      "medoidSampleCount": null,
+      "method": "RC-C",
+      "regionId": 26,
+      "representativeLab": [
+        100.0,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        255,
+        255,
+        255
+      ],
+      "runtimeMs": 33.3042
+    },
+    {
+      "approximateMedoid": true,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.22485314309597015,
+      "coreDistance": {
+        "mean": 1.6244021654129028,
+        "median": 0.22485314309597015,
+        "p95": 6.597594738006592
+      },
+      "corePixelCount": 2284,
+      "medoidSampleCount": 512,
+      "method": "RC-D",
+      "regionId": 26,
+      "representativeLab": [
+        100.0,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        255,
+        255,
+        255
+      ],
+      "runtimeMs": 101.2455
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 1.7628295421600342,
+        "median": 1.8210499286651611,
+        "p95": 3.3016576766967773
+      },
+      "corePixelCount": 5,
+      "medoidSampleCount": null,
+      "method": "RC-A",
+      "regionId": 27,
+      "representativeLab": [
+        85.49019622802734,
+        0.0,
+        1.0
+      ],
+      "representativeRgb": [
+        215,
+        214,
+        212
+      ],
+      "runtimeMs": 15.0056
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 1.2707682847976685,
+      "coreDistance": {
+        "mean": 1.7628295421600342,
+        "median": 1.8210499286651611,
+        "p95": 3.3016576766967773
+      },
+      "corePixelCount": 5,
+      "medoidSampleCount": null,
+      "method": "RC-B",
+      "regionId": 27,
+      "representativeLab": [
+        85.49019622802734,
+        0.0,
+        1.0
+      ],
+      "representativeRgb": [
+        215,
+        214,
+        212
+      ],
+      "runtimeMs": 12.5014
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 1.2707682847976685,
+      "coreDistance": {
+        "mean": 1.7628295421600342,
+        "median": 1.8210499286651611,
+        "p95": 3.3016576766967773
+      },
+      "corePixelCount": 5,
+      "medoidSampleCount": null,
+      "method": "RC-C",
+      "regionId": 27,
+      "representativeLab": [
+        85.49019622802734,
+        0.0,
+        1.0
+      ],
+      "representativeRgb": [
+        215,
+        214,
+        212
+      ],
+      "runtimeMs": 15.0207
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 0.0,
+      "coreDistance": {
+        "mean": 1.7628295421600342,
+        "median": 1.8210499286651611,
+        "p95": 3.3016576766967773
+      },
+      "corePixelCount": 5,
+      "medoidSampleCount": 5,
+      "method": "RC-D",
+      "regionId": 27,
+      "representativeLab": [
+        85.49019622802734,
+        0.0,
+        1.0
+      ],
+      "representativeRgb": [
+        214,
+        214,
+        212
+      ],
+      "runtimeMs": 13.8572
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 26.54117774963379,
+      "coreDistance": {
+        "mean": 3.4735107421875,
+        "median": 3.4735107421875,
+        "p95": 3.5555267333984375
+      },
+      "corePixelCount": 2,
+      "medoidSampleCount": null,
+      "method": "RC-A",
+      "regionId": 28,
+      "representativeLab": [
+        85.29411315917969,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        212,
+        213,
+        212
+      ],
+      "runtimeMs": 16.8724
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 37.112056732177734,
+      "coreDistance": {
+        "mean": 3.4735107421875,
+        "median": 3.4735107421875,
+        "p95": 3.5555267333984375
+      },
+      "corePixelCount": 2,
+      "medoidSampleCount": null,
+      "method": "RC-B",
+      "regionId": 28,
+      "representativeLab": [
+        85.29411315917969,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        212,
+        213,
+        212
+      ],
+      "runtimeMs": 13.8555
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 37.112056732177734,
+      "coreDistance": {
+        "mean": 3.4735107421875,
+        "median": 3.4735107421875,
+        "p95": 3.5555267333984375
+      },
+      "corePixelCount": 2,
+      "medoidSampleCount": null,
+      "method": "RC-C",
+      "regionId": 28,
+      "representativeLab": [
+        85.29411315917969,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        212,
+        213,
+        212
+      ],
+      "runtimeMs": 12.2596
+    },
+    {
+      "approximateMedoid": false,
+      "byteIdenticalDeterminism": null,
+      "contaminationDrift": 35.48243713378906,
+      "coreDistance": {
+        "mean": 3.471068859100342,
+        "median": 3.471068859100342,
+        "p95": 6.595030784606934
+      },
+      "corePixelCount": 2,
+      "medoidSampleCount": 2,
+      "method": "RC-D",
+      "regionId": 28,
+      "representativeLab": [
+        80.0,
+        0.0,
+        0.0
+      ],
+      "representativeRgb": [
+        198,
+        198,
+        198
+      ],
+      "runtimeMs": 14.7989
+    }
+  ]
+}

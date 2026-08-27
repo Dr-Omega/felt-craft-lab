@@ -1,0 +1,45 @@
+{
+  "cases": [
+    {
+      "caseId": "FLD-001",
+      "regionCount": 108
+    },
+    {
+      "caseId": "FLD-002",
+      "regionCount": 13
+    },
+    {
+      "caseId": "FLD-003",
+      "regionCount": 18
+    },
+    {
+      "caseId": "FLD-004",
+      "regionCount": 330
+    },
+    {
+      "caseId": "FLD-005",
+      "regionCount": 68
+    },
+    {
+      "caseId": "FLD-006",
+      "regionCount": 28
+    },
+    {
+      "caseId": "FLD-007",
+      "regionCount": 104
+    },
+    {
+      "caseId": "FLD-008",
+      "regionCount": 38
+    }
+  ],
+  "methods": [
+    "RC-A",
+    "RC-B",
+    "RC-C",
+    "RC-D"
+  ],
+  "note": "No Production representative method has been selected.",
+  "profile": "cp-b-aggressive_rc-a",
+  "status": "PENDING_EXTERNAL_GATE_1_REVIEW"
+}

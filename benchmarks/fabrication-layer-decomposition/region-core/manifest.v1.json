@@ -1,0 +1,26 @@
+{
+  "regionCoreVersion": "1.0.0-draft",
+  "scope": "P0-04B Region Core sidecar; no B2/material/vector/production semantics",
+  "b0FrozenCommit": "7ab146b",
+  "b0Manifest": "../benchmark_manifest.json",
+  "b0ContractSha256": {
+    "benchmark_manifest.json": "ca3813f05eebbdf404dd64b1bb24d554e4a456018181e58ad229c8965189f95b",
+    "schemas/fixture.schema.json": "a2d3531e02a825bd0a6c6ab7d26578a41a74dbb52f76ca20dc7fec138a7577c4",
+    "schemas/ground_truth.schema.json": "89ef130eab65e2f9d4ad6ce80c6b583043894adf7b007f76137ccd584c0e1a2d"
+  },
+  "profiles": ["cp-b-balanced_rc-a", "cp-b-aggressive_rc-a"],
+  "fixtures": [
+    {"fixtureId":"FLD-001","kind":"project_real","source":"../fixtures/source/FLD-001.png","sourceSha256":"430aea866099626ffb2448bab16f8c02611bc6b12735c36158816e6948efbd3a","groundTruth":"../fixtures/ground-truth/FLD-001.json","groundTruthSha256":"d71b0bf61c8fcfc00c1cc1466be458bbfad0432f216c2a43fcc0d63248ee284f"},
+    {"fixtureId":"FLD-002","kind":"project_real","source":"../fixtures/source/FLD-002.png","sourceSha256":"6d3e9aca43654da4e630e4e72d236eccefac439f0c4f498e1e264b2575c3e3ab","groundTruth":"../fixtures/ground-truth/FLD-002.json","groundTruthSha256":"86996da5e4ca1ab8c9447d79c71a7ce962483dddd1207cf35a8ba4161e969a47"},
+    {"fixtureId":"FLD-003","kind":"project_real","source":"../fixtures/source/FLD-003.png","sourceSha256":"215571f797076dd34e42df2c9786178010f0495b5e06bfdf2023c0e1ff99881c","groundTruth":"../fixtures/ground-truth/FLD-003.json","groundTruthSha256":"520d15d27400a8c09f77b8b214bc85b7fddf85d11b815e2d85c8143e923498a7"},
+    {"fixtureId":"FLD-004","kind":"project_real","source":"../fixtures/source/FLD-004.png","sourceSha256":"84991c54800da573985072149fe667048e059aaad1d42bfc2923a27859f90d28","groundTruth":"../fixtures/ground-truth/FLD-004.json","groundTruthSha256":"5d86a6294913f9d2771b4cdf7d5ef286015772e98052f0bfc906e09054b1633a"},
+    {"fixtureId":"FLD-005","kind":"project_real","source":"../fixtures/source/FLD-005.png","sourceSha256":"242da16c54c59e0c764e5eb00d52f2b276d0130f596b57fac1c0d08a5b868ad0","groundTruth":"../fixtures/ground-truth/FLD-005.json","groundTruthSha256":"6d69ae713a009b99decfe98be43d473bf7139048a3d97c017719dfa102c1bf2b"},
+    {"fixtureId":"FLD-006","kind":"project_real","source":"../fixtures/source/FLD-006.png","sourceSha256":"8d4c5a735d1b21b55c8b3e6569616c3e0928d8e88ff0766bb24d2846e97ecc8f","groundTruth":"../fixtures/ground-truth/FLD-006.json","groundTruthSha256":"b0f40a0c5d47c659f4f6f2820e30d80aca48b94bfaed311145c1a5639d8a29cf"},
+    {"fixtureId":"FLD-007","kind":"project_real","source":"../fixtures/source/FLD-007.png","sourceSha256":"c084ebe62e6fa12ec99dbfe02e0a4cc05ed9588485b1fe9a35b288280a103ef2","groundTruth":"../fixtures/ground-truth/FLD-007.json","groundTruthSha256":"eb3788c38680aee99d0530427689eaa27c134de45783222a9172c2053f46d387"},
+    {"fixtureId":"FLD-008","kind":"project_real","source":"../fixtures/source/FLD-008.png","sourceSha256":"19a2c17f5e6a6ca6457412cef84a97f021b0063741b3212cd13bbccbadec5289","groundTruth":"../fixtures/ground-truth/FLD-008.json","groundTruthSha256":"70306138244dd9a11bdfdcbb65cfa61fd3e4ab36cf7b33bab497352bbe775f74"},
+    {"fixtureId":"RCF-001","kind":"synthetic","source":"fixtures/synthetic/RCF-001.png","sourceSha256":"dbc512afcb0a742abc673e5f80332b4f098546efa748d3dd92a6a19d0b92bce3","relationGroundTruth":"relation-ground-truth/RCF-001.json"},
+    {"fixtureId":"RCF-002","kind":"synthetic","source":"fixtures/synthetic/RCF-002.png","sourceSha256":"48ebd163c38b2a7bd4848c9d7856c12fd12741f5331dc150da75e4aa36838594","relationGroundTruth":"relation-ground-truth/RCF-002.json"}
+  ],
+  "missingProjectEvidence": ["G02_AI_COLOR_DRIFT", "INTENTIONAL_SHADOW"],
+  "freezeStatus": ["IMPLEMENTATION_COMPLETE", "FREEZE_CANDIDATE", "BLOCKED_DATA_G02_SHADOW"]
+}

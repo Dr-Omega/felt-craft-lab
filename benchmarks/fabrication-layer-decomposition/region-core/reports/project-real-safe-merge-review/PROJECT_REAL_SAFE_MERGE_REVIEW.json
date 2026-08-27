@@ -1,0 +1,575 @@
+{
+  "candidateCount": 10,
+  "candidates": [
+    {
+      "areaRatio": 0.006776081312975755,
+      "boundaryPersistence": {
+        "exact": 0.07258064516129033,
+        "tolerance1px": 0.49193548387096775
+      },
+      "candidateId": "01-FLD-006-cp-b-balanced_rc-a-r24-r233-moderate",
+      "card": "cards/01-FLD-006-cp-b-balanced_rc-a-r24-r233-moderate.png",
+      "currentDecision": "SAFE_MERGE",
+      "fixture": "FLD-006",
+      "hypotheticalMergedRepresentativeRgb": [
+        254,
+        253,
+        251
+      ],
+      "manualDecision": null,
+      "manualReason": "",
+      "policy": "MODERATE",
+      "profile": "cp-b-balanced_rc-a",
+      "regionA": 24,
+      "regionB": 233,
+      "repairRoute": "COHERENT_SPLIT_REPAIR",
+      "representativeA": {
+        "lab": [
+          99.215691,
+          0.0,
+          1.0
+        ],
+        "rgb": [
+          254,
+          253,
+          251
+        ]
+      },
+      "representativeB": {
+        "lab": [
+          91.372551,
+          8.0,
+          9.0
+        ],
+        "rgb": [
+          253,
+          225,
+          213
+        ]
+      },
+      "representativeDeltaE00": 11.743696203584385,
+      "selectionType": "SAFE_MERGE",
+      "sharedBoundaryCoverage": 1.0,
+      "sourceBoundaryEvidence": {
+        "mean": 2.242180109024048,
+        "median": 2.117663860321045,
+        "p90": 3.265674352645874
+      },
+      "vetoes": []
+    },
+    {
+      "areaRatio": 0.005257165007146837,
+      "boundaryPersistence": {
+        "exact": 0.07692307692307693,
+        "tolerance1px": 0.49145299145299143
+      },
+      "candidateId": "02-FLD-006-cp-b-aggressive_rc-a-r6-r22-moderate",
+      "card": "cards/02-FLD-006-cp-b-aggressive_rc-a-r6-r22-moderate.png",
+      "currentDecision": "SAFE_MERGE",
+      "fixture": "FLD-006",
+      "hypotheticalMergedRepresentativeRgb": [
+        254,
+        253,
+        251
+      ],
+      "manualDecision": null,
+      "manualReason": "",
+      "policy": "MODERATE",
+      "profile": "cp-b-aggressive_rc-a",
+      "regionA": 6,
+      "regionB": 22,
+      "repairRoute": "COHERENT_SPLIT_REPAIR",
+      "representativeA": {
+        "lab": [
+          99.215691,
+          0.0,
+          1.0
+        ],
+        "rgb": [
+          254,
+          253,
+          251
+        ]
+      },
+      "representativeB": {
+        "lab": [
+          91.372551,
+          8.0,
+          9.0
+        ],
+        "rgb": [
+          253,
+          225,
+          213
+        ]
+      },
+      "representativeDeltaE00": 11.743696203584385,
+      "selectionType": "SAFE_MERGE",
+      "sharedBoundaryCoverage": 1.0,
+      "sourceBoundaryEvidence": {
+        "mean": 2.0335590839385986,
+        "median": 2.167299747467041,
+        "p90": 3.3813083171844482
+      },
+      "vetoes": []
+    },
+    {
+      "areaRatio": 0.007191641855257819,
+      "boundaryPersistence": {
+        "exact": 0.10714285714285714,
+        "tolerance1px": 0.5674603174603174
+      },
+      "candidateId": "03-FLD-006-cp-b-balanced_rc-a-r24-r234-moderate",
+      "card": "cards/03-FLD-006-cp-b-balanced_rc-a-r24-r234-moderate.png",
+      "currentDecision": "UNCERTAIN",
+      "fixture": "FLD-006",
+      "hypotheticalMergedRepresentativeRgb": [
+        254,
+        253,
+        251
+      ],
+      "manualDecision": null,
+      "manualReason": "",
+      "policy": "MODERATE",
+      "profile": "cp-b-balanced_rc-a",
+      "regionA": 24,
+      "regionB": 234,
+      "repairRoute": "TINY_FRAGMENT_REPAIR",
+      "representativeA": {
+        "lab": [
+          99.215691,
+          0.0,
+          1.0
+        ],
+        "rgb": [
+          254,
+          253,
+          251
+        ]
+      },
+      "representativeB": {
+        "lab": [
+          92.156868,
+          7.0,
+          9.0
+        ],
+        "rgb": [
+          253,
+          227,
+          216
+        ]
+      },
+      "representativeDeltaE00": 10.880169137607568,
+      "selectionType": "NEAR_MISS",
+      "sharedBoundaryCoverage": 1.0,
+      "sourceBoundaryEvidence": {
+        "mean": 2.372007369995117,
+        "median": 2.275660514831543,
+        "p90": 3.612544298171997
+      },
+      "vetoes": []
+    },
+    {
+      "areaRatio": 0.005756232284322989,
+      "boundaryPersistence": {
+        "exact": 0.1134453781512605,
+        "tolerance1px": 0.5210084033613446
+      },
+      "candidateId": "04-FLD-006-cp-b-aggressive_rc-a-r6-r21-moderate",
+      "card": "cards/04-FLD-006-cp-b-aggressive_rc-a-r6-r21-moderate.png",
+      "currentDecision": "UNCERTAIN",
+      "fixture": "FLD-006",
+      "hypotheticalMergedRepresentativeRgb": [
+        254,
+        253,
+        251
+      ],
+      "manualDecision": null,
+      "manualReason": "",
+      "policy": "MODERATE",
+      "profile": "cp-b-aggressive_rc-a",
+      "regionA": 6,
+      "regionB": 21,
+      "repairRoute": "TINY_FRAGMENT_REPAIR",
+      "representativeA": {
+        "lab": [
+          99.215691,
+          0.0,
+          1.0
+        ],
+        "rgb": [
+          254,
+          253,
+          251
+        ]
+      },
+      "representativeB": {
+        "lab": [
+          92.156868,
+          8.0,
+          9.0
+        ],
+        "rgb": [
+          255,
+          227,
+          216
+        ]
+      },
+      "representativeDeltaE00": 11.55983131916966,
+      "selectionType": "NEAR_MISS",
+      "sharedBoundaryCoverage": 1.0,
+      "sourceBoundaryEvidence": {
+        "mean": 1.782728672027588,
+        "median": 1.5462785959243774,
+        "p90": 2.611968994140625
+      },
+      "vetoes": []
+    },
+    {
+      "areaRatio": 0.02868910046757274,
+      "boundaryPersistence": {
+        "exact": 0.1447587354409318,
+        "tolerance1px": 0.627287853577371
+      },
+      "candidateId": "05-FLD-006-cp-b-aggressive_rc-a-r6-r9-moderate",
+      "card": "cards/05-FLD-006-cp-b-aggressive_rc-a-r6-r9-moderate.png",
+      "currentDecision": "UNCERTAIN",
+      "fixture": "FLD-006",
+      "hypotheticalMergedRepresentativeRgb": [
+        254,
+        253,
+        251
+      ],
+      "manualDecision": null,
+      "manualReason": "",
+      "policy": "MODERATE",
+      "profile": "cp-b-aggressive_rc-a",
+      "regionA": 6,
+      "regionB": 9,
+      "repairRoute": "TINY_FRAGMENT_REPAIR",
+      "representativeA": {
+        "lab": [
+          99.215691,
+          0.0,
+          1.0
+        ],
+        "rgb": [
+          254,
+          253,
+          251
+        ]
+      },
+      "representativeB": {
+        "lab": [
+          91.764709,
+          8.0,
+          9.0
+        ],
+        "rgb": [
+          254,
+          226,
+          215
+        ]
+      },
+      "representativeDeltaE00": 11.649464526174418,
+      "selectionType": "NEAR_MISS",
+      "sharedBoundaryCoverage": 1.0,
+      "sourceBoundaryEvidence": {
+        "mean": 2.0102181434631348,
+        "median": 2.1807289123535156,
+        "p90": 3.3368475437164307
+      },
+      "vetoes": []
+    },
+    {
+      "areaRatio": 0.027991375342200257,
+      "boundaryPersistence": {
+        "exact": 0.10606060606060606,
+        "tolerance1px": 0.5370370370370371
+      },
+      "candidateId": "06-FLD-006-cp-b-aggressive_rc-a-r6-r10-moderate",
+      "card": "cards/06-FLD-006-cp-b-aggressive_rc-a-r6-r10-moderate.png",
+      "currentDecision": "UNCERTAIN",
+      "fixture": "FLD-006",
+      "hypotheticalMergedRepresentativeRgb": [
+        254,
+        253,
+        251
+      ],
+      "manualDecision": null,
+      "manualReason": "",
+      "policy": "MODERATE",
+      "profile": "cp-b-aggressive_rc-a",
+      "regionA": 6,
+      "regionB": 10,
+      "repairRoute": "TINY_FRAGMENT_REPAIR",
+      "representativeA": {
+        "lab": [
+          99.215691,
+          0.0,
+          1.0
+        ],
+        "rgb": [
+          254,
+          253,
+          251
+        ]
+      },
+      "representativeB": {
+        "lab": [
+          91.764709,
+          8.0,
+          9.0
+        ],
+        "rgb": [
+          254,
+          226,
+          215
+        ]
+      },
+      "representativeDeltaE00": 11.649464526174418,
+      "selectionType": "NEAR_MISS",
+      "sharedBoundaryCoverage": 1.0,
+      "sourceBoundaryEvidence": {
+        "mean": 2.108952522277832,
+        "median": 2.1806800365448,
+        "p90": 3.3782105445861816
+      },
+      "vetoes": []
+    },
+    {
+      "areaRatio": 0.0318710491192561,
+      "boundaryPersistence": {
+        "exact": 0.14897260273972604,
+        "tolerance1px": 0.666095890410959
+      },
+      "candidateId": "07-FLD-006-cp-b-balanced_rc-a-r24-r108-moderate",
+      "card": "cards/07-FLD-006-cp-b-balanced_rc-a-r24-r108-moderate.png",
+      "currentDecision": "UNCERTAIN",
+      "fixture": "FLD-006",
+      "hypotheticalMergedRepresentativeRgb": [
+        254,
+        253,
+        251
+      ],
+      "manualDecision": null,
+      "manualReason": "",
+      "policy": "MODERATE",
+      "profile": "cp-b-balanced_rc-a",
+      "regionA": 24,
+      "regionB": 108,
+      "repairRoute": "TINY_FRAGMENT_REPAIR",
+      "representativeA": {
+        "lab": [
+          99.215691,
+          0.0,
+          1.0
+        ],
+        "rgb": [
+          254,
+          253,
+          251
+        ]
+      },
+      "representativeB": {
+        "lab": [
+          91.764709,
+          8.0,
+          9.0
+        ],
+        "rgb": [
+          254,
+          226,
+          215
+        ]
+      },
+      "representativeDeltaE00": 11.649464526174418,
+      "selectionType": "NEAR_MISS",
+      "sharedBoundaryCoverage": 1.0,
+      "sourceBoundaryEvidence": {
+        "mean": 2.64762020111084,
+        "median": 2.531036615371704,
+        "p90": 4.21451473236084
+      },
+      "vetoes": []
+    },
+    {
+      "areaRatio": 0.03144571068186151,
+      "boundaryPersistence": {
+        "exact": 0.10862068965517241,
+        "tolerance1px": 0.6017241379310345
+      },
+      "candidateId": "08-FLD-006-cp-b-balanced_rc-a-r24-r112-moderate",
+      "card": "cards/08-FLD-006-cp-b-balanced_rc-a-r24-r112-moderate.png",
+      "currentDecision": "UNCERTAIN",
+      "fixture": "FLD-006",
+      "hypotheticalMergedRepresentativeRgb": [
+        254,
+        253,
+        251
+      ],
+      "manualDecision": null,
+      "manualReason": "",
+      "policy": "MODERATE",
+      "profile": "cp-b-balanced_rc-a",
+      "regionA": 24,
+      "regionB": 112,
+      "repairRoute": "TINY_FRAGMENT_REPAIR",
+      "representativeA": {
+        "lab": [
+          99.215691,
+          0.0,
+          1.0
+        ],
+        "rgb": [
+          254,
+          253,
+          251
+        ]
+      },
+      "representativeB": {
+        "lab": [
+          91.764709,
+          8.0,
+          9.0
+        ],
+        "rgb": [
+          254,
+          226,
+          215
+        ]
+      },
+      "representativeDeltaE00": 11.649464526174418,
+      "selectionType": "NEAR_MISS",
+      "sharedBoundaryCoverage": 1.0,
+      "sourceBoundaryEvidence": {
+        "mean": 2.4812097549438477,
+        "median": 2.316805601119995,
+        "p90": 4.249366760253906
+      },
+      "vetoes": []
+    },
+    {
+      "areaRatio": 0.5057875155022736,
+      "boundaryPersistence": {
+        "exact": 0.04918032786885246,
+        "tolerance1px": 0.5737704918032787
+      },
+      "candidateId": "09-FLD-004-cp-b-balanced_rc-a-r16-r82-moderate",
+      "card": "cards/09-FLD-004-cp-b-balanced_rc-a-r16-r82-moderate.png",
+      "currentDecision": "UNCERTAIN",
+      "fixture": "FLD-004",
+      "hypotheticalMergedRepresentativeRgb": [
+        253,
+        219,
+        220
+      ],
+      "manualDecision": null,
+      "manualReason": "",
+      "policy": "MODERATE",
+      "profile": "cp-b-balanced_rc-a",
+      "regionA": 16,
+      "regionB": 82,
+      "repairRoute": "TINY_FRAGMENT_REPAIR",
+      "representativeA": {
+        "lab": [
+          86.274513,
+          18.0,
+          4.0
+        ],
+        "rgb": [
+          253,
+          204,
+          209
+        ]
+      },
+      "representativeB": {
+        "lab": [
+          90.980392,
+          11.0,
+          4.0
+        ],
+        "rgb": [
+          254,
+          222,
+          222
+        ]
+      },
+      "representativeDeltaE00": 6.004010439519696,
+      "selectionType": "NEAR_MISS",
+      "sharedBoundaryCoverage": 0.06711409395973154,
+      "sourceBoundaryEvidence": {
+        "mean": 4.775463104248047,
+        "median": 4.56478214263916,
+        "p90": 8.244091033935547
+      },
+      "vetoes": []
+    },
+    {
+      "areaRatio": 0.015476190476190477,
+      "boundaryPersistence": {
+        "exact": 0.0,
+        "tolerance1px": 0.08695652173913043
+      },
+      "candidateId": "10-FLD-007-cp-b-balanced_rc-a-r89-r93-moderate",
+      "card": "cards/10-FLD-007-cp-b-balanced_rc-a-r89-r93-moderate.png",
+      "currentDecision": "UNCERTAIN",
+      "fixture": "FLD-007",
+      "hypotheticalMergedRepresentativeRgb": [
+        213,
+        128,
+        119
+      ],
+      "manualDecision": null,
+      "manualReason": "",
+      "policy": "MODERATE",
+      "profile": "cp-b-balanced_rc-a",
+      "regionA": 89,
+      "regionB": 93,
+      "repairRoute": "TINY_FRAGMENT_REPAIR",
+      "representativeA": {
+        "lab": [
+          62.352943,
+          32.0,
+          19.0
+        ],
+        "rgb": [
+          213,
+          128,
+          119
+        ]
+      },
+      "representativeB": {
+        "lab": [
+          94.509804,
+          4.0,
+          7.0
+        ],
+        "rgb": [
+          253,
+          236,
+          226
+        ]
+      },
+      "representativeDeltaE00": 28.74461274339122,
+      "selectionType": "NEAR_MISS",
+      "sharedBoundaryCoverage": 0.5,
+      "sourceBoundaryEvidence": {
+        "mean": 23.065473556518555,
+        "median": 21.8016357421875,
+        "p90": 35.73553466796875
+      },
+      "vetoes": []
+    }
+  ],
+  "manualDecisionValues": [
+    "CORRECT_MERGE",
+    "WRONG_MERGE",
+    "UNCERTAIN"
+  ],
+  "nearMissCount": 8,
+  "repairApply": "NOT_EXECUTED",
+  "safeMergeCount": 2,
+  "status": "PENDING_EXTERNAL_GATE_2_REVIEW_V2",
+  "syntheticCandidatesIncluded": false
+}
