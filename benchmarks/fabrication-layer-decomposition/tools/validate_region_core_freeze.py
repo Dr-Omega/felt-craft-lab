@@ -22,7 +22,7 @@ from frozen_contract import (  # noqa: E402
     assert_no_forbidden_keys,
     build_case_contract,
 )
-from region_core import RegionCoreError, sha256  # noqa: E402
+from region_core import RegionCoreError, artifact_identity_mode, artifact_size, sha256  # noqa: E402
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -94,7 +94,9 @@ def _safe_repo_artifact(record: dict[str, Any]) -> Path:
         raise RegionCoreError("artifact path escapes repository") from error
     if not path.is_file():
         raise RegionCoreError(f"missing artifact: {record.get('path')}")
-    if path.stat().st_size != record.get("sizeBytes"):
+    if record.get("identityMode") != artifact_identity_mode(path):
+        raise RegionCoreError(f"artifact identity mode mismatch: {record.get('path')}")
+    if artifact_size(path) != record.get("sizeBytes"):
         raise RegionCoreError(f"artifact size mismatch: {record.get('path')}")
     if sha256(path) != record.get("sha256"):
         raise RegionCoreError(f"artifact SHA mismatch: {record.get('path')}")
@@ -119,6 +121,14 @@ def validate_freeze() -> list[str]:
     except (OSError, json.JSONDecodeError, RegionCoreError) as error:
         return [f"cannot read freeze manifest: {error}"]
     errors.extend(_schema_errors(freeze, REGION_CORE_ROOT / "schemas" / "freeze.schema.json"))
+    identity = freeze.get("artifactIdentityContract", {})
+    if identity != {
+        "trackedText": "GIT_BLOB_CANONICAL_LF",
+        "binary": "EXACT_BYTES",
+        "textSuffixes": [".json", ".md", ".py", ".txt"],
+        "checkoutLineEndingsAffectIdentity": False,
+    }:
+        errors.append("artifact identity contract mismatch")
     governance = freeze.get("governance", {})
     if governance.get("primaryFrozenProfile") != PRIMARY_FROZEN_PROFILE:
         errors.append("PRIMARY_FROZEN_PROFILE must be cp-b-aggressive_rc-a")

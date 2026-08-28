@@ -429,36 +429,43 @@
   ],
   "artifacts": {
     "legacyRegions": {
+      "identityMode": "EXACT_BYTES",
       "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-aggressive_rc-a/FLD-001/regions.json.gz",
       "sha256": "16cd0c9445d9983f3f25efa10e6dd0290d8207622c544b10f5500dd59e13f7b0",
       "sizeBytes": 3633
     },
     "metrics": {
+      "identityMode": "GIT_BLOB_CANONICAL_LF",
       "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-aggressive_rc-a/FLD-001/metrics.json",
-      "sha256": "626a6d0318cd37c0bc5ad855e24662e8be38998828adad0f67aed65740e53c95",
-      "sizeBytes": 3390
+      "sha256": "dae946f7418616a9e28339cd4c7bd7cf8e7299c69c6c711168c2fb96c7eec698",
+      "sizeBytes": 3298
     },
     "pixelLabelMap": {
+      "identityMode": "EXACT_BYTES",
       "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-aggressive_rc-a/FLD-001/pixel_label_map.npz",
       "sha256": "867a3d2d59a421a2475ae6d2a307421bbf226d48cc1ed059c6c885a5d3d122a0",
       "sizeBytes": 9017
     },
     "purifiedRaster": {
+      "identityMode": "EXACT_BYTES",
       "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-aggressive_rc-a/FLD-001/purified.png",
       "sha256": "8080fe52d341838e0bb6f2619b48ec26f097534fa18569fef829079838d1fc0b",
       "sizeBytes": 33264
     },
     "runConfig": {
+      "identityMode": "GIT_BLOB_CANONICAL_LF",
       "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-aggressive_rc-a/FLD-001/run_config.json",
-      "sha256": "d5121b677d6bd300e9e47b9556d9ac7a8d3f0df2f5a35a6a7a283b380f0d6073",
-      "sizeBytes": 1323
+      "sha256": "89eafa0e233f0dfbcbb42a66d1fb66032a2f30e302b6a39280b133ba39ef6d51",
+      "sizeBytes": 1286
     },
     "source": {
+      "identityMode": "EXACT_BYTES",
       "path": "benchmarks/fabrication-layer-decomposition/fixtures/source/FLD-001.png",
       "sha256": "430aea866099626ffb2448bab16f8c02611bc6b12735c36158816e6948efbd3a",
       "sizeBytes": 125520
     },
     "structuralLabelMap": {
+      "identityMode": "EXACT_BYTES",
       "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-aggressive_rc-a/FLD-001/structural_label_map.npz",
       "sha256": "867a3d2d59a421a2475ae6d2a307421bbf226d48cc1ed059c6c885a5d3d122a0",
       "sizeBytes": 9017
@@ -484,7 +491,7 @@
     "artifactGenerationCommit": "c18eb15d23357794dd8178b1daae8bf6e0ac74b7",
     "candidateSourceGitBlob": "8945e305be3f0cb309d442da3f352321c7167175",
     "p0_04cUpstreamBaselineCommit": "4dc782343fbf02836d9cf36a8bd42975eec41d2f",
-    "runConfigSha256": "d5121b677d6bd300e9e47b9556d9ac7a8d3f0df2f5a35a6a7a283b380f0d6073",
+    "runConfigSha256": "89eafa0e233f0dfbcbb42a66d1fb66032a2f30e302b6a39280b133ba39ef6d51",
     "sourceSha256": "430aea866099626ffb2448bab16f8c02611bc6b12735c36158816e6948efbd3a"
   },
   "regionIdSemantics": {

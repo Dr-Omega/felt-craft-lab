@@ -498,6 +498,7 @@ def _representative_from_lab(
     x0, x1 = int(xs.min()), int(xs.max()) + 1
     local_mask = region_mask[y0:y1, x0:x1]
     local_alpha = rgba[y0:y1, x0:x1, 3]
+    local_rgb = rgba[y0:y1, x0:x1, :3]
     local_lab = lab[y0:y1, x0:x1]
     core = core_sampling_mask(local_mask, local_alpha, config)
     values = local_lab[core]
@@ -516,10 +517,45 @@ def _representative_from_lab(
         distances = np.linalg.norm(values[:, None, :] - values[None, :, :], axis=2)
         center = int(np.argmax(np.sum(distances <= radius, axis=1)))
         representative_lab = np.median(values[distances[center] <= radius], axis=0)
+    elif method == "RC-D":
+        # Benchmark-only deterministic CIEDE2000 medoid. Region Core rejects
+        # RC-D as a Frozen/Production representative method.
+        sample_indices = np.arange(len(values), dtype=np.int32)
+        if len(values) > 512:
+            sample_indices = np.linspace(0, len(values) - 1, num=512, dtype=np.int32)
+        sample = values[sample_indices]
+        distances = deltaE_ciede2000(sample[:, None, :], sample[None, :, :])
+        source_index = int(sample_indices[int(np.argmin(np.sum(distances, axis=1)))])
+        representative_lab = values[source_index]
+        representative_rgb = local_rgb[core][source_index].copy()
     else:
         raise ColorPurificationError(f"unknown representative color method {method}")
-    representative_rgb = lab_to_rgb(np.asarray(representative_lab, dtype=np.float32).reshape(1, 1, 3))[0, 0]
+    if method != "RC-D":
+        representative_rgb = lab_to_rgb(np.asarray(representative_lab, dtype=np.float32).reshape(1, 1, 3))[0, 0]
     return representative_rgb, representative_lab.astype(np.float32), int(np.count_nonzero(core))
+
+
+def representative_details(
+    rgba: np.ndarray,
+    region_mask: np.ndarray,
+    method: str,
+    config: dict[str, Any],
+    source_lab: np.ndarray | None = None,
+) -> dict[str, Any]:
+    """Return deterministic representative diagnostics without proposing labels."""
+    validate_rgba(rgba)
+    lab = rgb_to_lab(rgba[..., :3]) if source_lab is None else source_lab
+    if lab.shape != rgba.shape[:2] + (3,):
+        raise ColorPurificationError("source_lab must match RGBA dimensions")
+    rgb, representative_lab, core_count = _representative_from_lab(rgba, lab, region_mask, method, config)
+    sample_count = core_count
+    return {
+        "representativeRgb": [int(channel) for channel in rgb],
+        "representativeLab": [float(channel) for channel in representative_lab],
+        "corePixelCount": core_count,
+        "medoidSampleCount": min(sample_count, 512) if method == "RC-D" else None,
+        "approximateMedoid": bool(method == "RC-D" and sample_count > 512),
+    }
 
 
 def apply_representatives(

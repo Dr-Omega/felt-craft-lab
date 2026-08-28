@@ -3,7 +3,7 @@
   "$id": "region_core_freeze.schema.json",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "status", "freezeTimestamp", "scope", "governance", "connectivity", "legacyMetadataDisposition", "regionRepairDisposition", "upstreamBaselines", "primaryFrozenContracts", "balancedRegressionEvidence", "evidence", "prohibitedFrozenSemantics", "futureRevalidationTriggers"],
+  "required": ["schemaVersion", "status", "freezeTimestamp", "scope", "governance", "connectivity", "artifactIdentityContract", "legacyMetadataDisposition", "regionRepairDisposition", "upstreamBaselines", "primaryFrozenContracts", "balancedRegressionEvidence", "evidence", "prohibitedFrozenSemantics", "futureRevalidationTriggers"],
   "properties": {
     "schemaVersion": {"const": "1.0.0"},
     "status": {"const": "REGION_CORE_FROZEN"},
@@ -21,6 +21,7 @@
       }
     },
     "connectivity": {"type": "object"},
+    "artifactIdentityContract": {"type": "object"},
     "legacyMetadataDisposition": {"const": "LEGACY_COMPONENT_METADATA_SUPERSEDED"},
     "regionRepairDisposition": {"type": "object"},
     "upstreamBaselines": {"type": "object"},

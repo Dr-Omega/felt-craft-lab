@@ -1,38 +1,56 @@
 {
+  "artifactIdentityContract": {
+    "binary": "EXACT_BYTES",
+    "checkoutLineEndingsAffectIdentity": false,
+    "textSuffixes": [
+      ".json",
+      ".md",
+      ".py",
+      ".txt"
+    ],
+    "trackedText": "GIT_BLOB_CANONICAL_LF"
+  },
   "balancedRegressionEvidence": [
     {
       "artifacts": {
         "legacyRegions": {
+          "identityMode": "EXACT_BYTES",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-001/regions.json.gz",
           "sha256": "955cee21c51a345619e03f4f5c058ebc4e37a52c95192e5936df8c1e07675041",
           "sizeBytes": 15365
         },
         "metrics": {
+          "identityMode": "GIT_BLOB_CANONICAL_LF",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-001/metrics.json",
-          "sha256": "5813ed890a6108ad2f3a00ac52d8ddff1a895a23ea0334ec6ceb84194b5560b5",
-          "sizeBytes": 3390
+          "sha256": "d78a6fb9df501de7b20a0097d782dcc2e62c5989820bcde2ff8f1188d27b50bd",
+          "sizeBytes": 3298
         },
         "pixelLabelMap": {
+          "identityMode": "EXACT_BYTES",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-001/pixel_label_map.npz",
           "sha256": "fdfc682b89107c957e35ecd9836910ad0fc97bb291b66d7d84fa28a453e74089",
           "sizeBytes": 10316
         },
         "purifiedRaster": {
+          "identityMode": "EXACT_BYTES",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-001/purified.png",
           "sha256": "19a2a54b8aee5d664c9d44ba3c0dbc3bdcf01c4ba8bfae010f233e62c4218f6e",
           "sizeBytes": 36972
         },
         "runConfig": {
+          "identityMode": "GIT_BLOB_CANONICAL_LF",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-001/run_config.json",
-          "sha256": "8a00d45609a9ca9f79f82f9d9812d2714a51394ebf1ac4c561dc31edb80c80d2",
-          "sizeBytes": 1319
+          "sha256": "0420be93c2e9263a038b335a76a79778c677aadac710af3e2a98a6b6ea112ddf",
+          "sizeBytes": 1282
         },
         "source": {
+          "identityMode": "EXACT_BYTES",
           "path": "benchmarks/fabrication-layer-decomposition/fixtures/source/FLD-001.png",
           "sha256": "430aea866099626ffb2448bab16f8c02611bc6b12735c36158816e6948efbd3a",
           "sizeBytes": 125520
         },
         "structuralLabelMap": {
+          "identityMode": "EXACT_BYTES",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-001/structural_label_map.npz",
           "sha256": "fdfc682b89107c957e35ecd9836910ad0fc97bb291b66d7d84fa28a453e74089",
           "sizeBytes": 10316
@@ -47,36 +65,43 @@
     {
       "artifacts": {
         "legacyRegions": {
+          "identityMode": "EXACT_BYTES",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-002/regions.json.gz",
           "sha256": "002e775dd9a5bbd0aaba3ddd693e9ee12b0f08dd32d939ba193ac76259445efc",
           "sizeBytes": 3232
         },
         "metrics": {
+          "identityMode": "GIT_BLOB_CANONICAL_LF",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-002/metrics.json",
-          "sha256": "2e5d3c242ec6e138a521d89a7496e6510282e848196bb49e1d650abccebadba9",
-          "sizeBytes": 3390
+          "sha256": "d050006cb45aeace220419575d89a4028fd5e02802ec0eb2455990b88d8103f5",
+          "sizeBytes": 3298
         },
         "pixelLabelMap": {
+          "identityMode": "EXACT_BYTES",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-002/pixel_label_map.npz",
           "sha256": "58764f0451ce792a202b7dcd62cb36cf3cb380bda9dd44ef591192ad7f28cf9b",
           "sizeBytes": 7089
         },
         "purifiedRaster": {
+          "identityMode": "EXACT_BYTES",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-002/purified.png",
           "sha256": "33bf36fd066ec9806bb44544749d9280446892641803941e85e117ede32da764",
           "sizeBytes": 14747
         },
         "runConfig": {
+          "identityMode": "GIT_BLOB_CANONICAL_LF",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-002/run_config.json",
-          "sha256": "8168f8fc2ab86353fc00aed8e9e51a3375cb3e4b244dc5f894963fe8f985cb25",
-          "sizeBytes": 1319
+          "sha256": "d8c79584968822cc9552212972c0b09bf10e38e5eb61b5bfc75db0a977f99bec",
+          "sizeBytes": 1282
         },
         "source": {
+          "identityMode": "EXACT_BYTES",
           "path": "benchmarks/fabrication-layer-decomposition/fixtures/source/FLD-002.png",
           "sha256": "6d3e9aca43654da4e630e4e72d236eccefac439f0c4f498e1e264b2575c3e3ab",
           "sizeBytes": 210658
         },
         "structuralLabelMap": {
+          "identityMode": "EXACT_BYTES",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-002/structural_label_map.npz",
           "sha256": "58764f0451ce792a202b7dcd62cb36cf3cb380bda9dd44ef591192ad7f28cf9b",
           "sizeBytes": 7089
@@ -91,36 +116,43 @@
     {
       "artifacts": {
         "legacyRegions": {
+          "identityMode": "EXACT_BYTES",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-003/regions.json.gz",
           "sha256": "efe3e5eb18df62f3c5a4b4d5959f2aef31229a017ad17a089403dbeecf717687",
           "sizeBytes": 1162
         },
         "metrics": {
+          "identityMode": "GIT_BLOB_CANONICAL_LF",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-003/metrics.json",
-          "sha256": "8494ea56c7f880fb47b9a11260b2f94324a01991f9915a61bab865a13a5f384e",
-          "sizeBytes": 3380
+          "sha256": "8d581b4d63aae7422c9367b8dad9e0d649b2bb79e89dab1b974bfb9a8da09f16",
+          "sizeBytes": 3288
         },
         "pixelLabelMap": {
+          "identityMode": "EXACT_BYTES",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-003/pixel_label_map.npz",
           "sha256": "18fec1fad0ccbf72fbb3cc4c511e6d7c616f33a98d6e9b1917b33b3e08c7ea07",
           "sizeBytes": 16154
         },
         "purifiedRaster": {
+          "identityMode": "EXACT_BYTES",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-003/purified.png",
           "sha256": "a82d6920aa00260fbdfcdf8cb9251e6b5a848fa470e6dca6894301012cd5dfa8",
           "sizeBytes": 92805
         },
         "runConfig": {
+          "identityMode": "GIT_BLOB_CANONICAL_LF",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-003/run_config.json",
-          "sha256": "fb2f2d144eb70cfce4ff32e08ef41ce14550103fdcc942fbce6bcf0c21a77746",
-          "sizeBytes": 1319
+          "sha256": "c36bcb5ef63a53065c00a960b8630be78b0ff3a1b6b68bfbc31c1aee08b91b62",
+          "sizeBytes": 1282
         },
         "source": {
+          "identityMode": "EXACT_BYTES",
           "path": "benchmarks/fabrication-layer-decomposition/fixtures/source/FLD-003.png",
           "sha256": "215571f797076dd34e42df2c9786178010f0495b5e06bfdf2023c0e1ff99881c",
           "sizeBytes": 363655
         },
         "structuralLabelMap": {
+          "identityMode": "EXACT_BYTES",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-003/structural_label_map.npz",
           "sha256": "18fec1fad0ccbf72fbb3cc4c511e6d7c616f33a98d6e9b1917b33b3e08c7ea07",
           "sizeBytes": 16154
@@ -135,36 +167,43 @@
     {
       "artifacts": {
         "legacyRegions": {
+          "identityMode": "EXACT_BYTES",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-004/regions.json.gz",
           "sha256": "6f6d130ac41c7c9e6ed840ab2b3f0ab9ed52f0db770c98b62dc731e877776972",
           "sizeBytes": 16421
         },
         "metrics": {
+          "identityMode": "GIT_BLOB_CANONICAL_LF",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-004/metrics.json",
-          "sha256": "087a74dbe56c5868aedc19de31102e0d199bc15ae8f43c02e1998bf40e2d94c2",
-          "sizeBytes": 3429
+          "sha256": "da795687785a205c3757bba0068dfee1e49b192b6c3322da143942e198262adf",
+          "sizeBytes": 3337
         },
         "pixelLabelMap": {
+          "identityMode": "EXACT_BYTES",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-004/pixel_label_map.npz",
           "sha256": "9331c869d3542599dbfe5af5c60d2ba4f490dc889f3cf3644eee7fd8cafc7ebd",
           "sizeBytes": 21314
         },
         "purifiedRaster": {
+          "identityMode": "EXACT_BYTES",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-004/purified.png",
           "sha256": "7d1a4e472d3b390d783536a13a9013b4839ee3d8e0efbdc8cb73607e028e62a4",
           "sizeBytes": 71704
         },
         "runConfig": {
+          "identityMode": "GIT_BLOB_CANONICAL_LF",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-004/run_config.json",
-          "sha256": "d006f942906854a45ddec271ec806a7eb51e2e124801e19da50b5807fe8bfb43",
-          "sizeBytes": 1319
+          "sha256": "7a985de7aab39020346821d76ff140141eeac3c413e6b9f4b48905b8ca524958",
+          "sizeBytes": 1282
         },
         "source": {
+          "identityMode": "EXACT_BYTES",
           "path": "benchmarks/fabrication-layer-decomposition/fixtures/source/FLD-004.png",
           "sha256": "84991c54800da573985072149fe667048e059aaad1d42bfc2923a27859f90d28",
           "sizeBytes": 438949
         },
         "structuralLabelMap": {
+          "identityMode": "EXACT_BYTES",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-004/structural_label_map.npz",
           "sha256": "9331c869d3542599dbfe5af5c60d2ba4f490dc889f3cf3644eee7fd8cafc7ebd",
           "sizeBytes": 21314
@@ -179,36 +218,43 @@
     {
       "artifacts": {
         "legacyRegions": {
+          "identityMode": "EXACT_BYTES",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-005/regions.json.gz",
           "sha256": "1150755bc6358dc2540433d94a18dfbcaf8a9a2242f4589d1090860a82522b89",
           "sizeBytes": 6014
         },
         "metrics": {
+          "identityMode": "GIT_BLOB_CANONICAL_LF",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-005/metrics.json",
-          "sha256": "9ca17ba6c9aa127b122ae00298fb4679a6b57fcb41939420718e5bcda165c597",
-          "sizeBytes": 3376
+          "sha256": "80eb6bd553add91af1cb77de3a62962201eb54454044bfc01ee78d3332253978",
+          "sizeBytes": 3284
         },
         "pixelLabelMap": {
+          "identityMode": "EXACT_BYTES",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-005/pixel_label_map.npz",
           "sha256": "e77e6444e317f1d611fb9a93ad5ca0ca7104880fe8497674e97db82f880babaa",
           "sizeBytes": 7369
         },
         "purifiedRaster": {
+          "identityMode": "EXACT_BYTES",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-005/purified.png",
           "sha256": "39ca1a414233ba21d3eb40665c28667a42661cdca2b8a3643572c53d31ac9d0f",
           "sizeBytes": 39808
         },
         "runConfig": {
+          "identityMode": "GIT_BLOB_CANONICAL_LF",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-005/run_config.json",
-          "sha256": "1cc86d3e8b846b8d8766c70bf541ced062a3c14124eae894925a38d7ae5b01d5",
-          "sizeBytes": 1319
+          "sha256": "80652db850e207941ae6f0d25f0f2dd55afdafe7c669fa6838936f0e384857a0",
+          "sizeBytes": 1282
         },
         "source": {
+          "identityMode": "EXACT_BYTES",
           "path": "benchmarks/fabrication-layer-decomposition/fixtures/source/FLD-005.png",
           "sha256": "242da16c54c59e0c764e5eb00d52f2b276d0130f596b57fac1c0d08a5b868ad0",
           "sizeBytes": 141864
         },
         "structuralLabelMap": {
+          "identityMode": "EXACT_BYTES",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-005/structural_label_map.npz",
           "sha256": "e77e6444e317f1d611fb9a93ad5ca0ca7104880fe8497674e97db82f880babaa",
           "sizeBytes": 7369
@@ -223,36 +269,43 @@
     {
       "artifacts": {
         "legacyRegions": {
+          "identityMode": "EXACT_BYTES",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-006/regions.json.gz",
           "sha256": "d50785f5ee0c5f4cf405aa298d54e77f26467bae00b683aeac79f23f1166f631",
           "sizeBytes": 12643
         },
         "metrics": {
+          "identityMode": "GIT_BLOB_CANONICAL_LF",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-006/metrics.json",
-          "sha256": "9bd51a6a960f76f02ddbe440dfbb4fefef66442d9ab681d73d453fe8b9e90ed8",
-          "sizeBytes": 3408
+          "sha256": "a5b73cceb35417a2d4953263b371a305c8bb7c51bb5543610d9dca502a309367",
+          "sizeBytes": 3316
         },
         "pixelLabelMap": {
+          "identityMode": "EXACT_BYTES",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-006/pixel_label_map.npz",
           "sha256": "e0c362caf72816c88ebebea0133d45172c8b7c7c86fa880ca3c45150980970be",
           "sizeBytes": 15004
         },
         "purifiedRaster": {
+          "identityMode": "EXACT_BYTES",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-006/purified.png",
           "sha256": "aa6abf44f2dd5b4dc98dc84d23248826fdb12d5d6bd5d8d72a8f666f865a66d5",
           "sizeBytes": 83375
         },
         "runConfig": {
+          "identityMode": "GIT_BLOB_CANONICAL_LF",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-006/run_config.json",
-          "sha256": "826e647e0736c9c6abc6f2595785f432fa5d09fd16362162f4fc0610356a7efa",
-          "sizeBytes": 1319
+          "sha256": "8c6843a486a04bdd054384f9f31f59fedc89364fe32810331318df2f6559c9d6",
+          "sizeBytes": 1282
         },
         "source": {
+          "identityMode": "EXACT_BYTES",
           "path": "benchmarks/fabrication-layer-decomposition/fixtures/source/FLD-006.png",
           "sha256": "8d4c5a735d1b21b55c8b3e6569616c3e0928d8e88ff0766bb24d2846e97ecc8f",
           "sizeBytes": 198417
         },
         "structuralLabelMap": {
+          "identityMode": "EXACT_BYTES",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-006/structural_label_map.npz",
           "sha256": "e0c362caf72816c88ebebea0133d45172c8b7c7c86fa880ca3c45150980970be",
           "sizeBytes": 15004
@@ -267,36 +320,43 @@
     {
       "artifacts": {
         "legacyRegions": {
+          "identityMode": "EXACT_BYTES",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-007/regions.json.gz",
           "sha256": "f5b1ae135cda554063203661fb17ff921c2fc041adb2293c5eb710f9f6c61fdb",
           "sizeBytes": 4177
         },
         "metrics": {
+          "identityMode": "GIT_BLOB_CANONICAL_LF",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-007/metrics.json",
-          "sha256": "13e0855c537406a492d9a87ebdecaf8f277902fa779c822677e74bbaa7198626",
-          "sizeBytes": 3391
+          "sha256": "8d0719d4a110e25812b3dd3c21de4d7c65b03aac5050d12b5cd82c758545e43b",
+          "sizeBytes": 3299
         },
         "pixelLabelMap": {
+          "identityMode": "EXACT_BYTES",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-007/pixel_label_map.npz",
           "sha256": "fdaabbcda9ecbd2dc4ab9bcd7e4b34a9e2118585f0509e5035858de8b338d66c",
           "sizeBytes": 12869
         },
         "purifiedRaster": {
+          "identityMode": "EXACT_BYTES",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-007/purified.png",
           "sha256": "fe0b869c2ceccaa2a450f25cf1cd9cb071bc5f5d60d8777a1bd4715759a392a4",
           "sizeBytes": 93788
         },
         "runConfig": {
+          "identityMode": "GIT_BLOB_CANONICAL_LF",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-007/run_config.json",
-          "sha256": "739b33062ad714f35d82580ee1794f25791481d72bd0f8b3ececebe7efccf0ae",
-          "sizeBytes": 1319
+          "sha256": "e721b0944add9b9dba9ab3d173388421134fd3af2cfd7f71118132cace04421e",
+          "sizeBytes": 1282
         },
         "source": {
+          "identityMode": "EXACT_BYTES",
           "path": "benchmarks/fabrication-layer-decomposition/fixtures/source/FLD-007.png",
           "sha256": "c084ebe62e6fa12ec99dbfe02e0a4cc05ed9588485b1fe9a35b288280a103ef2",
           "sizeBytes": 299438
         },
         "structuralLabelMap": {
+          "identityMode": "EXACT_BYTES",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-007/structural_label_map.npz",
           "sha256": "fdaabbcda9ecbd2dc4ab9bcd7e4b34a9e2118585f0509e5035858de8b338d66c",
           "sizeBytes": 12869
@@ -311,36 +371,43 @@
     {
       "artifacts": {
         "legacyRegions": {
+          "identityMode": "EXACT_BYTES",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-008/regions.json.gz",
           "sha256": "7396f5fd772a478d22816f373dd2b0b0f57957961b3fc8c7800fb2ba03f09ed3",
           "sizeBytes": 12027
         },
         "metrics": {
+          "identityMode": "GIT_BLOB_CANONICAL_LF",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-008/metrics.json",
-          "sha256": "b986495f507804a266c40e256a9000f617f44689cf18c0e13c9ffaec6ebd71ea",
-          "sizeBytes": 3391
+          "sha256": "334afbc2ea7f2c82f3073a2b5fe367aa90991036ddd2329ac13f36a7b1e292f3",
+          "sizeBytes": 3299
         },
         "pixelLabelMap": {
+          "identityMode": "EXACT_BYTES",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-008/pixel_label_map.npz",
           "sha256": "3828947fa0f3191fd429825a90d83b5c2ee92a9468c7e7077769d3430595caa0",
           "sizeBytes": 12493
         },
         "purifiedRaster": {
+          "identityMode": "EXACT_BYTES",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-008/purified.png",
           "sha256": "92af3a61d0190721cff3e552e699762fa5093ca4efec73e2b26e05f739e3bf26",
           "sizeBytes": 52743
         },
         "runConfig": {
+          "identityMode": "GIT_BLOB_CANONICAL_LF",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-008/run_config.json",
-          "sha256": "e5fec8a117121386593057cff6ad7d719d38049d3e9c2985e0cd6606d9cf066e",
-          "sizeBytes": 1319
+          "sha256": "222f5b5235e3ec08a9de4abeb86ec7dbf861935d47503373c7768876f33fb3a1",
+          "sizeBytes": 1282
         },
         "source": {
+          "identityMode": "EXACT_BYTES",
           "path": "benchmarks/fabrication-layer-decomposition/fixtures/source/FLD-008.png",
           "sha256": "19a2c17f5e6a6ca6457412cef84a97f021b0063741b3212cd13bbccbadec5289",
           "sizeBytes": 279960
         },
         "structuralLabelMap": {
+          "identityMode": "EXACT_BYTES",
           "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-balanced_rc-a/FLD-008/structural_label_map.npz",
           "sha256": "3828947fa0f3191fd429825a90d83b5c2ee92a9468c7e7077769d3430595caa0",
           "sizeBytes": 12493
@@ -372,7 +439,7 @@
       "FLD-007",
       "FLD-008"
     ],
-    "balancedInputArtifactAggregateSha256": "4c763af6e97a1fe1b24b71c364ffe43c34f4dfa98c9419f41b48c2d60a2dacda",
+    "balancedInputArtifactAggregateSha256": "83793048af2c681f6286a6ee25890a46fd5086b8661d89affc4df354c9b83335",
     "balancedInputArtifactCount": 56,
     "primaryComponentCount4": 1180,
     "primaryContractCount": 8,
@@ -386,13 +453,14 @@
       "FLD-007",
       "FLD-008"
     ],
-    "primaryInputArtifactAggregateSha256": "137ffb24b8ba5548f0dec6b90569a2eb12a9ccd3ad452ab913f8db1c1624b8f4",
+    "primaryInputArtifactAggregateSha256": "c4c5ea4074a577a12930067c9aa8904b2c95f82b163fae8c6d8adc4ebda46c7a",
     "primaryInputArtifactCount": 56,
     "primaryRegionCount": 707,
     "rcADeterminism": {
+      "identityMode": "GIT_BLOB_CANONICAL_LF",
       "path": "benchmarks/fabrication-layer-decomposition/region-core/reports/representative-color/RC-A_FULL_DETERMINISM.json",
-      "sha256": "b1639940f00e0b40ad63b0922b37817c7e6d8535ff65a27fcdbd1e73288cd206",
-      "sizeBytes": 4343
+      "sha256": "797700e0814c287bee2fcd99478af0543ba853137a70428d038bb0f13ff0d4e8",
+      "sizeBytes": 4174
     }
   },
   "freezeTimestamp": "2026-08-28T00:00:00+08:00",
@@ -419,72 +487,80 @@
   "primaryFrozenContracts": [
     {
       "contract": {
+        "identityMode": "GIT_BLOB_CANONICAL_LF",
         "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-001/region-core.json",
-        "sha256": "d2559aef5b5f0d8b378ae987d9341eec298becf3e599c3b9ed0b52640aef3aa8",
-        "sizeBytes": 100218
+        "sha256": "40da2ef9b4c0941f24c7157a1e80ed144f144c1d381d816853fb12204a046676",
+        "sizeBytes": 95187
       },
       "fixtureId": "FLD-001",
       "profile": "cp-b-aggressive_rc-a"
     },
     {
       "contract": {
+        "identityMode": "GIT_BLOB_CANONICAL_LF",
         "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-002/region-core.json",
-        "sha256": "14b85fb334eabeacae751b5eba8c6321f3f9e1145c335a542e68fa89487283f2",
-        "sizeBytes": 15940
+        "sha256": "1f3b917ae70f25f9377efc1fc345a0a1c2af4c05ed83d41c63f0daeef4c5ecda",
+        "sizeBytes": 15471
       },
       "fixtureId": "FLD-002",
       "profile": "cp-b-aggressive_rc-a"
     },
     {
       "contract": {
+        "identityMode": "GIT_BLOB_CANONICAL_LF",
         "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-003/region-core.json",
-        "sha256": "cfd8ea5b2bfd960a5da1ab3b4b4139c0695d96a81baaa14574026f37589426da",
-        "sizeBytes": 20611
+        "sha256": "1ac651dca0b388f03e9f23d5469c566e38482b8e109ffef2fa8e6c701ac240e4",
+        "sizeBytes": 19904
       },
       "fixtureId": "FLD-003",
       "profile": "cp-b-aggressive_rc-a"
     },
     {
       "contract": {
+        "identityMode": "GIT_BLOB_CANONICAL_LF",
         "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-004/region-core.json",
-        "sha256": "fccc93886dbeb8762f1b9f32e32f2e68520ef6d1fdf9c239928ed9ae2e57aa66",
-        "sizeBytes": 316899
+        "sha256": "70cafb0f2580067607bd8a984a2046bca448c7dd603ad506da34ee58d072297a",
+        "sizeBytes": 300128
       },
       "fixtureId": "FLD-004",
       "profile": "cp-b-aggressive_rc-a"
     },
     {
       "contract": {
+        "identityMode": "GIT_BLOB_CANONICAL_LF",
         "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-005/region-core.json",
-        "sha256": "fd20eee32054601133d4b1678288c885cfb5e5791dda91519ae64a39b372ada5",
-        "sizeBytes": 60032
+        "sha256": "52483e01bb93c28bc985828ed18d32f9b5f45e4d705ca4fb10c3e243ae0f3f3a",
+        "sizeBytes": 57163
       },
       "fixtureId": "FLD-005",
       "profile": "cp-b-aggressive_rc-a"
     },
     {
       "contract": {
+        "identityMode": "GIT_BLOB_CANONICAL_LF",
         "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-006/region-core.json",
-        "sha256": "5802782d5a309d5d83e25909855a4c28c0be8b19aade53c725af13ee9a3da178",
-        "sizeBytes": 29020
+        "sha256": "ad7ac6e811a1f15aea27973caf0a6d2df9e77a628ede8e69a3cf4b0630bba7fb",
+        "sizeBytes": 27849
       },
       "fixtureId": "FLD-006",
       "profile": "cp-b-aggressive_rc-a"
     },
     {
       "contract": {
+        "identityMode": "GIT_BLOB_CANONICAL_LF",
         "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-007/region-core.json",
-        "sha256": "a276e743b7867b4859eb76e21823c97319c14920c153f932b56300736d2c3229",
-        "sizeBytes": 98720
+        "sha256": "1dc00e9aa8ae2c24129e6315fcfcf64f46e88ea70d171401887887cad2d5030b",
+        "sizeBytes": 93701
       },
       "fixtureId": "FLD-007",
       "profile": "cp-b-aggressive_rc-a"
     },
     {
       "contract": {
+        "identityMode": "GIT_BLOB_CANONICAL_LF",
         "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-008/region-core.json",
-        "sha256": "202cb43f23263460bfde675d1aa27134192a64fa4739b754d0505234a42286f7",
-        "sizeBytes": 47214
+        "sha256": "c40e67d6c429461dff743643a1da9fc475e23e7f20ace9f8807516af2ad99249",
+        "sizeBytes": 45045
       },
       "fixtureId": "FLD-008",
       "profile": "cp-b-aggressive_rc-a"
@@ -516,6 +592,7 @@
   "upstreamBaselines": {
     "b0FrozenCommit": "7ab146b",
     "p0_04cFreezeManifest": {
+      "identityMode": "GIT_BLOB_CANONICAL_LF",
       "path": "benchmarks/fabrication-layer-decomposition/vector-edge-smoothing/freeze.v1.json",
       "sha256": "206f9c74d4c67b43974e2c6320ff07d8f6fc2cd94ea773ce07e5cca9a8e99121",
       "sizeBytes": 4027

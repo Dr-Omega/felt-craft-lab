@@ -16,14 +16,28 @@ class RegionCoreError(ValueError):
 
 
 RELATION_TYPES = {"MUST_MERGE", "MUST_SEPARATE", "PROTECTED_BOUNDARY", "HOLE", "UNCERTAIN"}
+REPOSITORY_TEXT_SUFFIXES = {".json", ".md", ".py", ".txt"}
+
+
+def artifact_identity_mode(path: Path) -> str:
+    """Return the frozen byte-identity contract for a repository artifact."""
+    return "GIT_BLOB_CANONICAL_LF" if path.suffix.lower() in REPOSITORY_TEXT_SUFFIXES else "EXACT_BYTES"
+
+
+def canonical_artifact_bytes(path: Path) -> bytes:
+    """Return checkout-independent bytes for text and exact bytes for binary artifacts."""
+    value = path.read_bytes()
+    if artifact_identity_mode(path) == "GIT_BLOB_CANONICAL_LF":
+        return value.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return value
+
+
+def artifact_size(path: Path) -> int:
+    return len(canonical_artifact_bytes(path))
 
 
 def sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for block in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(block)
-    return digest.hexdigest()
+    return hashlib.sha256(canonical_artifact_bytes(path)).hexdigest()
 
 
 def load_json(path: Path) -> dict[str, Any]:

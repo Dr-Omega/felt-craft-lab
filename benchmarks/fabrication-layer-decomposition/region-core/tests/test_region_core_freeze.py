@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -21,6 +22,28 @@ from frozen_contract import (  # noqa: E402
     rc_a_representative,
 )
 from validate_region_core_freeze import matrix_errors  # noqa: E402
+from region_core import artifact_identity_mode, artifact_size, sha256  # noqa: E402
+
+
+class FrozenArtifactIdentityTests(unittest.TestCase):
+    def test_text_identity_is_checkout_line_ending_independent(self):
+        with tempfile.TemporaryDirectory() as directory:
+            lf = Path(directory) / "lf.json"
+            crlf = Path(directory) / "crlf.json"
+            lf.write_bytes(b'{\n  "value": 1\n}\n')
+            crlf.write_bytes(b'{\r\n  "value": 1\r\n}\r\n')
+            self.assertEqual(artifact_identity_mode(lf), "GIT_BLOB_CANONICAL_LF")
+            self.assertEqual(sha256(lf), sha256(crlf))
+            self.assertEqual(artifact_size(lf), artifact_size(crlf))
+
+    def test_binary_identity_remains_exact(self):
+        with tempfile.TemporaryDirectory() as directory:
+            first = Path(directory) / "first.npz"
+            second = Path(directory) / "second.npz"
+            first.write_bytes(b"a\r\nb")
+            second.write_bytes(b"a\nb")
+            self.assertEqual(artifact_identity_mode(first), "EXACT_BYTES")
+            self.assertNotEqual(sha256(first), sha256(second))
 
 
 class FrozenComponentTests(unittest.TestCase):

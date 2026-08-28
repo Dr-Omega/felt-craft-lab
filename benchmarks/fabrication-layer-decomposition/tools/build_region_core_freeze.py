@@ -94,6 +94,12 @@ def build() -> dict[str, Any]:
             "voidConnectivity": 4,
             "oneRegionMayContainMultipleFourConnectedComponents": True,
         },
+        "artifactIdentityContract": {
+            "trackedText": "GIT_BLOB_CANONICAL_LF",
+            "binary": "EXACT_BYTES",
+            "textSuffixes": [".json", ".md", ".py", ".txt"],
+            "checkoutLineEndingsAffectIdentity": False,
+        },
         "legacyMetadataDisposition": "LEGACY_COMPONENT_METADATA_SUPERSEDED",
         "regionRepairDisposition": {
             "status": "REJECTED_AS_PRODUCTION_APPROACH",
@@ -158,6 +164,7 @@ def build() -> dict[str, Any]:
         "A single Region ID may contain multiple 4-connected components and must not be treated as one connected polygon. The pixel label map is optional fringe coverage evidence.\n\n"
         "Historical `regions.json.gz` files remain byte-identical. Their fixed `componentCount` is not frozen component truth. "
         "The new sidecars derive `components[]`, area, and bbox directly from each structural label map. `LEGACY_COMPONENT_METADATA_SUPERSEDED`.\n\n"
+        "Tracked text artifact identity uses canonical Git-blob LF bytes; binary artifacts use exact bytes. CRLF/LF checkout representation does not change Frozen identity.\n\n"
         "## Representative color audit\n\n"
         "RC-A is recomputed as the median Lab color over the configured Core Sampling Area. Every stored Region RGB/Lab/core count and every assigned pixel in "
         "the purified raster must match the recomputation. Existing full determinism evidence remains pinned by SHA. No RC algorithm selection is reopened.\n\n"

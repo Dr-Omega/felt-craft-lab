@@ -16,7 +16,7 @@ import cv2
 import numpy as np
 from PIL import Image
 
-from region_core import RegionCoreError, sha256, write_json
+from region_core import RegionCoreError, artifact_identity_mode, artifact_size, sha256, write_json
 
 
 CONTRACT_VERSION = "1.0.0"
@@ -237,7 +237,12 @@ def repository_relative(repository_root: Path, path: Path) -> str:
 def artifact_record(repository_root: Path, path: Path) -> dict[str, Any]:
     if not path.is_file():
         raise RegionCoreError(f"missing frozen input artifact: {path}")
-    return {"path": repository_relative(repository_root, path), "sha256": sha256(path), "sizeBytes": path.stat().st_size}
+    return {
+        "path": repository_relative(repository_root, path),
+        "identityMode": artifact_identity_mode(path),
+        "sha256": sha256(path),
+        "sizeBytes": artifact_size(path),
+    }
 
 
 def assert_no_forbidden_keys(value: Any, path: str = "$") -> None:

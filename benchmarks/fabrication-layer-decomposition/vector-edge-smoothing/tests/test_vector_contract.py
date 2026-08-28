@@ -32,6 +32,13 @@ class VectorContractTests(unittest.TestCase):
             write_json(second, {"a": 1, "b": 2})
             self.assertEqual(sha256(first), sha256(second))
 
+    def test_text_artifact_sha_ignores_checkout_line_endings(self):
+        with tempfile.TemporaryDirectory() as directory:
+            lf, crlf = Path(directory) / "lf.json", Path(directory) / "crlf.json"
+            lf.write_bytes(b'{\n  "value": 1\n}\n')
+            crlf.write_bytes(b'{\r\n  "value": 1\r\n}\r\n')
+            self.assertEqual(sha256(lf), sha256(crlf))
+
     def test_complete_evidence_results_record_required_complexity_and_safety_metrics(self):
         result = json.loads(
             (POC_ROOT / "outputs" / "cp-b-aggressive_rc-a" / "FLD-001" / "V2" / "tol-1p0" / "result.json").read_text(
