@@ -67,4 +67,5 @@ venv/
 backend/cache/
 backend/data/generated/
 backend/data/logs/
+backend/data/uploads/
 backend/data/*.jsonl

@@ -36,6 +36,7 @@ import MaterialSheet from '../components/editor/MaterialSheet.vue'
 import ReturnSaveModal from '../components/editor/ReturnSaveModal.vue'
 import ObjectQuickTools from '../components/editor/ObjectQuickTools.vue'
 import RemoveToast from '../components/editor/RemoveToast.vue'
+import ImageUploadControl from '../components/editor/ImageUploadControl.vue'
 import { audioService } from '../services/audio.service'
 
 const launch = getEditorLaunch()
@@ -61,6 +62,9 @@ const oqtOpen = ref(false)
 const oqtPosition = ref({ left: 0, top: 0, below: false })
 const oqtElement = ref<{ $el: HTMLElement } | null>(null)
 const removeToastOpen = ref(false)
+const uploadStatus = ref<'idle' | 'uploading' | 'success' | 'error'>('idle')
+const uploadedFileName = ref('')
+const uploadPreviewUrl = ref('')
 
 let unsubscribe: (() => void) | undefined
 let selectionUnsubscribe: (() => void) | undefined
@@ -143,6 +147,58 @@ function showRemoveToast(): void {
     removeToastOpen.value = false
     removeToastTimer = undefined
   }, 2800)
+}
+
+function bytesToBase64(bytes: Uint8Array): string {
+  const chunkSize = 32_768
+  let binary = ''
+  for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(offset, offset + chunkSize))
+  }
+  return window.btoa(binary)
+}
+
+async function uploadImage(file: File): Promise<void> {
+  const allowed = new Set(['image/png', 'image/jpeg', 'image/bmp'])
+  if (!allowed.has(file.type)) {
+    uploadStatus.value = 'error'
+    showFeedback('仅支持 PNG、JPG 和 BMP 图片。', 'error')
+    return
+  }
+  if (file.size > 10 * 1024 * 1024) {
+    uploadStatus.value = 'error'
+    showFeedback('图片不能超过 10 MB。', 'error')
+    return
+  }
+  if (!window.electronAPI?.uploadImage) {
+    uploadStatus.value = 'error'
+    showFeedback('上传功能暂时不可用。', 'error')
+    return
+  }
+
+  if (uploadPreviewUrl.value) URL.revokeObjectURL(uploadPreviewUrl.value)
+  uploadPreviewUrl.value = URL.createObjectURL(file)
+  uploadedFileName.value = file.name
+  uploadStatus.value = 'uploading'
+  try {
+    const imageBase64 = bytesToBase64(new Uint8Array(await file.arrayBuffer()))
+    const response = await window.electronAPI.uploadImage({
+      imageBase64,
+      mimeType: file.type,
+      fileName: file.name
+    }) as {
+      ok?: boolean
+      result?: { originalName?: string }
+      error?: { message?: string }
+    }
+    if (response?.ok !== true) throw new Error(response?.error?.message || '上传失败，请重试。')
+    uploadedFileName.value = response.result?.originalName || file.name
+    uploadStatus.value = 'success'
+    showFeedback('图片上传成功', 'success')
+  } catch (error) {
+    uploadStatus.value = 'error'
+    showFeedback(friendlyError(error), 'error')
+  }
 }
 
 function closeOqt(): void {
@@ -484,6 +540,7 @@ onUnmounted(() => {
   window.removeEventListener('resize', updateOqtPosition)
   session.value?.dispose()
   audioService.stop('primary')
+  if (uploadPreviewUrl.value) URL.revokeObjectURL(uploadPreviewUrl.value)
 })
 
 watch([oqtOpen, oqtSelection], () => { void nextTick(updateOqtPosition) })
@@ -542,6 +599,14 @@ watch([oqtOpen, oqtSelection], () => { void nextTick(updateOqtPosition) })
           @undo="undo"
           @redo="redo"
           @toggle-sheet="toggleSheet"
+        />
+
+        <ImageUploadControl
+          :busy="uploadStatus === 'uploading'"
+          :file-name="uploadedFileName"
+          :preview-url="uploadPreviewUrl"
+          :status="uploadStatus"
+          @select="uploadImage"
         />
       </div>
     </main>

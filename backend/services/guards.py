@@ -10,6 +10,7 @@ from typing import Optional
 
 # 上传与文本上限
 MAX_AUDIO_BYTES = int(os.getenv("AI_MAX_AUDIO_BYTES", str(5 * 1024 * 1024)))
+MAX_IMAGE_BYTES = int(os.getenv("UPLOAD_MAX_IMAGE_BYTES", str(10 * 1024 * 1024)))
 MAX_QA_QUESTION_CHARS = int(os.getenv("AI_MAX_QA_CHARS", "500"))
 MAX_TTS_TEXT_CHARS = int(os.getenv("AI_MAX_TTS_CHARS", "500"))
 

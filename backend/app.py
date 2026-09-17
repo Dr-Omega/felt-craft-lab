@@ -28,6 +28,7 @@ from services.asr_types import contract_doc
 from services.guards import (
     InflightGuard,
     MAX_AUDIO_BYTES,
+    MAX_IMAGE_BYTES,
     asr_provider_allowed,
     check_audio_mime,
     check_audio_size,
@@ -39,6 +40,7 @@ from services.guards import (
     smoke_allowed,
     tts_provider_allowed,
 )
+from services.image_upload import ImageUploadError, save_uploaded_image
 from services.ops_rules import ops_rules_doc
 from services.qa_service import QaService, UnknownQaProvider
 from services.qa_types import QA_ERROR_CODES
@@ -58,14 +60,17 @@ BASE_DIR = Path(__file__).resolve().parent
 ROOT_DIR = BASE_DIR.parent
 load_dotenv(BASE_DIR / ".env")
 
-# Hard request-body cap (multipart parse included). Slightly above MAX_AUDIO_BYTES.
-_MAX_CONTENT_LENGTH = int(os.getenv("AI_MAX_CONTENT_LENGTH", str(MAX_AUDIO_BYTES + 512 * 1024)))
+# Hard request-body cap (multipart parse included).
+_MAX_CONTENT_LENGTH = int(
+    os.getenv("AI_MAX_CONTENT_LENGTH", str(max(MAX_AUDIO_BYTES, MAX_IMAGE_BYTES) + 512 * 1024))
+)
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = _MAX_CONTENT_LENGTH
 
 # JSON audioUrl is not a general client feature — only allowlisted smoke sample.
 _ALLOWED_ASR_AUDIO_URLS = frozenset({SAMPLE_AUDIO_URL})
+IMAGE_UPLOAD_DIR = BASE_DIR / "data" / "uploads"
 
 SAMPLE_ASSET = {
     "assetId": "sticker_rabbit_demo",
@@ -135,6 +140,32 @@ def _is_mock_provider(name: str) -> bool:
 @app.errorhandler(RequestEntityTooLarge)
 def _payload_too_large(_err):
     return _json_fail("PAYLOAD_TOO_LARGE", 413)
+
+
+@app.post("/api/images/upload")
+def upload_image():
+    """Accept one PNG, JPEG, or BMP and save it without image processing."""
+    claims, err = _require_session(apply_install_rate=True)
+    if err:
+        return err
+    _ = claims
+    if not rate_limit_ok(f"image-upload:{_client_bucket()}"):
+        return _json_fail("RATE_LIMITED", 429)
+
+    image = request.files.get("file") or request.files.get("image")
+    if not image:
+        return _json_fail("IMAGE_MISSING_FILE")
+    try:
+        result = save_uploaded_image(
+            image.stream,
+            filename=image.filename,
+            mime_type=image.mimetype,
+            upload_dir=IMAGE_UPLOAD_DIR,
+        )
+    except ImageUploadError as exc:
+        status = 413 if exc.code == "PAYLOAD_TOO_LARGE" else 400
+        return _json_fail(exc.code, status)
+    return jsonify({"ok": True, "result": result}), 201
 
 
 @app.post("/api/session/token")

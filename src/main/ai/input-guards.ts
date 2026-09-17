@@ -5,6 +5,8 @@ export const MAX_ASR_AUDIO_BYTES = 5 * 1024 * 1024
 export const MAX_ASR_AUDIO_BASE64_CHARS = Math.ceil((MAX_ASR_AUDIO_BYTES * 4) / 3) + 8
 export const MAX_QA_CHARS = 500
 export const MAX_TTS_CHARS = 500
+export const MAX_IMAGE_BYTES = 10 * 1024 * 1024
+export const MAX_IMAGE_BASE64_CHARS = Math.ceil((MAX_IMAGE_BYTES * 4) / 3) + 8
 
 export const ALLOWED_ASR_MIME = new Set([
   'audio/wav',
@@ -19,6 +21,8 @@ export const ALLOWED_ASR_MIME = new Set([
   'audio/flac',
   'application/octet-stream'
 ])
+
+export const ALLOWED_IMAGE_MIME = new Set(['image/png', 'image/jpeg', 'image/bmp'])
 
 export type IpcGuardResult =
   | { ok: true }
@@ -71,6 +75,30 @@ export function validateTtsIpcInput(text: string): IpcGuardResult {
   const value = text || ''
   if (!value.trim()) return invalid('合成文本不能为空。')
   if (value.length > MAX_TTS_CHARS) return invalid('文本过长。')
+  return { ok: true }
+}
+
+export function validateImageUploadIpcInput(input: {
+  imageBase64: string
+  mimeType: string
+  fileName: string
+}): IpcGuardResult {
+  const imageBase64 = input.imageBase64 || ''
+  if (!imageBase64.trim()) return invalid('请选择一张图片。')
+  if (imageBase64.length > MAX_IMAGE_BASE64_CHARS) return invalid('图片不能超过 10 MB。')
+
+  const mime = (input.mimeType || '').trim().toLowerCase().split(';')[0]?.trim() || ''
+  if (!ALLOWED_IMAGE_MIME.has(mime)) return invalid('仅支持 PNG、JPG 和 BMP 图片。')
+  if (!input.fileName?.trim() || input.fileName.length > 255) return invalid('图片文件名无效。')
+
+  let bytes: Buffer
+  try {
+    bytes = Buffer.from(imageBase64, 'base64')
+  } catch {
+    return invalid('图片数据无效。')
+  }
+  if (!bytes.length) return invalid('请选择一张图片。')
+  if (bytes.length > MAX_IMAGE_BYTES) return invalid('图片不能超过 10 MB。')
   return { ok: true }
 }
 

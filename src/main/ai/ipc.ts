@@ -6,13 +6,20 @@ import { toSharedError } from '@shared/contracts/error'
 import { isTrustedIpcEvent } from '../security/ipc-guard'
 import {
   gatewayAsrMultipart,
+  gatewayImageUpload,
   gatewayJson,
   gatewayQaAsk,
   gatewayTtsSynthesize,
   type GatewayAuth,
   type GatewayJsonResult
 } from './gateway-client'
-import { validateAsrIpcInput, validateQaIpcInput, validateTtsIpcInput, withValidatedIpcInput } from './input-guards'
+import {
+  validateAsrIpcInput,
+  validateImageUploadIpcInput,
+  validateQaIpcInput,
+  validateTtsIpcInput,
+  withValidatedIpcInput
+} from './input-guards'
 import { materializeGatewayTts } from './materialize-tts'
 import {
   normalizeAsrEnvelope,
@@ -176,6 +183,22 @@ export function registerAiIpc(): void {
           if (!materialized.ok) return materialized
           return normalizeTtsResult(materialized.result)
         }
+      )
+    )
+  })
+
+  ipcMain.handle(IPC_CHANNELS.IMAGE_UPLOAD, async (event, raw: unknown) => {
+    if (!isTrustedIpcEvent(event)) return deny()
+    const input = asRecord(raw)
+    const imageBase64 = typeof input.imageBase64 === 'string' ? input.imageBase64 : ''
+    const mimeType = typeof input.mimeType === 'string' ? input.mimeType : ''
+    const fileName = typeof input.fileName === 'string' ? input.fileName : ''
+    const guarded = validateImageUploadIpcInput({ imageBase64, mimeType, fileName })
+    return withValidatedIpcInput(guarded, () =>
+      withPaidAuth(
+        packaged,
+        (auth) => gatewayImageUpload({ imageBase64, mimeType, fileName, isPackaged: packaged, auth }),
+        (body) => body
       )
     )
   })

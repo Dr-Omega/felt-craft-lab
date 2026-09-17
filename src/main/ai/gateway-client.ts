@@ -226,6 +226,39 @@ export async function gatewayAsrMultipart(input: {
   })
 }
 
+export async function gatewayImageUpload(input: {
+  imageBase64: string
+  mimeType: string
+  fileName: string
+  signal?: AbortSignal
+  isPackaged?: boolean
+  auth?: GatewayAuth
+}): Promise<GatewayJsonResult> {
+  let bytes: Buffer
+  try {
+    bytes = Buffer.from(input.imageBase64, 'base64')
+  } catch {
+    return {
+      ok: false,
+      error: toSharedError(
+        { code: 'INVALID_ARGUMENT', message: '图片数据无效。', retryable: false },
+        'INVALID_ARGUMENT'
+      )
+    }
+  }
+
+  const form = new FormData()
+  const blob = new Blob([Uint8Array.from(bytes)], { type: input.mimeType })
+  form.append('file', blob, input.fileName)
+  return gatewayJson('/api/images/upload', {
+    method: 'POST',
+    body: form,
+    signal: input.signal,
+    isPackaged: input.isPackaged,
+    auth: input.auth
+  })
+}
+
 export async function gatewayQaAsk(input: {
   question: string
   asset?: Record<string, unknown>

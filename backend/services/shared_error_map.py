@@ -67,6 +67,9 @@ _LEGACY_MAP: dict[str, tuple[str, str, bool]] = {
     "SESSION_INVALID": ("INVALID_ARGUMENT", "会话已失效，请稍后重试。", True),
     "PAYLOAD_TOO_LARGE": ("INVALID_ARGUMENT", "上传内容过大。", False),
     "UNSUPPORTED_MEDIA_TYPE": ("INVALID_ARGUMENT", "不支持的音频格式。", False),
+    "IMAGE_MISSING_FILE": ("INVALID_ARGUMENT", "请选择一张图片。", False),
+    "IMAGE_UNSUPPORTED_MEDIA_TYPE": ("INVALID_ARGUMENT", "仅支持 PNG、JPG 和 BMP 图片。", False),
+    "IMAGE_INVALID_CONTENT": ("INVALID_ARGUMENT", "图片内容无效或与格式不一致。", False),
     "TEXT_TOO_LONG": ("INVALID_ARGUMENT", "文本过长。", False),
     "SMOKE_DISABLED": ("INVALID_ARGUMENT", "冒烟接口仅在受保护的开发模式下可用。", False),
 }

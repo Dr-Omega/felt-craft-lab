@@ -49,6 +49,11 @@ const electronAPI = {
    * Delete a previously saved preview by felt-resource://preview/... ref only.
    */
   deleteProjectPreview: (previewRef: string): Promise<void> => invokePreviewDelete(previewRef),
+  uploadImage: (input: {
+    imageBase64: string
+    mimeType: string
+    fileName: string
+  }): Promise<unknown> => ipcRenderer.invoke(IPC_CHANNELS.IMAGE_UPLOAD, input),
   /**
    * AI Gateway proxy (Main→Flask). Renderer must not fetch Flask / set CORS.
    * Dev: Main→localhost; Prod: Main→remote AI_GATEWAY_BASE_URL.

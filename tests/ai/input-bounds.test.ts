@@ -2,9 +2,11 @@ import { describe, expect, it, vi } from 'vitest'
 import { readResponseTextBounded } from '../../src/main/ai/read-response-bounded'
 import {
   MAX_ASR_AUDIO_BASE64_CHARS,
+  MAX_IMAGE_BASE64_CHARS,
   MAX_QA_CHARS,
   MAX_TTS_CHARS,
   validateAsrIpcInput,
+  validateImageUploadIpcInput,
   validateQaIpcInput,
   validateTtsIpcInput,
   withValidatedIpcInput
@@ -112,6 +114,13 @@ describe('Main IPC input guards', () => {
     expect(validateQaIpcInput('你好').ok).toBe(true)
     expect(validateTtsIpcInput('y'.repeat(MAX_TTS_CHARS + 1)).ok).toBe(false)
     expect(validateTtsIpcInput('朗读').ok).toBe(true)
+  })
+
+  it('accepts supported image input and rejects bad mime or oversized data', () => {
+    const png = Buffer.from('\x89PNG\r\n\x1a\nimage').toString('base64')
+    expect(validateImageUploadIpcInput({ imageBase64: png, mimeType: 'image/png', fileName: '图片.png' }).ok).toBe(true)
+    expect(validateImageUploadIpcInput({ imageBase64: png, mimeType: 'image/webp', fileName: '图片.webp' }).ok).toBe(false)
+    expect(validateImageUploadIpcInput({ imageBase64: 'A'.repeat(MAX_IMAGE_BASE64_CHARS + 1), mimeType: 'image/png', fileName: '图片.png' }).ok).toBe(false)
   })
 
   it('does not invoke network callback when IPC input is invalid', async () => {

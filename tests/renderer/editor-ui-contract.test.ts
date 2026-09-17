@@ -10,6 +10,7 @@ const dock = readFileSync(resolve('src/renderer/src/components/editor/BottomActi
 const modal = readFileSync(resolve('src/renderer/src/components/editor/ReturnSaveModal.vue'), 'utf8')
 const quickTools = readFileSync(resolve('src/renderer/src/components/editor/ObjectQuickTools.vue'), 'utf8')
 const removeToast = readFileSync(resolve('src/renderer/src/components/editor/RemoveToast.vue'), 'utf8')
+const imageUpload = readFileSync(resolve('src/renderer/src/components/editor/ImageUploadControl.vue'), 'utf8')
 const selectionTypes = readFileSync(resolve('src/renderer/src/editor/editor-selection.types.ts'), 'utf8')
 
 describe('V4.6 formal Editor UI contract', () => {
@@ -148,5 +149,14 @@ describe('V4.6 formal Editor UI contract', () => {
     expect(selectionTypes).not.toContain('object:')
     expect(selectionTypes).toContain('objectId: string')
     expect(selectionTypes).toContain('bounds: EditorSelectionBounds')
+  })
+
+  it('offers image upload in the creation workspace without image processing controls', () => {
+    expect(page).toContain('<ImageUploadControl')
+    expect(page).toContain('window.electronAPI.uploadImage')
+    expect(imageUpload).toContain('accept="image/png,image/jpeg,image/bmp,.png,.jpg,.jpeg,.bmp"')
+    expect(imageUpload).toContain('上传图片')
+    expect(imageUpload).toContain('上传成功')
+    expect(imageUpload).not.toMatch(/分层|抠图|风格转换|生成模板/)
   })
 })

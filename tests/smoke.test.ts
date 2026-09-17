@@ -9,6 +9,7 @@ describe('project bootstrap smoke', () => {
     expect(APP_ID).toBe('com.feltcraft.lab')
     expect(IPC_CHANNELS.PING).toBe('felt:bootstrap:ping')
     expect(IPC_CHANNELS.AI_TTS_SYNTHESIZE).toBe('felt:ai:tts:synthesize')
+    expect(IPC_CHANNELS.IMAGE_UPLOAD).toBe('felt:image:upload')
   })
 
   it('keeps server as a non-ready shell', () => {

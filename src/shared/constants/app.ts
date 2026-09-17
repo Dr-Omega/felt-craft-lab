@@ -9,7 +9,8 @@ export const IPC_CHANNELS = {
   AI_HEALTH: 'felt:ai:health',
   AI_ASR_TRANSCRIBE: 'felt:ai:asr:transcribe',
   AI_QA_ASK: 'felt:ai:qa:ask',
-  AI_TTS_SYNTHESIZE: 'felt:ai:tts:synthesize'
+  AI_TTS_SYNTHESIZE: 'felt:ai:tts:synthesize',
+  IMAGE_UPLOAD: 'felt:image:upload'
 } as const
 
 export interface BootstrapPingResult {
