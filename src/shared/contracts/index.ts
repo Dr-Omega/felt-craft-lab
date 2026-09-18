@@ -9,4 +9,5 @@ export * from './generation-candidate'
 export * from './scene'
 export * from './scene-migration'
 export * from './validation'
-
+export * from './fabrication'
+export * from './fabrication-validation'
