@@ -1,0 +1,4672 @@
+{
+  "caseId": "FLD-006",
+  "geometryTruth": "structural_label_map",
+  "hardGate": {
+    "byteIdenticalDeterminism": true,
+    "componentAndHoleSemanticsPreserved": true,
+    "duplicateComponentConsumptionCount": 0,
+    "extraComponentConsumptionCount": 0,
+    "frozenComponentCount": 36,
+    "frozenInnerRingCount": 9,
+    "frozenRegionCount": 28,
+    "hiddenGeometryCount": 0,
+    "illegalIntersectionCount": 0,
+    "missingComponentCount": 0,
+    "observedBoundaryMutationCount": 0,
+    "observedInnerRingCount": 9,
+    "openPathCount": 0,
+    "pass": true,
+    "pieceCount": 36,
+    "selfIntersectionCount": 0,
+    "upstreamVectorHardGatePass": true
+  },
+  "mode": "B2-V0_OBSERVED_ONLY",
+  "overlapContract": {
+    "orderingSemantics": "PARTIAL_ORDER_ONLY",
+    "relationTypes": [
+      "BELOW",
+      "ABOVE",
+      "AMBIGUOUS",
+      "NO_RELATION"
+    ],
+    "relations": [],
+    "unspecifiedRelation": "NO_RELATION",
+    "v0Policy": "NO_Z_ORDER_INFERENCE"
+  },
+  "pieces": [
+    {
+      "confidence": {
+        "basis": "FROZEN_OBSERVED_GEOMETRY",
+        "value": 1.0
+      },
+      "fallbackStatus": {
+        "attemptedRoutes": [
+          "V2_SMOOTH_BEZIER"
+        ],
+        "edgeFallbacks": [],
+        "selectedRoute": "V2_SMOOTH_BEZIER",
+        "state": "NONE"
+      },
+      "finalCutGeometry": {
+        "componentId": "R00001-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000030",
+          "E000031"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000031"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000030"
+            }
+          ],
+          "regionId": 1,
+          "ringId": "R00001-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -12.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "inferenceType": "OBSERVED_ONLY",
+      "inferredGeometry": null,
+      "observedGeometry": {
+        "componentId": "R00001-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000030",
+          "E000031"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000031"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000030"
+            }
+          ],
+          "regionId": 1,
+          "ringId": "R00001-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -12.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "pieceId": "FP-FLD-006-R00001-C001",
+      "provenance": {
+        "regionCoreContract": {
+          "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-006/region-core.json",
+          "sha256": "ad7ac6e811a1f15aea27973caf0a6d2df9e77a628ede8e69a3cf4b0630bba7fb",
+          "sizeBytes": 27849
+        },
+        "sourceComponentId": "R00001-C001",
+        "sourceComponentOrdinal": 1,
+        "sourceRegionId": 1,
+        "structuralArea": 12,
+        "structuralBbox": [
+          406,
+          176,
+          12,
+          1
+        ]
+      },
+      "representativeColor": {
+        "lab": [
+          87.254898,
+          0.0,
+          0.0
+        ],
+        "method": "RC-A",
+        "rgb": [
+          218,
+          218,
+          218
+        ]
+      },
+      "sourceComponentIds": [
+        "R00001-C001"
+      ],
+      "sourceRegionIds": [
+        1
+      ]
+    },
+    {
+      "confidence": {
+        "basis": "FROZEN_OBSERVED_GEOMETRY",
+        "value": 1.0
+      },
+      "fallbackStatus": {
+        "attemptedRoutes": [
+          "V2_SMOOTH_BEZIER"
+        ],
+        "edgeFallbacks": [
+          {
+            "edgeId": "E000001",
+            "fallback": "V2_SMOOTH_BEZIER_CONTINUOUS_DEVIATION_FAIL_CLOSED_LEVEL_1"
+          },
+          {
+            "edgeId": "E000004",
+            "fallback": "V2_SMOOTH_BEZIER_CONTINUOUS_DEVIATION_FAIL_CLOSED_LEVEL_1"
+          },
+          {
+            "edgeId": "E000005",
+            "fallback": "V2_SMOOTH_BEZIER_GLOBAL_EMBEDDING_FAIL_CLOSED_LEVEL_1"
+          },
+          {
+            "edgeId": "E000008",
+            "fallback": "V2_SMOOTH_BEZIER_CONTINUOUS_DEVIATION_FAIL_CLOSED_LEVEL_1"
+          },
+          {
+            "edgeId": "E000015",
+            "fallback": "V2_SMOOTH_BEZIER_CONTINUOUS_DEVIATION_FAIL_CLOSED_LEVEL_1"
+          },
+          {
+            "edgeId": "E000017",
+            "fallback": "V2_SMOOTH_BEZIER_CONTINUOUS_DEVIATION_FAIL_CLOSED_LEVEL_1"
+          },
+          {
+            "edgeId": "E000019",
+            "fallback": "V2_SMOOTH_BEZIER_CONTINUOUS_DEVIATION_FAIL_CLOSED_LEVEL_1"
+          },
+          {
+            "edgeId": "E000021",
+            "fallback": "V2_SMOOTH_BEZIER_CONTINUOUS_DEVIATION_FAIL_CLOSED_LEVEL_1"
+          },
+          {
+            "edgeId": "E000026",
+            "fallback": "V2_SMOOTH_BEZIER_CONTINUOUS_DEVIATION_FAIL_CLOSED_LEVEL_1"
+          },
+          {
+            "edgeId": "E000035",
+            "fallback": "V2_SMOOTH_BEZIER_CONTINUOUS_DEVIATION_FAIL_CLOSED_LEVEL_1"
+          },
+          {
+            "edgeId": "E000040",
+            "fallback": "V2_SMOOTH_BEZIER_CONTINUOUS_DEVIATION_FAIL_CLOSED_LEVEL_1"
+          },
+          {
+            "edgeId": "E000043",
+            "fallback": "V2_SMOOTH_BEZIER_CONTINUOUS_DEVIATION_FAIL_CLOSED_LEVEL_1"
+          },
+          {
+            "edgeId": "E000048",
+            "fallback": "V2_SMOOTH_BEZIER_CONTINUOUS_DEVIATION_FAIL_CLOSED_LEVEL_1"
+          },
+          {
+            "edgeId": "E000051",
+            "fallback": "V2_SMOOTH_BEZIER_CONTINUOUS_DEVIATION_FAIL_CLOSED_LEVEL_1"
+          },
+          {
+            "edgeId": "E000053",
+            "fallback": "V2_SMOOTH_BEZIER_CONTINUOUS_DEVIATION_FAIL_CLOSED_LEVEL_1"
+          },
+          {
+            "edgeId": "E000058",
+            "fallback": "V2_SMOOTH_BEZIER_CONTINUOUS_DEVIATION_FAIL_CLOSED_LEVEL_1"
+          },
+          {
+            "edgeId": "E000077",
+            "fallback": "V2_SMOOTH_BEZIER_CONTINUOUS_DEVIATION_FAIL_CLOSED_LEVEL_1"
+          }
+        ],
+        "selectedRoute": "V2_SMOOTH_BEZIER",
+        "state": "PARTIAL_FROZEN_ROUTE_FALLBACK"
+      },
+      "finalCutGeometry": {
+        "componentId": "R00002-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000001",
+          "E000003",
+          "E000004",
+          "E000005",
+          "E000007",
+          "E000008",
+          "E000010",
+          "E000012",
+          "E000014",
+          "E000015",
+          "E000017",
+          "E000018",
+          "E000019",
+          "E000021",
+          "E000023",
+          "E000025",
+          "E000026",
+          "E000031",
+          "E000032",
+          "E000033",
+          "E000035",
+          "E000039",
+          "E000040",
+          "E000041",
+          "E000043",
+          "E000047",
+          "E000048",
+          "E000050",
+          "E000051",
+          "E000053",
+          "E000054",
+          "E000056",
+          "E000058",
+          "E000059",
+          "E000061",
+          "E000063",
+          "E000064",
+          "E000066",
+          "E000068",
+          "E000070",
+          "E000072",
+          "E000073",
+          "E000075",
+          "E000077"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [
+          {
+            "edgeReferences": [
+              {
+                "direction": -1,
+                "edgeId": "E000005"
+              }
+            ],
+            "regionId": 2,
+            "ringId": "R00002-C001-I001",
+            "ringKind": "INNER_RING",
+            "signedAreaScreen": 222688.0
+          },
+          {
+            "edgeReferences": [
+              {
+                "direction": -1,
+                "edgeId": "E000077"
+              }
+            ],
+            "regionId": 2,
+            "ringId": "R00002-C001-I002",
+            "ringKind": "INNER_RING",
+            "signedAreaScreen": 2446.0
+          }
+        ],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000003"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000004"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000021"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000041"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000043"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000054"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000061"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000064"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000066"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000070"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000073"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000051"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000050"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000053"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000056"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000058"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000059"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000063"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000068"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000072"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000075"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000048"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000047"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000040"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000039"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000035"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000033"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000032"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000031"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000026"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000025"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000017"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000018"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000019"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000023"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000015"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000014"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000012"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000010"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000008"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000007"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000001"
+            }
+          ],
+          "regionId": 2,
+          "ringId": "R00002-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -256535.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "inferenceType": "OBSERVED_ONLY",
+      "inferredGeometry": null,
+      "observedGeometry": {
+        "componentId": "R00002-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000001",
+          "E000003",
+          "E000004",
+          "E000005",
+          "E000007",
+          "E000008",
+          "E000010",
+          "E000012",
+          "E000014",
+          "E000015",
+          "E000017",
+          "E000018",
+          "E000019",
+          "E000021",
+          "E000023",
+          "E000025",
+          "E000026",
+          "E000031",
+          "E000032",
+          "E000033",
+          "E000035",
+          "E000039",
+          "E000040",
+          "E000041",
+          "E000043",
+          "E000047",
+          "E000048",
+          "E000050",
+          "E000051",
+          "E000053",
+          "E000054",
+          "E000056",
+          "E000058",
+          "E000059",
+          "E000061",
+          "E000063",
+          "E000064",
+          "E000066",
+          "E000068",
+          "E000070",
+          "E000072",
+          "E000073",
+          "E000075",
+          "E000077"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [
+          {
+            "edgeReferences": [
+              {
+                "direction": -1,
+                "edgeId": "E000005"
+              }
+            ],
+            "regionId": 2,
+            "ringId": "R00002-C001-I001",
+            "ringKind": "INNER_RING",
+            "signedAreaScreen": 222688.0
+          },
+          {
+            "edgeReferences": [
+              {
+                "direction": -1,
+                "edgeId": "E000077"
+              }
+            ],
+            "regionId": 2,
+            "ringId": "R00002-C001-I002",
+            "ringKind": "INNER_RING",
+            "signedAreaScreen": 2446.0
+          }
+        ],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000003"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000004"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000021"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000041"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000043"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000054"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000061"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000064"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000066"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000070"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000073"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000051"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000050"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000053"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000056"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000058"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000059"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000063"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000068"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000072"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000075"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000048"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000047"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000040"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000039"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000035"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000033"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000032"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000031"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000026"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000025"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000017"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000018"
+            },
+            {
+              "direction": 1,
+              "edgeId": "E000019"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000023"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000015"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000014"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000012"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000010"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000008"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000007"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000001"
+            }
+          ],
+          "regionId": 2,
+          "ringId": "R00002-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -256535.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "pieceId": "FP-FLD-006-R00002-C001",
+      "provenance": {
+        "regionCoreContract": {
+          "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-006/region-core.json",
+          "sha256": "ad7ac6e811a1f15aea27973caf0a6d2df9e77a628ede8e69a3cf4b0630bba7fb",
+          "sizeBytes": 27849
+        },
+        "sourceComponentId": "R00002-C001",
+        "sourceComponentOrdinal": 1,
+        "sourceRegionId": 2,
+        "structuralArea": 31401,
+        "structuralBbox": [
+          264,
+          177,
+          488,
+          691
+        ]
+      },
+      "representativeColor": {
+        "lab": [
+          0.784314,
+          0.0,
+          0.0
+        ],
+        "method": "RC-A",
+        "rgb": [
+          3,
+          3,
+          3
+        ]
+      },
+      "sourceComponentIds": [
+        "R00002-C001"
+      ],
+      "sourceRegionIds": [
+        2
+      ]
+    },
+    {
+      "confidence": {
+        "basis": "FROZEN_OBSERVED_GEOMETRY",
+        "value": 1.0
+      },
+      "fallbackStatus": {
+        "attemptedRoutes": [
+          "V2_SMOOTH_BEZIER"
+        ],
+        "edgeFallbacks": [
+          {
+            "edgeId": "E000020",
+            "fallback": "V2_SMOOTH_BEZIER_GLOBAL_EMBEDDING_FAIL_CLOSED_LEVEL_1"
+          }
+        ],
+        "selectedRoute": "V2_SMOOTH_BEZIER",
+        "state": "PARTIAL_FROZEN_ROUTE_FALLBACK"
+      },
+      "finalCutGeometry": {
+        "componentId": "R00002-C002",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000020"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": -1,
+              "edgeId": "E000020"
+            }
+          ],
+          "regionId": 2,
+          "ringId": "R00002-C002-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -1.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "inferenceType": "OBSERVED_ONLY",
+      "inferredGeometry": null,
+      "observedGeometry": {
+        "componentId": "R00002-C002",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000020"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": -1,
+              "edgeId": "E000020"
+            }
+          ],
+          "regionId": 2,
+          "ringId": "R00002-C002-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -1.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "pieceId": "FP-FLD-006-R00002-C002",
+      "provenance": {
+        "regionCoreContract": {
+          "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-006/region-core.json",
+          "sha256": "ad7ac6e811a1f15aea27973caf0a6d2df9e77a628ede8e69a3cf4b0630bba7fb",
+          "sizeBytes": 27849
+        },
+        "sourceComponentId": "R00002-C002",
+        "sourceComponentOrdinal": 2,
+        "sourceRegionId": 2,
+        "structuralArea": 1,
+        "structuralBbox": [
+          323,
+          813,
+          1,
+          1
+        ]
+      },
+      "representativeColor": {
+        "lab": [
+          0.784314,
+          0.0,
+          0.0
+        ],
+        "method": "RC-A",
+        "rgb": [
+          3,
+          3,
+          3
+        ]
+      },
+      "sourceComponentIds": [
+        "R00002-C002"
+      ],
+      "sourceRegionIds": [
+        2
+      ]
+    },
+    {
+      "confidence": {
+        "basis": "FROZEN_OBSERVED_GEOMETRY",
+        "value": 1.0
+      },
+      "fallbackStatus": {
+        "attemptedRoutes": [
+          "V2_SMOOTH_BEZIER"
+        ],
+        "edgeFallbacks": [],
+        "selectedRoute": "V2_SMOOTH_BEZIER",
+        "state": "NONE"
+      },
+      "finalCutGeometry": {
+        "componentId": "R00002-C003",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000055"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000055"
+            }
+          ],
+          "regionId": 2,
+          "ringId": "R00002-C003-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -1.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "inferenceType": "OBSERVED_ONLY",
+      "inferredGeometry": null,
+      "observedGeometry": {
+        "componentId": "R00002-C003",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000055"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000055"
+            }
+          ],
+          "regionId": 2,
+          "ringId": "R00002-C003-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -1.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "pieceId": "FP-FLD-006-R00002-C003",
+      "provenance": {
+        "regionCoreContract": {
+          "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-006/region-core.json",
+          "sha256": "ad7ac6e811a1f15aea27973caf0a6d2df9e77a628ede8e69a3cf4b0630bba7fb",
+          "sizeBytes": 27849
+        },
+        "sourceComponentId": "R00002-C003",
+        "sourceComponentOrdinal": 3,
+        "sourceRegionId": 2,
+        "structuralArea": 1,
+        "structuralBbox": [
+          666,
+          843,
+          1,
+          1
+        ]
+      },
+      "representativeColor": {
+        "lab": [
+          0.784314,
+          0.0,
+          0.0
+        ],
+        "method": "RC-A",
+        "rgb": [
+          3,
+          3,
+          3
+        ]
+      },
+      "sourceComponentIds": [
+        "R00002-C003"
+      ],
+      "sourceRegionIds": [
+        2
+      ]
+    },
+    {
+      "confidence": {
+        "basis": "FROZEN_OBSERVED_GEOMETRY",
+        "value": 1.0
+      },
+      "fallbackStatus": {
+        "attemptedRoutes": [
+          "V2_SMOOTH_BEZIER"
+        ],
+        "edgeFallbacks": [],
+        "selectedRoute": "V2_SMOOTH_BEZIER",
+        "state": "NONE"
+      },
+      "finalCutGeometry": {
+        "componentId": "R00003-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000033",
+          "E000034"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000033"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000034"
+            }
+          ],
+          "regionId": 3,
+          "ringId": "R00003-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -2.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "inferenceType": "OBSERVED_ONLY",
+      "inferredGeometry": null,
+      "observedGeometry": {
+        "componentId": "R00003-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000033",
+          "E000034"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000033"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000034"
+            }
+          ],
+          "regionId": 3,
+          "ringId": "R00003-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -2.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "pieceId": "FP-FLD-006-R00003-C001",
+      "provenance": {
+        "regionCoreContract": {
+          "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-006/region-core.json",
+          "sha256": "ad7ac6e811a1f15aea27973caf0a6d2df9e77a628ede8e69a3cf4b0630bba7fb",
+          "sizeBytes": 27849
+        },
+        "sourceComponentId": "R00003-C001",
+        "sourceComponentOrdinal": 1,
+        "sourceRegionId": 3,
+        "structuralArea": 2,
+        "structuralBbox": [
+          429,
+          178,
+          2,
+          1
+        ]
+      },
+      "representativeColor": {
+        "lab": [
+          83.92157,
+          0.0,
+          0.0
+        ],
+        "method": "RC-A",
+        "rgb": [
+          209,
+          209,
+          209
+        ]
+      },
+      "sourceComponentIds": [
+        "R00003-C001"
+      ],
+      "sourceRegionIds": [
+        3
+      ]
+    },
+    {
+      "confidence": {
+        "basis": "FROZEN_OBSERVED_GEOMETRY",
+        "value": 1.0
+      },
+      "fallbackStatus": {
+        "attemptedRoutes": [
+          "V2_SMOOTH_BEZIER"
+        ],
+        "edgeFallbacks": [],
+        "selectedRoute": "V2_SMOOTH_BEZIER",
+        "state": "NONE"
+      },
+      "finalCutGeometry": {
+        "componentId": "R00004-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000037"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000037"
+            }
+          ],
+          "regionId": 4,
+          "ringId": "R00004-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -1.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "inferenceType": "OBSERVED_ONLY",
+      "inferredGeometry": null,
+      "observedGeometry": {
+        "componentId": "R00004-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000037"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000037"
+            }
+          ],
+          "regionId": 4,
+          "ringId": "R00004-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -1.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "pieceId": "FP-FLD-006-R00004-C001",
+      "provenance": {
+        "regionCoreContract": {
+          "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-006/region-core.json",
+          "sha256": "ad7ac6e811a1f15aea27973caf0a6d2df9e77a628ede8e69a3cf4b0630bba7fb",
+          "sizeBytes": 27849
+        },
+        "sourceComponentId": "R00004-C001",
+        "sourceComponentOrdinal": 1,
+        "sourceRegionId": 4,
+        "structuralArea": 1,
+        "structuralBbox": [
+          454,
+          187,
+          1,
+          1
+        ]
+      },
+      "representativeColor": {
+        "lab": [
+          89.803925,
+          0.0,
+          0.0
+        ],
+        "method": "RC-A",
+        "rgb": [
+          226,
+          226,
+          226
+        ]
+      },
+      "sourceComponentIds": [
+        "R00004-C001"
+      ],
+      "sourceRegionIds": [
+        4
+      ]
+    },
+    {
+      "confidence": {
+        "basis": "FROZEN_OBSERVED_GEOMETRY",
+        "value": 1.0
+      },
+      "fallbackStatus": {
+        "attemptedRoutes": [
+          "V2_SMOOTH_BEZIER"
+        ],
+        "edgeFallbacks": [],
+        "selectedRoute": "V2_SMOOTH_BEZIER",
+        "state": "NONE"
+      },
+      "finalCutGeometry": {
+        "componentId": "R00005-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000046",
+          "E000047"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000047"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000046"
+            }
+          ],
+          "regionId": 5,
+          "ringId": "R00005-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -1.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "inferenceType": "OBSERVED_ONLY",
+      "inferredGeometry": null,
+      "observedGeometry": {
+        "componentId": "R00005-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000046",
+          "E000047"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000047"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000046"
+            }
+          ],
+          "regionId": 5,
+          "ringId": "R00005-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -1.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "pieceId": "FP-FLD-006-R00005-C001",
+      "provenance": {
+        "regionCoreContract": {
+          "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-006/region-core.json",
+          "sha256": "ad7ac6e811a1f15aea27973caf0a6d2df9e77a628ede8e69a3cf4b0630bba7fb",
+          "sizeBytes": 27849
+        },
+        "sourceComponentId": "R00005-C001",
+        "sourceComponentOrdinal": 1,
+        "sourceRegionId": 5,
+        "structuralArea": 1,
+        "structuralBbox": [
+          564,
+          187,
+          1,
+          1
+        ]
+      },
+      "representativeColor": {
+        "lab": [
+          89.411766,
+          0.0,
+          0.0
+        ],
+        "method": "RC-A",
+        "rgb": [
+          225,
+          225,
+          225
+        ]
+      },
+      "sourceComponentIds": [
+        "R00005-C001"
+      ],
+      "sourceRegionIds": [
+        5
+      ]
+    },
+    {
+      "confidence": {
+        "basis": "FROZEN_OBSERVED_GEOMETRY",
+        "value": 1.0
+      },
+      "fallbackStatus": {
+        "attemptedRoutes": [
+          "V2_SMOOTH_BEZIER"
+        ],
+        "edgeFallbacks": [
+          {
+            "edgeId": "E000005",
+            "fallback": "V2_SMOOTH_BEZIER_GLOBAL_EMBEDDING_FAIL_CLOSED_LEVEL_1"
+          },
+          {
+            "edgeId": "E000027",
+            "fallback": "V2_SMOOTH_BEZIER_CONTINUOUS_DEVIATION_FAIL_CLOSED_LEVEL_1"
+          },
+          {
+            "edgeId": "E000028",
+            "fallback": "V2_SMOOTH_BEZIER_GLOBAL_EMBEDDING_FAIL_CLOSED_LEVEL_1"
+          },
+          {
+            "edgeId": "E000029",
+            "fallback": "V2_SMOOTH_BEZIER_GLOBAL_EMBEDDING_FAIL_CLOSED_LEVEL_1"
+          },
+          {
+            "edgeId": "E000036",
+            "fallback": "V2_SMOOTH_BEZIER_CONTINUOUS_DEVIATION_FAIL_CLOSED_LEVEL_1"
+          },
+          {
+            "edgeId": "E000044",
+            "fallback": "V2_SMOOTH_BEZIER_GLOBAL_EMBEDDING_FAIL_CLOSED_LEVEL_1"
+          },
+          {
+            "edgeId": "E000045",
+            "fallback": "V2_SMOOTH_BEZIER_GLOBAL_EMBEDDING_FAIL_CLOSED_LEVEL_1"
+          },
+          {
+            "edgeId": "E000049",
+            "fallback": "V2_SMOOTH_BEZIER_CONTINUOUS_DEVIATION_FAIL_CLOSED_LEVEL_1"
+          }
+        ],
+        "selectedRoute": "V2_SMOOTH_BEZIER",
+        "state": "PARTIAL_FROZEN_ROUTE_FALLBACK"
+      },
+      "finalCutGeometry": {
+        "componentId": "R00006-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000005",
+          "E000027",
+          "E000028",
+          "E000029",
+          "E000036",
+          "E000044",
+          "E000045",
+          "E000049"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [
+          {
+            "edgeReferences": [
+              {
+                "direction": -1,
+                "edgeId": "E000027"
+              }
+            ],
+            "regionId": 6,
+            "ringId": "R00006-C001-I001",
+            "ringKind": "INNER_RING",
+            "signedAreaScreen": 1085.0
+          },
+          {
+            "edgeReferences": [
+              {
+                "direction": -1,
+                "edgeId": "E000028"
+              }
+            ],
+            "regionId": 6,
+            "ringId": "R00006-C001-I002",
+            "ringKind": "INNER_RING",
+            "signedAreaScreen": 5921.0
+          },
+          {
+            "edgeReferences": [
+              {
+                "direction": -1,
+                "edgeId": "E000029"
+              }
+            ],
+            "regionId": 6,
+            "ringId": "R00006-C001-I003",
+            "ringKind": "INNER_RING",
+            "signedAreaScreen": 810.0
+          },
+          {
+            "edgeReferences": [
+              {
+                "direction": -1,
+                "edgeId": "E000036"
+              }
+            ],
+            "regionId": 6,
+            "ringId": "R00006-C001-I004",
+            "ringKind": "INNER_RING",
+            "signedAreaScreen": 721.0
+          },
+          {
+            "edgeReferences": [
+              {
+                "direction": -1,
+                "edgeId": "E000044"
+              }
+            ],
+            "regionId": 6,
+            "ringId": "R00006-C001-I005",
+            "ringKind": "INNER_RING",
+            "signedAreaScreen": 801.0
+          },
+          {
+            "edgeReferences": [
+              {
+                "direction": -1,
+                "edgeId": "E000045"
+              }
+            ],
+            "regionId": 6,
+            "ringId": "R00006-C001-I006",
+            "ringKind": "INNER_RING",
+            "signedAreaScreen": 5777.0
+          },
+          {
+            "edgeReferences": [
+              {
+                "direction": -1,
+                "edgeId": "E000049"
+              }
+            ],
+            "regionId": 6,
+            "ringId": "R00006-C001-I007",
+            "ringKind": "INNER_RING",
+            "signedAreaScreen": 1188.0
+          }
+        ],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000005"
+            }
+          ],
+          "regionId": 6,
+          "ringId": "R00006-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -222688.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "inferenceType": "OBSERVED_ONLY",
+      "inferredGeometry": null,
+      "observedGeometry": {
+        "componentId": "R00006-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000005",
+          "E000027",
+          "E000028",
+          "E000029",
+          "E000036",
+          "E000044",
+          "E000045",
+          "E000049"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [
+          {
+            "edgeReferences": [
+              {
+                "direction": -1,
+                "edgeId": "E000027"
+              }
+            ],
+            "regionId": 6,
+            "ringId": "R00006-C001-I001",
+            "ringKind": "INNER_RING",
+            "signedAreaScreen": 1085.0
+          },
+          {
+            "edgeReferences": [
+              {
+                "direction": -1,
+                "edgeId": "E000028"
+              }
+            ],
+            "regionId": 6,
+            "ringId": "R00006-C001-I002",
+            "ringKind": "INNER_RING",
+            "signedAreaScreen": 5921.0
+          },
+          {
+            "edgeReferences": [
+              {
+                "direction": -1,
+                "edgeId": "E000029"
+              }
+            ],
+            "regionId": 6,
+            "ringId": "R00006-C001-I003",
+            "ringKind": "INNER_RING",
+            "signedAreaScreen": 810.0
+          },
+          {
+            "edgeReferences": [
+              {
+                "direction": -1,
+                "edgeId": "E000036"
+              }
+            ],
+            "regionId": 6,
+            "ringId": "R00006-C001-I004",
+            "ringKind": "INNER_RING",
+            "signedAreaScreen": 721.0
+          },
+          {
+            "edgeReferences": [
+              {
+                "direction": -1,
+                "edgeId": "E000044"
+              }
+            ],
+            "regionId": 6,
+            "ringId": "R00006-C001-I005",
+            "ringKind": "INNER_RING",
+            "signedAreaScreen": 801.0
+          },
+          {
+            "edgeReferences": [
+              {
+                "direction": -1,
+                "edgeId": "E000045"
+              }
+            ],
+            "regionId": 6,
+            "ringId": "R00006-C001-I006",
+            "ringKind": "INNER_RING",
+            "signedAreaScreen": 5777.0
+          },
+          {
+            "edgeReferences": [
+              {
+                "direction": -1,
+                "edgeId": "E000049"
+              }
+            ],
+            "regionId": 6,
+            "ringId": "R00006-C001-I007",
+            "ringKind": "INNER_RING",
+            "signedAreaScreen": 1188.0
+          }
+        ],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000005"
+            }
+          ],
+          "regionId": 6,
+          "ringId": "R00006-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -222688.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "pieceId": "FP-FLD-006-R00006-C001",
+      "provenance": {
+        "regionCoreContract": {
+          "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-006/region-core.json",
+          "sha256": "ad7ac6e811a1f15aea27973caf0a6d2df9e77a628ede8e69a3cf4b0630bba7fb",
+          "sizeBytes": 27849
+        },
+        "sourceComponentId": "R00006-C001",
+        "sourceComponentOrdinal": 1,
+        "sourceRegionId": 6,
+        "structuralArea": 206385,
+        "structuralBbox": [
+          275,
+          188,
+          456,
+          668
+        ]
+      },
+      "representativeColor": {
+        "lab": [
+          99.215691,
+          0.0,
+          1.0
+        ],
+        "method": "RC-A",
+        "rgb": [
+          254,
+          253,
+          251
+        ]
+      },
+      "sourceComponentIds": [
+        "R00006-C001"
+      ],
+      "sourceRegionIds": [
+        6
+      ]
+    },
+    {
+      "confidence": {
+        "basis": "FROZEN_OBSERVED_GEOMETRY",
+        "value": 1.0
+      },
+      "fallbackStatus": {
+        "attemptedRoutes": [
+          "V2_SMOOTH_BEZIER"
+        ],
+        "edgeFallbacks": [],
+        "selectedRoute": "V2_SMOOTH_BEZIER",
+        "state": "NONE"
+      },
+      "finalCutGeometry": {
+        "componentId": "R00007-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000038",
+          "E000039"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000039"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000038"
+            }
+          ],
+          "regionId": 7,
+          "ringId": "R00007-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -2.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "inferenceType": "OBSERVED_ONLY",
+      "inferredGeometry": null,
+      "observedGeometry": {
+        "componentId": "R00007-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000038",
+          "E000039"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000039"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000038"
+            }
+          ],
+          "regionId": 7,
+          "ringId": "R00007-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -2.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "pieceId": "FP-FLD-006-R00007-C001",
+      "provenance": {
+        "regionCoreContract": {
+          "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-006/region-core.json",
+          "sha256": "ad7ac6e811a1f15aea27973caf0a6d2df9e77a628ede8e69a3cf4b0630bba7fb",
+          "sizeBytes": 27849
+        },
+        "sourceComponentId": "R00007-C001",
+        "sourceComponentOrdinal": 1,
+        "sourceRegionId": 7,
+        "structuralArea": 2,
+        "structuralBbox": [
+          536,
+          212,
+          2,
+          1
+        ]
+      },
+      "representativeColor": {
+        "lab": [
+          87.254906,
+          0.0,
+          0.0
+        ],
+        "method": "RC-A",
+        "rgb": [
+          218,
+          218,
+          218
+        ]
+      },
+      "sourceComponentIds": [
+        "R00007-C001"
+      ],
+      "sourceRegionIds": [
+        7
+      ]
+    },
+    {
+      "confidence": {
+        "basis": "FROZEN_OBSERVED_GEOMETRY",
+        "value": 1.0
+      },
+      "fallbackStatus": {
+        "attemptedRoutes": [
+          "V2_SMOOTH_BEZIER"
+        ],
+        "edgeFallbacks": [],
+        "selectedRoute": "V2_SMOOTH_BEZIER",
+        "state": "NONE"
+      },
+      "finalCutGeometry": {
+        "componentId": "R00008-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000024",
+          "E000025"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000025"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000024"
+            }
+          ],
+          "regionId": 8,
+          "ringId": "R00008-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -1.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "inferenceType": "OBSERVED_ONLY",
+      "inferredGeometry": null,
+      "observedGeometry": {
+        "componentId": "R00008-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000024",
+          "E000025"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000025"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000024"
+            }
+          ],
+          "regionId": 8,
+          "ringId": "R00008-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -1.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "pieceId": "FP-FLD-006-R00008-C001",
+      "provenance": {
+        "regionCoreContract": {
+          "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-006/region-core.json",
+          "sha256": "ad7ac6e811a1f15aea27973caf0a6d2df9e77a628ede8e69a3cf4b0630bba7fb",
+          "sizeBytes": 27849
+        },
+        "sourceComponentId": "R00008-C001",
+        "sourceComponentOrdinal": 1,
+        "sourceRegionId": 8,
+        "structuralArea": 1,
+        "structuralBbox": [
+          343,
+          219,
+          1,
+          1
+        ]
+      },
+      "representativeColor": {
+        "lab": [
+          85.882355,
+          0.0,
+          0.0
+        ],
+        "method": "RC-A",
+        "rgb": [
+          215,
+          215,
+          215
+        ]
+      },
+      "sourceComponentIds": [
+        "R00008-C001"
+      ],
+      "sourceRegionIds": [
+        8
+      ]
+    },
+    {
+      "confidence": {
+        "basis": "FROZEN_OBSERVED_GEOMETRY",
+        "value": 1.0
+      },
+      "fallbackStatus": {
+        "attemptedRoutes": [
+          "V2_SMOOTH_BEZIER"
+        ],
+        "edgeFallbacks": [
+          {
+            "edgeId": "E000028",
+            "fallback": "V2_SMOOTH_BEZIER_GLOBAL_EMBEDDING_FAIL_CLOSED_LEVEL_1"
+          }
+        ],
+        "selectedRoute": "V2_SMOOTH_BEZIER",
+        "state": "PARTIAL_FROZEN_ROUTE_FALLBACK"
+      },
+      "finalCutGeometry": {
+        "componentId": "R00009-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000028"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000028"
+            }
+          ],
+          "regionId": 9,
+          "ringId": "R00009-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -5921.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "inferenceType": "OBSERVED_ONLY",
+      "inferredGeometry": null,
+      "observedGeometry": {
+        "componentId": "R00009-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000028"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000028"
+            }
+          ],
+          "regionId": 9,
+          "ringId": "R00009-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -5921.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "pieceId": "FP-FLD-006-R00009-C001",
+      "provenance": {
+        "regionCoreContract": {
+          "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-006/region-core.json",
+          "sha256": "ad7ac6e811a1f15aea27973caf0a6d2df9e77a628ede8e69a3cf4b0630bba7fb",
+          "sizeBytes": 27849
+        },
+        "sourceComponentId": "R00009-C001",
+        "sourceComponentOrdinal": 1,
+        "sourceRegionId": 9,
+        "structuralArea": 5921,
+        "structuralBbox": [
+          377,
+          243,
+          62,
+          126
+        ]
+      },
+      "representativeColor": {
+        "lab": [
+          91.764709,
+          8.0,
+          9.0
+        ],
+        "method": "RC-A",
+        "rgb": [
+          254,
+          226,
+          215
+        ]
+      },
+      "sourceComponentIds": [
+        "R00009-C001"
+      ],
+      "sourceRegionIds": [
+        9
+      ]
+    },
+    {
+      "confidence": {
+        "basis": "FROZEN_OBSERVED_GEOMETRY",
+        "value": 1.0
+      },
+      "fallbackStatus": {
+        "attemptedRoutes": [
+          "V2_SMOOTH_BEZIER"
+        ],
+        "edgeFallbacks": [
+          {
+            "edgeId": "E000045",
+            "fallback": "V2_SMOOTH_BEZIER_GLOBAL_EMBEDDING_FAIL_CLOSED_LEVEL_1"
+          }
+        ],
+        "selectedRoute": "V2_SMOOTH_BEZIER",
+        "state": "PARTIAL_FROZEN_ROUTE_FALLBACK"
+      },
+      "finalCutGeometry": {
+        "componentId": "R00010-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000045"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000045"
+            }
+          ],
+          "regionId": 10,
+          "ringId": "R00010-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -5777.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "inferenceType": "OBSERVED_ONLY",
+      "inferredGeometry": null,
+      "observedGeometry": {
+        "componentId": "R00010-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000045"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000045"
+            }
+          ],
+          "regionId": 10,
+          "ringId": "R00010-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -5777.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "pieceId": "FP-FLD-006-R00010-C001",
+      "provenance": {
+        "regionCoreContract": {
+          "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-006/region-core.json",
+          "sha256": "ad7ac6e811a1f15aea27973caf0a6d2df9e77a628ede8e69a3cf4b0630bba7fb",
+          "sizeBytes": 27849
+        },
+        "sourceComponentId": "R00010-C001",
+        "sourceComponentOrdinal": 1,
+        "sourceRegionId": 10,
+        "structuralArea": 5777,
+        "structuralBbox": [
+          561,
+          245,
+          65,
+          123
+        ]
+      },
+      "representativeColor": {
+        "lab": [
+          91.764709,
+          8.0,
+          9.0
+        ],
+        "method": "RC-A",
+        "rgb": [
+          254,
+          226,
+          215
+        ]
+      },
+      "sourceComponentIds": [
+        "R00010-C001"
+      ],
+      "sourceRegionIds": [
+        10
+      ]
+    },
+    {
+      "confidence": {
+        "basis": "FROZEN_OBSERVED_GEOMETRY",
+        "value": 1.0
+      },
+      "fallbackStatus": {
+        "attemptedRoutes": [
+          "V2_SMOOTH_BEZIER"
+        ],
+        "edgeFallbacks": [],
+        "selectedRoute": "V2_SMOOTH_BEZIER",
+        "state": "NONE"
+      },
+      "finalCutGeometry": {
+        "componentId": "R00011-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000016",
+          "E000018"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000016"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000018"
+            }
+          ],
+          "regionId": 11,
+          "ringId": "R00011-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -13.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "inferenceType": "OBSERVED_ONLY",
+      "inferredGeometry": null,
+      "observedGeometry": {
+        "componentId": "R00011-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000016",
+          "E000018"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000016"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000018"
+            }
+          ],
+          "regionId": 11,
+          "ringId": "R00011-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -13.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "pieceId": "FP-FLD-006-R00011-C001",
+      "provenance": {
+        "regionCoreContract": {
+          "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-006/region-core.json",
+          "sha256": "ad7ac6e811a1f15aea27973caf0a6d2df9e77a628ede8e69a3cf4b0630bba7fb",
+          "sizeBytes": 27849
+        },
+        "sourceComponentId": "R00011-C001",
+        "sourceComponentOrdinal": 1,
+        "sourceRegionId": 11,
+        "structuralArea": 13,
+        "structuralBbox": [
+          323,
+          294,
+          1,
+          13
+        ]
+      },
+      "representativeColor": {
+        "lab": [
+          86.274513,
+          0.0,
+          0.0
+        ],
+        "method": "RC-A",
+        "rgb": [
+          216,
+          216,
+          216
+        ]
+      },
+      "sourceComponentIds": [
+        "R00011-C001"
+      ],
+      "sourceRegionIds": [
+        11
+      ]
+    },
+    {
+      "confidence": {
+        "basis": "FROZEN_OBSERVED_GEOMETRY",
+        "value": 1.0
+      },
+      "fallbackStatus": {
+        "attemptedRoutes": [
+          "V2_SMOOTH_BEZIER"
+        ],
+        "edgeFallbacks": [],
+        "selectedRoute": "V2_SMOOTH_BEZIER",
+        "state": "NONE"
+      },
+      "finalCutGeometry": {
+        "componentId": "R00012-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000075",
+          "E000076"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000076"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000075"
+            }
+          ],
+          "regionId": 12,
+          "ringId": "R00012-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -3.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "inferenceType": "OBSERVED_ONLY",
+      "inferredGeometry": null,
+      "observedGeometry": {
+        "componentId": "R00012-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000075",
+          "E000076"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000076"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000075"
+            }
+          ],
+          "regionId": 12,
+          "ringId": "R00012-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -3.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "pieceId": "FP-FLD-006-R00012-C001",
+      "provenance": {
+        "regionCoreContract": {
+          "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-006/region-core.json",
+          "sha256": "ad7ac6e811a1f15aea27973caf0a6d2df9e77a628ede8e69a3cf4b0630bba7fb",
+          "sizeBytes": 27849
+        },
+        "sourceComponentId": "R00012-C001",
+        "sourceComponentOrdinal": 1,
+        "sourceRegionId": 12,
+        "structuralArea": 3,
+        "structuralBbox": [
+          681,
+          317,
+          1,
+          3
+        ]
+      },
+      "representativeColor": {
+        "lab": [
+          87.450981,
+          0.0,
+          0.0
+        ],
+        "method": "RC-A",
+        "rgb": [
+          219,
+          219,
+          219
+        ]
+      },
+      "sourceComponentIds": [
+        "R00012-C001"
+      ],
+      "sourceRegionIds": [
+        12
+      ]
+    },
+    {
+      "confidence": {
+        "basis": "FROZEN_OBSERVED_GEOMETRY",
+        "value": 1.0
+      },
+      "fallbackStatus": {
+        "attemptedRoutes": [
+          "V2_SMOOTH_BEZIER"
+        ],
+        "edgeFallbacks": [],
+        "selectedRoute": "V2_SMOOTH_BEZIER",
+        "state": "NONE"
+      },
+      "finalCutGeometry": {
+        "componentId": "R00013-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000068",
+          "E000069"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000069"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000068"
+            }
+          ],
+          "regionId": 13,
+          "ringId": "R00013-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -2.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "inferenceType": "OBSERVED_ONLY",
+      "inferredGeometry": null,
+      "observedGeometry": {
+        "componentId": "R00013-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000068",
+          "E000069"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000069"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000068"
+            }
+          ],
+          "regionId": 13,
+          "ringId": "R00013-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -2.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "pieceId": "FP-FLD-006-R00013-C001",
+      "provenance": {
+        "regionCoreContract": {
+          "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-006/region-core.json",
+          "sha256": "ad7ac6e811a1f15aea27973caf0a6d2df9e77a628ede8e69a3cf4b0630bba7fb",
+          "sizeBytes": 27849
+        },
+        "sourceComponentId": "R00013-C001",
+        "sourceComponentOrdinal": 1,
+        "sourceRegionId": 13,
+        "structuralArea": 2,
+        "structuralBbox": [
+          677,
+          338,
+          1,
+          2
+        ]
+      },
+      "representativeColor": {
+        "lab": [
+          87.450981,
+          0.0,
+          0.0
+        ],
+        "method": "RC-A",
+        "rgb": [
+          219,
+          219,
+          219
+        ]
+      },
+      "sourceComponentIds": [
+        "R00013-C001"
+      ],
+      "sourceRegionIds": [
+        13
+      ]
+    },
+    {
+      "confidence": {
+        "basis": "FROZEN_OBSERVED_GEOMETRY",
+        "value": 1.0
+      },
+      "fallbackStatus": {
+        "attemptedRoutes": [
+          "V2_SMOOTH_BEZIER"
+        ],
+        "edgeFallbacks": [],
+        "selectedRoute": "V2_SMOOTH_BEZIER",
+        "state": "NONE"
+      },
+      "finalCutGeometry": {
+        "componentId": "R00014-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000059",
+          "E000060"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000060"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000059"
+            }
+          ],
+          "regionId": 14,
+          "ringId": "R00014-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -2.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "inferenceType": "OBSERVED_ONLY",
+      "inferredGeometry": null,
+      "observedGeometry": {
+        "componentId": "R00014-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000059",
+          "E000060"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000060"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000059"
+            }
+          ],
+          "regionId": 14,
+          "ringId": "R00014-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -2.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "pieceId": "FP-FLD-006-R00014-C001",
+      "provenance": {
+        "regionCoreContract": {
+          "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-006/region-core.json",
+          "sha256": "ad7ac6e811a1f15aea27973caf0a6d2df9e77a628ede8e69a3cf4b0630bba7fb",
+          "sizeBytes": 27849
+        },
+        "sourceComponentId": "R00014-C001",
+        "sourceComponentOrdinal": 1,
+        "sourceRegionId": 14,
+        "structuralArea": 2,
+        "structuralBbox": [
+          674,
+          350,
+          1,
+          2
+        ]
+      },
+      "representativeColor": {
+        "lab": [
+          83.529411,
+          0.0,
+          1.0
+        ],
+        "method": "RC-A",
+        "rgb": [
+          209,
+          208,
+          206
+        ]
+      },
+      "sourceComponentIds": [
+        "R00014-C001"
+      ],
+      "sourceRegionIds": [
+        14
+      ]
+    },
+    {
+      "confidence": {
+        "basis": "FROZEN_OBSERVED_GEOMETRY",
+        "value": 1.0
+      },
+      "fallbackStatus": {
+        "attemptedRoutes": [
+          "V2_SMOOTH_BEZIER"
+        ],
+        "edgeFallbacks": [],
+        "selectedRoute": "V2_SMOOTH_BEZIER",
+        "state": "NONE"
+      },
+      "finalCutGeometry": {
+        "componentId": "R00015-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000056",
+          "E000057"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000057"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000056"
+            }
+          ],
+          "regionId": 15,
+          "ringId": "R00015-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -2.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "inferenceType": "OBSERVED_ONLY",
+      "inferredGeometry": null,
+      "observedGeometry": {
+        "componentId": "R00015-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000056",
+          "E000057"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000057"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000056"
+            }
+          ],
+          "regionId": 15,
+          "ringId": "R00015-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -2.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "pieceId": "FP-FLD-006-R00015-C001",
+      "provenance": {
+        "regionCoreContract": {
+          "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-006/region-core.json",
+          "sha256": "ad7ac6e811a1f15aea27973caf0a6d2df9e77a628ede8e69a3cf4b0630bba7fb",
+          "sizeBytes": 27849
+        },
+        "sourceComponentId": "R00015-C001",
+        "sourceComponentOrdinal": 1,
+        "sourceRegionId": 15,
+        "structuralArea": 2,
+        "structuralBbox": [
+          670,
+          363,
+          1,
+          2
+        ]
+      },
+      "representativeColor": {
+        "lab": [
+          83.92157,
+          0.0,
+          0.0
+        ],
+        "method": "RC-A",
+        "rgb": [
+          209,
+          209,
+          209
+        ]
+      },
+      "sourceComponentIds": [
+        "R00015-C001"
+      ],
+      "sourceRegionIds": [
+        15
+      ]
+    },
+    {
+      "confidence": {
+        "basis": "FROZEN_OBSERVED_GEOMETRY",
+        "value": 1.0
+      },
+      "fallbackStatus": {
+        "attemptedRoutes": [
+          "V2_SMOOTH_BEZIER"
+        ],
+        "edgeFallbacks": [],
+        "selectedRoute": "V2_SMOOTH_BEZIER",
+        "state": "NONE"
+      },
+      "finalCutGeometry": {
+        "componentId": "R00016-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000022",
+          "E000023"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000023"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000022"
+            }
+          ],
+          "regionId": 16,
+          "ringId": "R00016-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -1.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "inferenceType": "OBSERVED_ONLY",
+      "inferredGeometry": null,
+      "observedGeometry": {
+        "componentId": "R00016-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000022",
+          "E000023"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000023"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000022"
+            }
+          ],
+          "regionId": 16,
+          "ringId": "R00016-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -1.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "pieceId": "FP-FLD-006-R00016-C001",
+      "provenance": {
+        "regionCoreContract": {
+          "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-006/region-core.json",
+          "sha256": "ad7ac6e811a1f15aea27973caf0a6d2df9e77a628ede8e69a3cf4b0630bba7fb",
+          "sizeBytes": 27849
+        },
+        "sourceComponentId": "R00016-C001",
+        "sourceComponentOrdinal": 1,
+        "sourceRegionId": 16,
+        "structuralArea": 1,
+        "structuralBbox": [
+          341,
+          384,
+          1,
+          1
+        ]
+      },
+      "representativeColor": {
+        "lab": [
+          85.882355,
+          0.0,
+          0.0
+        ],
+        "method": "RC-A",
+        "rgb": [
+          215,
+          215,
+          215
+        ]
+      },
+      "sourceComponentIds": [
+        "R00016-C001"
+      ],
+      "sourceRegionIds": [
+        16
+      ]
+    },
+    {
+      "confidence": {
+        "basis": "FROZEN_OBSERVED_GEOMETRY",
+        "value": 1.0
+      },
+      "fallbackStatus": {
+        "attemptedRoutes": [
+          "V2_SMOOTH_BEZIER"
+        ],
+        "edgeFallbacks": [],
+        "selectedRoute": "V2_SMOOTH_BEZIER",
+        "state": "NONE"
+      },
+      "finalCutGeometry": {
+        "componentId": "R00017-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000009",
+          "E000010"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000010"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000009"
+            }
+          ],
+          "regionId": 17,
+          "ringId": "R00017-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -1.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "inferenceType": "OBSERVED_ONLY",
+      "inferredGeometry": null,
+      "observedGeometry": {
+        "componentId": "R00017-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000009",
+          "E000010"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000010"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000009"
+            }
+          ],
+          "regionId": 17,
+          "ringId": "R00017-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -1.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "pieceId": "FP-FLD-006-R00017-C001",
+      "provenance": {
+        "regionCoreContract": {
+          "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-006/region-core.json",
+          "sha256": "ad7ac6e811a1f15aea27973caf0a6d2df9e77a628ede8e69a3cf4b0630bba7fb",
+          "sizeBytes": 27849
+        },
+        "sourceComponentId": "R00017-C001",
+        "sourceComponentOrdinal": 1,
+        "sourceRegionId": 17,
+        "structuralArea": 1,
+        "structuralBbox": [
+          306,
+          415,
+          1,
+          1
+        ]
+      },
+      "representativeColor": {
+        "lab": [
+          83.137253,
+          0.0,
+          0.0
+        ],
+        "method": "RC-A",
+        "rgb": [
+          207,
+          207,
+          207
+        ]
+      },
+      "sourceComponentIds": [
+        "R00017-C001"
+      ],
+      "sourceRegionIds": [
+        17
+      ]
+    },
+    {
+      "confidence": {
+        "basis": "FROZEN_OBSERVED_GEOMETRY",
+        "value": 1.0
+      },
+      "fallbackStatus": {
+        "attemptedRoutes": [
+          "V2_SMOOTH_BEZIER"
+        ],
+        "edgeFallbacks": [],
+        "selectedRoute": "V2_SMOOTH_BEZIER",
+        "state": "NONE"
+      },
+      "finalCutGeometry": {
+        "componentId": "R00017-C002",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000011",
+          "E000012"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000012"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000011"
+            }
+          ],
+          "regionId": 17,
+          "ringId": "R00017-C002-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -1.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "inferenceType": "OBSERVED_ONLY",
+      "inferredGeometry": null,
+      "observedGeometry": {
+        "componentId": "R00017-C002",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000011",
+          "E000012"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000012"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000011"
+            }
+          ],
+          "regionId": 17,
+          "ringId": "R00017-C002-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -1.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "pieceId": "FP-FLD-006-R00017-C002",
+      "provenance": {
+        "regionCoreContract": {
+          "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-006/region-core.json",
+          "sha256": "ad7ac6e811a1f15aea27973caf0a6d2df9e77a628ede8e69a3cf4b0630bba7fb",
+          "sizeBytes": 27849
+        },
+        "sourceComponentId": "R00017-C002",
+        "sourceComponentOrdinal": 2,
+        "sourceRegionId": 17,
+        "structuralArea": 1,
+        "structuralBbox": [
+          305,
+          416,
+          1,
+          1
+        ]
+      },
+      "representativeColor": {
+        "lab": [
+          83.137253,
+          0.0,
+          0.0
+        ],
+        "method": "RC-A",
+        "rgb": [
+          207,
+          207,
+          207
+        ]
+      },
+      "sourceComponentIds": [
+        "R00017-C002"
+      ],
+      "sourceRegionIds": [
+        17
+      ]
+    },
+    {
+      "confidence": {
+        "basis": "FROZEN_OBSERVED_GEOMETRY",
+        "value": 1.0
+      },
+      "fallbackStatus": {
+        "attemptedRoutes": [
+          "V2_SMOOTH_BEZIER"
+        ],
+        "edgeFallbacks": [],
+        "selectedRoute": "V2_SMOOTH_BEZIER",
+        "state": "NONE"
+      },
+      "finalCutGeometry": {
+        "componentId": "R00017-C003",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000013",
+          "E000014"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000014"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000013"
+            }
+          ],
+          "regionId": 17,
+          "ringId": "R00017-C003-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -1.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "inferenceType": "OBSERVED_ONLY",
+      "inferredGeometry": null,
+      "observedGeometry": {
+        "componentId": "R00017-C003",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000013",
+          "E000014"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000014"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000013"
+            }
+          ],
+          "regionId": 17,
+          "ringId": "R00017-C003-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -1.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "pieceId": "FP-FLD-006-R00017-C003",
+      "provenance": {
+        "regionCoreContract": {
+          "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-006/region-core.json",
+          "sha256": "ad7ac6e811a1f15aea27973caf0a6d2df9e77a628ede8e69a3cf4b0630bba7fb",
+          "sizeBytes": 27849
+        },
+        "sourceComponentId": "R00017-C003",
+        "sourceComponentOrdinal": 3,
+        "sourceRegionId": 17,
+        "structuralArea": 1,
+        "structuralBbox": [
+          304,
+          417,
+          1,
+          1
+        ]
+      },
+      "representativeColor": {
+        "lab": [
+          83.137253,
+          0.0,
+          0.0
+        ],
+        "method": "RC-A",
+        "rgb": [
+          207,
+          207,
+          207
+        ]
+      },
+      "sourceComponentIds": [
+        "R00017-C003"
+      ],
+      "sourceRegionIds": [
+        17
+      ]
+    },
+    {
+      "confidence": {
+        "basis": "FROZEN_OBSERVED_GEOMETRY",
+        "value": 1.0
+      },
+      "fallbackStatus": {
+        "attemptedRoutes": [
+          "V2_SMOOTH_BEZIER"
+        ],
+        "edgeFallbacks": [],
+        "selectedRoute": "V2_SMOOTH_BEZIER",
+        "state": "NONE"
+      },
+      "finalCutGeometry": {
+        "componentId": "R00018-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000006",
+          "E000007"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000007"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000006"
+            }
+          ],
+          "regionId": 18,
+          "ringId": "R00018-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -1.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "inferenceType": "OBSERVED_ONLY",
+      "inferredGeometry": null,
+      "observedGeometry": {
+        "componentId": "R00018-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000006",
+          "E000007"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000007"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000006"
+            }
+          ],
+          "regionId": 18,
+          "ringId": "R00018-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -1.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "pieceId": "FP-FLD-006-R00018-C001",
+      "provenance": {
+        "regionCoreContract": {
+          "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-006/region-core.json",
+          "sha256": "ad7ac6e811a1f15aea27973caf0a6d2df9e77a628ede8e69a3cf4b0630bba7fb",
+          "sizeBytes": 27849
+        },
+        "sourceComponentId": "R00018-C001",
+        "sourceComponentOrdinal": 1,
+        "sourceRegionId": 18,
+        "structuralArea": 1,
+        "structuralBbox": [
+          284,
+          447,
+          1,
+          1
+        ]
+      },
+      "representativeColor": {
+        "lab": [
+          83.137253,
+          0.0,
+          0.0
+        ],
+        "method": "RC-A",
+        "rgb": [
+          207,
+          207,
+          207
+        ]
+      },
+      "sourceComponentIds": [
+        "R00018-C001"
+      ],
+      "sourceRegionIds": [
+        18
+      ]
+    },
+    {
+      "confidence": {
+        "basis": "FROZEN_OBSERVED_GEOMETRY",
+        "value": 1.0
+      },
+      "fallbackStatus": {
+        "attemptedRoutes": [
+          "V2_SMOOTH_BEZIER"
+        ],
+        "edgeFallbacks": [
+          {
+            "edgeId": "E000029",
+            "fallback": "V2_SMOOTH_BEZIER_GLOBAL_EMBEDDING_FAIL_CLOSED_LEVEL_1"
+          }
+        ],
+        "selectedRoute": "V2_SMOOTH_BEZIER",
+        "state": "PARTIAL_FROZEN_ROUTE_FALLBACK"
+      },
+      "finalCutGeometry": {
+        "componentId": "R00019-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000029"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000029"
+            }
+          ],
+          "regionId": 19,
+          "ringId": "R00019-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -810.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "inferenceType": "OBSERVED_ONLY",
+      "inferredGeometry": null,
+      "observedGeometry": {
+        "componentId": "R00019-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000029"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000029"
+            }
+          ],
+          "regionId": 19,
+          "ringId": "R00019-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -810.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "pieceId": "FP-FLD-006-R00019-C001",
+      "provenance": {
+        "regionCoreContract": {
+          "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-006/region-core.json",
+          "sha256": "ad7ac6e811a1f15aea27973caf0a6d2df9e77a628ede8e69a3cf4b0630bba7fb",
+          "sizeBytes": 27849
+        },
+        "sourceComponentId": "R00019-C001",
+        "sourceComponentOrdinal": 1,
+        "sourceRegionId": 19,
+        "structuralArea": 810,
+        "structuralBbox": [
+          386,
+          503,
+          27,
+          38
+        ]
+      },
+      "representativeColor": {
+        "lab": [
+          0.392157,
+          0.0,
+          0.0
+        ],
+        "method": "RC-A",
+        "rgb": [
+          2,
+          2,
+          2
+        ]
+      },
+      "sourceComponentIds": [
+        "R00019-C001"
+      ],
+      "sourceRegionIds": [
+        19
+      ]
+    },
+    {
+      "confidence": {
+        "basis": "FROZEN_OBSERVED_GEOMETRY",
+        "value": 1.0
+      },
+      "fallbackStatus": {
+        "attemptedRoutes": [
+          "V2_SMOOTH_BEZIER"
+        ],
+        "edgeFallbacks": [
+          {
+            "edgeId": "E000044",
+            "fallback": "V2_SMOOTH_BEZIER_GLOBAL_EMBEDDING_FAIL_CLOSED_LEVEL_1"
+          }
+        ],
+        "selectedRoute": "V2_SMOOTH_BEZIER",
+        "state": "PARTIAL_FROZEN_ROUTE_FALLBACK"
+      },
+      "finalCutGeometry": {
+        "componentId": "R00020-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000044"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000044"
+            }
+          ],
+          "regionId": 20,
+          "ringId": "R00020-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -801.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "inferenceType": "OBSERVED_ONLY",
+      "inferredGeometry": null,
+      "observedGeometry": {
+        "componentId": "R00020-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000044"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000044"
+            }
+          ],
+          "regionId": 20,
+          "ringId": "R00020-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -801.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "pieceId": "FP-FLD-006-R00020-C001",
+      "provenance": {
+        "regionCoreContract": {
+          "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-006/region-core.json",
+          "sha256": "ad7ac6e811a1f15aea27973caf0a6d2df9e77a628ede8e69a3cf4b0630bba7fb",
+          "sizeBytes": 27849
+        },
+        "sourceComponentId": "R00020-C001",
+        "sourceComponentOrdinal": 1,
+        "sourceRegionId": 20,
+        "structuralArea": 801,
+        "structuralBbox": [
+          560,
+          503,
+          27,
+          37
+        ]
+      },
+      "representativeColor": {
+        "lab": [
+          0.392157,
+          0.0,
+          0.0
+        ],
+        "method": "RC-A",
+        "rgb": [
+          2,
+          2,
+          2
+        ]
+      },
+      "sourceComponentIds": [
+        "R00020-C001"
+      ],
+      "sourceRegionIds": [
+        20
+      ]
+    },
+    {
+      "confidence": {
+        "basis": "FROZEN_OBSERVED_GEOMETRY",
+        "value": 1.0
+      },
+      "fallbackStatus": {
+        "attemptedRoutes": [
+          "V2_SMOOTH_BEZIER"
+        ],
+        "edgeFallbacks": [
+          {
+            "edgeId": "E000049",
+            "fallback": "V2_SMOOTH_BEZIER_CONTINUOUS_DEVIATION_FAIL_CLOSED_LEVEL_1"
+          }
+        ],
+        "selectedRoute": "V2_SMOOTH_BEZIER",
+        "state": "PARTIAL_FROZEN_ROUTE_FALLBACK"
+      },
+      "finalCutGeometry": {
+        "componentId": "R00021-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000049"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000049"
+            }
+          ],
+          "regionId": 21,
+          "ringId": "R00021-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -1188.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "inferenceType": "OBSERVED_ONLY",
+      "inferredGeometry": null,
+      "observedGeometry": {
+        "componentId": "R00021-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000049"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000049"
+            }
+          ],
+          "regionId": 21,
+          "ringId": "R00021-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -1188.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "pieceId": "FP-FLD-006-R00021-C001",
+      "provenance": {
+        "regionCoreContract": {
+          "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-006/region-core.json",
+          "sha256": "ad7ac6e811a1f15aea27973caf0a6d2df9e77a628ede8e69a3cf4b0630bba7fb",
+          "sizeBytes": 27849
+        },
+        "sourceComponentId": "R00021-C001",
+        "sourceComponentOrdinal": 1,
+        "sourceRegionId": 21,
+        "structuralArea": 1188,
+        "structuralBbox": [
+          582,
+          541,
+          45,
+          36
+        ]
+      },
+      "representativeColor": {
+        "lab": [
+          92.156868,
+          8.0,
+          9.0
+        ],
+        "method": "RC-A",
+        "rgb": [
+          255,
+          227,
+          216
+        ]
+      },
+      "sourceComponentIds": [
+        "R00021-C001"
+      ],
+      "sourceRegionIds": [
+        21
+      ]
+    },
+    {
+      "confidence": {
+        "basis": "FROZEN_OBSERVED_GEOMETRY",
+        "value": 1.0
+      },
+      "fallbackStatus": {
+        "attemptedRoutes": [
+          "V2_SMOOTH_BEZIER"
+        ],
+        "edgeFallbacks": [
+          {
+            "edgeId": "E000027",
+            "fallback": "V2_SMOOTH_BEZIER_CONTINUOUS_DEVIATION_FAIL_CLOSED_LEVEL_1"
+          }
+        ],
+        "selectedRoute": "V2_SMOOTH_BEZIER",
+        "state": "PARTIAL_FROZEN_ROUTE_FALLBACK"
+      },
+      "finalCutGeometry": {
+        "componentId": "R00022-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000027"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000027"
+            }
+          ],
+          "regionId": 22,
+          "ringId": "R00022-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -1085.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "inferenceType": "OBSERVED_ONLY",
+      "inferredGeometry": null,
+      "observedGeometry": {
+        "componentId": "R00022-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000027"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000027"
+            }
+          ],
+          "regionId": 22,
+          "ringId": "R00022-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -1085.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "pieceId": "FP-FLD-006-R00022-C001",
+      "provenance": {
+        "regionCoreContract": {
+          "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-006/region-core.json",
+          "sha256": "ad7ac6e811a1f15aea27973caf0a6d2df9e77a628ede8e69a3cf4b0630bba7fb",
+          "sizeBytes": 27849
+        },
+        "sourceComponentId": "R00022-C001",
+        "sourceComponentOrdinal": 1,
+        "sourceRegionId": 22,
+        "structuralArea": 1085,
+        "structuralBbox": [
+          348,
+          542,
+          40,
+          36
+        ]
+      },
+      "representativeColor": {
+        "lab": [
+          91.372551,
+          8.0,
+          9.0
+        ],
+        "method": "RC-A",
+        "rgb": [
+          253,
+          225,
+          213
+        ]
+      },
+      "sourceComponentIds": [
+        "R00022-C001"
+      ],
+      "sourceRegionIds": [
+        22
+      ]
+    },
+    {
+      "confidence": {
+        "basis": "FROZEN_OBSERVED_GEOMETRY",
+        "value": 1.0
+      },
+      "fallbackStatus": {
+        "attemptedRoutes": [
+          "V2_SMOOTH_BEZIER"
+        ],
+        "edgeFallbacks": [
+          {
+            "edgeId": "E000036",
+            "fallback": "V2_SMOOTH_BEZIER_CONTINUOUS_DEVIATION_FAIL_CLOSED_LEVEL_1"
+          }
+        ],
+        "selectedRoute": "V2_SMOOTH_BEZIER",
+        "state": "PARTIAL_FROZEN_ROUTE_FALLBACK"
+      },
+      "finalCutGeometry": {
+        "componentId": "R00023-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000036"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000036"
+            }
+          ],
+          "regionId": 23,
+          "ringId": "R00023-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -721.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "inferenceType": "OBSERVED_ONLY",
+      "inferredGeometry": null,
+      "observedGeometry": {
+        "componentId": "R00023-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000036"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000036"
+            }
+          ],
+          "regionId": 23,
+          "ringId": "R00023-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -721.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "pieceId": "FP-FLD-006-R00023-C001",
+      "provenance": {
+        "regionCoreContract": {
+          "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-006/region-core.json",
+          "sha256": "ad7ac6e811a1f15aea27973caf0a6d2df9e77a628ede8e69a3cf4b0630bba7fb",
+          "sizeBytes": 27849
+        },
+        "sourceComponentId": "R00023-C001",
+        "sourceComponentOrdinal": 1,
+        "sourceRegionId": 23,
+        "structuralArea": 721,
+        "structuralBbox": [
+          449,
+          554,
+          71,
+          22
+        ]
+      },
+      "representativeColor": {
+        "lab": [
+          1.176471,
+          0.0,
+          0.0
+        ],
+        "method": "RC-A",
+        "rgb": [
+          4,
+          4,
+          4
+        ]
+      },
+      "sourceComponentIds": [
+        "R00023-C001"
+      ],
+      "sourceRegionIds": [
+        23
+      ]
+    },
+    {
+      "confidence": {
+        "basis": "FROZEN_OBSERVED_GEOMETRY",
+        "value": 1.0
+      },
+      "fallbackStatus": {
+        "attemptedRoutes": [
+          "V2_SMOOTH_BEZIER"
+        ],
+        "edgeFallbacks": [],
+        "selectedRoute": "V2_SMOOTH_BEZIER",
+        "state": "NONE"
+      },
+      "finalCutGeometry": {
+        "componentId": "R00024-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000002",
+          "E000003"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000002"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000003"
+            }
+          ],
+          "regionId": 24,
+          "ringId": "R00024-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -2.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "inferenceType": "OBSERVED_ONLY",
+      "inferredGeometry": null,
+      "observedGeometry": {
+        "componentId": "R00024-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000002",
+          "E000003"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000002"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000003"
+            }
+          ],
+          "regionId": 24,
+          "ringId": "R00024-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -2.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "pieceId": "FP-FLD-006-R00024-C001",
+      "provenance": {
+        "regionCoreContract": {
+          "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-006/region-core.json",
+          "sha256": "ad7ac6e811a1f15aea27973caf0a6d2df9e77a628ede8e69a3cf4b0630bba7fb",
+          "sizeBytes": 27849
+        },
+        "sourceComponentId": "R00024-C001",
+        "sourceComponentOrdinal": 1,
+        "sourceRegionId": 24,
+        "structuralArea": 2,
+        "structuralBbox": [
+          269,
+          566,
+          1,
+          2
+        ]
+      },
+      "representativeColor": {
+        "lab": [
+          83.92157,
+          0.0,
+          0.0
+        ],
+        "method": "RC-A",
+        "rgb": [
+          209,
+          209,
+          209
+        ]
+      },
+      "sourceComponentIds": [
+        "R00024-C001"
+      ],
+      "sourceRegionIds": [
+        24
+      ]
+    },
+    {
+      "confidence": {
+        "basis": "FROZEN_OBSERVED_GEOMETRY",
+        "value": 1.0
+      },
+      "fallbackStatus": {
+        "attemptedRoutes": [
+          "V2_SMOOTH_BEZIER"
+        ],
+        "edgeFallbacks": [
+          {
+            "edgeId": "E000052",
+            "fallback": "V2_SMOOTH_BEZIER_CONTINUOUS_DEVIATION_FAIL_CLOSED_LEVEL_1"
+          }
+        ],
+        "selectedRoute": "V2_SMOOTH_BEZIER",
+        "state": "PARTIAL_FROZEN_ROUTE_FALLBACK"
+      },
+      "finalCutGeometry": {
+        "componentId": "R00025-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000050",
+          "E000052"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000052"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000050"
+            }
+          ],
+          "regionId": 25,
+          "ringId": "R00025-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -5.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "inferenceType": "OBSERVED_ONLY",
+      "inferredGeometry": null,
+      "observedGeometry": {
+        "componentId": "R00025-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000050",
+          "E000052"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000052"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000050"
+            }
+          ],
+          "regionId": 25,
+          "ringId": "R00025-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -5.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "pieceId": "FP-FLD-006-R00025-C001",
+      "provenance": {
+        "regionCoreContract": {
+          "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-006/region-core.json",
+          "sha256": "ad7ac6e811a1f15aea27973caf0a6d2df9e77a628ede8e69a3cf4b0630bba7fb",
+          "sizeBytes": 27849
+        },
+        "sourceComponentId": "R00025-C001",
+        "sourceComponentOrdinal": 1,
+        "sourceRegionId": 25,
+        "structuralArea": 5,
+        "structuralBbox": [
+          660,
+          643,
+          3,
+          2
+        ]
+      },
+      "representativeColor": {
+        "lab": [
+          80.0,
+          0.0,
+          0.0
+        ],
+        "method": "RC-A",
+        "rgb": [
+          198,
+          198,
+          198
+        ]
+      },
+      "sourceComponentIds": [
+        "R00025-C001"
+      ],
+      "sourceRegionIds": [
+        25
+      ]
+    },
+    {
+      "confidence": {
+        "basis": "FROZEN_OBSERVED_GEOMETRY",
+        "value": 1.0
+      },
+      "fallbackStatus": {
+        "attemptedRoutes": [
+          "V2_SMOOTH_BEZIER"
+        ],
+        "edgeFallbacks": [
+          {
+            "edgeId": "E000077",
+            "fallback": "V2_SMOOTH_BEZIER_CONTINUOUS_DEVIATION_FAIL_CLOSED_LEVEL_1"
+          }
+        ],
+        "selectedRoute": "V2_SMOOTH_BEZIER",
+        "state": "PARTIAL_FROZEN_ROUTE_FALLBACK"
+      },
+      "finalCutGeometry": {
+        "componentId": "R00026-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000077"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000077"
+            }
+          ],
+          "regionId": 26,
+          "ringId": "R00026-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -2446.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "inferenceType": "OBSERVED_ONLY",
+      "inferredGeometry": null,
+      "observedGeometry": {
+        "componentId": "R00026-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000077"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000077"
+            }
+          ],
+          "regionId": 26,
+          "ringId": "R00026-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -2446.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "pieceId": "FP-FLD-006-R00026-C001",
+      "provenance": {
+        "regionCoreContract": {
+          "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-006/region-core.json",
+          "sha256": "ad7ac6e811a1f15aea27973caf0a6d2df9e77a628ede8e69a3cf4b0630bba7fb",
+          "sizeBytes": 27849
+        },
+        "sourceComponentId": "R00026-C001",
+        "sourceComponentOrdinal": 1,
+        "sourceRegionId": 26,
+        "structuralArea": 2446,
+        "structuralBbox": [
+          697,
+          706,
+          44,
+          78
+        ]
+      },
+      "representativeColor": {
+        "lab": [
+          100.0,
+          0.0,
+          0.0
+        ],
+        "method": "RC-A",
+        "rgb": [
+          255,
+          255,
+          255
+        ]
+      },
+      "sourceComponentIds": [
+        "R00026-C001"
+      ],
+      "sourceRegionIds": [
+        26
+      ]
+    },
+    {
+      "confidence": {
+        "basis": "FROZEN_OBSERVED_GEOMETRY",
+        "value": 1.0
+      },
+      "fallbackStatus": {
+        "attemptedRoutes": [
+          "V2_SMOOTH_BEZIER"
+        ],
+        "edgeFallbacks": [],
+        "selectedRoute": "V2_SMOOTH_BEZIER",
+        "state": "NONE"
+      },
+      "finalCutGeometry": {
+        "componentId": "R00027-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000061",
+          "E000062"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000062"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000061"
+            }
+          ],
+          "regionId": 27,
+          "ringId": "R00027-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -1.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "inferenceType": "OBSERVED_ONLY",
+      "inferredGeometry": null,
+      "observedGeometry": {
+        "componentId": "R00027-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000061",
+          "E000062"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000062"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000061"
+            }
+          ],
+          "regionId": 27,
+          "ringId": "R00027-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -1.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "pieceId": "FP-FLD-006-R00027-C001",
+      "provenance": {
+        "regionCoreContract": {
+          "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-006/region-core.json",
+          "sha256": "ad7ac6e811a1f15aea27973caf0a6d2df9e77a628ede8e69a3cf4b0630bba7fb",
+          "sizeBytes": 27849
+        },
+        "sourceComponentId": "R00027-C001",
+        "sourceComponentOrdinal": 1,
+        "sourceRegionId": 27,
+        "structuralArea": 1,
+        "structuralBbox": [
+          678,
+          831,
+          1,
+          1
+        ]
+      },
+      "representativeColor": {
+        "lab": [
+          85.490196,
+          0.0,
+          1.0
+        ],
+        "method": "RC-A",
+        "rgb": [
+          215,
+          214,
+          212
+        ]
+      },
+      "sourceComponentIds": [
+        "R00027-C001"
+      ],
+      "sourceRegionIds": [
+        27
+      ]
+    },
+    {
+      "confidence": {
+        "basis": "FROZEN_OBSERVED_GEOMETRY",
+        "value": 1.0
+      },
+      "fallbackStatus": {
+        "attemptedRoutes": [
+          "V2_SMOOTH_BEZIER"
+        ],
+        "edgeFallbacks": [],
+        "selectedRoute": "V2_SMOOTH_BEZIER",
+        "state": "NONE"
+      },
+      "finalCutGeometry": {
+        "componentId": "R00027-C002",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000064",
+          "E000065"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000065"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000064"
+            }
+          ],
+          "regionId": 27,
+          "ringId": "R00027-C002-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -1.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "inferenceType": "OBSERVED_ONLY",
+      "inferredGeometry": null,
+      "observedGeometry": {
+        "componentId": "R00027-C002",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000064",
+          "E000065"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000065"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000064"
+            }
+          ],
+          "regionId": 27,
+          "ringId": "R00027-C002-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -1.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "pieceId": "FP-FLD-006-R00027-C002",
+      "provenance": {
+        "regionCoreContract": {
+          "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-006/region-core.json",
+          "sha256": "ad7ac6e811a1f15aea27973caf0a6d2df9e77a628ede8e69a3cf4b0630bba7fb",
+          "sizeBytes": 27849
+        },
+        "sourceComponentId": "R00027-C002",
+        "sourceComponentOrdinal": 2,
+        "sourceRegionId": 27,
+        "structuralArea": 1,
+        "structuralBbox": [
+          677,
+          832,
+          1,
+          1
+        ]
+      },
+      "representativeColor": {
+        "lab": [
+          85.490196,
+          0.0,
+          1.0
+        ],
+        "method": "RC-A",
+        "rgb": [
+          215,
+          214,
+          212
+        ]
+      },
+      "sourceComponentIds": [
+        "R00027-C002"
+      ],
+      "sourceRegionIds": [
+        27
+      ]
+    },
+    {
+      "confidence": {
+        "basis": "FROZEN_OBSERVED_GEOMETRY",
+        "value": 1.0
+      },
+      "fallbackStatus": {
+        "attemptedRoutes": [
+          "V2_SMOOTH_BEZIER"
+        ],
+        "edgeFallbacks": [],
+        "selectedRoute": "V2_SMOOTH_BEZIER",
+        "state": "NONE"
+      },
+      "finalCutGeometry": {
+        "componentId": "R00027-C003",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000066",
+          "E000067"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000067"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000066"
+            }
+          ],
+          "regionId": 27,
+          "ringId": "R00027-C003-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -1.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "inferenceType": "OBSERVED_ONLY",
+      "inferredGeometry": null,
+      "observedGeometry": {
+        "componentId": "R00027-C003",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000066",
+          "E000067"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000067"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000066"
+            }
+          ],
+          "regionId": 27,
+          "ringId": "R00027-C003-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -1.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "pieceId": "FP-FLD-006-R00027-C003",
+      "provenance": {
+        "regionCoreContract": {
+          "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-006/region-core.json",
+          "sha256": "ad7ac6e811a1f15aea27973caf0a6d2df9e77a628ede8e69a3cf4b0630bba7fb",
+          "sizeBytes": 27849
+        },
+        "sourceComponentId": "R00027-C003",
+        "sourceComponentOrdinal": 3,
+        "sourceRegionId": 27,
+        "structuralArea": 1,
+        "structuralBbox": [
+          676,
+          833,
+          1,
+          1
+        ]
+      },
+      "representativeColor": {
+        "lab": [
+          85.490196,
+          0.0,
+          1.0
+        ],
+        "method": "RC-A",
+        "rgb": [
+          215,
+          214,
+          212
+        ]
+      },
+      "sourceComponentIds": [
+        "R00027-C003"
+      ],
+      "sourceRegionIds": [
+        27
+      ]
+    },
+    {
+      "confidence": {
+        "basis": "FROZEN_OBSERVED_GEOMETRY",
+        "value": 1.0
+      },
+      "fallbackStatus": {
+        "attemptedRoutes": [
+          "V2_SMOOTH_BEZIER"
+        ],
+        "edgeFallbacks": [],
+        "selectedRoute": "V2_SMOOTH_BEZIER",
+        "state": "NONE"
+      },
+      "finalCutGeometry": {
+        "componentId": "R00027-C004",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000070",
+          "E000071"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000071"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000070"
+            }
+          ],
+          "regionId": 27,
+          "ringId": "R00027-C004-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -1.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "inferenceType": "OBSERVED_ONLY",
+      "inferredGeometry": null,
+      "observedGeometry": {
+        "componentId": "R00027-C004",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000070",
+          "E000071"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000071"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000070"
+            }
+          ],
+          "regionId": 27,
+          "ringId": "R00027-C004-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -1.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "pieceId": "FP-FLD-006-R00027-C004",
+      "provenance": {
+        "regionCoreContract": {
+          "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-006/region-core.json",
+          "sha256": "ad7ac6e811a1f15aea27973caf0a6d2df9e77a628ede8e69a3cf4b0630bba7fb",
+          "sizeBytes": 27849
+        },
+        "sourceComponentId": "R00027-C004",
+        "sourceComponentOrdinal": 4,
+        "sourceRegionId": 27,
+        "structuralArea": 1,
+        "structuralBbox": [
+          675,
+          834,
+          1,
+          1
+        ]
+      },
+      "representativeColor": {
+        "lab": [
+          85.490196,
+          0.0,
+          1.0
+        ],
+        "method": "RC-A",
+        "rgb": [
+          215,
+          214,
+          212
+        ]
+      },
+      "sourceComponentIds": [
+        "R00027-C004"
+      ],
+      "sourceRegionIds": [
+        27
+      ]
+    },
+    {
+      "confidence": {
+        "basis": "FROZEN_OBSERVED_GEOMETRY",
+        "value": 1.0
+      },
+      "fallbackStatus": {
+        "attemptedRoutes": [
+          "V2_SMOOTH_BEZIER"
+        ],
+        "edgeFallbacks": [],
+        "selectedRoute": "V2_SMOOTH_BEZIER",
+        "state": "NONE"
+      },
+      "finalCutGeometry": {
+        "componentId": "R00027-C005",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000073",
+          "E000074"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000074"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000073"
+            }
+          ],
+          "regionId": 27,
+          "ringId": "R00027-C005-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -1.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "inferenceType": "OBSERVED_ONLY",
+      "inferredGeometry": null,
+      "observedGeometry": {
+        "componentId": "R00027-C005",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000073",
+          "E000074"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000074"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000073"
+            }
+          ],
+          "regionId": 27,
+          "ringId": "R00027-C005-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -1.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "pieceId": "FP-FLD-006-R00027-C005",
+      "provenance": {
+        "regionCoreContract": {
+          "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-006/region-core.json",
+          "sha256": "ad7ac6e811a1f15aea27973caf0a6d2df9e77a628ede8e69a3cf4b0630bba7fb",
+          "sizeBytes": 27849
+        },
+        "sourceComponentId": "R00027-C005",
+        "sourceComponentOrdinal": 5,
+        "sourceRegionId": 27,
+        "structuralArea": 1,
+        "structuralBbox": [
+          674,
+          835,
+          1,
+          1
+        ]
+      },
+      "representativeColor": {
+        "lab": [
+          85.490196,
+          0.0,
+          1.0
+        ],
+        "method": "RC-A",
+        "rgb": [
+          215,
+          214,
+          212
+        ]
+      },
+      "sourceComponentIds": [
+        "R00027-C005"
+      ],
+      "sourceRegionIds": [
+        27
+      ]
+    },
+    {
+      "confidence": {
+        "basis": "FROZEN_OBSERVED_GEOMETRY",
+        "value": 1.0
+      },
+      "fallbackStatus": {
+        "attemptedRoutes": [
+          "V2_SMOOTH_BEZIER"
+        ],
+        "edgeFallbacks": [],
+        "selectedRoute": "V2_SMOOTH_BEZIER",
+        "state": "NONE"
+      },
+      "finalCutGeometry": {
+        "componentId": "R00028-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000041",
+          "E000042"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000042"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000041"
+            }
+          ],
+          "regionId": 28,
+          "ringId": "R00028-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -2.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "inferenceType": "OBSERVED_ONLY",
+      "inferredGeometry": null,
+      "observedGeometry": {
+        "componentId": "R00028-C001",
+        "coordinateSystem": "structural-label-map source-pixel boundary grid",
+        "edgeIds": [
+          "E000041",
+          "E000042"
+        ],
+        "geometryType": "FROZEN_DIRECTED_EDGE_REFERENCE_RINGS",
+        "innerRings": [],
+        "outerRing": {
+          "edgeReferences": [
+            {
+              "direction": 1,
+              "edgeId": "E000042"
+            },
+            {
+              "direction": -1,
+              "edgeId": "E000041"
+            }
+          ],
+          "regionId": 28,
+          "ringId": "R00028-C001-O",
+          "ringKind": "OUTER_RING",
+          "signedAreaScreen": -2.0
+        },
+        "toleranceSourcePixels": 0.5,
+        "vectorRoute": "V2_SMOOTH_BEZIER"
+      },
+      "pieceId": "FP-FLD-006-R00028-C001",
+      "provenance": {
+        "regionCoreContract": {
+          "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-006/region-core.json",
+          "sha256": "ad7ac6e811a1f15aea27973caf0a6d2df9e77a628ede8e69a3cf4b0630bba7fb",
+          "sizeBytes": 27849
+        },
+        "sourceComponentId": "R00028-C001",
+        "sourceComponentOrdinal": 1,
+        "sourceRegionId": 28,
+        "structuralArea": 2,
+        "structuralBbox": [
+          538,
+          859,
+          2,
+          1
+        ]
+      },
+      "representativeColor": {
+        "lab": [
+          85.294113,
+          0.0,
+          0.0
+        ],
+        "method": "RC-A",
+        "rgb": [
+          212,
+          213,
+          212
+        ]
+      },
+      "sourceComponentIds": [
+        "R00028-C001"
+      ],
+      "sourceRegionIds": [
+        28
+      ]
+    }
+  ],
+  "profile": "cp-b-aggressive_rc-a",
+  "provenance": {
+    "boundaryGraph": {
+      "path": "benchmarks/fabrication-layer-decomposition/vector-edge-smoothing/outputs/cp-b-aggressive_rc-a/FLD-006/boundary-graph.json.gz",
+      "sha256": "98bc243a8d3f4307678bead3c3f9ff886be07f8217430bc96d71ea373d35f32f",
+      "sizeBytes": 20348
+    },
+    "p0_04cFreeze": {
+      "path": "benchmarks/fabrication-layer-decomposition/vector-edge-smoothing/freeze.v1.json",
+      "sha256": "206f9c74d4c67b43974e2c6320ff07d8f6fc2cd94ea773ce07e5cca9a8e99121",
+      "sizeBytes": 4027
+    },
+    "referencedFallbackEdgeCount": 35,
+    "regionCoreContract": {
+      "path": "benchmarks/fabrication-layer-decomposition/region-core/outputs/frozen/cp-b-aggressive_rc-a/FLD-006/region-core.json",
+      "sha256": "ad7ac6e811a1f15aea27973caf0a6d2df9e77a628ede8e69a3cf4b0630bba7fb",
+      "sizeBytes": 27849
+    },
+    "regionCoreFreeze": {
+      "path": "benchmarks/fabrication-layer-decomposition/region-core/freeze.v1.json",
+      "sha256": "19d2879d3264ee78ddfff188eb683e174bc3e5d0cca32b2b2e7010467fa5ed6d",
+      "sizeBytes": 26668
+    },
+    "selectedVectorResult": {
+      "path": "benchmarks/fabrication-layer-decomposition/vector-edge-smoothing/outputs/cp-b-aggressive_rc-a/FLD-006/V2/tol-0p5/result.json",
+      "sha256": "d7e4535a79152ab1a8069b46e44f61f9778e11ae27cc069110886b660b8b1d8a",
+      "sizeBytes": 458242
+    },
+    "selectedVectorRoute": "V2_SMOOTH_BEZIER",
+    "selectedVectorToleranceSourcePixels": 0.5,
+    "structuralLabelMap": {
+      "identityMode": "EXACT_BYTES",
+      "path": "benchmarks/fabrication-layer-decomposition/outputs/color-purification/cp-b-aggressive_rc-a/FLD-006/structural_label_map.npz",
+      "sha256": "381acb7bdebc65bb98815791c11dc51097c7ecab3f33743ecef09269d5e50765",
+      "sizeBytes": 13024
+    }
+  },
+  "schemaVersion": "1.0.0-poc",
+  "status": "B2_V0_REVALIDATED_ON_REPAIRED_BASELINE",
+  "upstreamBaseline": "90a92ae1853ce07308238a70f9301fa148821b66"
+}

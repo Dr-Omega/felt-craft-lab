@@ -1,0 +1,15 @@
+{
+  "caseId": "FLD-008",
+  "hiddenCompletion": [],
+  "mustNotInferZones": [],
+  "mustNotMerge": [],
+  "overlapRelations": [],
+  "physicalPieces": [],
+  "reviewMetadata": {
+    "notes": null,
+    "reviewedAt": null,
+    "reviewer": null
+  },
+  "reviewStatus": "PENDING_EXTERNAL_REVIEW",
+  "schemaVersion": "1.0.0-review-draft"
+}

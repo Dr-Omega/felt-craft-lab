@@ -1,0 +1,249 @@
+{
+  "candidateCount": 8,
+  "candidates": [
+    {
+      "candidateId": "FLD-006-CAND-01",
+      "candidateType": "ADJACENT_STACKING_REVIEW",
+      "manualReason": null,
+      "pieceIds": [
+        "FP-FLD-006-R00002-C001",
+        "FP-FLD-006-R00006-C001"
+      ],
+      "reviewAnswers": {
+        "hiddenContinuousArea": null,
+        "hiddenGeometryNeeded": null,
+        "multipleAcceptableDecompositions": null,
+        "samePhysicalPiece": null,
+        "stacking": null
+      },
+      "reviewCard": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review/cards/FLD-006-CAND-01.png",
+      "selectionEvidence": {
+        "fact": "Frozen Regions share a 4-connected boundary",
+        "sharedBoundaryCoverage": 0.68406485,
+        "uniqueSharedEdgeCount": 3460
+      },
+      "sourceComponentIds": [
+        "R00002-C001",
+        "R00006-C001"
+      ],
+      "sourceRegionIds": [
+        2,
+        6
+      ]
+    },
+    {
+      "candidateId": "FLD-006-CAND-02",
+      "candidateType": "ADJACENT_STACKING_REVIEW",
+      "manualReason": null,
+      "pieceIds": [
+        "FP-FLD-006-R00006-C001",
+        "FP-FLD-006-R00010-C001"
+      ],
+      "reviewAnswers": {
+        "hiddenContinuousArea": null,
+        "hiddenGeometryNeeded": null,
+        "multipleAcceptableDecompositions": null,
+        "samePhysicalPiece": null,
+        "stacking": null
+      },
+      "reviewCard": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review/cards/FLD-006-CAND-02.png",
+      "selectionEvidence": {
+        "fact": "Frozen Regions share a 4-connected boundary",
+        "sharedBoundaryCoverage": 1.0,
+        "uniqueSharedEdgeCount": 398
+      },
+      "sourceComponentIds": [
+        "R00006-C001",
+        "R00010-C001"
+      ],
+      "sourceRegionIds": [
+        6,
+        10
+      ]
+    },
+    {
+      "candidateId": "FLD-006-CAND-03",
+      "candidateType": "ADJACENT_STACKING_REVIEW",
+      "manualReason": null,
+      "pieceIds": [
+        "FP-FLD-006-R00006-C001",
+        "FP-FLD-006-R00009-C001"
+      ],
+      "reviewAnswers": {
+        "hiddenContinuousArea": null,
+        "hiddenGeometryNeeded": null,
+        "multipleAcceptableDecompositions": null,
+        "samePhysicalPiece": null,
+        "stacking": null
+      },
+      "reviewCard": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review/cards/FLD-006-CAND-03.png",
+      "selectionEvidence": {
+        "fact": "Frozen Regions share a 4-connected boundary",
+        "sharedBoundaryCoverage": 1.0,
+        "uniqueSharedEdgeCount": 394
+      },
+      "sourceComponentIds": [
+        "R00006-C001",
+        "R00009-C001"
+      ],
+      "sourceRegionIds": [
+        6,
+        9
+      ]
+    },
+    {
+      "candidateId": "FLD-006-CAND-04",
+      "candidateType": "ADJACENT_STACKING_REVIEW",
+      "manualReason": null,
+      "pieceIds": [
+        "FP-FLD-006-R00002-C001",
+        "FP-FLD-006-R00026-C001"
+      ],
+      "reviewAnswers": {
+        "hiddenContinuousArea": null,
+        "hiddenGeometryNeeded": null,
+        "multipleAcceptableDecompositions": null,
+        "samePhysicalPiece": null,
+        "stacking": null
+      },
+      "reviewCard": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review/cards/FLD-006-CAND-04.png",
+      "selectionEvidence": {
+        "fact": "Frozen Regions share a 4-connected boundary",
+        "sharedBoundaryCoverage": 1.0,
+        "uniqueSharedEdgeCount": 254
+      },
+      "sourceComponentIds": [
+        "R00002-C001",
+        "R00026-C001"
+      ],
+      "sourceRegionIds": [
+        2,
+        26
+      ]
+    },
+    {
+      "candidateId": "FLD-006-CAND-05",
+      "candidateType": "ADJACENT_STACKING_REVIEW",
+      "manualReason": null,
+      "pieceIds": [
+        "FP-FLD-006-R00006-C001",
+        "FP-FLD-006-R00023-C001"
+      ],
+      "reviewAnswers": {
+        "hiddenContinuousArea": null,
+        "hiddenGeometryNeeded": null,
+        "multipleAcceptableDecompositions": null,
+        "samePhysicalPiece": null,
+        "stacking": null
+      },
+      "reviewCard": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review/cards/FLD-006-CAND-05.png",
+      "selectionEvidence": {
+        "fact": "Frozen Regions share a 4-connected boundary",
+        "sharedBoundaryCoverage": 1.0,
+        "uniqueSharedEdgeCount": 222
+      },
+      "sourceComponentIds": [
+        "R00006-C001",
+        "R00023-C001"
+      ],
+      "sourceRegionIds": [
+        6,
+        23
+      ]
+    },
+    {
+      "candidateId": "FLD-006-CAND-06",
+      "candidateType": "ADJACENT_STACKING_REVIEW",
+      "manualReason": null,
+      "pieceIds": [
+        "FP-FLD-006-R00006-C001",
+        "FP-FLD-006-R00021-C001"
+      ],
+      "reviewAnswers": {
+        "hiddenContinuousArea": null,
+        "hiddenGeometryNeeded": null,
+        "multipleAcceptableDecompositions": null,
+        "samePhysicalPiece": null,
+        "stacking": null
+      },
+      "reviewCard": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review/cards/FLD-006-CAND-06.png",
+      "selectionEvidence": {
+        "fact": "Frozen Regions share a 4-connected boundary",
+        "sharedBoundaryCoverage": 1.0,
+        "uniqueSharedEdgeCount": 168
+      },
+      "sourceComponentIds": [
+        "R00006-C001",
+        "R00021-C001"
+      ],
+      "sourceRegionIds": [
+        6,
+        21
+      ]
+    },
+    {
+      "candidateId": "FLD-006-CAND-07",
+      "candidateType": "ADJACENT_STACKING_REVIEW",
+      "manualReason": null,
+      "pieceIds": [
+        "FP-FLD-006-R00006-C001",
+        "FP-FLD-006-R00022-C001"
+      ],
+      "reviewAnswers": {
+        "hiddenContinuousArea": null,
+        "hiddenGeometryNeeded": null,
+        "multipleAcceptableDecompositions": null,
+        "samePhysicalPiece": null,
+        "stacking": null
+      },
+      "reviewCard": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review/cards/FLD-006-CAND-07.png",
+      "selectionEvidence": {
+        "fact": "Frozen Regions share a 4-connected boundary",
+        "sharedBoundaryCoverage": 1.0,
+        "uniqueSharedEdgeCount": 158
+      },
+      "sourceComponentIds": [
+        "R00006-C001",
+        "R00022-C001"
+      ],
+      "sourceRegionIds": [
+        6,
+        22
+      ]
+    },
+    {
+      "candidateId": "FLD-006-CAND-08",
+      "candidateType": "ADJACENT_STACKING_REVIEW",
+      "manualReason": null,
+      "pieceIds": [
+        "FP-FLD-006-R00006-C001",
+        "FP-FLD-006-R00019-C001"
+      ],
+      "reviewAnswers": {
+        "hiddenContinuousArea": null,
+        "hiddenGeometryNeeded": null,
+        "multipleAcceptableDecompositions": null,
+        "samePhysicalPiece": null,
+        "stacking": null
+      },
+      "reviewCard": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review/cards/FLD-006-CAND-08.png",
+      "selectionEvidence": {
+        "fact": "Frozen Regions share a 4-connected boundary",
+        "sharedBoundaryCoverage": 1.0,
+        "uniqueSharedEdgeCount": 130
+      },
+      "sourceComponentIds": [
+        "R00006-C001",
+        "R00019-C001"
+      ],
+      "sourceRegionIds": [
+        6,
+        19
+      ]
+    }
+  ],
+  "caseId": "FLD-006",
+  "contactSheet": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review/FLD-006_REVIEW.png",
+  "source": "benchmarks/fabrication-layer-decomposition/fixtures/source/FLD-006.png",
+  "status": "PENDING_EXTERNAL_REVIEW"
+}

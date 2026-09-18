@@ -1,0 +1,130 @@
+{
+  "allHardGatesPass": true,
+  "cases": [
+    {
+      "classification": "B2_LIMITED",
+      "componentCount": 155,
+      "fixtureId": "FLD-001",
+      "hardGatePass": true,
+      "holeCount": 1,
+      "outputPath": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/outputs/v0/FLD-001/result.json",
+      "outputSha256": "8ddc7213991b0ca7dc851e5180f200600c9e6d11b95ddbb38723582b5f1fe3ce",
+      "pieceCount": 155,
+      "referencedFallbackEdgeCount": 80,
+      "regionCount": 108,
+      "status": "B2_V0_REVALIDATED_ON_REPAIRED_BASELINE"
+    },
+    {
+      "classification": "B2_HIGH_VALUE",
+      "componentCount": 18,
+      "fixtureId": "FLD-002",
+      "hardGatePass": true,
+      "holeCount": 3,
+      "outputPath": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/outputs/v0/FLD-002/result.json",
+      "outputSha256": "05fbde9a9b5b6ead448fe20321e64899fab031749af3680141122e4acf2c3342",
+      "pieceCount": 18,
+      "referencedFallbackEdgeCount": 35,
+      "regionCount": 13,
+      "status": "B2_V0_REVALIDATED_ON_REPAIRED_BASELINE"
+    },
+    {
+      "classification": "B2_HIGH_VALUE",
+      "componentCount": 25,
+      "fixtureId": "FLD-003",
+      "hardGatePass": true,
+      "holeCount": 16,
+      "outputPath": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/outputs/v0/FLD-003/result.json",
+      "outputSha256": "9ce7a916f2c48b6ce81cfea57de8402a0a58761dfb1b318a865ab1d9337324e6",
+      "pieceCount": 25,
+      "referencedFallbackEdgeCount": 49,
+      "regionCount": 18,
+      "status": "B2_V0_REVALIDATED_ON_REPAIRED_BASELINE"
+    },
+    {
+      "classification": "B2_HIGH_VALUE",
+      "componentCount": 597,
+      "fixtureId": "FLD-004",
+      "hardGatePass": true,
+      "holeCount": 13,
+      "outputPath": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/outputs/v0/FLD-004/result.json",
+      "outputSha256": "ba1e12a5de80cb4251c6fe391e1242ce80fd685744906fcd8327cd115b18f190",
+      "pieceCount": 597,
+      "referencedFallbackEdgeCount": 246,
+      "regionCount": 330,
+      "status": "B2_V0_REVALIDATED_ON_REPAIRED_BASELINE"
+    },
+    {
+      "classification": "B2_LIMITED",
+      "componentCount": 84,
+      "fixtureId": "FLD-005",
+      "hardGatePass": true,
+      "holeCount": 4,
+      "outputPath": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/outputs/v0/FLD-005/result.json",
+      "outputSha256": "5d193f949ac0132a294eb74bda59c09ecfc87a088c36229bc690f5d94a705b9b",
+      "pieceCount": 84,
+      "referencedFallbackEdgeCount": 30,
+      "regionCount": 68,
+      "status": "B2_V0_REVALIDATED_ON_REPAIRED_BASELINE"
+    },
+    {
+      "classification": "B2_HIGH_VALUE",
+      "componentCount": 36,
+      "fixtureId": "FLD-006",
+      "hardGatePass": true,
+      "holeCount": 9,
+      "outputPath": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/outputs/v0/FLD-006/result.json",
+      "outputSha256": "c76febffb155d196be5aa53811590e2dec12db95d98a540c344260f928713845",
+      "pieceCount": 36,
+      "referencedFallbackEdgeCount": 35,
+      "regionCount": 28,
+      "status": "B2_V0_REVALIDATED_ON_REPAIRED_BASELINE"
+    },
+    {
+      "classification": "B2_LIMITED",
+      "componentCount": 167,
+      "fixtureId": "FLD-007",
+      "hardGatePass": true,
+      "holeCount": 8,
+      "outputPath": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/outputs/v0/FLD-007/result.json",
+      "outputSha256": "efa26b7c434b1eac2efab5c1d65484409b5e35a1ee0731e90f564c04a908c181",
+      "pieceCount": 167,
+      "referencedFallbackEdgeCount": 137,
+      "regionCount": 104,
+      "status": "B2_V0_REVALIDATED_ON_REPAIRED_BASELINE"
+    },
+    {
+      "classification": "B2_HIGH_VALUE",
+      "componentCount": 98,
+      "fixtureId": "FLD-008",
+      "hardGatePass": true,
+      "holeCount": 4,
+      "outputPath": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/outputs/v0/FLD-008/result.json",
+      "outputSha256": "ea180be1698a8f0b441f27f9b2e3088990823e94cb32031468024e6990cc7b15",
+      "pieceCount": 98,
+      "referencedFallbackEdgeCount": 131,
+      "regionCount": 38,
+      "status": "B2_V0_REVALIDATED_ON_REPAIRED_BASELINE"
+    }
+  ],
+  "datasetGap": {
+    "effect": "B2-V0 can freeze an observed-only baseline; B2-V1 hidden reconstruction is not yet authorized.",
+    "missing": [
+      "PROJECT_REAL_B2_GT with Fabrication Piece identity",
+      "validated occluded/hidden contour targets",
+      "human-authored ABOVE/BELOW partial-order relations",
+      "explicit same-physical-shape continuation pairs"
+    ],
+    "status": "DATASET_GAP"
+  },
+  "fixtureCount": 8,
+  "profile": "cp-b-aggressive_rc-a",
+  "status": "B2_V0_REVALIDATED_ON_REPAIRED_BASELINE",
+  "totalComponentCount": 1180,
+  "totalPieceCount": 1180,
+  "totalReferencedFallbackEdgeCount": 743,
+  "totalRegionCount": 707,
+  "upstreamBaseline": "90a92ae1853ce07308238a70f9301fa148821b66",
+  "upstreamFrozenArtifactsUnchanged": true,
+  "v0Status": "VALIDATED_BASELINE",
+  "v1Readiness": "BLOCKED_PROJECT_REAL_B2_GT"
+}

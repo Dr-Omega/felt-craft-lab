@@ -1,0 +1,12 @@
+{
+  "ambiguousCount": null,
+  "hiddenContourReconstructionRequiredCount": null,
+  "hiddenContourReconstructionRequiredRatio": null,
+  "multipleComponentsToOnePhysicalPieceCount": null,
+  "multipleComponentsToOnePhysicalPieceRatio": null,
+  "mustNotMergeCount": null,
+  "nextV1PrimaryProblem": null,
+  "stackingOnlyNoHiddenCompletionCount": null,
+  "status": "PENDING_EXTERNAL_REVIEW",
+  "totalV0PieceCount": 1180
+}

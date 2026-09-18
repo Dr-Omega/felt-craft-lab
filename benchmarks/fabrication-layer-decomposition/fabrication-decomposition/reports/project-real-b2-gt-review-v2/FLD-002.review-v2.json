@@ -1,0 +1,602 @@
+{
+  "candidateCount": 14,
+  "candidateSelectionAudit": {
+    "bucketLimits": {
+      "CONTAINED_OVERLAY_HOST": 8,
+      "DIRECT_FILL_FILL_ADJACENCY": 4,
+      "SAME_REGION_MULTI_COMPONENT": 2,
+      "SAME_SURFACE_COLOR_SPLIT": 3,
+      "STROKE_MEDIATED_FILL_FILL_ADJACENCY": 6,
+      "STROKE_STRESS_CONTROL": 2
+    },
+    "candidateDeduplication": "piece-set exact deduplication across buckets",
+    "discoveredCounts": {
+      "CONTAINED_OVERLAY_HOST": 1,
+      "DIRECT_FILL_FILL_ADJACENCY": 2,
+      "SAME_REGION_MULTI_COMPONENT": 1,
+      "SAME_SURFACE_COLOR_SPLIT": 2,
+      "STROKE_MEDIATED_FILL_FILL_ADJACENCY": 12,
+      "STROKE_STRESS_CONTROL": 12
+    },
+    "largestBucketShare": 0.428571,
+    "minimumReviewAreaPixels": 48,
+    "requiredReviewFocusCoverage": {
+      "covered": [
+        [
+          4,
+          7
+        ],
+        [
+          6,
+          7
+        ],
+        [
+          7,
+          9
+        ]
+      ],
+      "missing": [],
+      "semanticLabelsGenerated": false,
+      "status": "PASS"
+    },
+    "requiredReviewFocusPairs": [
+      [
+        4,
+        7
+      ],
+      [
+        6,
+        7
+      ],
+      [
+        7,
+        9
+      ]
+    ],
+    "selectedCounts": {
+      "CONTAINED_OVERLAY_HOST": 1,
+      "DIRECT_FILL_FILL_ADJACENCY": 2,
+      "SAME_REGION_MULTI_COMPONENT": 1,
+      "SAME_SURFACE_COLOR_SPLIT": 2,
+      "STROKE_MEDIATED_FILL_FILL_ADJACENCY": 6,
+      "STROKE_STRESS_CONTROL": 2
+    },
+    "selectedTotal": 14,
+    "selectionBalanceStatus": "PASS",
+    "semanticLabelsGenerated": false,
+    "strokeHeuristic": "review-only: Lab L<=28, RGB channel spread<=30, and (area<=20% image or bbox occupancy<=0.42)",
+    "strokeStressLimitPass": true
+  },
+  "candidates": [
+    {
+      "candidateId": "FLD-002-V2-CAND-01",
+      "candidateType": "SAME_REGION_MULTI_COMPONENT",
+      "fabricationRole": {
+        "FP-FLD-002-R00008-C001": null,
+        "FP-FLD-002-R00008-C002": null,
+        "FP-FLD-002-R00008-C005": null,
+        "FP-FLD-002-R00008-C006": null
+      },
+      "manualReason": null,
+      "pieceIds": [
+        "FP-FLD-002-R00008-C002",
+        "FP-FLD-002-R00008-C006",
+        "FP-FLD-002-R00008-C005",
+        "FP-FLD-002-R00008-C001"
+      ],
+      "reviewAnswers": {
+        "hiddenContinuousArea": null,
+        "hiddenGeometryNeeded": null,
+        "multipleAcceptableDecompositions": null,
+        "samePhysicalPiece": null,
+        "stacking": null
+      },
+      "reviewCard": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-002-V2-CAND-01.png",
+      "selectionEvidence": {
+        "componentAreas": [
+          1486,
+          532,
+          278,
+          277
+        ],
+        "fact": "multiple substantial 4-connected components share one Frozen Region ID",
+        "semanticInference": null
+      },
+      "sourceComponentIds": [
+        "R00008-C002",
+        "R00008-C006",
+        "R00008-C005",
+        "R00008-C001"
+      ],
+      "sourceRegionIds": [
+        8
+      ]
+    },
+    {
+      "candidateId": "FLD-002-V2-CAND-02",
+      "candidateType": "SAME_SURFACE_COLOR_SPLIT",
+      "fabricationRole": {
+        "FP-FLD-002-R00004-C001": null,
+        "FP-FLD-002-R00007-C001": null
+      },
+      "manualReason": null,
+      "pieceIds": [
+        "FP-FLD-002-R00004-C001",
+        "FP-FLD-002-R00007-C001"
+      ],
+      "reviewAnswers": {
+        "hiddenContinuousArea": null,
+        "hiddenGeometryNeeded": null,
+        "multipleAcceptableDecompositions": null,
+        "samePhysicalPiece": null,
+        "stacking": null
+      },
+      "reviewCard": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-002-V2-CAND-02.png",
+      "selectionEvidence": {
+        "fact": "near representative colors plus explicit spatial evidence",
+        "mediatingStrokeRegionIds": [
+          1
+        ],
+        "representativeDeltaE00": 0.473147,
+        "semanticInference": null,
+        "spatialEvidence": "TWO_HOP_THROUGH_STROKE"
+      },
+      "sourceComponentIds": [
+        "R00004-C001",
+        "R00007-C001"
+      ],
+      "sourceRegionIds": [
+        4,
+        7
+      ]
+    },
+    {
+      "candidateId": "FLD-002-V2-CAND-03",
+      "candidateType": "SAME_SURFACE_COLOR_SPLIT",
+      "fabricationRole": {
+        "FP-FLD-002-R00006-C001": null,
+        "FP-FLD-002-R00008-C002": null
+      },
+      "manualReason": null,
+      "pieceIds": [
+        "FP-FLD-002-R00006-C001",
+        "FP-FLD-002-R00008-C002"
+      ],
+      "reviewAnswers": {
+        "hiddenContinuousArea": null,
+        "hiddenGeometryNeeded": null,
+        "multipleAcceptableDecompositions": null,
+        "samePhysicalPiece": null,
+        "stacking": null
+      },
+      "reviewCard": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-002-V2-CAND-03.png",
+      "selectionEvidence": {
+        "fact": "near representative colors plus explicit spatial evidence",
+        "mediatingStrokeRegionIds": [
+          1
+        ],
+        "representativeDeltaE00": 1.423638,
+        "semanticInference": null,
+        "spatialEvidence": "TWO_HOP_THROUGH_STROKE"
+      },
+      "sourceComponentIds": [
+        "R00006-C001",
+        "R00008-C002"
+      ],
+      "sourceRegionIds": [
+        6,
+        8
+      ]
+    },
+    {
+      "candidateId": "FLD-002-V2-CAND-04",
+      "candidateType": "CONTAINED_OVERLAY_HOST",
+      "fabricationRole": {
+        "FP-FLD-002-R00007-C001": null,
+        "FP-FLD-002-R00009-C001": null
+      },
+      "manualReason": null,
+      "pieceIds": [
+        "FP-FLD-002-R00007-C001",
+        "FP-FLD-002-R00009-C001"
+      ],
+      "reviewAnswers": {
+        "hiddenContinuousArea": null,
+        "hiddenGeometryNeeded": null,
+        "multipleAcceptableDecompositions": null,
+        "samePhysicalPiece": null,
+        "stacking": null
+      },
+      "reviewCard": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-002-V2-CAND-04.png",
+      "selectionEvidence": {
+        "fact": "overlay bbox is strictly contained by a larger fill bbox",
+        "hostRegionId": 7,
+        "overlayRegionId": 9,
+        "overlayToHostAreaRatio": 0.06526578,
+        "semanticInference": null
+      },
+      "sourceComponentIds": [
+        "R00007-C001",
+        "R00009-C001"
+      ],
+      "sourceRegionIds": [
+        7,
+        9
+      ]
+    },
+    {
+      "candidateId": "FLD-002-V2-CAND-05",
+      "candidateType": "DIRECT_FILL_FILL_ADJACENCY",
+      "fabricationRole": {
+        "FP-FLD-002-R00007-C001": null,
+        "FP-FLD-002-R00008-C002": null
+      },
+      "manualReason": null,
+      "pieceIds": [
+        "FP-FLD-002-R00007-C001",
+        "FP-FLD-002-R00008-C002"
+      ],
+      "reviewAnswers": {
+        "hiddenContinuousArea": null,
+        "hiddenGeometryNeeded": null,
+        "multipleAcceptableDecompositions": null,
+        "samePhysicalPiece": null,
+        "stacking": null
+      },
+      "reviewCard": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-002-V2-CAND-05.png",
+      "selectionEvidence": {
+        "fact": "two fill-like Frozen Regions share a direct 4-connected boundary",
+        "semanticInference": null,
+        "sharedBoundaryCoverage": 0.54707191,
+        "uniqueSharedEdgeCount": 1476
+      },
+      "sourceComponentIds": [
+        "R00007-C001",
+        "R00008-C002"
+      ],
+      "sourceRegionIds": [
+        7,
+        8
+      ]
+    },
+    {
+      "candidateId": "FLD-002-V2-CAND-06",
+      "candidateType": "DIRECT_FILL_FILL_ADJACENCY",
+      "fabricationRole": {
+        "FP-FLD-002-R00006-C001": null,
+        "FP-FLD-002-R00007-C001": null
+      },
+      "manualReason": null,
+      "pieceIds": [
+        "FP-FLD-002-R00006-C001",
+        "FP-FLD-002-R00007-C001"
+      ],
+      "reviewAnswers": {
+        "hiddenContinuousArea": null,
+        "hiddenGeometryNeeded": null,
+        "multipleAcceptableDecompositions": null,
+        "samePhysicalPiece": null,
+        "stacking": null
+      },
+      "reviewCard": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-002-V2-CAND-06.png",
+      "selectionEvidence": {
+        "fact": "two fill-like Frozen Regions share a direct 4-connected boundary",
+        "semanticInference": null,
+        "sharedBoundaryCoverage": 0.48321168,
+        "uniqueSharedEdgeCount": 662
+      },
+      "sourceComponentIds": [
+        "R00006-C001",
+        "R00007-C001"
+      ],
+      "sourceRegionIds": [
+        6,
+        7
+      ]
+    },
+    {
+      "candidateId": "FLD-002-V2-CAND-07",
+      "candidateType": "STROKE_MEDIATED_FILL_FILL_ADJACENCY",
+      "fabricationRole": {
+        "FP-FLD-002-R00004-C001": null,
+        "FP-FLD-002-R00008-C002": null
+      },
+      "manualReason": null,
+      "pieceIds": [
+        "FP-FLD-002-R00004-C001",
+        "FP-FLD-002-R00008-C002"
+      ],
+      "reviewAnswers": {
+        "hiddenContinuousArea": null,
+        "hiddenGeometryNeeded": null,
+        "multipleAcceptableDecompositions": null,
+        "samePhysicalPiece": null,
+        "stacking": null
+      },
+      "reviewCard": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-002-V2-CAND-07.png",
+      "selectionEvidence": {
+        "bboxGapPixels": 0.0,
+        "combinedStrokeBoundaryEdges": 3164,
+        "fact": "two fill-like Regions have two-hop adjacency through a stroke-like Region",
+        "mediatingStrokeRegionIds": [
+          1
+        ],
+        "semanticInference": null
+      },
+      "sourceComponentIds": [
+        "R00004-C001",
+        "R00008-C002"
+      ],
+      "sourceRegionIds": [
+        4,
+        8
+      ]
+    },
+    {
+      "candidateId": "FLD-002-V2-CAND-08",
+      "candidateType": "STROKE_MEDIATED_FILL_FILL_ADJACENCY",
+      "fabricationRole": {
+        "FP-FLD-002-R00004-C001": null,
+        "FP-FLD-002-R00006-C001": null
+      },
+      "manualReason": null,
+      "pieceIds": [
+        "FP-FLD-002-R00004-C001",
+        "FP-FLD-002-R00006-C001"
+      ],
+      "reviewAnswers": {
+        "hiddenContinuousArea": null,
+        "hiddenGeometryNeeded": null,
+        "multipleAcceptableDecompositions": null,
+        "samePhysicalPiece": null,
+        "stacking": null
+      },
+      "reviewCard": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-002-V2-CAND-08.png",
+      "selectionEvidence": {
+        "bboxGapPixels": 0.0,
+        "combinedStrokeBoundaryEdges": 2370,
+        "fact": "two fill-like Regions have two-hop adjacency through a stroke-like Region",
+        "mediatingStrokeRegionIds": [
+          1
+        ],
+        "semanticInference": null
+      },
+      "sourceComponentIds": [
+        "R00004-C001",
+        "R00006-C001"
+      ],
+      "sourceRegionIds": [
+        4,
+        6
+      ]
+    },
+    {
+      "candidateId": "FLD-002-V2-CAND-09",
+      "candidateType": "STROKE_MEDIATED_FILL_FILL_ADJACENCY",
+      "fabricationRole": {
+        "FP-FLD-002-R00004-C001": null,
+        "FP-FLD-002-R00009-C001": null
+      },
+      "manualReason": null,
+      "pieceIds": [
+        "FP-FLD-002-R00004-C001",
+        "FP-FLD-002-R00009-C001"
+      ],
+      "reviewAnswers": {
+        "hiddenContinuousArea": null,
+        "hiddenGeometryNeeded": null,
+        "multipleAcceptableDecompositions": null,
+        "samePhysicalPiece": null,
+        "stacking": null
+      },
+      "reviewCard": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-002-V2-CAND-09.png",
+      "selectionEvidence": {
+        "bboxGapPixels": 0.0,
+        "combinedStrokeBoundaryEdges": 2220,
+        "fact": "two fill-like Regions have two-hop adjacency through a stroke-like Region",
+        "mediatingStrokeRegionIds": [
+          1
+        ],
+        "semanticInference": null
+      },
+      "sourceComponentIds": [
+        "R00004-C001",
+        "R00009-C001"
+      ],
+      "sourceRegionIds": [
+        4,
+        9
+      ]
+    },
+    {
+      "candidateId": "FLD-002-V2-CAND-10",
+      "candidateType": "STROKE_MEDIATED_FILL_FILL_ADJACENCY",
+      "fabricationRole": {
+        "FP-FLD-002-R00008-C002": null,
+        "FP-FLD-002-R00009-C001": null
+      },
+      "manualReason": null,
+      "pieceIds": [
+        "FP-FLD-002-R00008-C002",
+        "FP-FLD-002-R00009-C001"
+      ],
+      "reviewAnswers": {
+        "hiddenContinuousArea": null,
+        "hiddenGeometryNeeded": null,
+        "multipleAcceptableDecompositions": null,
+        "samePhysicalPiece": null,
+        "stacking": null
+      },
+      "reviewCard": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-002-V2-CAND-10.png",
+      "selectionEvidence": {
+        "bboxGapPixels": 0.0,
+        "combinedStrokeBoundaryEdges": 2060,
+        "fact": "two fill-like Regions have two-hop adjacency through a stroke-like Region",
+        "mediatingStrokeRegionIds": [
+          1
+        ],
+        "semanticInference": null
+      },
+      "sourceComponentIds": [
+        "R00008-C002",
+        "R00009-C001"
+      ],
+      "sourceRegionIds": [
+        8,
+        9
+      ]
+    },
+    {
+      "candidateId": "FLD-002-V2-CAND-11",
+      "candidateType": "STROKE_MEDIATED_FILL_FILL_ADJACENCY",
+      "fabricationRole": {
+        "FP-FLD-002-R00007-C001": null,
+        "FP-FLD-002-R00013-C001": null
+      },
+      "manualReason": null,
+      "pieceIds": [
+        "FP-FLD-002-R00007-C001",
+        "FP-FLD-002-R00013-C001"
+      ],
+      "reviewAnswers": {
+        "hiddenContinuousArea": null,
+        "hiddenGeometryNeeded": null,
+        "multipleAcceptableDecompositions": null,
+        "samePhysicalPiece": null,
+        "stacking": null
+      },
+      "reviewCard": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-002-V2-CAND-11.png",
+      "selectionEvidence": {
+        "bboxGapPixels": 20.0,
+        "combinedStrokeBoundaryEdges": 646,
+        "fact": "two fill-like Regions have two-hop adjacency through a stroke-like Region",
+        "mediatingStrokeRegionIds": [
+          1
+        ],
+        "semanticInference": null
+      },
+      "sourceComponentIds": [
+        "R00007-C001",
+        "R00013-C001"
+      ],
+      "sourceRegionIds": [
+        7,
+        13
+      ]
+    },
+    {
+      "candidateId": "FLD-002-V2-CAND-12",
+      "candidateType": "STROKE_MEDIATED_FILL_FILL_ADJACENCY",
+      "fabricationRole": {
+        "FP-FLD-002-R00006-C001": null,
+        "FP-FLD-002-R00009-C001": null
+      },
+      "manualReason": null,
+      "pieceIds": [
+        "FP-FLD-002-R00006-C001",
+        "FP-FLD-002-R00009-C001"
+      ],
+      "reviewAnswers": {
+        "hiddenContinuousArea": null,
+        "hiddenGeometryNeeded": null,
+        "multipleAcceptableDecompositions": null,
+        "samePhysicalPiece": null,
+        "stacking": null
+      },
+      "reviewCard": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-002-V2-CAND-12.png",
+      "selectionEvidence": {
+        "bboxGapPixels": 116.0,
+        "combinedStrokeBoundaryEdges": 1266,
+        "fact": "two fill-like Regions have two-hop adjacency through a stroke-like Region",
+        "mediatingStrokeRegionIds": [
+          1
+        ],
+        "semanticInference": null
+      },
+      "sourceComponentIds": [
+        "R00006-C001",
+        "R00009-C001"
+      ],
+      "sourceRegionIds": [
+        6,
+        9
+      ]
+    },
+    {
+      "candidateId": "FLD-002-V2-CAND-13",
+      "candidateType": "STROKE_STRESS_CONTROL",
+      "fabricationRole": {
+        "FP-FLD-002-R00001-C001": null,
+        "FP-FLD-002-R00004-C001": null
+      },
+      "manualReason": null,
+      "pieceIds": [
+        "FP-FLD-002-R00004-C001",
+        "FP-FLD-002-R00001-C001"
+      ],
+      "reviewAnswers": {
+        "hiddenContinuousArea": null,
+        "hiddenGeometryNeeded": null,
+        "multipleAcceptableDecompositions": null,
+        "samePhysicalPiece": null,
+        "stacking": null
+      },
+      "reviewCard": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-002-V2-CAND-13.png",
+      "selectionEvidence": {
+        "fact": "bounded legacy stroke-vs-fill stress control",
+        "fillRegionId": 4,
+        "semanticInference": null,
+        "strokeRegionId": 1,
+        "uniqueSharedEdgeCount": 1662
+      },
+      "sourceComponentIds": [
+        "R00004-C001",
+        "R00001-C001"
+      ],
+      "sourceRegionIds": [
+        1,
+        4
+      ]
+    },
+    {
+      "candidateId": "FLD-002-V2-CAND-14",
+      "candidateType": "STROKE_STRESS_CONTROL",
+      "fabricationRole": {
+        "FP-FLD-002-R00001-C001": null,
+        "FP-FLD-002-R00008-C002": null
+      },
+      "manualReason": null,
+      "pieceIds": [
+        "FP-FLD-002-R00008-C002",
+        "FP-FLD-002-R00001-C001"
+      ],
+      "reviewAnswers": {
+        "hiddenContinuousArea": null,
+        "hiddenGeometryNeeded": null,
+        "multipleAcceptableDecompositions": null,
+        "samePhysicalPiece": null,
+        "stacking": null
+      },
+      "reviewCard": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-002-V2-CAND-14.png",
+      "selectionEvidence": {
+        "fact": "bounded legacy stroke-vs-fill stress control",
+        "fillRegionId": 8,
+        "semanticInference": null,
+        "strokeRegionId": 1,
+        "uniqueSharedEdgeCount": 1502
+      },
+      "sourceComponentIds": [
+        "R00008-C002",
+        "R00001-C001"
+      ],
+      "sourceRegionIds": [
+        1,
+        8
+      ]
+    }
+  ],
+  "caseId": "FLD-002",
+  "contactSheet": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/FLD-002_REVIEW_V2.png",
+  "source": "benchmarks/fabrication-layer-decomposition/fixtures/source/FLD-002.png",
+  "status": "PENDING_EXTERNAL_REVIEW"
+}

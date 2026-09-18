@@ -1,0 +1,80 @@
+{
+  "cases": [
+    {
+      "candidateCount": 8,
+      "caseId": "FLD-002",
+      "contactSheet": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review/FLD-002_REVIEW.png",
+      "gtDraft": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review/FLD-002.gt-draft.json",
+      "reviewFile": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review/FLD-002.review.json"
+    },
+    {
+      "candidateCount": 8,
+      "caseId": "FLD-003",
+      "contactSheet": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review/FLD-003_REVIEW.png",
+      "gtDraft": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review/FLD-003.gt-draft.json",
+      "reviewFile": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review/FLD-003.review.json"
+    },
+    {
+      "candidateCount": 8,
+      "caseId": "FLD-004",
+      "contactSheet": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review/FLD-004_REVIEW.png",
+      "gtDraft": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review/FLD-004.gt-draft.json",
+      "reviewFile": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review/FLD-004.review.json"
+    },
+    {
+      "candidateCount": 8,
+      "caseId": "FLD-006",
+      "contactSheet": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review/FLD-006_REVIEW.png",
+      "gtDraft": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review/FLD-006.gt-draft.json",
+      "reviewFile": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review/FLD-006.review.json"
+    },
+    {
+      "candidateCount": 8,
+      "caseId": "FLD-008",
+      "contactSheet": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review/FLD-008_REVIEW.png",
+      "gtDraft": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review/FLD-008.gt-draft.json",
+      "reviewFile": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review/FLD-008.review.json"
+    }
+  ],
+  "gtState": "PENDING_EXTERNAL_REVIEW",
+  "postReviewDistribution": {
+    "ambiguousCount": null,
+    "hiddenContourReconstructionRequiredCount": null,
+    "hiddenContourReconstructionRequiredRatio": null,
+    "multipleComponentsToOnePhysicalPieceCount": null,
+    "multipleComponentsToOnePhysicalPieceRatio": null,
+    "mustNotMergeCount": null,
+    "nextV1PrimaryProblem": null,
+    "stackingOnlyNoHiddenCompletionCount": null,
+    "status": "PENDING_EXTERNAL_REVIEW",
+    "totalV0PieceCount": 1180
+  },
+  "questions": {
+    "hiddenContinuousArea": [
+      "YES",
+      "NO",
+      "AMBIGUOUS"
+    ],
+    "hiddenGeometryNeeded": [
+      "REQUIRED",
+      "OPTIONAL",
+      "NOT_REQUIRED",
+      "AMBIGUOUS"
+    ],
+    "multipleAcceptableDecompositions": [
+      "YES",
+      "NO"
+    ],
+    "samePhysicalPiece": [
+      "YES",
+      "NO",
+      "AMBIGUOUS"
+    ],
+    "stacking": [
+      "A_ABOVE_B",
+      "B_ABOVE_A",
+      "AMBIGUOUS"
+    ]
+  },
+  "status": "PROJECT_REAL_B2_GT_PACK_READY_FOR_EXTERNAL_REVIEW"
+}

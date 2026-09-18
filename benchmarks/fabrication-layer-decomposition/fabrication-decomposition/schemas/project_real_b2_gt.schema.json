@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "project_real_b2_gt.schema.json",
+  "title": "P0-04B2 Project-real Fabrication Decomposition GT",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "caseId", "reviewStatus", "physicalPieces", "overlapRelations", "hiddenCompletion", "mustNotMerge", "mustNotInferZones", "reviewMetadata"],
+  "properties": {
+    "schemaVersion": {"const": "1.0.0-review-draft"},
+    "caseId": {"type": "string", "pattern": "^FLD-00[1-8]$"},
+    "reviewStatus": {"enum": ["PENDING_EXTERNAL_REVIEW", "CONFIRMED", "AMBIGUOUS", "NOT_APPLICABLE", "MULTIPLE_ACCEPTABLE_DECOMPOSITIONS"]},
+    "physicalPieces": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["gtPieceId", "sourceComponentIds", "decision", "confidence", "acceptableAlternatives"],
+        "properties": {
+          "gtPieceId": {"type": "string", "minLength": 1},
+          "sourceComponentIds": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^R[0-9]{5}-C[0-9]{3}$"}},
+          "decision": {"enum": ["CONFIRMED", "AMBIGUOUS", "NOT_APPLICABLE", "MULTIPLE_ACCEPTABLE_DECOMPOSITIONS"]},
+          "confidence": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+          "acceptableAlternatives": {"type": "array", "items": {"type": "array", "items": {"type": "string"}}}
+        }
+      }
+    },
+    "overlapRelations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["lowerPiece", "upperPiece", "decision"],
+        "properties": {
+          "lowerPiece": {"type": "string"},
+          "upperPiece": {"type": "string"},
+          "decision": {"enum": ["CONFIRMED", "AMBIGUOUS", "NOT_APPLICABLE"]}
+        }
+      }
+    },
+    "hiddenCompletion": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["pieceId", "required", "gtGeometryStatus"],
+        "properties": {
+          "pieceId": {"type": "string"},
+          "required": {"enum": ["REQUIRED", "OPTIONAL", "NOT_REQUIRED", "AMBIGUOUS"]},
+          "gtGeometryStatus": {"enum": ["NOT_PROVIDED", "PROVIDED", "NOT_APPLICABLE"]}
+        }
+      }
+    },
+    "mustNotMerge": {"type": "array", "items": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "string"}}},
+    "mustNotInferZones": {"type": "array", "items": {"type": "object"}},
+    "reviewMetadata": {"type": "object"}
+  }
+}

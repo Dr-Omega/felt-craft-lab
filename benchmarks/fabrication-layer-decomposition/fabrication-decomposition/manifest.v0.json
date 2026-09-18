@@ -1,0 +1,51 @@
+{
+  "manifestVersion": "0.1.0-poc",
+  "status": "B2_V0_REVALIDATED_ON_REPAIRED_BASELINE",
+  "v0Status": "VALIDATED_BASELINE",
+  "scope": "P0-04B2 Fabrication Decomposition V0 observed-only; no Production, Color Layer, Material, Repair, or hidden geometry",
+  "upstream": {
+    "b2FullUpstreamBaseline": "90a92ae1853ce07308238a70f9301fa148821b66",
+    "regionCoreStatus": "REGION_CORE_FROZEN",
+    "primaryFrozenProfile": "cp-b-aggressive_rc-a",
+    "regionCoreFreezeSha256": "19d2879d3264ee78ddfff188eb683e174bc3e5d0cca32b2b2e7010467fa5ed6d",
+    "p0_04cUpstreamBaseline": "4dc782343fbf02836d9cf36a8bd42975eec41d2f",
+    "p0_04cRoute": "V2_SMOOTH_BEZIER",
+    "p0_04cToleranceSourcePixels": 0.5,
+    "p0_04cFallbackLadder": ["V2_SMOOTH_BEZIER", "V1_SIMPLIFIED_POLYGON", "V0_EXACT_PIXEL_BOUNDARY"],
+    "p0_04cFreezeSha256": "206f9c74d4c67b43974e2c6320ff07d8f6fc2cd94ea773ce07e5cca9a8e99121"
+  },
+  "identityContract": {
+    "regionIdEqualsFabricationPieceId": false,
+    "fabricationPieceIdEqualsColorLayerId": false,
+    "colorLayerGroupingImplemented": false
+  },
+  "v0Policy": {
+    "mode": "OBSERVED_ONLY",
+    "pieceUnit": "one Frozen Region Core 4-connected component",
+    "geometryTruth": "structural_label_map",
+    "hiddenGeometry": "FORBIDDEN",
+    "observedBoundaryMutation": "FORBIDDEN",
+    "overlapOrdering": "EMPTY_PARTIAL_ORDER_NO_Z_INFERENCE"
+  },
+  "fixtureApplicability": [
+    {"fixtureId":"FLD-001","classification":"B2_LIMITED","rationale":"Simple flat crescent is valuable for V0 identity and boundary preservation but contains no clear hidden continuation evidence."},
+    {"fixtureId":"FLD-002","classification":"B2_HIGH_VALUE","rationale":"Envelope body, flap, and seal provide explicit multi-level overlay candidates for later human-authored piece/overlap GT."},
+    {"fixtureId":"FLD-003","classification":"B2_HIGH_VALUE","rationale":"Mooncake top, side wall, centre, and radial details provide layered geometry with near-color boundaries that must remain independent."},
+    {"fixtureId":"FLD-004","classification":"B2_HIGH_VALUE","rationale":"Repeated petals, front/rear petal structure, lamp bowl, and flame provide the strongest current overlap and physical-piece candidate."},
+    {"fixtureId":"FLD-005","classification":"B2_LIMITED","rationale":"Fuse, caps, and body test thin observed pieces, but current GT does not define a reliable hidden continuation target."},
+    {"fixtureId":"FLD-006","classification":"B2_HIGH_VALUE","rationale":"Rabbit silhouette, ears, face, and limb markings are useful for piece hierarchy review, while existing GT explicitly marks the case hard/ambiguous."},
+    {"fixtureId":"FLD-007","classification":"B2_LIMITED","rationale":"Window-flower holes strongly test topology-preserving V0 pieces but do not provide a validated occluded-shape continuation target."},
+    {"fixtureId":"FLD-008","classification":"B2_HIGH_VALUE","rationale":"Lantern body, cap, accent, and tassel provide a compact structured candidate for overlap and continuation review."}
+  ],
+  "datasetGap": {
+    "status": "DATASET_GAP",
+    "missing": [
+      "PROJECT_REAL_B2_GT with Fabrication Piece identity",
+      "validated occluded/hidden contour targets",
+      "human-authored ABOVE/BELOW partial-order relations",
+      "explicit same-physical-shape continuation pairs"
+    ],
+    "effect": "B2-V0 can freeze an observed-only baseline; B2-V1 hidden reconstruction is not yet authorized."
+  },
+  "nonGoals": ["REGION_REPAIR", "SAFE_MERGE", "COLOR_LAYER_GROUPING", "MATERIAL_ASSIGNMENT", "PRODUCTION_INTEGRATION", "UI_INTEGRATION", "B2_V1", "B2_V2"]
+}

@@ -1,0 +1,8 @@
+{
+  "candidateCount": 40,
+  "existingReviewArtifactsModified": false,
+  "groundTruthFreezeEligible": false,
+  "populationInferencePermitted": false,
+  "reason": "non-random, non-exhaustive audit sample with legacy-stroke selection bias",
+  "status": "AUDIT_SAMPLE_ONLY"
+}

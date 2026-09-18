@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "b2_v0_result.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "status", "caseId", "profile", "mode", "upstreamBaseline", "geometryTruth", "pieces", "overlapContract", "hardGate", "provenance"],
+  "properties": {
+    "schemaVersion": {"const": "1.0.0-poc"},
+    "status": {"const": "B2_V0_REVALIDATED_ON_REPAIRED_BASELINE"},
+    "caseId": {"pattern": "^FLD-00[1-8]$"},
+    "profile": {"const": "cp-b-aggressive_rc-a"},
+    "mode": {"const": "B2-V0_OBSERVED_ONLY"},
+    "upstreamBaseline": {"const": "90a92ae1853ce07308238a70f9301fa148821b66"},
+    "geometryTruth": {"const": "structural_label_map"},
+    "pieces": {"type": "array", "minItems": 1, "items": {"$ref": "fabrication_piece.schema.json"}},
+    "overlapContract": {"type": "object"},
+    "hardGate": {"type": "object"},
+    "provenance": {"type": "object"}
+  }
+}

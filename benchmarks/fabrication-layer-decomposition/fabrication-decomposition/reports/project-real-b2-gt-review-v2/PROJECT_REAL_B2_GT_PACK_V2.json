@@ -1,0 +1,462 @@
+{
+  "candidateSelection": "BUCKETED_REVIEW_ONLY_V2",
+  "candidateSelectionAudit": {
+    "path": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/CANDIDATE_SELECTION_AUDIT.json",
+    "status": "PASS"
+  },
+  "cases": [
+    {
+      "candidateCount": 14,
+      "candidateSelectionAudit": {
+        "bucketLimits": {
+          "CONTAINED_OVERLAY_HOST": 8,
+          "DIRECT_FILL_FILL_ADJACENCY": 4,
+          "SAME_REGION_MULTI_COMPONENT": 2,
+          "SAME_SURFACE_COLOR_SPLIT": 3,
+          "STROKE_MEDIATED_FILL_FILL_ADJACENCY": 6,
+          "STROKE_STRESS_CONTROL": 2
+        },
+        "candidateDeduplication": "piece-set exact deduplication across buckets",
+        "discoveredCounts": {
+          "CONTAINED_OVERLAY_HOST": 1,
+          "DIRECT_FILL_FILL_ADJACENCY": 2,
+          "SAME_REGION_MULTI_COMPONENT": 1,
+          "SAME_SURFACE_COLOR_SPLIT": 2,
+          "STROKE_MEDIATED_FILL_FILL_ADJACENCY": 12,
+          "STROKE_STRESS_CONTROL": 12
+        },
+        "largestBucketShare": 0.428571,
+        "minimumReviewAreaPixels": 48,
+        "requiredReviewFocusCoverage": {
+          "covered": [
+            [
+              4,
+              7
+            ],
+            [
+              6,
+              7
+            ],
+            [
+              7,
+              9
+            ]
+          ],
+          "missing": [],
+          "semanticLabelsGenerated": false,
+          "status": "PASS"
+        },
+        "requiredReviewFocusPairs": [
+          [
+            4,
+            7
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            7,
+            9
+          ]
+        ],
+        "selectedCounts": {
+          "CONTAINED_OVERLAY_HOST": 1,
+          "DIRECT_FILL_FILL_ADJACENCY": 2,
+          "SAME_REGION_MULTI_COMPONENT": 1,
+          "SAME_SURFACE_COLOR_SPLIT": 2,
+          "STROKE_MEDIATED_FILL_FILL_ADJACENCY": 6,
+          "STROKE_STRESS_CONTROL": 2
+        },
+        "selectedTotal": 14,
+        "selectionBalanceStatus": "PASS",
+        "semanticLabelsGenerated": false,
+        "strokeHeuristic": "review-only: Lab L<=28, RGB channel spread<=30, and (area<=20% image or bbox occupancy<=0.42)",
+        "strokeStressLimitPass": true
+      },
+      "caseId": "FLD-002",
+      "contactSheet": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/FLD-002_REVIEW_V2.png",
+      "reviewFile": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/FLD-002.review-v2.json"
+    },
+    {
+      "candidateCount": 13,
+      "candidateSelectionAudit": {
+        "bucketLimits": {
+          "CONTAINED_OVERLAY_HOST": 8,
+          "DIRECT_FILL_FILL_ADJACENCY": 4,
+          "SAME_REGION_MULTI_COMPONENT": 2,
+          "SAME_SURFACE_COLOR_SPLIT": 3,
+          "STROKE_MEDIATED_FILL_FILL_ADJACENCY": 6,
+          "STROKE_STRESS_CONTROL": 2
+        },
+        "candidateDeduplication": "piece-set exact deduplication across buckets",
+        "discoveredCounts": {
+          "CONTAINED_OVERLAY_HOST": 26,
+          "DIRECT_FILL_FILL_ADJACENCY": 17,
+          "SAME_REGION_MULTI_COMPONENT": 1,
+          "SAME_SURFACE_COLOR_SPLIT": 0,
+          "STROKE_MEDIATED_FILL_FILL_ADJACENCY": 0,
+          "STROKE_STRESS_CONTROL": 0
+        },
+        "largestBucketShare": 0.615385,
+        "minimumReviewAreaPixels": 52,
+        "requiredReviewFocusCoverage": {
+          "covered": [
+            [
+              2,
+              3
+            ],
+            [
+              3,
+              8
+            ],
+            [
+              3,
+              9
+            ]
+          ],
+          "missing": [],
+          "semanticLabelsGenerated": false,
+          "status": "PASS"
+        },
+        "requiredReviewFocusPairs": [
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            8
+          ],
+          [
+            3,
+            9
+          ]
+        ],
+        "selectedCounts": {
+          "CONTAINED_OVERLAY_HOST": 8,
+          "DIRECT_FILL_FILL_ADJACENCY": 4,
+          "SAME_REGION_MULTI_COMPONENT": 1,
+          "SAME_SURFACE_COLOR_SPLIT": 0,
+          "STROKE_MEDIATED_FILL_FILL_ADJACENCY": 0,
+          "STROKE_STRESS_CONTROL": 0
+        },
+        "selectedTotal": 13,
+        "selectionBalanceStatus": "PASS",
+        "semanticLabelsGenerated": false,
+        "strokeHeuristic": "review-only: Lab L<=28, RGB channel spread<=30, and (area<=20% image or bbox occupancy<=0.42)",
+        "strokeStressLimitPass": true
+      },
+      "caseId": "FLD-003",
+      "contactSheet": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/FLD-003_REVIEW_V2.png",
+      "reviewFile": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/FLD-003.review-v2.json"
+    },
+    {
+      "candidateCount": 14,
+      "candidateSelectionAudit": {
+        "bucketLimits": {
+          "CONTAINED_OVERLAY_HOST": 8,
+          "DIRECT_FILL_FILL_ADJACENCY": 4,
+          "SAME_REGION_MULTI_COMPONENT": 2,
+          "SAME_SURFACE_COLOR_SPLIT": 3,
+          "STROKE_MEDIATED_FILL_FILL_ADJACENCY": 6,
+          "STROKE_STRESS_CONTROL": 2
+        },
+        "candidateDeduplication": "piece-set exact deduplication across buckets",
+        "discoveredCounts": {
+          "CONTAINED_OVERLAY_HOST": 3,
+          "DIRECT_FILL_FILL_ADJACENCY": 0,
+          "SAME_REGION_MULTI_COMPONENT": 0,
+          "SAME_SURFACE_COLOR_SPLIT": 36,
+          "STROKE_MEDIATED_FILL_FILL_ADJACENCY": 69,
+          "STROKE_STRESS_CONTROL": 181
+        },
+        "largestBucketShare": 0.428571,
+        "minimumReviewAreaPixels": 48,
+        "requiredReviewFocusCoverage": {
+          "covered": [
+            [
+              14,
+              128
+            ],
+            [
+              128,
+              132
+            ],
+            [
+              131,
+              132
+            ]
+          ],
+          "missing": [],
+          "semanticLabelsGenerated": false,
+          "status": "PASS"
+        },
+        "requiredReviewFocusPairs": [
+          [
+            14,
+            128
+          ],
+          [
+            128,
+            132
+          ],
+          [
+            131,
+            132
+          ]
+        ],
+        "selectedCounts": {
+          "CONTAINED_OVERLAY_HOST": 3,
+          "DIRECT_FILL_FILL_ADJACENCY": 0,
+          "SAME_REGION_MULTI_COMPONENT": 0,
+          "SAME_SURFACE_COLOR_SPLIT": 3,
+          "STROKE_MEDIATED_FILL_FILL_ADJACENCY": 6,
+          "STROKE_STRESS_CONTROL": 2
+        },
+        "selectedTotal": 14,
+        "selectionBalanceStatus": "PASS",
+        "semanticLabelsGenerated": false,
+        "strokeHeuristic": "review-only: Lab L<=28, RGB channel spread<=30, and (area<=20% image or bbox occupancy<=0.42)",
+        "strokeStressLimitPass": true
+      },
+      "caseId": "FLD-004",
+      "contactSheet": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/FLD-004_REVIEW_V2.png",
+      "reviewFile": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/FLD-004.review-v2.json"
+    },
+    {
+      "candidateCount": 10,
+      "candidateSelectionAudit": {
+        "bucketLimits": {
+          "CONTAINED_OVERLAY_HOST": 8,
+          "DIRECT_FILL_FILL_ADJACENCY": 4,
+          "SAME_REGION_MULTI_COMPONENT": 2,
+          "SAME_SURFACE_COLOR_SPLIT": 3,
+          "STROKE_MEDIATED_FILL_FILL_ADJACENCY": 6,
+          "STROKE_STRESS_CONTROL": 2
+        },
+        "candidateDeduplication": "piece-set exact deduplication across buckets",
+        "discoveredCounts": {
+          "CONTAINED_OVERLAY_HOST": 7,
+          "DIRECT_FILL_FILL_ADJACENCY": 4,
+          "SAME_REGION_MULTI_COMPONENT": 0,
+          "SAME_SURFACE_COLOR_SPLIT": 5,
+          "STROKE_MEDIATED_FILL_FILL_ADJACENCY": 1,
+          "STROKE_STRESS_CONTROL": 22
+        },
+        "largestBucketShare": 0.5,
+        "minimumReviewAreaPixels": 52,
+        "requiredReviewFocusCoverage": {
+          "covered": [
+            [
+              6,
+              9
+            ],
+            [
+              6,
+              10
+            ],
+            [
+              6,
+              19
+            ],
+            [
+              6,
+              20
+            ],
+            [
+              6,
+              21
+            ],
+            [
+              6,
+              22
+            ],
+            [
+              6,
+              26
+            ]
+          ],
+          "missing": [],
+          "semanticLabelsGenerated": false,
+          "status": "PASS"
+        },
+        "requiredReviewFocusPairs": [
+          [
+            6,
+            9
+          ],
+          [
+            6,
+            10
+          ],
+          [
+            6,
+            19
+          ],
+          [
+            6,
+            20
+          ],
+          [
+            6,
+            21
+          ],
+          [
+            6,
+            22
+          ],
+          [
+            6,
+            26
+          ]
+        ],
+        "selectedCounts": {
+          "CONTAINED_OVERLAY_HOST": 5,
+          "DIRECT_FILL_FILL_ADJACENCY": 0,
+          "SAME_REGION_MULTI_COMPONENT": 0,
+          "SAME_SURFACE_COLOR_SPLIT": 3,
+          "STROKE_MEDIATED_FILL_FILL_ADJACENCY": 0,
+          "STROKE_STRESS_CONTROL": 2
+        },
+        "selectedTotal": 10,
+        "selectionBalanceStatus": "PASS",
+        "semanticLabelsGenerated": false,
+        "strokeHeuristic": "review-only: Lab L<=28, RGB channel spread<=30, and (area<=20% image or bbox occupancy<=0.42)",
+        "strokeStressLimitPass": true
+      },
+      "caseId": "FLD-006",
+      "contactSheet": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/FLD-006_REVIEW_V2.png",
+      "reviewFile": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/FLD-006.review-v2.json"
+    },
+    {
+      "candidateCount": 16,
+      "candidateSelectionAudit": {
+        "bucketLimits": {
+          "CONTAINED_OVERLAY_HOST": 8,
+          "DIRECT_FILL_FILL_ADJACENCY": 4,
+          "SAME_REGION_MULTI_COMPONENT": 2,
+          "SAME_SURFACE_COLOR_SPLIT": 3,
+          "STROKE_MEDIATED_FILL_FILL_ADJACENCY": 6,
+          "STROKE_STRESS_CONTROL": 2
+        },
+        "candidateDeduplication": "piece-set exact deduplication across buckets",
+        "discoveredCounts": {
+          "CONTAINED_OVERLAY_HOST": 0,
+          "DIRECT_FILL_FILL_ADJACENCY": 5,
+          "SAME_REGION_MULTI_COMPONENT": 3,
+          "SAME_SURFACE_COLOR_SPLIT": 2,
+          "STROKE_MEDIATED_FILL_FILL_ADJACENCY": 8,
+          "STROKE_STRESS_CONTROL": 34
+        },
+        "largestBucketShare": 0.375,
+        "minimumReviewAreaPixels": 48,
+        "requiredReviewFocusCoverage": {
+          "covered": [
+            [
+              8,
+              9
+            ],
+            [
+              9,
+              11
+            ],
+            [
+              9,
+              17
+            ],
+            [
+              14,
+              15
+            ],
+            [
+              34,
+              36
+            ]
+          ],
+          "missing": [],
+          "semanticLabelsGenerated": false,
+          "status": "PASS"
+        },
+        "requiredReviewFocusPairs": [
+          [
+            8,
+            9
+          ],
+          [
+            9,
+            11
+          ],
+          [
+            9,
+            17
+          ],
+          [
+            14,
+            15
+          ],
+          [
+            34,
+            36
+          ]
+        ],
+        "selectedCounts": {
+          "CONTAINED_OVERLAY_HOST": 0,
+          "DIRECT_FILL_FILL_ADJACENCY": 4,
+          "SAME_REGION_MULTI_COMPONENT": 2,
+          "SAME_SURFACE_COLOR_SPLIT": 2,
+          "STROKE_MEDIATED_FILL_FILL_ADJACENCY": 6,
+          "STROKE_STRESS_CONTROL": 2
+        },
+        "selectedTotal": 16,
+        "selectionBalanceStatus": "PASS",
+        "semanticLabelsGenerated": false,
+        "strokeHeuristic": "review-only: Lab L<=28, RGB channel spread<=30, and (area<=20% image or bbox occupancy<=0.42)",
+        "strokeStressLimitPass": true
+      },
+      "caseId": "FLD-008",
+      "contactSheet": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/FLD-008_REVIEW_V2.png",
+      "reviewFile": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/FLD-008.review-v2.json"
+    }
+  ],
+  "fabricationRoleOptions": [
+    "BASE_FILL",
+    "OVERLAY_FILL",
+    "STROKE_DETAIL",
+    "UNKNOWN"
+  ],
+  "global1180PieceDistribution": "NOT_COMPUTED_NON_RANDOM_NON_EXHAUSTIVE_SAMPLE",
+  "gtPackV1Status": "AUDIT_SAMPLE_ONLY",
+  "gtState": "PENDING_EXTERNAL_REVIEW",
+  "questions": {
+    "hiddenContinuousArea": [
+      "YES",
+      "NO",
+      "AMBIGUOUS",
+      "NOT_APPLICABLE"
+    ],
+    "hiddenGeometryNeeded": [
+      "REQUIRED",
+      "OPTIONAL",
+      "NOT_REQUIRED",
+      "AMBIGUOUS"
+    ],
+    "multipleAcceptableDecompositions": [
+      "YES",
+      "NO"
+    ],
+    "samePhysicalPiece": [
+      "YES",
+      "NO",
+      "AMBIGUOUS",
+      "NOT_APPLICABLE"
+    ],
+    "stacking": [
+      "A_ABOVE_B",
+      "B_ABOVE_A",
+      "AMBIGUOUS",
+      "NOT_APPLICABLE"
+    ]
+  },
+  "status": "PROJECT_REAL_B2_GT_PACK_V2_READY_FOR_EXTERNAL_REVIEW"
+}

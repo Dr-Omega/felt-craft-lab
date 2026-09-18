@@ -1,0 +1,470 @@
+{
+  "candidateCount": 10,
+  "candidateSelectionAudit": {
+    "bucketLimits": {
+      "CONTAINED_OVERLAY_HOST": 8,
+      "DIRECT_FILL_FILL_ADJACENCY": 4,
+      "SAME_REGION_MULTI_COMPONENT": 2,
+      "SAME_SURFACE_COLOR_SPLIT": 3,
+      "STROKE_MEDIATED_FILL_FILL_ADJACENCY": 6,
+      "STROKE_STRESS_CONTROL": 2
+    },
+    "candidateDeduplication": "piece-set exact deduplication across buckets",
+    "discoveredCounts": {
+      "CONTAINED_OVERLAY_HOST": 7,
+      "DIRECT_FILL_FILL_ADJACENCY": 4,
+      "SAME_REGION_MULTI_COMPONENT": 0,
+      "SAME_SURFACE_COLOR_SPLIT": 5,
+      "STROKE_MEDIATED_FILL_FILL_ADJACENCY": 1,
+      "STROKE_STRESS_CONTROL": 22
+    },
+    "largestBucketShare": 0.5,
+    "minimumReviewAreaPixels": 52,
+    "requiredReviewFocusCoverage": {
+      "covered": [
+        [
+          6,
+          9
+        ],
+        [
+          6,
+          10
+        ],
+        [
+          6,
+          19
+        ],
+        [
+          6,
+          20
+        ],
+        [
+          6,
+          21
+        ],
+        [
+          6,
+          22
+        ],
+        [
+          6,
+          26
+        ]
+      ],
+      "missing": [],
+      "semanticLabelsGenerated": false,
+      "status": "PASS"
+    },
+    "requiredReviewFocusPairs": [
+      [
+        6,
+        9
+      ],
+      [
+        6,
+        10
+      ],
+      [
+        6,
+        19
+      ],
+      [
+        6,
+        20
+      ],
+      [
+        6,
+        21
+      ],
+      [
+        6,
+        22
+      ],
+      [
+        6,
+        26
+      ]
+    ],
+    "selectedCounts": {
+      "CONTAINED_OVERLAY_HOST": 5,
+      "DIRECT_FILL_FILL_ADJACENCY": 0,
+      "SAME_REGION_MULTI_COMPONENT": 0,
+      "SAME_SURFACE_COLOR_SPLIT": 3,
+      "STROKE_MEDIATED_FILL_FILL_ADJACENCY": 0,
+      "STROKE_STRESS_CONTROL": 2
+    },
+    "selectedTotal": 10,
+    "selectionBalanceStatus": "PASS",
+    "semanticLabelsGenerated": false,
+    "strokeHeuristic": "review-only: Lab L<=28, RGB channel spread<=30, and (area<=20% image or bbox occupancy<=0.42)",
+    "strokeStressLimitPass": true
+  },
+  "candidates": [
+    {
+      "candidateId": "FLD-006-V2-CAND-01",
+      "candidateType": "SAME_SURFACE_COLOR_SPLIT",
+      "fabricationRole": {
+        "FP-FLD-006-R00006-C001": null,
+        "FP-FLD-006-R00026-C001": null
+      },
+      "manualReason": null,
+      "pieceIds": [
+        "FP-FLD-006-R00006-C001",
+        "FP-FLD-006-R00026-C001"
+      ],
+      "reviewAnswers": {
+        "hiddenContinuousArea": null,
+        "hiddenGeometryNeeded": null,
+        "multipleAcceptableDecompositions": null,
+        "samePhysicalPiece": null,
+        "stacking": null
+      },
+      "reviewCard": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-006-V2-CAND-01.png",
+      "selectionEvidence": {
+        "fact": "near representative colors plus explicit spatial evidence",
+        "mediatingStrokeRegionIds": [
+          2
+        ],
+        "representativeDeltaE00": 1.076751,
+        "semanticInference": null,
+        "spatialEvidence": "TWO_HOP_THROUGH_STROKE"
+      },
+      "sourceComponentIds": [
+        "R00006-C001",
+        "R00026-C001"
+      ],
+      "sourceRegionIds": [
+        6,
+        26
+      ]
+    },
+    {
+      "candidateId": "FLD-006-V2-CAND-02",
+      "candidateType": "SAME_SURFACE_COLOR_SPLIT",
+      "fabricationRole": {
+        "FP-FLD-006-R00006-C001": null,
+        "FP-FLD-006-R00021-C001": null
+      },
+      "manualReason": null,
+      "pieceIds": [
+        "FP-FLD-006-R00006-C001",
+        "FP-FLD-006-R00021-C001"
+      ],
+      "reviewAnswers": {
+        "hiddenContinuousArea": null,
+        "hiddenGeometryNeeded": null,
+        "multipleAcceptableDecompositions": null,
+        "samePhysicalPiece": null,
+        "stacking": null
+      },
+      "reviewCard": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-006-V2-CAND-02.png",
+      "selectionEvidence": {
+        "fact": "near representative colors plus explicit spatial evidence",
+        "mediatingStrokeRegionIds": [],
+        "representativeDeltaE00": 11.559831,
+        "semanticInference": null,
+        "spatialEvidence": "DIRECT_4_CONNECTED"
+      },
+      "sourceComponentIds": [
+        "R00006-C001",
+        "R00021-C001"
+      ],
+      "sourceRegionIds": [
+        6,
+        21
+      ]
+    },
+    {
+      "candidateId": "FLD-006-V2-CAND-03",
+      "candidateType": "SAME_SURFACE_COLOR_SPLIT",
+      "fabricationRole": {
+        "FP-FLD-006-R00006-C001": null,
+        "FP-FLD-006-R00009-C001": null
+      },
+      "manualReason": null,
+      "pieceIds": [
+        "FP-FLD-006-R00006-C001",
+        "FP-FLD-006-R00009-C001"
+      ],
+      "reviewAnswers": {
+        "hiddenContinuousArea": null,
+        "hiddenGeometryNeeded": null,
+        "multipleAcceptableDecompositions": null,
+        "samePhysicalPiece": null,
+        "stacking": null
+      },
+      "reviewCard": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-006-V2-CAND-03.png",
+      "selectionEvidence": {
+        "fact": "near representative colors plus explicit spatial evidence",
+        "mediatingStrokeRegionIds": [],
+        "representativeDeltaE00": 11.649465,
+        "semanticInference": null,
+        "spatialEvidence": "DIRECT_4_CONNECTED"
+      },
+      "sourceComponentIds": [
+        "R00006-C001",
+        "R00009-C001"
+      ],
+      "sourceRegionIds": [
+        6,
+        9
+      ]
+    },
+    {
+      "candidateId": "FLD-006-V2-CAND-04",
+      "candidateType": "CONTAINED_OVERLAY_HOST",
+      "fabricationRole": {
+        "FP-FLD-006-R00006-C001": null,
+        "FP-FLD-006-R00010-C001": null
+      },
+      "manualReason": null,
+      "pieceIds": [
+        "FP-FLD-006-R00006-C001",
+        "FP-FLD-006-R00010-C001"
+      ],
+      "reviewAnswers": {
+        "hiddenContinuousArea": null,
+        "hiddenGeometryNeeded": null,
+        "multipleAcceptableDecompositions": null,
+        "samePhysicalPiece": null,
+        "stacking": null
+      },
+      "reviewCard": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-006-V2-CAND-04.png",
+      "selectionEvidence": {
+        "fact": "overlay bbox is strictly contained by a larger fill bbox",
+        "hostRegionId": 6,
+        "overlayRegionId": 10,
+        "overlayToHostAreaRatio": 0.02799138,
+        "semanticInference": null
+      },
+      "sourceComponentIds": [
+        "R00006-C001",
+        "R00010-C001"
+      ],
+      "sourceRegionIds": [
+        6,
+        10
+      ]
+    },
+    {
+      "candidateId": "FLD-006-V2-CAND-05",
+      "candidateType": "CONTAINED_OVERLAY_HOST",
+      "fabricationRole": {
+        "FP-FLD-006-R00006-C001": null,
+        "FP-FLD-006-R00022-C001": null
+      },
+      "manualReason": null,
+      "pieceIds": [
+        "FP-FLD-006-R00006-C001",
+        "FP-FLD-006-R00022-C001"
+      ],
+      "reviewAnswers": {
+        "hiddenContinuousArea": null,
+        "hiddenGeometryNeeded": null,
+        "multipleAcceptableDecompositions": null,
+        "samePhysicalPiece": null,
+        "stacking": null
+      },
+      "reviewCard": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-006-V2-CAND-05.png",
+      "selectionEvidence": {
+        "fact": "overlay bbox is strictly contained by a larger fill bbox",
+        "hostRegionId": 6,
+        "overlayRegionId": 22,
+        "overlayToHostAreaRatio": 0.00525717,
+        "semanticInference": null
+      },
+      "sourceComponentIds": [
+        "R00006-C001",
+        "R00022-C001"
+      ],
+      "sourceRegionIds": [
+        6,
+        22
+      ]
+    },
+    {
+      "candidateId": "FLD-006-V2-CAND-06",
+      "candidateType": "CONTAINED_OVERLAY_HOST",
+      "fabricationRole": {
+        "FP-FLD-006-R00006-C001": null,
+        "FP-FLD-006-R00019-C001": null
+      },
+      "manualReason": null,
+      "pieceIds": [
+        "FP-FLD-006-R00006-C001",
+        "FP-FLD-006-R00019-C001"
+      ],
+      "reviewAnswers": {
+        "hiddenContinuousArea": null,
+        "hiddenGeometryNeeded": null,
+        "multipleAcceptableDecompositions": null,
+        "samePhysicalPiece": null,
+        "stacking": null
+      },
+      "reviewCard": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-006-V2-CAND-06.png",
+      "selectionEvidence": {
+        "fact": "overlay bbox is strictly contained by a larger fill bbox",
+        "hostRegionId": 6,
+        "overlayRegionId": 19,
+        "overlayToHostAreaRatio": 0.0039247,
+        "semanticInference": null
+      },
+      "sourceComponentIds": [
+        "R00006-C001",
+        "R00019-C001"
+      ],
+      "sourceRegionIds": [
+        6,
+        19
+      ]
+    },
+    {
+      "candidateId": "FLD-006-V2-CAND-07",
+      "candidateType": "CONTAINED_OVERLAY_HOST",
+      "fabricationRole": {
+        "FP-FLD-006-R00006-C001": null,
+        "FP-FLD-006-R00020-C001": null
+      },
+      "manualReason": null,
+      "pieceIds": [
+        "FP-FLD-006-R00006-C001",
+        "FP-FLD-006-R00020-C001"
+      ],
+      "reviewAnswers": {
+        "hiddenContinuousArea": null,
+        "hiddenGeometryNeeded": null,
+        "multipleAcceptableDecompositions": null,
+        "samePhysicalPiece": null,
+        "stacking": null
+      },
+      "reviewCard": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-006-V2-CAND-07.png",
+      "selectionEvidence": {
+        "fact": "overlay bbox is strictly contained by a larger fill bbox",
+        "hostRegionId": 6,
+        "overlayRegionId": 20,
+        "overlayToHostAreaRatio": 0.0038811,
+        "semanticInference": null
+      },
+      "sourceComponentIds": [
+        "R00006-C001",
+        "R00020-C001"
+      ],
+      "sourceRegionIds": [
+        6,
+        20
+      ]
+    },
+    {
+      "candidateId": "FLD-006-V2-CAND-08",
+      "candidateType": "CONTAINED_OVERLAY_HOST",
+      "fabricationRole": {
+        "FP-FLD-006-R00006-C001": null,
+        "FP-FLD-006-R00023-C001": null
+      },
+      "manualReason": null,
+      "pieceIds": [
+        "FP-FLD-006-R00006-C001",
+        "FP-FLD-006-R00023-C001"
+      ],
+      "reviewAnswers": {
+        "hiddenContinuousArea": null,
+        "hiddenGeometryNeeded": null,
+        "multipleAcceptableDecompositions": null,
+        "samePhysicalPiece": null,
+        "stacking": null
+      },
+      "reviewCard": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-006-V2-CAND-08.png",
+      "selectionEvidence": {
+        "fact": "overlay bbox is strictly contained by a larger fill bbox",
+        "hostRegionId": 6,
+        "overlayRegionId": 23,
+        "overlayToHostAreaRatio": 0.00349347,
+        "semanticInference": null
+      },
+      "sourceComponentIds": [
+        "R00006-C001",
+        "R00023-C001"
+      ],
+      "sourceRegionIds": [
+        6,
+        23
+      ]
+    },
+    {
+      "candidateId": "FLD-006-V2-CAND-09",
+      "candidateType": "STROKE_STRESS_CONTROL",
+      "fabricationRole": {
+        "FP-FLD-006-R00002-C001": null,
+        "FP-FLD-006-R00006-C001": null
+      },
+      "manualReason": null,
+      "pieceIds": [
+        "FP-FLD-006-R00006-C001",
+        "FP-FLD-006-R00002-C001"
+      ],
+      "reviewAnswers": {
+        "hiddenContinuousArea": null,
+        "hiddenGeometryNeeded": null,
+        "multipleAcceptableDecompositions": null,
+        "samePhysicalPiece": null,
+        "stacking": null
+      },
+      "reviewCard": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-006-V2-CAND-09.png",
+      "selectionEvidence": {
+        "fact": "bounded legacy stroke-vs-fill stress control",
+        "fillRegionId": 6,
+        "semanticInference": null,
+        "strokeRegionId": 2,
+        "uniqueSharedEdgeCount": 3460
+      },
+      "sourceComponentIds": [
+        "R00006-C001",
+        "R00002-C001"
+      ],
+      "sourceRegionIds": [
+        2,
+        6
+      ]
+    },
+    {
+      "candidateId": "FLD-006-V2-CAND-10",
+      "candidateType": "STROKE_STRESS_CONTROL",
+      "fabricationRole": {
+        "FP-FLD-006-R00002-C001": null,
+        "FP-FLD-006-R00026-C001": null
+      },
+      "manualReason": null,
+      "pieceIds": [
+        "FP-FLD-006-R00026-C001",
+        "FP-FLD-006-R00002-C001"
+      ],
+      "reviewAnswers": {
+        "hiddenContinuousArea": null,
+        "hiddenGeometryNeeded": null,
+        "multipleAcceptableDecompositions": null,
+        "samePhysicalPiece": null,
+        "stacking": null
+      },
+      "reviewCard": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-006-V2-CAND-10.png",
+      "selectionEvidence": {
+        "fact": "bounded legacy stroke-vs-fill stress control",
+        "fillRegionId": 26,
+        "semanticInference": null,
+        "strokeRegionId": 2,
+        "uniqueSharedEdgeCount": 254
+      },
+      "sourceComponentIds": [
+        "R00026-C001",
+        "R00002-C001"
+      ],
+      "sourceRegionIds": [
+        2,
+        26
+      ]
+    }
+  ],
+  "caseId": "FLD-006",
+  "contactSheet": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/FLD-006_REVIEW_V2.png",
+  "source": "benchmarks/fabrication-layer-decomposition/fixtures/source/FLD-006.png",
+  "status": "PENDING_EXTERNAL_REVIEW"
+}
