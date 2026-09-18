@@ -1,0 +1,3863 @@
+{
+  "schemaVersion": "b2.m2-review-material/1",
+  "notGtUntilSignedOff": true,
+  "originalFrozenGt": {
+    "domain": "original_frozen_gt",
+    "paths": [
+      "benchmarks/fabrication-layer-decomposition/fixtures/ground-truth/FLD-001.json",
+      "benchmarks/fabrication-layer-decomposition/fixtures/ground-truth/FLD-002.json",
+      "benchmarks/fabrication-layer-decomposition/fixtures/ground-truth/FLD-003.json",
+      "benchmarks/fabrication-layer-decomposition/fixtures/ground-truth/FLD-004.json",
+      "benchmarks/fabrication-layer-decomposition/fixtures/ground-truth/FLD-005.json",
+      "benchmarks/fabrication-layer-decomposition/fixtures/ground-truth/FLD-006.json",
+      "benchmarks/fabrication-layer-decomposition/fixtures/ground-truth/FLD-007.json",
+      "benchmarks/fabrication-layer-decomposition/fixtures/ground-truth/FLD-008.json"
+    ]
+  },
+  "reviewedFabricationTruth": {
+    "domain": "reviewed_fabrication_truth",
+    "approvedCount": 0
+  },
+  "semanticRelationProposals": [
+    {
+      "relationId": "m2-FLD-002-1",
+      "fixtureId": "FLD-002",
+      "legacyRequiredBelow": [
+        "envelope body",
+        "flap"
+      ],
+      "binding": {
+        "targetId": "FLD-002",
+        "targetVersion": "original_frozen_gt/1",
+        "targetSha256": "35718ecbddefd89b8b80d316bff8164ac467c8bd2208f752e18688fb7735086d",
+        "recipeIdentity": "m2-semantic-mapping/1",
+        "endpointIdentity": "envelope body→flap"
+      },
+      "proposalState": "PROPOSED",
+      "notGtUntilSignedOff": true,
+      "review": {
+        "question": "Classify this legacy requiredBelow relation after endpoint mapping.",
+        "options": [
+          "VISUAL_OCCLUSION_ONLY",
+          "ASSEMBLY_PRECEDENCE_ONLY",
+          "BOTH",
+          "NO_RELATION",
+          "UNRESOLVED",
+          "NOT_APPLICABLE"
+        ],
+        "answer": null,
+        "reviewerRoleRequired": "PROJECT_FABRICATION_REVIEWER",
+        "signoff": "NOT_SIGNED"
+      },
+      "endpointMappings": [
+        {
+          "mappingId": "m2-FLD-002-1-envelope body",
+          "semanticLabel": "envelope body",
+          "sourceRegionRef": null,
+          "componentRefs": [],
+          "observedCandidateRefs": [],
+          "fabricationPieceRefs": [],
+          "evidenceArtifactIds": [
+            "frozen-gt:FLD-002:35718ecbddefd89b8b80d316bff8164ac467c8bd2208f752e18688fb7735086d"
+          ],
+          "state": "PROPOSED",
+          "question": "Map semantic label to source Region/Core Component/ObservedCandidate; leave unapproved until team review."
+        },
+        {
+          "mappingId": "m2-FLD-002-1-flap",
+          "semanticLabel": "flap",
+          "sourceRegionRef": null,
+          "componentRefs": [],
+          "observedCandidateRefs": [],
+          "fabricationPieceRefs": [],
+          "evidenceArtifactIds": [
+            "frozen-gt:FLD-002:35718ecbddefd89b8b80d316bff8164ac467c8bd2208f752e18688fb7735086d"
+          ],
+          "state": "PROPOSED",
+          "question": "Map semantic label to source Region/Core Component/ObservedCandidate; leave unapproved until team review."
+        }
+      ]
+    },
+    {
+      "relationId": "m2-FLD-002-2",
+      "fixtureId": "FLD-002",
+      "legacyRequiredBelow": [
+        "flap",
+        "round seal"
+      ],
+      "binding": {
+        "targetId": "FLD-002",
+        "targetVersion": "original_frozen_gt/1",
+        "targetSha256": "35718ecbddefd89b8b80d316bff8164ac467c8bd2208f752e18688fb7735086d",
+        "recipeIdentity": "m2-semantic-mapping/1",
+        "endpointIdentity": "flap→round seal"
+      },
+      "proposalState": "PROPOSED",
+      "notGtUntilSignedOff": true,
+      "review": {
+        "question": "Classify this legacy requiredBelow relation after endpoint mapping.",
+        "options": [
+          "VISUAL_OCCLUSION_ONLY",
+          "ASSEMBLY_PRECEDENCE_ONLY",
+          "BOTH",
+          "NO_RELATION",
+          "UNRESOLVED",
+          "NOT_APPLICABLE"
+        ],
+        "answer": null,
+        "reviewerRoleRequired": "PROJECT_FABRICATION_REVIEWER",
+        "signoff": "NOT_SIGNED"
+      },
+      "endpointMappings": [
+        {
+          "mappingId": "m2-FLD-002-2-flap",
+          "semanticLabel": "flap",
+          "sourceRegionRef": null,
+          "componentRefs": [],
+          "observedCandidateRefs": [],
+          "fabricationPieceRefs": [],
+          "evidenceArtifactIds": [
+            "frozen-gt:FLD-002:35718ecbddefd89b8b80d316bff8164ac467c8bd2208f752e18688fb7735086d"
+          ],
+          "state": "PROPOSED",
+          "question": "Map semantic label to source Region/Core Component/ObservedCandidate; leave unapproved until team review."
+        },
+        {
+          "mappingId": "m2-FLD-002-2-round seal",
+          "semanticLabel": "round seal",
+          "sourceRegionRef": null,
+          "componentRefs": [],
+          "observedCandidateRefs": [],
+          "fabricationPieceRefs": [],
+          "evidenceArtifactIds": [
+            "frozen-gt:FLD-002:35718ecbddefd89b8b80d316bff8164ac467c8bd2208f752e18688fb7735086d"
+          ],
+          "state": "PROPOSED",
+          "question": "Map semantic label to source Region/Core Component/ObservedCandidate; leave unapproved until team review."
+        }
+      ]
+    },
+    {
+      "relationId": "m2-FLD-003-3",
+      "fixtureId": "FLD-003",
+      "legacyRequiredBelow": [
+        "side wall",
+        "top surface"
+      ],
+      "binding": {
+        "targetId": "FLD-003",
+        "targetVersion": "original_frozen_gt/1",
+        "targetSha256": "6b58c4a32fbbc9ebdc9a00e5ab1a46acd4e9f91b6e3e22ca49db1980776105ff",
+        "recipeIdentity": "m2-semantic-mapping/1",
+        "endpointIdentity": "side wall→top surface"
+      },
+      "proposalState": "PROPOSED",
+      "notGtUntilSignedOff": true,
+      "review": {
+        "question": "Classify this legacy requiredBelow relation after endpoint mapping.",
+        "options": [
+          "VISUAL_OCCLUSION_ONLY",
+          "ASSEMBLY_PRECEDENCE_ONLY",
+          "BOTH",
+          "NO_RELATION",
+          "UNRESOLVED",
+          "NOT_APPLICABLE"
+        ],
+        "answer": null,
+        "reviewerRoleRequired": "PROJECT_FABRICATION_REVIEWER",
+        "signoff": "NOT_SIGNED"
+      },
+      "endpointMappings": [
+        {
+          "mappingId": "m2-FLD-003-3-side wall",
+          "semanticLabel": "side wall",
+          "sourceRegionRef": null,
+          "componentRefs": [],
+          "observedCandidateRefs": [],
+          "fabricationPieceRefs": [],
+          "evidenceArtifactIds": [
+            "frozen-gt:FLD-003:6b58c4a32fbbc9ebdc9a00e5ab1a46acd4e9f91b6e3e22ca49db1980776105ff"
+          ],
+          "state": "PROPOSED",
+          "question": "Map semantic label to source Region/Core Component/ObservedCandidate; leave unapproved until team review."
+        },
+        {
+          "mappingId": "m2-FLD-003-3-top surface",
+          "semanticLabel": "top surface",
+          "sourceRegionRef": null,
+          "componentRefs": [],
+          "observedCandidateRefs": [],
+          "fabricationPieceRefs": [],
+          "evidenceArtifactIds": [
+            "frozen-gt:FLD-003:6b58c4a32fbbc9ebdc9a00e5ab1a46acd4e9f91b6e3e22ca49db1980776105ff"
+          ],
+          "state": "PROPOSED",
+          "question": "Map semantic label to source Region/Core Component/ObservedCandidate; leave unapproved until team review."
+        }
+      ]
+    },
+    {
+      "relationId": "m2-FLD-003-4",
+      "fixtureId": "FLD-003",
+      "legacyRequiredBelow": [
+        "top surface",
+        "centre oval"
+      ],
+      "binding": {
+        "targetId": "FLD-003",
+        "targetVersion": "original_frozen_gt/1",
+        "targetSha256": "6b58c4a32fbbc9ebdc9a00e5ab1a46acd4e9f91b6e3e22ca49db1980776105ff",
+        "recipeIdentity": "m2-semantic-mapping/1",
+        "endpointIdentity": "top surface→centre oval"
+      },
+      "proposalState": "PROPOSED",
+      "notGtUntilSignedOff": true,
+      "review": {
+        "question": "Classify this legacy requiredBelow relation after endpoint mapping.",
+        "options": [
+          "VISUAL_OCCLUSION_ONLY",
+          "ASSEMBLY_PRECEDENCE_ONLY",
+          "BOTH",
+          "NO_RELATION",
+          "UNRESOLVED",
+          "NOT_APPLICABLE"
+        ],
+        "answer": null,
+        "reviewerRoleRequired": "PROJECT_FABRICATION_REVIEWER",
+        "signoff": "NOT_SIGNED"
+      },
+      "endpointMappings": [
+        {
+          "mappingId": "m2-FLD-003-4-top surface",
+          "semanticLabel": "top surface",
+          "sourceRegionRef": null,
+          "componentRefs": [],
+          "observedCandidateRefs": [],
+          "fabricationPieceRefs": [],
+          "evidenceArtifactIds": [
+            "frozen-gt:FLD-003:6b58c4a32fbbc9ebdc9a00e5ab1a46acd4e9f91b6e3e22ca49db1980776105ff"
+          ],
+          "state": "PROPOSED",
+          "question": "Map semantic label to source Region/Core Component/ObservedCandidate; leave unapproved until team review."
+        },
+        {
+          "mappingId": "m2-FLD-003-4-centre oval",
+          "semanticLabel": "centre oval",
+          "sourceRegionRef": null,
+          "componentRefs": [],
+          "observedCandidateRefs": [],
+          "fabricationPieceRefs": [],
+          "evidenceArtifactIds": [
+            "frozen-gt:FLD-003:6b58c4a32fbbc9ebdc9a00e5ab1a46acd4e9f91b6e3e22ca49db1980776105ff"
+          ],
+          "state": "PROPOSED",
+          "question": "Map semantic label to source Region/Core Component/ObservedCandidate; leave unapproved until team review."
+        }
+      ]
+    },
+    {
+      "relationId": "m2-FLD-003-5",
+      "fixtureId": "FLD-003",
+      "legacyRequiredBelow": [
+        "top surface",
+        "radial marks"
+      ],
+      "binding": {
+        "targetId": "FLD-003",
+        "targetVersion": "original_frozen_gt/1",
+        "targetSha256": "6b58c4a32fbbc9ebdc9a00e5ab1a46acd4e9f91b6e3e22ca49db1980776105ff",
+        "recipeIdentity": "m2-semantic-mapping/1",
+        "endpointIdentity": "top surface→radial marks"
+      },
+      "proposalState": "PROPOSED",
+      "notGtUntilSignedOff": true,
+      "review": {
+        "question": "Classify this legacy requiredBelow relation after endpoint mapping.",
+        "options": [
+          "VISUAL_OCCLUSION_ONLY",
+          "ASSEMBLY_PRECEDENCE_ONLY",
+          "BOTH",
+          "NO_RELATION",
+          "UNRESOLVED",
+          "NOT_APPLICABLE"
+        ],
+        "answer": null,
+        "reviewerRoleRequired": "PROJECT_FABRICATION_REVIEWER",
+        "signoff": "NOT_SIGNED"
+      },
+      "endpointMappings": [
+        {
+          "mappingId": "m2-FLD-003-5-top surface",
+          "semanticLabel": "top surface",
+          "sourceRegionRef": null,
+          "componentRefs": [],
+          "observedCandidateRefs": [],
+          "fabricationPieceRefs": [],
+          "evidenceArtifactIds": [
+            "frozen-gt:FLD-003:6b58c4a32fbbc9ebdc9a00e5ab1a46acd4e9f91b6e3e22ca49db1980776105ff"
+          ],
+          "state": "PROPOSED",
+          "question": "Map semantic label to source Region/Core Component/ObservedCandidate; leave unapproved until team review."
+        },
+        {
+          "mappingId": "m2-FLD-003-5-radial marks",
+          "semanticLabel": "radial marks",
+          "sourceRegionRef": null,
+          "componentRefs": [],
+          "observedCandidateRefs": [],
+          "fabricationPieceRefs": [],
+          "evidenceArtifactIds": [
+            "frozen-gt:FLD-003:6b58c4a32fbbc9ebdc9a00e5ab1a46acd4e9f91b6e3e22ca49db1980776105ff"
+          ],
+          "state": "PROPOSED",
+          "question": "Map semantic label to source Region/Core Component/ObservedCandidate; leave unapproved until team review."
+        }
+      ]
+    },
+    {
+      "relationId": "m2-FLD-004-6",
+      "fixtureId": "FLD-004",
+      "legacyRequiredBelow": [
+        "rear petals",
+        "front petals"
+      ],
+      "binding": {
+        "targetId": "FLD-004",
+        "targetVersion": "original_frozen_gt/1",
+        "targetSha256": "76983c7e98b0f3fc0ae7b58a925994c3f518b81f1cbb73db3643d46c97a1fa41",
+        "recipeIdentity": "m2-semantic-mapping/1",
+        "endpointIdentity": "rear petals→front petals"
+      },
+      "proposalState": "PROPOSED",
+      "notGtUntilSignedOff": true,
+      "review": {
+        "question": "Classify this legacy requiredBelow relation after endpoint mapping.",
+        "options": [
+          "VISUAL_OCCLUSION_ONLY",
+          "ASSEMBLY_PRECEDENCE_ONLY",
+          "BOTH",
+          "NO_RELATION",
+          "UNRESOLVED",
+          "NOT_APPLICABLE"
+        ],
+        "answer": null,
+        "reviewerRoleRequired": "PROJECT_FABRICATION_REVIEWER",
+        "signoff": "NOT_SIGNED"
+      },
+      "endpointMappings": [
+        {
+          "mappingId": "m2-FLD-004-6-rear petals",
+          "semanticLabel": "rear petals",
+          "sourceRegionRef": null,
+          "componentRefs": [],
+          "observedCandidateRefs": [],
+          "fabricationPieceRefs": [],
+          "evidenceArtifactIds": [
+            "frozen-gt:FLD-004:76983c7e98b0f3fc0ae7b58a925994c3f518b81f1cbb73db3643d46c97a1fa41"
+          ],
+          "state": "PROPOSED",
+          "question": "Map semantic label to source Region/Core Component/ObservedCandidate; leave unapproved until team review."
+        },
+        {
+          "mappingId": "m2-FLD-004-6-front petals",
+          "semanticLabel": "front petals",
+          "sourceRegionRef": null,
+          "componentRefs": [],
+          "observedCandidateRefs": [],
+          "fabricationPieceRefs": [],
+          "evidenceArtifactIds": [
+            "frozen-gt:FLD-004:76983c7e98b0f3fc0ae7b58a925994c3f518b81f1cbb73db3643d46c97a1fa41"
+          ],
+          "state": "PROPOSED",
+          "question": "Map semantic label to source Region/Core Component/ObservedCandidate; leave unapproved until team review."
+        }
+      ]
+    },
+    {
+      "relationId": "m2-FLD-004-7",
+      "fixtureId": "FLD-004",
+      "legacyRequiredBelow": [
+        "petal ring",
+        "lamp bowl"
+      ],
+      "binding": {
+        "targetId": "FLD-004",
+        "targetVersion": "original_frozen_gt/1",
+        "targetSha256": "76983c7e98b0f3fc0ae7b58a925994c3f518b81f1cbb73db3643d46c97a1fa41",
+        "recipeIdentity": "m2-semantic-mapping/1",
+        "endpointIdentity": "petal ring→lamp bowl"
+      },
+      "proposalState": "PROPOSED",
+      "notGtUntilSignedOff": true,
+      "review": {
+        "question": "Classify this legacy requiredBelow relation after endpoint mapping.",
+        "options": [
+          "VISUAL_OCCLUSION_ONLY",
+          "ASSEMBLY_PRECEDENCE_ONLY",
+          "BOTH",
+          "NO_RELATION",
+          "UNRESOLVED",
+          "NOT_APPLICABLE"
+        ],
+        "answer": null,
+        "reviewerRoleRequired": "PROJECT_FABRICATION_REVIEWER",
+        "signoff": "NOT_SIGNED"
+      },
+      "endpointMappings": [
+        {
+          "mappingId": "m2-FLD-004-7-petal ring",
+          "semanticLabel": "petal ring",
+          "sourceRegionRef": null,
+          "componentRefs": [],
+          "observedCandidateRefs": [],
+          "fabricationPieceRefs": [],
+          "evidenceArtifactIds": [
+            "frozen-gt:FLD-004:76983c7e98b0f3fc0ae7b58a925994c3f518b81f1cbb73db3643d46c97a1fa41"
+          ],
+          "state": "PROPOSED",
+          "question": "Map semantic label to source Region/Core Component/ObservedCandidate; leave unapproved until team review."
+        },
+        {
+          "mappingId": "m2-FLD-004-7-lamp bowl",
+          "semanticLabel": "lamp bowl",
+          "sourceRegionRef": null,
+          "componentRefs": [],
+          "observedCandidateRefs": [],
+          "fabricationPieceRefs": [],
+          "evidenceArtifactIds": [
+            "frozen-gt:FLD-004:76983c7e98b0f3fc0ae7b58a925994c3f518b81f1cbb73db3643d46c97a1fa41"
+          ],
+          "state": "PROPOSED",
+          "question": "Map semantic label to source Region/Core Component/ObservedCandidate; leave unapproved until team review."
+        }
+      ]
+    },
+    {
+      "relationId": "m2-FLD-004-8",
+      "fixtureId": "FLD-004",
+      "legacyRequiredBelow": [
+        "lamp bowl",
+        "flame"
+      ],
+      "binding": {
+        "targetId": "FLD-004",
+        "targetVersion": "original_frozen_gt/1",
+        "targetSha256": "76983c7e98b0f3fc0ae7b58a925994c3f518b81f1cbb73db3643d46c97a1fa41",
+        "recipeIdentity": "m2-semantic-mapping/1",
+        "endpointIdentity": "lamp bowl→flame"
+      },
+      "proposalState": "PROPOSED",
+      "notGtUntilSignedOff": true,
+      "review": {
+        "question": "Classify this legacy requiredBelow relation after endpoint mapping.",
+        "options": [
+          "VISUAL_OCCLUSION_ONLY",
+          "ASSEMBLY_PRECEDENCE_ONLY",
+          "BOTH",
+          "NO_RELATION",
+          "UNRESOLVED",
+          "NOT_APPLICABLE"
+        ],
+        "answer": null,
+        "reviewerRoleRequired": "PROJECT_FABRICATION_REVIEWER",
+        "signoff": "NOT_SIGNED"
+      },
+      "endpointMappings": [
+        {
+          "mappingId": "m2-FLD-004-8-lamp bowl",
+          "semanticLabel": "lamp bowl",
+          "sourceRegionRef": null,
+          "componentRefs": [],
+          "observedCandidateRefs": [],
+          "fabricationPieceRefs": [],
+          "evidenceArtifactIds": [
+            "frozen-gt:FLD-004:76983c7e98b0f3fc0ae7b58a925994c3f518b81f1cbb73db3643d46c97a1fa41"
+          ],
+          "state": "PROPOSED",
+          "question": "Map semantic label to source Region/Core Component/ObservedCandidate; leave unapproved until team review."
+        },
+        {
+          "mappingId": "m2-FLD-004-8-flame",
+          "semanticLabel": "flame",
+          "sourceRegionRef": null,
+          "componentRefs": [],
+          "observedCandidateRefs": [],
+          "fabricationPieceRefs": [],
+          "evidenceArtifactIds": [
+            "frozen-gt:FLD-004:76983c7e98b0f3fc0ae7b58a925994c3f518b81f1cbb73db3643d46c97a1fa41"
+          ],
+          "state": "PROPOSED",
+          "question": "Map semantic label to source Region/Core Component/ObservedCandidate; leave unapproved until team review."
+        }
+      ]
+    },
+    {
+      "relationId": "m2-FLD-005-9",
+      "fixtureId": "FLD-005",
+      "legacyRequiredBelow": [
+        "red body",
+        "top cap"
+      ],
+      "binding": {
+        "targetId": "FLD-005",
+        "targetVersion": "original_frozen_gt/1",
+        "targetSha256": "f9088a5662fed76c338d61a6072384155681ce350d756ce3d75bc6483af076f9",
+        "recipeIdentity": "m2-semantic-mapping/1",
+        "endpointIdentity": "red body→top cap"
+      },
+      "proposalState": "PROPOSED",
+      "notGtUntilSignedOff": true,
+      "review": {
+        "question": "Classify this legacy requiredBelow relation after endpoint mapping.",
+        "options": [
+          "VISUAL_OCCLUSION_ONLY",
+          "ASSEMBLY_PRECEDENCE_ONLY",
+          "BOTH",
+          "NO_RELATION",
+          "UNRESOLVED",
+          "NOT_APPLICABLE"
+        ],
+        "answer": null,
+        "reviewerRoleRequired": "PROJECT_FABRICATION_REVIEWER",
+        "signoff": "NOT_SIGNED"
+      },
+      "endpointMappings": [
+        {
+          "mappingId": "m2-FLD-005-9-red body",
+          "semanticLabel": "red body",
+          "sourceRegionRef": null,
+          "componentRefs": [],
+          "observedCandidateRefs": [],
+          "fabricationPieceRefs": [],
+          "evidenceArtifactIds": [
+            "frozen-gt:FLD-005:f9088a5662fed76c338d61a6072384155681ce350d756ce3d75bc6483af076f9"
+          ],
+          "state": "PROPOSED",
+          "question": "Map semantic label to source Region/Core Component/ObservedCandidate; leave unapproved until team review."
+        },
+        {
+          "mappingId": "m2-FLD-005-9-top cap",
+          "semanticLabel": "top cap",
+          "sourceRegionRef": null,
+          "componentRefs": [],
+          "observedCandidateRefs": [],
+          "fabricationPieceRefs": [],
+          "evidenceArtifactIds": [
+            "frozen-gt:FLD-005:f9088a5662fed76c338d61a6072384155681ce350d756ce3d75bc6483af076f9"
+          ],
+          "state": "PROPOSED",
+          "question": "Map semantic label to source Region/Core Component/ObservedCandidate; leave unapproved until team review."
+        }
+      ]
+    },
+    {
+      "relationId": "m2-FLD-005-10",
+      "fixtureId": "FLD-005",
+      "legacyRequiredBelow": [
+        "top cap",
+        "curved fuse"
+      ],
+      "binding": {
+        "targetId": "FLD-005",
+        "targetVersion": "original_frozen_gt/1",
+        "targetSha256": "f9088a5662fed76c338d61a6072384155681ce350d756ce3d75bc6483af076f9",
+        "recipeIdentity": "m2-semantic-mapping/1",
+        "endpointIdentity": "top cap→curved fuse"
+      },
+      "proposalState": "PROPOSED",
+      "notGtUntilSignedOff": true,
+      "review": {
+        "question": "Classify this legacy requiredBelow relation after endpoint mapping.",
+        "options": [
+          "VISUAL_OCCLUSION_ONLY",
+          "ASSEMBLY_PRECEDENCE_ONLY",
+          "BOTH",
+          "NO_RELATION",
+          "UNRESOLVED",
+          "NOT_APPLICABLE"
+        ],
+        "answer": null,
+        "reviewerRoleRequired": "PROJECT_FABRICATION_REVIEWER",
+        "signoff": "NOT_SIGNED"
+      },
+      "endpointMappings": [
+        {
+          "mappingId": "m2-FLD-005-10-top cap",
+          "semanticLabel": "top cap",
+          "sourceRegionRef": null,
+          "componentRefs": [],
+          "observedCandidateRefs": [],
+          "fabricationPieceRefs": [],
+          "evidenceArtifactIds": [
+            "frozen-gt:FLD-005:f9088a5662fed76c338d61a6072384155681ce350d756ce3d75bc6483af076f9"
+          ],
+          "state": "PROPOSED",
+          "question": "Map semantic label to source Region/Core Component/ObservedCandidate; leave unapproved until team review."
+        },
+        {
+          "mappingId": "m2-FLD-005-10-curved fuse",
+          "semanticLabel": "curved fuse",
+          "sourceRegionRef": null,
+          "componentRefs": [],
+          "observedCandidateRefs": [],
+          "fabricationPieceRefs": [],
+          "evidenceArtifactIds": [
+            "frozen-gt:FLD-005:f9088a5662fed76c338d61a6072384155681ce350d756ce3d75bc6483af076f9"
+          ],
+          "state": "PROPOSED",
+          "question": "Map semantic label to source Region/Core Component/ObservedCandidate; leave unapproved until team review."
+        }
+      ]
+    },
+    {
+      "relationId": "m2-FLD-006-11",
+      "fixtureId": "FLD-006",
+      "legacyRequiredBelow": [
+        "rabbit silhouette",
+        "inner ears"
+      ],
+      "binding": {
+        "targetId": "FLD-006",
+        "targetVersion": "original_frozen_gt/1",
+        "targetSha256": "aa358ee5e671dc022b68085a9661ad6d7f64d2712016ab18d36d872eb8c7927d",
+        "recipeIdentity": "m2-semantic-mapping/1",
+        "endpointIdentity": "rabbit silhouette→inner ears"
+      },
+      "proposalState": "PROPOSED",
+      "notGtUntilSignedOff": true,
+      "review": {
+        "question": "Classify this legacy requiredBelow relation after endpoint mapping.",
+        "options": [
+          "VISUAL_OCCLUSION_ONLY",
+          "ASSEMBLY_PRECEDENCE_ONLY",
+          "BOTH",
+          "NO_RELATION",
+          "UNRESOLVED",
+          "NOT_APPLICABLE"
+        ],
+        "answer": null,
+        "reviewerRoleRequired": "PROJECT_FABRICATION_REVIEWER",
+        "signoff": "NOT_SIGNED"
+      },
+      "endpointMappings": [
+        {
+          "mappingId": "m2-FLD-006-11-rabbit silhouette",
+          "semanticLabel": "rabbit silhouette",
+          "sourceRegionRef": null,
+          "componentRefs": [],
+          "observedCandidateRefs": [],
+          "fabricationPieceRefs": [],
+          "evidenceArtifactIds": [
+            "frozen-gt:FLD-006:aa358ee5e671dc022b68085a9661ad6d7f64d2712016ab18d36d872eb8c7927d"
+          ],
+          "state": "PROPOSED",
+          "question": "Map semantic label to source Region/Core Component/ObservedCandidate; leave unapproved until team review."
+        },
+        {
+          "mappingId": "m2-FLD-006-11-inner ears",
+          "semanticLabel": "inner ears",
+          "sourceRegionRef": null,
+          "componentRefs": [],
+          "observedCandidateRefs": [],
+          "fabricationPieceRefs": [],
+          "evidenceArtifactIds": [
+            "frozen-gt:FLD-006:aa358ee5e671dc022b68085a9661ad6d7f64d2712016ab18d36d872eb8c7927d"
+          ],
+          "state": "PROPOSED",
+          "question": "Map semantic label to source Region/Core Component/ObservedCandidate; leave unapproved until team review."
+        }
+      ]
+    },
+    {
+      "relationId": "m2-FLD-006-12",
+      "fixtureId": "FLD-006",
+      "legacyRequiredBelow": [
+        "rabbit silhouette",
+        "eyes"
+      ],
+      "binding": {
+        "targetId": "FLD-006",
+        "targetVersion": "original_frozen_gt/1",
+        "targetSha256": "aa358ee5e671dc022b68085a9661ad6d7f64d2712016ab18d36d872eb8c7927d",
+        "recipeIdentity": "m2-semantic-mapping/1",
+        "endpointIdentity": "rabbit silhouette→eyes"
+      },
+      "proposalState": "PROPOSED",
+      "notGtUntilSignedOff": true,
+      "review": {
+        "question": "Classify this legacy requiredBelow relation after endpoint mapping.",
+        "options": [
+          "VISUAL_OCCLUSION_ONLY",
+          "ASSEMBLY_PRECEDENCE_ONLY",
+          "BOTH",
+          "NO_RELATION",
+          "UNRESOLVED",
+          "NOT_APPLICABLE"
+        ],
+        "answer": null,
+        "reviewerRoleRequired": "PROJECT_FABRICATION_REVIEWER",
+        "signoff": "NOT_SIGNED"
+      },
+      "endpointMappings": [
+        {
+          "mappingId": "m2-FLD-006-12-rabbit silhouette",
+          "semanticLabel": "rabbit silhouette",
+          "sourceRegionRef": null,
+          "componentRefs": [],
+          "observedCandidateRefs": [],
+          "fabricationPieceRefs": [],
+          "evidenceArtifactIds": [
+            "frozen-gt:FLD-006:aa358ee5e671dc022b68085a9661ad6d7f64d2712016ab18d36d872eb8c7927d"
+          ],
+          "state": "PROPOSED",
+          "question": "Map semantic label to source Region/Core Component/ObservedCandidate; leave unapproved until team review."
+        },
+        {
+          "mappingId": "m2-FLD-006-12-eyes",
+          "semanticLabel": "eyes",
+          "sourceRegionRef": null,
+          "componentRefs": [],
+          "observedCandidateRefs": [],
+          "fabricationPieceRefs": [],
+          "evidenceArtifactIds": [
+            "frozen-gt:FLD-006:aa358ee5e671dc022b68085a9661ad6d7f64d2712016ab18d36d872eb8c7927d"
+          ],
+          "state": "PROPOSED",
+          "question": "Map semantic label to source Region/Core Component/ObservedCandidate; leave unapproved until team review."
+        }
+      ]
+    },
+    {
+      "relationId": "m2-FLD-006-13",
+      "fixtureId": "FLD-006",
+      "legacyRequiredBelow": [
+        "rabbit silhouette",
+        "cheeks"
+      ],
+      "binding": {
+        "targetId": "FLD-006",
+        "targetVersion": "original_frozen_gt/1",
+        "targetSha256": "aa358ee5e671dc022b68085a9661ad6d7f64d2712016ab18d36d872eb8c7927d",
+        "recipeIdentity": "m2-semantic-mapping/1",
+        "endpointIdentity": "rabbit silhouette→cheeks"
+      },
+      "proposalState": "PROPOSED",
+      "notGtUntilSignedOff": true,
+      "review": {
+        "question": "Classify this legacy requiredBelow relation after endpoint mapping.",
+        "options": [
+          "VISUAL_OCCLUSION_ONLY",
+          "ASSEMBLY_PRECEDENCE_ONLY",
+          "BOTH",
+          "NO_RELATION",
+          "UNRESOLVED",
+          "NOT_APPLICABLE"
+        ],
+        "answer": null,
+        "reviewerRoleRequired": "PROJECT_FABRICATION_REVIEWER",
+        "signoff": "NOT_SIGNED"
+      },
+      "endpointMappings": [
+        {
+          "mappingId": "m2-FLD-006-13-rabbit silhouette",
+          "semanticLabel": "rabbit silhouette",
+          "sourceRegionRef": null,
+          "componentRefs": [],
+          "observedCandidateRefs": [],
+          "fabricationPieceRefs": [],
+          "evidenceArtifactIds": [
+            "frozen-gt:FLD-006:aa358ee5e671dc022b68085a9661ad6d7f64d2712016ab18d36d872eb8c7927d"
+          ],
+          "state": "PROPOSED",
+          "question": "Map semantic label to source Region/Core Component/ObservedCandidate; leave unapproved until team review."
+        },
+        {
+          "mappingId": "m2-FLD-006-13-cheeks",
+          "semanticLabel": "cheeks",
+          "sourceRegionRef": null,
+          "componentRefs": [],
+          "observedCandidateRefs": [],
+          "fabricationPieceRefs": [],
+          "evidenceArtifactIds": [
+            "frozen-gt:FLD-006:aa358ee5e671dc022b68085a9661ad6d7f64d2712016ab18d36d872eb8c7927d"
+          ],
+          "state": "PROPOSED",
+          "question": "Map semantic label to source Region/Core Component/ObservedCandidate; leave unapproved until team review."
+        }
+      ]
+    },
+    {
+      "relationId": "m2-FLD-008-14",
+      "fixtureId": "FLD-008",
+      "legacyRequiredBelow": [
+        "lantern body",
+        "top cap"
+      ],
+      "binding": {
+        "targetId": "FLD-008",
+        "targetVersion": "original_frozen_gt/1",
+        "targetSha256": "78e1f046c3b853c4b94407fe92e6f2e1e9a4e6dd65df36fec245adcaa8a1d289",
+        "recipeIdentity": "m2-semantic-mapping/1",
+        "endpointIdentity": "lantern body→top cap"
+      },
+      "proposalState": "PROPOSED",
+      "notGtUntilSignedOff": true,
+      "review": {
+        "question": "Classify this legacy requiredBelow relation after endpoint mapping.",
+        "options": [
+          "VISUAL_OCCLUSION_ONLY",
+          "ASSEMBLY_PRECEDENCE_ONLY",
+          "BOTH",
+          "NO_RELATION",
+          "UNRESOLVED",
+          "NOT_APPLICABLE"
+        ],
+        "answer": null,
+        "reviewerRoleRequired": "PROJECT_FABRICATION_REVIEWER",
+        "signoff": "NOT_SIGNED"
+      },
+      "endpointMappings": [
+        {
+          "mappingId": "m2-FLD-008-14-lantern body",
+          "semanticLabel": "lantern body",
+          "sourceRegionRef": null,
+          "componentRefs": [],
+          "observedCandidateRefs": [],
+          "fabricationPieceRefs": [],
+          "evidenceArtifactIds": [
+            "frozen-gt:FLD-008:78e1f046c3b853c4b94407fe92e6f2e1e9a4e6dd65df36fec245adcaa8a1d289"
+          ],
+          "state": "PROPOSED",
+          "question": "Map semantic label to source Region/Core Component/ObservedCandidate; leave unapproved until team review."
+        },
+        {
+          "mappingId": "m2-FLD-008-14-top cap",
+          "semanticLabel": "top cap",
+          "sourceRegionRef": null,
+          "componentRefs": [],
+          "observedCandidateRefs": [],
+          "fabricationPieceRefs": [],
+          "evidenceArtifactIds": [
+            "frozen-gt:FLD-008:78e1f046c3b853c4b94407fe92e6f2e1e9a4e6dd65df36fec245adcaa8a1d289"
+          ],
+          "state": "PROPOSED",
+          "question": "Map semantic label to source Region/Core Component/ObservedCandidate; leave unapproved until team review."
+        }
+      ]
+    },
+    {
+      "relationId": "m2-FLD-008-15",
+      "fixtureId": "FLD-008",
+      "legacyRequiredBelow": [
+        "lantern body",
+        "interior accent"
+      ],
+      "binding": {
+        "targetId": "FLD-008",
+        "targetVersion": "original_frozen_gt/1",
+        "targetSha256": "78e1f046c3b853c4b94407fe92e6f2e1e9a4e6dd65df36fec245adcaa8a1d289",
+        "recipeIdentity": "m2-semantic-mapping/1",
+        "endpointIdentity": "lantern body→interior accent"
+      },
+      "proposalState": "PROPOSED",
+      "notGtUntilSignedOff": true,
+      "review": {
+        "question": "Classify this legacy requiredBelow relation after endpoint mapping.",
+        "options": [
+          "VISUAL_OCCLUSION_ONLY",
+          "ASSEMBLY_PRECEDENCE_ONLY",
+          "BOTH",
+          "NO_RELATION",
+          "UNRESOLVED",
+          "NOT_APPLICABLE"
+        ],
+        "answer": null,
+        "reviewerRoleRequired": "PROJECT_FABRICATION_REVIEWER",
+        "signoff": "NOT_SIGNED"
+      },
+      "endpointMappings": [
+        {
+          "mappingId": "m2-FLD-008-15-lantern body",
+          "semanticLabel": "lantern body",
+          "sourceRegionRef": null,
+          "componentRefs": [],
+          "observedCandidateRefs": [],
+          "fabricationPieceRefs": [],
+          "evidenceArtifactIds": [
+            "frozen-gt:FLD-008:78e1f046c3b853c4b94407fe92e6f2e1e9a4e6dd65df36fec245adcaa8a1d289"
+          ],
+          "state": "PROPOSED",
+          "question": "Map semantic label to source Region/Core Component/ObservedCandidate; leave unapproved until team review."
+        },
+        {
+          "mappingId": "m2-FLD-008-15-interior accent",
+          "semanticLabel": "interior accent",
+          "sourceRegionRef": null,
+          "componentRefs": [],
+          "observedCandidateRefs": [],
+          "fabricationPieceRefs": [],
+          "evidenceArtifactIds": [
+            "frozen-gt:FLD-008:78e1f046c3b853c4b94407fe92e6f2e1e9a4e6dd65df36fec245adcaa8a1d289"
+          ],
+          "state": "PROPOSED",
+          "question": "Map semantic label to source Region/Core Component/ObservedCandidate; leave unapproved until team review."
+        }
+      ]
+    },
+    {
+      "relationId": "m2-FLD-008-16",
+      "fixtureId": "FLD-008",
+      "legacyRequiredBelow": [
+        "lantern body",
+        "tassel"
+      ],
+      "binding": {
+        "targetId": "FLD-008",
+        "targetVersion": "original_frozen_gt/1",
+        "targetSha256": "78e1f046c3b853c4b94407fe92e6f2e1e9a4e6dd65df36fec245adcaa8a1d289",
+        "recipeIdentity": "m2-semantic-mapping/1",
+        "endpointIdentity": "lantern body→tassel"
+      },
+      "proposalState": "PROPOSED",
+      "notGtUntilSignedOff": true,
+      "review": {
+        "question": "Classify this legacy requiredBelow relation after endpoint mapping.",
+        "options": [
+          "VISUAL_OCCLUSION_ONLY",
+          "ASSEMBLY_PRECEDENCE_ONLY",
+          "BOTH",
+          "NO_RELATION",
+          "UNRESOLVED",
+          "NOT_APPLICABLE"
+        ],
+        "answer": null,
+        "reviewerRoleRequired": "PROJECT_FABRICATION_REVIEWER",
+        "signoff": "NOT_SIGNED"
+      },
+      "endpointMappings": [
+        {
+          "mappingId": "m2-FLD-008-16-lantern body",
+          "semanticLabel": "lantern body",
+          "sourceRegionRef": null,
+          "componentRefs": [],
+          "observedCandidateRefs": [],
+          "fabricationPieceRefs": [],
+          "evidenceArtifactIds": [
+            "frozen-gt:FLD-008:78e1f046c3b853c4b94407fe92e6f2e1e9a4e6dd65df36fec245adcaa8a1d289"
+          ],
+          "state": "PROPOSED",
+          "question": "Map semantic label to source Region/Core Component/ObservedCandidate; leave unapproved until team review."
+        },
+        {
+          "mappingId": "m2-FLD-008-16-tassel",
+          "semanticLabel": "tassel",
+          "sourceRegionRef": null,
+          "componentRefs": [],
+          "observedCandidateRefs": [],
+          "fabricationPieceRefs": [],
+          "evidenceArtifactIds": [
+            "frozen-gt:FLD-008:78e1f046c3b853c4b94407fe92e6f2e1e9a4e6dd65df36fec245adcaa8a1d289"
+          ],
+          "state": "PROPOSED",
+          "question": "Map semantic label to source Region/Core Component/ObservedCandidate; leave unapproved until team review."
+        }
+      ]
+    }
+  ],
+  "standardizedV2AlgorithmProposals": [
+    {
+      "reviewId": "m2-v2-FLD-002-V2-CAND-01",
+      "sourceCandidateId": "FLD-002-V2-CAND-01",
+      "fixtureId": "FLD-002",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          8
+        ],
+        "sourceComponentIds": [
+          "R00008-C002",
+          "R00008-C006",
+          "R00008-C005",
+          "R00008-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-002-R00008-C002",
+          "FP-FLD-002-R00008-C006",
+          "FP-FLD-002-R00008-C005",
+          "FP-FLD-002-R00008-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-002-V2-CAND-01.png",
+        "selectionEvidence": {
+          "componentAreas": [
+            1486,
+            532,
+            278,
+            277
+          ],
+          "fact": "multiple substantial 4-connected components share one Frozen Region ID",
+          "semanticInference": null
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-002-V2-CAND-02",
+      "sourceCandidateId": "FLD-002-V2-CAND-02",
+      "fixtureId": "FLD-002",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          4,
+          7
+        ],
+        "sourceComponentIds": [
+          "R00004-C001",
+          "R00007-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-002-R00004-C001",
+          "FP-FLD-002-R00007-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-002-V2-CAND-02.png",
+        "selectionEvidence": {
+          "fact": "near representative colors plus explicit spatial evidence",
+          "mediatingStrokeRegionIds": [
+            1
+          ],
+          "representativeDeltaE00": 0.473147,
+          "semanticInference": null,
+          "spatialEvidence": "TWO_HOP_THROUGH_STROKE"
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-002-V2-CAND-03",
+      "sourceCandidateId": "FLD-002-V2-CAND-03",
+      "fixtureId": "FLD-002",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          6,
+          8
+        ],
+        "sourceComponentIds": [
+          "R00006-C001",
+          "R00008-C002"
+        ],
+        "pieceIds": [
+          "FP-FLD-002-R00006-C001",
+          "FP-FLD-002-R00008-C002"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-002-V2-CAND-03.png",
+        "selectionEvidence": {
+          "fact": "near representative colors plus explicit spatial evidence",
+          "mediatingStrokeRegionIds": [
+            1
+          ],
+          "representativeDeltaE00": 1.423638,
+          "semanticInference": null,
+          "spatialEvidence": "TWO_HOP_THROUGH_STROKE"
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-002-V2-CAND-04",
+      "sourceCandidateId": "FLD-002-V2-CAND-04",
+      "fixtureId": "FLD-002",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          7,
+          9
+        ],
+        "sourceComponentIds": [
+          "R00007-C001",
+          "R00009-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-002-R00007-C001",
+          "FP-FLD-002-R00009-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-002-V2-CAND-04.png",
+        "selectionEvidence": {
+          "fact": "overlay bbox is strictly contained by a larger fill bbox",
+          "hostRegionId": 7,
+          "overlayRegionId": 9,
+          "overlayToHostAreaRatio": 0.06526578,
+          "semanticInference": null
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-002-V2-CAND-05",
+      "sourceCandidateId": "FLD-002-V2-CAND-05",
+      "fixtureId": "FLD-002",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          7,
+          8
+        ],
+        "sourceComponentIds": [
+          "R00007-C001",
+          "R00008-C002"
+        ],
+        "pieceIds": [
+          "FP-FLD-002-R00007-C001",
+          "FP-FLD-002-R00008-C002"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-002-V2-CAND-05.png",
+        "selectionEvidence": {
+          "fact": "two fill-like Frozen Regions share a direct 4-connected boundary",
+          "semanticInference": null,
+          "sharedBoundaryCoverage": 0.54707191,
+          "uniqueSharedEdgeCount": 1476
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-002-V2-CAND-06",
+      "sourceCandidateId": "FLD-002-V2-CAND-06",
+      "fixtureId": "FLD-002",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          6,
+          7
+        ],
+        "sourceComponentIds": [
+          "R00006-C001",
+          "R00007-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-002-R00006-C001",
+          "FP-FLD-002-R00007-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-002-V2-CAND-06.png",
+        "selectionEvidence": {
+          "fact": "two fill-like Frozen Regions share a direct 4-connected boundary",
+          "semanticInference": null,
+          "sharedBoundaryCoverage": 0.48321168,
+          "uniqueSharedEdgeCount": 662
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-002-V2-CAND-07",
+      "sourceCandidateId": "FLD-002-V2-CAND-07",
+      "fixtureId": "FLD-002",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          4,
+          8
+        ],
+        "sourceComponentIds": [
+          "R00004-C001",
+          "R00008-C002"
+        ],
+        "pieceIds": [
+          "FP-FLD-002-R00004-C001",
+          "FP-FLD-002-R00008-C002"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-002-V2-CAND-07.png",
+        "selectionEvidence": {
+          "bboxGapPixels": 0,
+          "combinedStrokeBoundaryEdges": 3164,
+          "fact": "two fill-like Regions have two-hop adjacency through a stroke-like Region",
+          "mediatingStrokeRegionIds": [
+            1
+          ],
+          "semanticInference": null
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-002-V2-CAND-08",
+      "sourceCandidateId": "FLD-002-V2-CAND-08",
+      "fixtureId": "FLD-002",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          4,
+          6
+        ],
+        "sourceComponentIds": [
+          "R00004-C001",
+          "R00006-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-002-R00004-C001",
+          "FP-FLD-002-R00006-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-002-V2-CAND-08.png",
+        "selectionEvidence": {
+          "bboxGapPixels": 0,
+          "combinedStrokeBoundaryEdges": 2370,
+          "fact": "two fill-like Regions have two-hop adjacency through a stroke-like Region",
+          "mediatingStrokeRegionIds": [
+            1
+          ],
+          "semanticInference": null
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-002-V2-CAND-09",
+      "sourceCandidateId": "FLD-002-V2-CAND-09",
+      "fixtureId": "FLD-002",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          4,
+          9
+        ],
+        "sourceComponentIds": [
+          "R00004-C001",
+          "R00009-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-002-R00004-C001",
+          "FP-FLD-002-R00009-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-002-V2-CAND-09.png",
+        "selectionEvidence": {
+          "bboxGapPixels": 0,
+          "combinedStrokeBoundaryEdges": 2220,
+          "fact": "two fill-like Regions have two-hop adjacency through a stroke-like Region",
+          "mediatingStrokeRegionIds": [
+            1
+          ],
+          "semanticInference": null
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-002-V2-CAND-10",
+      "sourceCandidateId": "FLD-002-V2-CAND-10",
+      "fixtureId": "FLD-002",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          8,
+          9
+        ],
+        "sourceComponentIds": [
+          "R00008-C002",
+          "R00009-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-002-R00008-C002",
+          "FP-FLD-002-R00009-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-002-V2-CAND-10.png",
+        "selectionEvidence": {
+          "bboxGapPixels": 0,
+          "combinedStrokeBoundaryEdges": 2060,
+          "fact": "two fill-like Regions have two-hop adjacency through a stroke-like Region",
+          "mediatingStrokeRegionIds": [
+            1
+          ],
+          "semanticInference": null
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-002-V2-CAND-11",
+      "sourceCandidateId": "FLD-002-V2-CAND-11",
+      "fixtureId": "FLD-002",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          7,
+          13
+        ],
+        "sourceComponentIds": [
+          "R00007-C001",
+          "R00013-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-002-R00007-C001",
+          "FP-FLD-002-R00013-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-002-V2-CAND-11.png",
+        "selectionEvidence": {
+          "bboxGapPixels": 20,
+          "combinedStrokeBoundaryEdges": 646,
+          "fact": "two fill-like Regions have two-hop adjacency through a stroke-like Region",
+          "mediatingStrokeRegionIds": [
+            1
+          ],
+          "semanticInference": null
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-002-V2-CAND-12",
+      "sourceCandidateId": "FLD-002-V2-CAND-12",
+      "fixtureId": "FLD-002",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          6,
+          9
+        ],
+        "sourceComponentIds": [
+          "R00006-C001",
+          "R00009-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-002-R00006-C001",
+          "FP-FLD-002-R00009-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-002-V2-CAND-12.png",
+        "selectionEvidence": {
+          "bboxGapPixels": 116,
+          "combinedStrokeBoundaryEdges": 1266,
+          "fact": "two fill-like Regions have two-hop adjacency through a stroke-like Region",
+          "mediatingStrokeRegionIds": [
+            1
+          ],
+          "semanticInference": null
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-002-V2-CAND-13",
+      "sourceCandidateId": "FLD-002-V2-CAND-13",
+      "fixtureId": "FLD-002",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          1,
+          4
+        ],
+        "sourceComponentIds": [
+          "R00004-C001",
+          "R00001-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-002-R00004-C001",
+          "FP-FLD-002-R00001-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-002-V2-CAND-13.png",
+        "selectionEvidence": {
+          "fact": "bounded legacy stroke-vs-fill stress control",
+          "fillRegionId": 4,
+          "semanticInference": null,
+          "strokeRegionId": 1,
+          "uniqueSharedEdgeCount": 1662
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-002-V2-CAND-14",
+      "sourceCandidateId": "FLD-002-V2-CAND-14",
+      "fixtureId": "FLD-002",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          1,
+          8
+        ],
+        "sourceComponentIds": [
+          "R00008-C002",
+          "R00001-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-002-R00008-C002",
+          "FP-FLD-002-R00001-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-002-V2-CAND-14.png",
+        "selectionEvidence": {
+          "fact": "bounded legacy stroke-vs-fill stress control",
+          "fillRegionId": 8,
+          "semanticInference": null,
+          "strokeRegionId": 1,
+          "uniqueSharedEdgeCount": 1502
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-003-V2-CAND-01",
+      "sourceCandidateId": "FLD-003-V2-CAND-01",
+      "fixtureId": "FLD-003",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          1
+        ],
+        "sourceComponentIds": [
+          "R00001-C006",
+          "R00001-C004",
+          "R00001-C005",
+          "R00001-C002"
+        ],
+        "pieceIds": [
+          "FP-FLD-003-R00001-C006",
+          "FP-FLD-003-R00001-C004",
+          "FP-FLD-003-R00001-C005",
+          "FP-FLD-003-R00001-C002"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-003-V2-CAND-01.png",
+        "selectionEvidence": {
+          "componentAreas": [
+            249,
+            239,
+            168,
+            77
+          ],
+          "fact": "multiple substantial 4-connected components share one Frozen Region ID",
+          "semanticInference": null
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-003-V2-CAND-02",
+      "sourceCandidateId": "FLD-003-V2-CAND-02",
+      "fixtureId": "FLD-003",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          2,
+          17
+        ],
+        "sourceComponentIds": [
+          "R00002-C001",
+          "R00017-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-003-R00002-C001",
+          "FP-FLD-003-R00017-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-003-V2-CAND-02.png",
+        "selectionEvidence": {
+          "fact": "overlay bbox is strictly contained by a larger fill bbox",
+          "hostRegionId": 2,
+          "overlayRegionId": 17,
+          "overlayToHostAreaRatio": 0.11805608,
+          "semanticInference": null
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-003-V2-CAND-03",
+      "sourceCandidateId": "FLD-003-V2-CAND-03",
+      "fixtureId": "FLD-003",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          2,
+          16
+        ],
+        "sourceComponentIds": [
+          "R00002-C001",
+          "R00016-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-003-R00002-C001",
+          "FP-FLD-003-R00016-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-003-V2-CAND-03.png",
+        "selectionEvidence": {
+          "fact": "overlay bbox is strictly contained by a larger fill bbox",
+          "hostRegionId": 2,
+          "overlayRegionId": 16,
+          "overlayToHostAreaRatio": 0.11687703,
+          "semanticInference": null
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-003-V2-CAND-04",
+      "sourceCandidateId": "FLD-003-V2-CAND-04",
+      "fixtureId": "FLD-003",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          3,
+          8
+        ],
+        "sourceComponentIds": [
+          "R00003-C001",
+          "R00008-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-003-R00003-C001",
+          "FP-FLD-003-R00008-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-003-V2-CAND-04.png",
+        "selectionEvidence": {
+          "fact": "overlay bbox is strictly contained by a larger fill bbox",
+          "hostRegionId": 3,
+          "overlayRegionId": 8,
+          "overlayToHostAreaRatio": 0.03106169,
+          "semanticInference": null
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-003-V2-CAND-05",
+      "sourceCandidateId": "FLD-003-V2-CAND-05",
+      "fixtureId": "FLD-003",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          2,
+          8
+        ],
+        "sourceComponentIds": [
+          "R00002-C001",
+          "R00008-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-003-R00002-C001",
+          "FP-FLD-003-R00008-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-003-V2-CAND-05.png",
+        "selectionEvidence": {
+          "fact": "overlay bbox is strictly contained by a larger fill bbox",
+          "hostRegionId": 2,
+          "overlayRegionId": 8,
+          "overlayToHostAreaRatio": 0.0830625,
+          "semanticInference": null
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-003-V2-CAND-06",
+      "sourceCandidateId": "FLD-003-V2-CAND-06",
+      "fixtureId": "FLD-003",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          3,
+          9
+        ],
+        "sourceComponentIds": [
+          "R00003-C001",
+          "R00009-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-003-R00003-C001",
+          "FP-FLD-003-R00009-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-003-V2-CAND-06.png",
+        "selectionEvidence": {
+          "fact": "overlay bbox is strictly contained by a larger fill bbox",
+          "hostRegionId": 3,
+          "overlayRegionId": 9,
+          "overlayToHostAreaRatio": 0.02289917,
+          "semanticInference": null
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-003-V2-CAND-07",
+      "sourceCandidateId": "FLD-003-V2-CAND-07",
+      "fixtureId": "FLD-003",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          2,
+          9
+        ],
+        "sourceComponentIds": [
+          "R00002-C001",
+          "R00009-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-003-R00002-C001",
+          "FP-FLD-003-R00009-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-003-V2-CAND-07.png",
+        "selectionEvidence": {
+          "fact": "overlay bbox is strictly contained by a larger fill bbox",
+          "hostRegionId": 2,
+          "overlayRegionId": 9,
+          "overlayToHostAreaRatio": 0.06123498,
+          "semanticInference": null
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-003-V2-CAND-08",
+      "sourceCandidateId": "FLD-003-V2-CAND-08",
+      "fixtureId": "FLD-003",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          3,
+          10
+        ],
+        "sourceComponentIds": [
+          "R00003-C001",
+          "R00010-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-003-R00003-C001",
+          "FP-FLD-003-R00010-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-003-V2-CAND-08.png",
+        "selectionEvidence": {
+          "fact": "overlay bbox is strictly contained by a larger fill bbox",
+          "hostRegionId": 3,
+          "overlayRegionId": 10,
+          "overlayToHostAreaRatio": 0.01175766,
+          "semanticInference": null
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-003-V2-CAND-09",
+      "sourceCandidateId": "FLD-003-V2-CAND-09",
+      "fixtureId": "FLD-003",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          2,
+          10
+        ],
+        "sourceComponentIds": [
+          "R00002-C001",
+          "R00010-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-003-R00002-C001",
+          "FP-FLD-003-R00010-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-003-V2-CAND-09.png",
+        "selectionEvidence": {
+          "fact": "overlay bbox is strictly contained by a larger fill bbox",
+          "hostRegionId": 2,
+          "overlayRegionId": 10,
+          "overlayToHostAreaRatio": 0.03144131,
+          "semanticInference": null
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-003-V2-CAND-10",
+      "sourceCandidateId": "FLD-003-V2-CAND-10",
+      "fixtureId": "FLD-003",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          2,
+          3
+        ],
+        "sourceComponentIds": [
+          "R00002-C001",
+          "R00003-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-003-R00002-C001",
+          "FP-FLD-003-R00003-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-003-V2-CAND-10.png",
+        "selectionEvidence": {
+          "fact": "two fill-like Frozen Regions share a direct 4-connected boundary",
+          "semanticInference": null,
+          "sharedBoundaryCoverage": 0.41587418,
+          "uniqueSharedEdgeCount": 2274
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-003-V2-CAND-11",
+      "sourceCandidateId": "FLD-003-V2-CAND-11",
+      "fixtureId": "FLD-003",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          2,
+          18
+        ],
+        "sourceComponentIds": [
+          "R00002-C001",
+          "R00018-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-003-R00002-C001",
+          "FP-FLD-003-R00018-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-003-V2-CAND-11.png",
+        "selectionEvidence": {
+          "fact": "two fill-like Frozen Regions share a direct 4-connected boundary",
+          "semanticInference": null,
+          "sharedBoundaryCoverage": 1,
+          "uniqueSharedEdgeCount": 1952
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-003-V2-CAND-12",
+      "sourceCandidateId": "FLD-003-V2-CAND-12",
+      "fixtureId": "FLD-003",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          1,
+          2
+        ],
+        "sourceComponentIds": [
+          "R00001-C006",
+          "R00002-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-003-R00001-C006",
+          "FP-FLD-003-R00002-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-003-V2-CAND-12.png",
+        "selectionEvidence": {
+          "fact": "two fill-like Frozen Regions share a direct 4-connected boundary",
+          "semanticInference": null,
+          "sharedBoundaryCoverage": 0.49446203,
+          "uniqueSharedEdgeCount": 625
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-003-V2-CAND-13",
+      "sourceCandidateId": "FLD-003-V2-CAND-13",
+      "fixtureId": "FLD-003",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          3,
+          13
+        ],
+        "sourceComponentIds": [
+          "R00003-C001",
+          "R00013-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-003-R00003-C001",
+          "FP-FLD-003-R00013-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-003-V2-CAND-13.png",
+        "selectionEvidence": {
+          "fact": "two fill-like Frozen Regions share a direct 4-connected boundary",
+          "semanticInference": null,
+          "sharedBoundaryCoverage": 1,
+          "uniqueSharedEdgeCount": 346
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-004-V2-CAND-01",
+      "sourceCandidateId": "FLD-004-V2-CAND-01",
+      "fixtureId": "FLD-004",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          128,
+          132
+        ],
+        "sourceComponentIds": [
+          "R00128-C001",
+          "R00132-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-004-R00128-C001",
+          "FP-FLD-004-R00132-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-004-V2-CAND-01.png",
+        "selectionEvidence": {
+          "fact": "near representative colors plus explicit spatial evidence",
+          "mediatingStrokeRegionIds": [
+            3
+          ],
+          "representativeDeltaE00": 0,
+          "semanticInference": null,
+          "spatialEvidence": "TWO_HOP_THROUGH_STROKE"
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-004-V2-CAND-02",
+      "sourceCandidateId": "FLD-004-V2-CAND-02",
+      "fixtureId": "FLD-004",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          128,
+          131
+        ],
+        "sourceComponentIds": [
+          "R00128-C001",
+          "R00131-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-004-R00128-C001",
+          "FP-FLD-004-R00131-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-004-V2-CAND-02.png",
+        "selectionEvidence": {
+          "fact": "near representative colors plus explicit spatial evidence",
+          "mediatingStrokeRegionIds": [
+            3
+          ],
+          "representativeDeltaE00": 0.244757,
+          "semanticInference": null,
+          "spatialEvidence": "TWO_HOP_THROUGH_STROKE"
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-004-V2-CAND-03",
+      "sourceCandidateId": "FLD-004-V2-CAND-03",
+      "fixtureId": "FLD-004",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          131,
+          132
+        ],
+        "sourceComponentIds": [
+          "R00131-C001",
+          "R00132-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-004-R00131-C001",
+          "FP-FLD-004-R00132-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-004-V2-CAND-03.png",
+        "selectionEvidence": {
+          "fact": "near representative colors plus explicit spatial evidence",
+          "mediatingStrokeRegionIds": [
+            3
+          ],
+          "representativeDeltaE00": 0.244757,
+          "semanticInference": null,
+          "spatialEvidence": "TWO_HOP_THROUGH_STROKE"
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-004-V2-CAND-04",
+      "sourceCandidateId": "FLD-004-V2-CAND-04",
+      "fixtureId": "FLD-004",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          14,
+          114
+        ],
+        "sourceComponentIds": [
+          "R00014-C001",
+          "R00114-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-004-R00014-C001",
+          "FP-FLD-004-R00114-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-004-V2-CAND-04.png",
+        "selectionEvidence": {
+          "fact": "overlay bbox is strictly contained by a larger fill bbox",
+          "hostRegionId": 14,
+          "overlayRegionId": 114,
+          "overlayToHostAreaRatio": 0.06700796,
+          "semanticInference": null
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-004-V2-CAND-05",
+      "sourceCandidateId": "FLD-004-V2-CAND-05",
+      "fixtureId": "FLD-004",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          143,
+          218
+        ],
+        "sourceComponentIds": [
+          "R00143-C001",
+          "R00218-C004"
+        ],
+        "pieceIds": [
+          "FP-FLD-004-R00143-C001",
+          "FP-FLD-004-R00218-C004"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-004-V2-CAND-05.png",
+        "selectionEvidence": {
+          "fact": "overlay bbox is strictly contained by a larger fill bbox",
+          "hostRegionId": 143,
+          "overlayRegionId": 218,
+          "overlayToHostAreaRatio": 0.00244278,
+          "semanticInference": null
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-004-V2-CAND-06",
+      "sourceCandidateId": "FLD-004-V2-CAND-06",
+      "fixtureId": "FLD-004",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          14,
+          85
+        ],
+        "sourceComponentIds": [
+          "R00014-C001",
+          "R00085-C006"
+        ],
+        "pieceIds": [
+          "FP-FLD-004-R00014-C001",
+          "FP-FLD-004-R00085-C006"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-004-V2-CAND-06.png",
+        "selectionEvidence": {
+          "fact": "overlay bbox is strictly contained by a larger fill bbox",
+          "hostRegionId": 14,
+          "overlayRegionId": 85,
+          "overlayToHostAreaRatio": 0.00099486,
+          "semanticInference": null
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-004-V2-CAND-07",
+      "sourceCandidateId": "FLD-004-V2-CAND-07",
+      "fixtureId": "FLD-004",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          14,
+          128
+        ],
+        "sourceComponentIds": [
+          "R00014-C001",
+          "R00128-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-004-R00014-C001",
+          "FP-FLD-004-R00128-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-004-V2-CAND-07.png",
+        "selectionEvidence": {
+          "bboxGapPixels": 0,
+          "combinedStrokeBoundaryEdges": 3776,
+          "fact": "two fill-like Regions have two-hop adjacency through a stroke-like Region",
+          "mediatingStrokeRegionIds": [
+            3
+          ],
+          "semanticInference": null
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-004-V2-CAND-08",
+      "sourceCandidateId": "FLD-004-V2-CAND-08",
+      "fixtureId": "FLD-004",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          14,
+          100
+        ],
+        "sourceComponentIds": [
+          "R00014-C001",
+          "R00100-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-004-R00014-C001",
+          "FP-FLD-004-R00100-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-004-V2-CAND-08.png",
+        "selectionEvidence": {
+          "bboxGapPixels": 0,
+          "combinedStrokeBoundaryEdges": 3448,
+          "fact": "two fill-like Regions have two-hop adjacency through a stroke-like Region",
+          "mediatingStrokeRegionIds": [
+            3
+          ],
+          "semanticInference": null
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-004-V2-CAND-09",
+      "sourceCandidateId": "FLD-004-V2-CAND-09",
+      "fixtureId": "FLD-004",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          14,
+          132
+        ],
+        "sourceComponentIds": [
+          "R00014-C001",
+          "R00132-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-004-R00014-C001",
+          "FP-FLD-004-R00132-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-004-V2-CAND-09.png",
+        "selectionEvidence": {
+          "bboxGapPixels": 0,
+          "combinedStrokeBoundaryEdges": 3418,
+          "fact": "two fill-like Regions have two-hop adjacency through a stroke-like Region",
+          "mediatingStrokeRegionIds": [
+            3
+          ],
+          "semanticInference": null
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-004-V2-CAND-10",
+      "sourceCandidateId": "FLD-004-V2-CAND-10",
+      "fixtureId": "FLD-004",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          14,
+          131
+        ],
+        "sourceComponentIds": [
+          "R00014-C001",
+          "R00131-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-004-R00014-C001",
+          "FP-FLD-004-R00131-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-004-V2-CAND-10.png",
+        "selectionEvidence": {
+          "bboxGapPixels": 0,
+          "combinedStrokeBoundaryEdges": 3410,
+          "fact": "two fill-like Regions have two-hop adjacency through a stroke-like Region",
+          "mediatingStrokeRegionIds": [
+            3
+          ],
+          "semanticInference": null
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-004-V2-CAND-11",
+      "sourceCandidateId": "FLD-004-V2-CAND-11",
+      "fixtureId": "FLD-004",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          14,
+          145
+        ],
+        "sourceComponentIds": [
+          "R00014-C001",
+          "R00145-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-004-R00014-C001",
+          "FP-FLD-004-R00145-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-004-V2-CAND-11.png",
+        "selectionEvidence": {
+          "bboxGapPixels": 0,
+          "combinedStrokeBoundaryEdges": 3410,
+          "fact": "two fill-like Regions have two-hop adjacency through a stroke-like Region",
+          "mediatingStrokeRegionIds": [
+            3
+          ],
+          "semanticInference": null
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-004-V2-CAND-12",
+      "sourceCandidateId": "FLD-004-V2-CAND-12",
+      "fixtureId": "FLD-004",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          14,
+          142
+        ],
+        "sourceComponentIds": [
+          "R00014-C001",
+          "R00142-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-004-R00014-C001",
+          "FP-FLD-004-R00142-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-004-V2-CAND-12.png",
+        "selectionEvidence": {
+          "bboxGapPixels": 0,
+          "combinedStrokeBoundaryEdges": 3404,
+          "fact": "two fill-like Regions have two-hop adjacency through a stroke-like Region",
+          "mediatingStrokeRegionIds": [
+            3
+          ],
+          "semanticInference": null
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-004-V2-CAND-13",
+      "sourceCandidateId": "FLD-004-V2-CAND-13",
+      "fixtureId": "FLD-004",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          3,
+          14
+        ],
+        "sourceComponentIds": [
+          "R00014-C001",
+          "R00003-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-004-R00014-C001",
+          "FP-FLD-004-R00003-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-004-V2-CAND-13.png",
+        "selectionEvidence": {
+          "fact": "bounded legacy stroke-vs-fill stress control",
+          "fillRegionId": 14,
+          "semanticInference": null,
+          "strokeRegionId": 3,
+          "uniqueSharedEdgeCount": 2432
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-004-V2-CAND-14",
+      "sourceCandidateId": "FLD-004-V2-CAND-14",
+      "fixtureId": "FLD-004",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          3,
+          128
+        ],
+        "sourceComponentIds": [
+          "R00128-C001",
+          "R00003-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-004-R00128-C001",
+          "FP-FLD-004-R00003-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-004-V2-CAND-14.png",
+        "selectionEvidence": {
+          "fact": "bounded legacy stroke-vs-fill stress control",
+          "fillRegionId": 128,
+          "semanticInference": null,
+          "strokeRegionId": 3,
+          "uniqueSharedEdgeCount": 1344
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-006-V2-CAND-01",
+      "sourceCandidateId": "FLD-006-V2-CAND-01",
+      "fixtureId": "FLD-006",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          6,
+          26
+        ],
+        "sourceComponentIds": [
+          "R00006-C001",
+          "R00026-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-006-R00006-C001",
+          "FP-FLD-006-R00026-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-006-V2-CAND-01.png",
+        "selectionEvidence": {
+          "fact": "near representative colors plus explicit spatial evidence",
+          "mediatingStrokeRegionIds": [
+            2
+          ],
+          "representativeDeltaE00": 1.076751,
+          "semanticInference": null,
+          "spatialEvidence": "TWO_HOP_THROUGH_STROKE"
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-006-V2-CAND-02",
+      "sourceCandidateId": "FLD-006-V2-CAND-02",
+      "fixtureId": "FLD-006",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          6,
+          21
+        ],
+        "sourceComponentIds": [
+          "R00006-C001",
+          "R00021-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-006-R00006-C001",
+          "FP-FLD-006-R00021-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-006-V2-CAND-02.png",
+        "selectionEvidence": {
+          "fact": "near representative colors plus explicit spatial evidence",
+          "mediatingStrokeRegionIds": [],
+          "representativeDeltaE00": 11.559831,
+          "semanticInference": null,
+          "spatialEvidence": "DIRECT_4_CONNECTED"
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-006-V2-CAND-03",
+      "sourceCandidateId": "FLD-006-V2-CAND-03",
+      "fixtureId": "FLD-006",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          6,
+          9
+        ],
+        "sourceComponentIds": [
+          "R00006-C001",
+          "R00009-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-006-R00006-C001",
+          "FP-FLD-006-R00009-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-006-V2-CAND-03.png",
+        "selectionEvidence": {
+          "fact": "near representative colors plus explicit spatial evidence",
+          "mediatingStrokeRegionIds": [],
+          "representativeDeltaE00": 11.649465,
+          "semanticInference": null,
+          "spatialEvidence": "DIRECT_4_CONNECTED"
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-006-V2-CAND-04",
+      "sourceCandidateId": "FLD-006-V2-CAND-04",
+      "fixtureId": "FLD-006",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          6,
+          10
+        ],
+        "sourceComponentIds": [
+          "R00006-C001",
+          "R00010-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-006-R00006-C001",
+          "FP-FLD-006-R00010-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-006-V2-CAND-04.png",
+        "selectionEvidence": {
+          "fact": "overlay bbox is strictly contained by a larger fill bbox",
+          "hostRegionId": 6,
+          "overlayRegionId": 10,
+          "overlayToHostAreaRatio": 0.02799138,
+          "semanticInference": null
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-006-V2-CAND-05",
+      "sourceCandidateId": "FLD-006-V2-CAND-05",
+      "fixtureId": "FLD-006",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          6,
+          22
+        ],
+        "sourceComponentIds": [
+          "R00006-C001",
+          "R00022-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-006-R00006-C001",
+          "FP-FLD-006-R00022-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-006-V2-CAND-05.png",
+        "selectionEvidence": {
+          "fact": "overlay bbox is strictly contained by a larger fill bbox",
+          "hostRegionId": 6,
+          "overlayRegionId": 22,
+          "overlayToHostAreaRatio": 0.00525717,
+          "semanticInference": null
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-006-V2-CAND-06",
+      "sourceCandidateId": "FLD-006-V2-CAND-06",
+      "fixtureId": "FLD-006",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          6,
+          19
+        ],
+        "sourceComponentIds": [
+          "R00006-C001",
+          "R00019-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-006-R00006-C001",
+          "FP-FLD-006-R00019-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-006-V2-CAND-06.png",
+        "selectionEvidence": {
+          "fact": "overlay bbox is strictly contained by a larger fill bbox",
+          "hostRegionId": 6,
+          "overlayRegionId": 19,
+          "overlayToHostAreaRatio": 0.0039247,
+          "semanticInference": null
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-006-V2-CAND-07",
+      "sourceCandidateId": "FLD-006-V2-CAND-07",
+      "fixtureId": "FLD-006",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          6,
+          20
+        ],
+        "sourceComponentIds": [
+          "R00006-C001",
+          "R00020-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-006-R00006-C001",
+          "FP-FLD-006-R00020-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-006-V2-CAND-07.png",
+        "selectionEvidence": {
+          "fact": "overlay bbox is strictly contained by a larger fill bbox",
+          "hostRegionId": 6,
+          "overlayRegionId": 20,
+          "overlayToHostAreaRatio": 0.0038811,
+          "semanticInference": null
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-006-V2-CAND-08",
+      "sourceCandidateId": "FLD-006-V2-CAND-08",
+      "fixtureId": "FLD-006",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          6,
+          23
+        ],
+        "sourceComponentIds": [
+          "R00006-C001",
+          "R00023-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-006-R00006-C001",
+          "FP-FLD-006-R00023-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-006-V2-CAND-08.png",
+        "selectionEvidence": {
+          "fact": "overlay bbox is strictly contained by a larger fill bbox",
+          "hostRegionId": 6,
+          "overlayRegionId": 23,
+          "overlayToHostAreaRatio": 0.00349347,
+          "semanticInference": null
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-006-V2-CAND-09",
+      "sourceCandidateId": "FLD-006-V2-CAND-09",
+      "fixtureId": "FLD-006",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          2,
+          6
+        ],
+        "sourceComponentIds": [
+          "R00006-C001",
+          "R00002-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-006-R00006-C001",
+          "FP-FLD-006-R00002-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-006-V2-CAND-09.png",
+        "selectionEvidence": {
+          "fact": "bounded legacy stroke-vs-fill stress control",
+          "fillRegionId": 6,
+          "semanticInference": null,
+          "strokeRegionId": 2,
+          "uniqueSharedEdgeCount": 3460
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-006-V2-CAND-10",
+      "sourceCandidateId": "FLD-006-V2-CAND-10",
+      "fixtureId": "FLD-006",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          2,
+          26
+        ],
+        "sourceComponentIds": [
+          "R00026-C001",
+          "R00002-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-006-R00026-C001",
+          "FP-FLD-006-R00002-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-006-V2-CAND-10.png",
+        "selectionEvidence": {
+          "fact": "bounded legacy stroke-vs-fill stress control",
+          "fillRegionId": 26,
+          "semanticInference": null,
+          "strokeRegionId": 2,
+          "uniqueSharedEdgeCount": 254
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-008-V2-CAND-01",
+      "sourceCandidateId": "FLD-008-V2-CAND-01",
+      "fixtureId": "FLD-008",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          1
+        ],
+        "sourceComponentIds": [
+          "R00001-C001",
+          "R00001-C003",
+          "R00001-C002"
+        ],
+        "pieceIds": [
+          "FP-FLD-008-R00001-C001",
+          "FP-FLD-008-R00001-C003",
+          "FP-FLD-008-R00001-C002"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-008-V2-CAND-01.png",
+        "selectionEvidence": {
+          "componentAreas": [
+            55441,
+            2020,
+            198
+          ],
+          "fact": "multiple substantial 4-connected components share one Frozen Region ID",
+          "semanticInference": null
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-008-V2-CAND-02",
+      "sourceCandidateId": "FLD-008-V2-CAND-02",
+      "fixtureId": "FLD-008",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          9
+        ],
+        "sourceComponentIds": [
+          "R00009-C001",
+          "R00009-C016",
+          "R00009-C009",
+          "R00009-C005"
+        ],
+        "pieceIds": [
+          "FP-FLD-008-R00009-C001",
+          "FP-FLD-008-R00009-C016",
+          "FP-FLD-008-R00009-C009",
+          "FP-FLD-008-R00009-C005"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-008-V2-CAND-02.png",
+        "selectionEvidence": {
+          "componentAreas": [
+            5004,
+            819,
+            414,
+            283
+          ],
+          "fact": "multiple substantial 4-connected components share one Frozen Region ID",
+          "semanticInference": null
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-008-V2-CAND-03",
+      "sourceCandidateId": "FLD-008-V2-CAND-03",
+      "fixtureId": "FLD-008",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          8,
+          36
+        ],
+        "sourceComponentIds": [
+          "R00008-C001",
+          "R00036-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-008-R00008-C001",
+          "FP-FLD-008-R00036-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-008-V2-CAND-03.png",
+        "selectionEvidence": {
+          "fact": "near representative colors plus explicit spatial evidence",
+          "mediatingStrokeRegionIds": [
+            1
+          ],
+          "representativeDeltaE00": 1.343387,
+          "semanticInference": null,
+          "spatialEvidence": "TWO_HOP_THROUGH_STROKE"
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-008-V2-CAND-04",
+      "sourceCandidateId": "FLD-008-V2-CAND-04",
+      "fixtureId": "FLD-008",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          9,
+          14
+        ],
+        "sourceComponentIds": [
+          "R00009-C001",
+          "R00014-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-008-R00009-C001",
+          "FP-FLD-008-R00014-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-008-V2-CAND-04.png",
+        "selectionEvidence": {
+          "fact": "near representative colors plus explicit spatial evidence",
+          "mediatingStrokeRegionIds": [
+            1
+          ],
+          "representativeDeltaE00": 1.362756,
+          "semanticInference": null,
+          "spatialEvidence": "DIRECT_4_CONNECTED"
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-008-V2-CAND-05",
+      "sourceCandidateId": "FLD-008-V2-CAND-05",
+      "fixtureId": "FLD-008",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          9,
+          11
+        ],
+        "sourceComponentIds": [
+          "R00009-C001",
+          "R00011-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-008-R00009-C001",
+          "FP-FLD-008-R00011-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-008-V2-CAND-05.png",
+        "selectionEvidence": {
+          "fact": "two fill-like Frozen Regions share a direct 4-connected boundary",
+          "semanticInference": null,
+          "sharedBoundaryCoverage": 1,
+          "uniqueSharedEdgeCount": 1960
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-008-V2-CAND-06",
+      "sourceCandidateId": "FLD-008-V2-CAND-06",
+      "fixtureId": "FLD-008",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          9,
+          17
+        ],
+        "sourceComponentIds": [
+          "R00009-C001",
+          "R00017-C004"
+        ],
+        "pieceIds": [
+          "FP-FLD-008-R00009-C001",
+          "FP-FLD-008-R00017-C004"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-008-V2-CAND-06.png",
+        "selectionEvidence": {
+          "fact": "two fill-like Frozen Regions share a direct 4-connected boundary",
+          "semanticInference": null,
+          "sharedBoundaryCoverage": 1,
+          "uniqueSharedEdgeCount": 1302
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-008-V2-CAND-07",
+      "sourceCandidateId": "FLD-008-V2-CAND-07",
+      "fixtureId": "FLD-008",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          14,
+          15
+        ],
+        "sourceComponentIds": [
+          "R00014-C001",
+          "R00015-C002"
+        ],
+        "pieceIds": [
+          "FP-FLD-008-R00014-C001",
+          "FP-FLD-008-R00015-C002"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-008-V2-CAND-07.png",
+        "selectionEvidence": {
+          "fact": "two fill-like Frozen Regions share a direct 4-connected boundary",
+          "semanticInference": null,
+          "sharedBoundaryCoverage": 0.52469136,
+          "uniqueSharedEdgeCount": 765
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-008-V2-CAND-08",
+      "sourceCandidateId": "FLD-008-V2-CAND-08",
+      "fixtureId": "FLD-008",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          9,
+          15
+        ],
+        "sourceComponentIds": [
+          "R00009-C001",
+          "R00015-C002"
+        ],
+        "pieceIds": [
+          "FP-FLD-008-R00009-C001",
+          "FP-FLD-008-R00015-C002"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-008-V2-CAND-08.png",
+        "selectionEvidence": {
+          "fact": "two fill-like Frozen Regions share a direct 4-connected boundary",
+          "semanticInference": null,
+          "sharedBoundaryCoverage": 0.47530864,
+          "uniqueSharedEdgeCount": 693
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-008-V2-CAND-09",
+      "sourceCandidateId": "FLD-008-V2-CAND-09",
+      "fixtureId": "FLD-008",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          9,
+          34
+        ],
+        "sourceComponentIds": [
+          "R00009-C001",
+          "R00034-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-008-R00009-C001",
+          "FP-FLD-008-R00034-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-008-V2-CAND-09.png",
+        "selectionEvidence": {
+          "bboxGapPixels": 7,
+          "combinedStrokeBoundaryEdges": 4373,
+          "fact": "two fill-like Regions have two-hop adjacency through a stroke-like Region",
+          "mediatingStrokeRegionIds": [
+            1
+          ],
+          "semanticInference": null
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-008-V2-CAND-10",
+      "sourceCandidateId": "FLD-008-V2-CAND-10",
+      "fixtureId": "FLD-008",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          8,
+          9
+        ],
+        "sourceComponentIds": [
+          "R00008-C001",
+          "R00009-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-008-R00008-C001",
+          "FP-FLD-008-R00009-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-008-V2-CAND-10.png",
+        "selectionEvidence": {
+          "bboxGapPixels": 10,
+          "combinedStrokeBoundaryEdges": 4493,
+          "fact": "two fill-like Regions have two-hop adjacency through a stroke-like Region",
+          "mediatingStrokeRegionIds": [
+            1
+          ],
+          "semanticInference": null
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-008-V2-CAND-11",
+      "sourceCandidateId": "FLD-008-V2-CAND-11",
+      "fixtureId": "FLD-008",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          34,
+          36
+        ],
+        "sourceComponentIds": [
+          "R00034-C001",
+          "R00036-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-008-R00034-C001",
+          "FP-FLD-008-R00036-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-008-V2-CAND-11.png",
+        "selectionEvidence": {
+          "bboxGapPixels": 18,
+          "combinedStrokeBoundaryEdges": 946,
+          "fact": "two fill-like Regions have two-hop adjacency through a stroke-like Region",
+          "mediatingStrokeRegionIds": [
+            1
+          ],
+          "semanticInference": null
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-008-V2-CAND-12",
+      "sourceCandidateId": "FLD-008-V2-CAND-12",
+      "fixtureId": "FLD-008",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          8,
+          14
+        ],
+        "sourceComponentIds": [
+          "R00008-C001",
+          "R00014-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-008-R00008-C001",
+          "FP-FLD-008-R00014-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-008-V2-CAND-12.png",
+        "selectionEvidence": {
+          "bboxGapPixels": 37.4433,
+          "combinedStrokeBoundaryEdges": 1279,
+          "fact": "two fill-like Regions have two-hop adjacency through a stroke-like Region",
+          "mediatingStrokeRegionIds": [
+            1
+          ],
+          "semanticInference": null
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-008-V2-CAND-13",
+      "sourceCandidateId": "FLD-008-V2-CAND-13",
+      "fixtureId": "FLD-008",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          14,
+          34
+        ],
+        "sourceComponentIds": [
+          "R00014-C001",
+          "R00034-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-008-R00014-C001",
+          "FP-FLD-008-R00034-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-008-V2-CAND-13.png",
+        "selectionEvidence": {
+          "bboxGapPixels": 47.3814,
+          "combinedStrokeBoundaryEdges": 1159,
+          "fact": "two fill-like Regions have two-hop adjacency through a stroke-like Region",
+          "mediatingStrokeRegionIds": [
+            1
+          ],
+          "semanticInference": null
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-008-V2-CAND-14",
+      "sourceCandidateId": "FLD-008-V2-CAND-14",
+      "fixtureId": "FLD-008",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          9,
+          36
+        ],
+        "sourceComponentIds": [
+          "R00009-C001",
+          "R00036-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-008-R00009-C001",
+          "FP-FLD-008-R00036-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-008-V2-CAND-14.png",
+        "selectionEvidence": {
+          "bboxGapPixels": 53,
+          "combinedStrokeBoundaryEdges": 4567,
+          "fact": "two fill-like Regions have two-hop adjacency through a stroke-like Region",
+          "mediatingStrokeRegionIds": [
+            1
+          ],
+          "semanticInference": null
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-008-V2-CAND-15",
+      "sourceCandidateId": "FLD-008-V2-CAND-15",
+      "fixtureId": "FLD-008",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          1,
+          9
+        ],
+        "sourceComponentIds": [
+          "R00009-C001",
+          "R00001-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-008-R00009-C001",
+          "FP-FLD-008-R00001-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-008-V2-CAND-15.png",
+        "selectionEvidence": {
+          "fact": "bounded legacy stroke-vs-fill stress control",
+          "fillRegionId": 9,
+          "semanticInference": null,
+          "strokeRegionId": 1,
+          "uniqueSharedEdgeCount": 3997
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    },
+    {
+      "reviewId": "m2-v2-FLD-008-V2-CAND-16",
+      "sourceCandidateId": "FLD-008-V2-CAND-16",
+      "fixtureId": "FLD-008",
+      "domain": "algorithm_prediction",
+      "state": "DRAFT",
+      "signoff": "NOT_SIGNED",
+      "notGtUntilSignedOff": true,
+      "endpointEvidence": {
+        "sourceRegionIds": [
+          1,
+          14
+        ],
+        "sourceComponentIds": [
+          "R00014-C001",
+          "R00001-C001"
+        ],
+        "pieceIds": [
+          "FP-FLD-008-R00014-C001",
+          "FP-FLD-008-R00001-C001"
+        ],
+        "card": "benchmarks/fabrication-layer-decomposition/fabrication-decomposition/reports/project-real-b2-gt-review-v2/cards/FLD-008-V2-CAND-16.png",
+        "selectionEvidence": {
+          "fact": "bounded legacy stroke-vs-fill stress control",
+          "fillRegionId": 14,
+          "semanticInference": null,
+          "strokeRegionId": 1,
+          "uniqueSharedEdgeCount": 783
+        }
+      },
+      "question": "Select relation outcome; candidate is not GT.",
+      "options": [
+        "VISUAL_OCCLUSION_ONLY",
+        "ASSEMBLY_PRECEDENCE_ONLY",
+        "BOTH",
+        "NO_RELATION",
+        "UNRESOLVED",
+        "NOT_EVALUATED",
+        "NOT_APPLICABLE"
+      ],
+      "answer": null
+    }
+  ],
+  "datasetSplitContract": {
+    "allowedSplits": [
+      "development",
+      "calibration",
+      "holdout"
+    ],
+    "groupBy": "sourceLineageId",
+    "rule": "All PSD/flatten/PNG/renders derived from one sourceLineageId remain in one split."
+  },
+  "flatBenchmarkLeakageDenylist": [
+    "psdLayerName",
+    "psdZOrder",
+    "reviewAnswers",
+    "reviewedGT",
+    "semanticCategoryHint",
+    "fabricationAnnotation"
+  ]
+}
