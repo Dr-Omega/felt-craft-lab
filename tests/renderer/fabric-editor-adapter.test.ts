@@ -164,6 +164,7 @@ class FakeCanvas implements FabricCanvasPort {
 }
 
 function materialAsset(type: AssetRecord['type']): AssetRecord {
+  const snapshotId = validScene.assetSnapshotId
   return {
     ...cloneFixture(validAsset),
     assetId: type === 'background' ? 'background_moon_001' : validAsset.assetId,
@@ -171,8 +172,8 @@ function materialAsset(type: AssetRecord['type']): AssetRecord {
     thumbnailUrl: undefined,
     preSplitDataUrl: undefined,
     imageUrl: type === 'background'
-      ? 'felt-resource://material/mock-background.png'
-      : 'felt-resource://material/mock-sticker.png'
+      ? `felt-resource://material/${snapshotId}/mock-background.png`
+      : `felt-resource://material/${snapshotId}/mock-sticker.png`
   }
 }
 
@@ -239,8 +240,8 @@ describe('FabricEditorAdapter', () => {
     const exported = adapter.exportScene()
 
     expect(loadedRefs).toEqual([
-      'felt-resource://material/mock-background.png',
-      'felt-resource://material/mock-sticker.png'
+      `felt-resource://material/${validScene.assetSnapshotId}/mock-background.png`,
+      `felt-resource://material/${validScene.assetSnapshotId}/mock-sticker.png`
     ])
     expect(canvas.backgroundImage?.assetId).toBe('background_moon_001')
     expect(canvas.backgroundImage?.selectable).toBe(false)
@@ -336,8 +337,8 @@ describe('FabricEditorAdapter', () => {
 
     adapter.dispose()
     expect(released).toEqual(expect.arrayContaining([
-      'felt-resource://material/mock-background.png',
-      'felt-resource://material/mock-sticker.png'
+      `felt-resource://material/${validScene.assetSnapshotId}/mock-background.png`,
+      `felt-resource://material/${validScene.assetSnapshotId}/mock-sticker.png`
     ]))
     expect(canvas.disposed).toBe(true)
     expect([...canvas.listeners.values()].flat()).toHaveLength(0)
@@ -345,7 +346,7 @@ describe('FabricEditorAdapter', () => {
 
   it('does not silently replace an unavailable felt-resource material', async () => {
     const unavailable = materialAsset('sticker')
-    unavailable.imageUrl = 'felt-resource://material/missing.png'
+    unavailable.imageUrl = `felt-resource://material/${validScene.assetSnapshotId}/missing.png`
     const { adapter } = createHarness(cloneFixture(validScene), new Set([unavailable.imageUrl]))
     await adapter.importScene(cloneFixture(validScene), resolver())
     const access = { ...validAccess, assetId: unavailable.assetId }
@@ -365,6 +366,23 @@ describe('FabricEditorAdapter', () => {
     outsideBackground.assetId = 'background_not_in_snapshot'
     await expect(adapter.setBackground(outsideBackground, { ...validAccess, assetId: outsideBackground.assetId }))
       .rejects.toMatchObject({ code: 'ASSET_SNAPSHOT_MISMATCH' })
+    expect(loadedRefs).toHaveLength(2)
+  })
+
+  it('rejects same assetId from a different snapshot ResourceRef (no latest mix-in)', async () => {
+    const { adapter, loadedRefs } = createHarness()
+    await adapter.importScene(cloneFixture(validScene), resolver())
+    const latestMixIn = materialAsset('sticker')
+    latestMixIn.imageUrl = 'felt-resource://material/snapshot_latest_zzz/mock-sticker.png'
+    latestMixIn.contentVersion = 2
+    const access = { ...validAccess, assetId: latestMixIn.assetId }
+
+    await expect(adapter.addSticker(latestMixIn, access)).rejects.toMatchObject({ code: 'ASSET_SNAPSHOT_MISMATCH' })
+    const latestBg = materialAsset('background')
+    latestBg.imageUrl = 'felt-resource://material/snapshot_latest_zzz/mock-background.png'
+    await expect(adapter.setBackground(latestBg, { ...validAccess, assetId: latestBg.assetId })).rejects.toMatchObject({
+      code: 'ASSET_SNAPSHOT_MISMATCH'
+    })
     expect(loadedRefs).toHaveLength(2)
   })
 
@@ -435,6 +453,42 @@ describe('FabricEditorAdapter', () => {
     await expect(adapter.redo()).resolves.toBe(true)
     expect(adapter.getRecoveryIssues()).toEqual([])
     expect(adapter.exportScene().objects).toEqual([])
+  })
+
+  it('no-ops deleteSelected and selected layer ops on recovery placeholders', async () => {
+    const unavailableSticker = materialAsset('sticker')
+    unavailableSticker.imageUrl = 'felt-resource://material/missing-selected.png'
+    const scene = cloneFixture(validScene)
+    const { adapter, canvas } = createHarness(scene, new Set([unavailableSticker.imageUrl]))
+    await adapter.importScene(scene, {
+      async resolveAsset(assetId): Promise<AssetRecord> {
+        if (assetId === 'background_moon_001') return materialAsset('background')
+        if (assetId === validAsset.assetId) return unavailableSticker
+        throw new Error('not found')
+      }
+    })
+
+    const placeholder = canvas.getObjects()[0]
+    expect(placeholder.selectable).toBe(false)
+    canvas.setActiveObject(placeholder)
+    const orderBefore = canvas.getObjects().map((object) => object.objectId)
+
+    expect(() => adapter.bringSelectedForward()).not.toThrow()
+    expect(() => adapter.sendSelectedBackward()).not.toThrow()
+    expect(() => adapter.bringSelectedToFront()).not.toThrow()
+    expect(() => adapter.sendSelectedToBack()).not.toThrow()
+    expect(canvas.getObjects().map((object) => object.objectId)).toEqual(orderBefore)
+    expect(adapter.getRecoveryIssues()).toHaveLength(1)
+
+    expect(() => adapter.deleteSelected()).not.toThrow()
+    expect(canvas.getObjects()).toHaveLength(1)
+    expect(adapter.getRecoveryIssues()).toHaveLength(1)
+    expect(adapter.getRecoveryIssues()[0]?.assetId).toBe(validAsset.assetId)
+
+    // Explicit Recovery repair path still allows deleting the placeholder by objectId.
+    expect(() => adapter.deleteObject(placeholder.objectId!)).not.toThrow()
+    expect(canvas.getObjects()).toHaveLength(0)
+    expect(adapter.getRecoveryIssues()).toHaveLength(0)
   })
 
   it('clears recovery issues by objectId when duplicate missing sticker instances share an assetId', async () => {

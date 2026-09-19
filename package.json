@@ -18,10 +18,12 @@
     "typecheck:node": "tsc --noEmit -p tsconfig.node.json",
     "typecheck:web": "vue-tsc --noEmit -p tsconfig.web.json",
     "typecheck:test": "tsc --noEmit -p tsconfig.test.json",
-    "test": "vitest run",
+    "test": "vitest run && npm run test:assets-builder",
+    "test:assets-builder": "python -m unittest discover -s tests/assets -p \"test_build_ywn_manifest.py\" -v",
     "test:watch": "vitest",
     "test:electron-resource": "npm run build -- --mode test && node scripts/run-electron-resource-smoke.cjs",
     "test:electron-ai": "npm run build && node scripts/run-electron-ai-smoke.cjs",
+    "build:assets": "python scripts/build-ywn-manifest.py",
     "dist:win": "npm run build && electron-builder --win --x64 --config.electronDist=node_modules/electron/dist",
     "dist:win:dir": "npm run build && electron-builder --win --x64 --dir --config.electronDist=node_modules/electron/dist",
     "postinstall": "electron-builder install-app-deps"
