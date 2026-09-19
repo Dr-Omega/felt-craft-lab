@@ -52,7 +52,7 @@ export function validateMappings(mappings: EndpointMapping[], knownEvidence: Rea
     mapping.evidenceArtifactIds.forEach(id => { if (!knownEvidence.has(id)) error(errors, `$[${index}].evidenceArtifactIds`, 'Dangling evidence') })
     if (mapping.state === 'APPROVED') {
       const approval = mapping.approvalReviewId ? locked.find(review => review.reviewId === mapping.approvalReviewId) : undefined
-      if (!approval || approval.reviewType !== 'MAPPING' || approval.binding.targetId !== mapping.mappingId) error(errors, `$[${index}].approvalReviewId`, 'Approved mapping requires its own current signed MAPPING review')
+      if (!approval || approval.reviewType !== 'MAPPING' || approval.answer !== 'APPROVE' || approval.binding.targetId !== mapping.mappingId) error(errors, `$[${index}].approvalReviewId`, 'Approved mapping requires its own current signed MAPPING APPROVE review')
     }
   })
   return errors.length ? bad(errors) : ok(mappings)

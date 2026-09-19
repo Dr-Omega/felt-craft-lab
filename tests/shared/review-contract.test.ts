@@ -34,6 +34,7 @@ describe('M2 review contract', () => {
     expect(validateMappings([mapping('map-a', approvedRelation.reviewId)], new Set(['e']), [approvedRelation], new Map([['relation-1', relationBinding], ['map-a', bindingA]])).ok).toBe(false)
     expect(validateMappings([mapping('map-b', mappingAReview.reviewId)], new Set(['e']), [mappingAReview], bindings).ok).toBe(false)
     expect(validateMappings([mapping('map-a', mappingAReview.reviewId)], new Set(['e']), [{ ...mappingAReview, binding: { ...bindingA, targetVersion: 'stale' } }], bindings).ok).toBe(false)
+    expect(validateMappings([mapping('map-a', mappingAReview.reviewId)], new Set(['e']), [{ ...mappingAReview, answer: 'REJECT' }], bindings).ok).toBe(false)
     expect(validateMappings([mapping('map-a', mappingAReview.reviewId)], new Set(['e']), [mappingAReview, mappingBReview], bindings).ok).toBe(true)
   })
 
