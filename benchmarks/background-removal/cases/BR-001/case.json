@@ -1,5 +1,7 @@
 {
   "caseId": "BR-001",
+  "datasetRole": "SYNTHETIC_DEBUG",
+  "sourceLineageId": "synthetic/br-001",
   "category": "light-subject-retention",
   "description": "浅灰背景+白色大褂卡通人物。验证浅色主体不会被与背景一同删除。",
   "criticalStructures": [

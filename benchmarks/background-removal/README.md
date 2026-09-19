@@ -30,10 +30,14 @@ case.json
 `criticalStructures`. Before an all-case run, every discovered case is checked
 for a matching and unique `caseId`, a decodable source and GT of equal size, a
 strictly binary GT (`{0,255}`), and a non-empty `criticalStructures` list. The
-acceptance dataset is not complete until it has at least 15 valid reviewed
-cases. Do not treat a partial run as a model decision.
+acceptance dataset is not complete until `acceptance-dataset.json` lists at
+least 15 distinct `sourceLineageId` entries that are
+`PROJECT_REAL_ACCEPTANCE`, identity-pinned, and GT-reviewed/signed by the
+`PROJECT_DATASET_REVIEWER` role. Directory count is never an acceptance gate:
+unlisted cases and `SYNTHETIC_DEBUG` cases are excluded. Do not treat a
+partial run as a model decision.
 
-`BR-001` is a small synthetic fixture: a cartoon doctor in a white coat on a
+`BR-001` is a `SYNTHETIC_DEBUG` fixture: a cartoon doctor in a white coat on a
 light-grey background.  It exists to catch the specific failure where a light
 subject is removed with its backdrop; it is **not** a substitute for the 15
 real reviewed cases that the owner must provide.
@@ -100,10 +104,18 @@ before starting any timed session initialization or inference. Use a single
 named case only for plumbing/debugging; it is never an acceptance run.
 
 The only status that permits a model-selection conclusion is
-`ACCEPTANCE_COMPLETE`. It requires a valid full dataset, every selected model
+`ACCEPTANCE_COMPLETE`. It requires a valid manifest-selected full dataset of
+15 independent project-real source lineages, GT review/signoff, every selected model
 to initialize, every model/case result to succeed, every manual review to be
 complete, and an exact matching environment/artifact reproducibility record. `RUN_COMPLETE_UNREVIEWED` and
 `RUN_COMPLETE_UNVERIFIED` are intentionally not acceptance outcomes.
+
+Each run freezes the acceptance manifest SHA, selected case identities and
+source/GT/case metadata SHA-256 values, plus the environment contract and its
+SHA. Finalization rechecks the frozen source/GT/case identities and interprets
+runtime versions using the run's frozen environment contract, not a later
+working-tree version. Dataset GT review is independent of the subsequent model
+output manual review.
 
 ## Measurement definitions
 

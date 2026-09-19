@@ -37,13 +37,81 @@ def load_config() -> dict[str, Any]:
 def load_acceptance_environment() -> dict[str, Any]:
     """The single machine-readable runtime contract for formal acceptance."""
     contract = load_json(BENCHMARK_ROOT / "acceptance-environment.json")
+    validate_acceptance_environment_contract(contract)
+    return contract
+
+
+def validate_acceptance_environment_contract(contract: object) -> None:
+    """Validate a frozen contract without consulting the current worktree."""
+    if not isinstance(contract, dict):
+        raise ValueError("invalid acceptance environment contract")
     packages = contract.get("packages")
     if contract.get("schemaVersion") != "background-removal.acceptance-environment/1" or not isinstance(contract.get("python"), str) or not isinstance(packages, dict):
         raise ValueError("invalid acceptance environment contract")
     required = {"rembg", "onnxruntime", "Pillow", "numpy", "psutil"}
     if set(packages) != required or not all(isinstance(packages[name], str) and packages[name] for name in required):
         raise ValueError("acceptance environment contract must pin every required package")
-    return contract
+
+
+def canonical_environment_contract_sha256(contract: object) -> str:
+    """Hash the semantic environment contract, independent of file formatting."""
+    validate_acceptance_environment_contract(contract)
+    payload = json.dumps(contract, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
+def validate_frozen_formal_dataset_snapshot(snapshot: object, dataset_validation: object) -> dict[str, int]:
+    """Fail closed unless a frozen all-cases snapshot remains formal-acceptance eligible."""
+    if not isinstance(snapshot, dict) or not isinstance(dataset_validation, dict):
+        raise ValueError("formal acceptance requires a dataset snapshot and validation")
+    required_count = snapshot.get("requiredProjectRealReviewedCaseCount")
+    cases = snapshot.get("cases")
+    selected = snapshot.get("selectedCaseIds")
+    manifest_sha = snapshot.get("acceptanceDatasetManifestSha256")
+    if required_count != 15 or not isinstance(cases, list) or len(cases) < required_count:
+        raise ValueError("formal dataset snapshot must contain at least 15 required project-real cases")
+    if not isinstance(selected, list) or not all(isinstance(case_id, str) and case_id for case_id in selected):
+        raise ValueError("formal dataset snapshot selectedCaseIds is invalid")
+    if len(selected) != len(set(selected)):
+        raise ValueError("formal dataset snapshot selectedCaseIds contains duplicates")
+    if not isinstance(manifest_sha, str) or len(manifest_sha) != 64:
+        raise ValueError("formal dataset snapshot manifest identity is invalid")
+
+    case_ids: set[str] = set()
+    lineages: set[str] = set()
+    for entry in cases:
+        if not isinstance(entry, dict):
+            raise ValueError("formal dataset snapshot case must be an object")
+        case_id = entry.get("caseId")
+        lineage = entry.get("sourceLineageId")
+        if not isinstance(case_id, str) or not case_id or not isinstance(lineage, str) or not lineage:
+            raise ValueError("formal dataset snapshot case identity is invalid")
+        if case_id in case_ids or lineage in lineages:
+            raise ValueError("formal dataset snapshot contains duplicate caseId or sourceLineageId")
+        case_ids.add(case_id)
+        lineages.add(lineage)
+        if entry.get("datasetRole") != "PROJECT_REAL_ACCEPTANCE":
+            raise ValueError("formal dataset snapshot may contain only PROJECT_REAL_ACCEPTANCE cases")
+        tags = entry.get("coverageTags")
+        if not isinstance(tags, list) or not tags or not all(isinstance(tag, str) and tag.strip() for tag in tags):
+            raise ValueError("formal dataset snapshot coverageTags must be a non-empty string array")
+        review = entry.get("groundTruthReview")
+        if not isinstance(review, dict) or review.get("state") != "APPROVED" or review.get("signoff") != "SIGNED_OFF" or review.get("reviewerRole") != "PROJECT_DATASET_REVIEWER":
+            raise ValueError("formal dataset snapshot ground truth review is not approved and signed off")
+
+    if set(selected) != case_ids:
+        raise ValueError("formal dataset snapshot selectedCaseIds do not match snapshot cases")
+    recomputed = {"projectRealReviewedCaseCount": len(case_ids), "sourceLineageCount": len(lineages)}
+    if (
+        dataset_validation.get("valid") is not True
+        or dataset_validation.get("requiredProjectRealReviewedCaseCount") != required_count
+        or dataset_validation.get("projectRealReviewedCaseCount") != recomputed["projectRealReviewedCaseCount"]
+        or dataset_validation.get("sourceLineageCount") != recomputed["sourceLineageCount"]
+        or dataset_validation.get("selectedCaseIds") != selected
+        or dataset_validation.get("manifestSha256") != manifest_sha
+    ):
+        raise ValueError("formal dataset validation does not match frozen snapshot")
+    return recomputed
 
 
 def load_manifest() -> dict[str, dict[str, Any]]:
@@ -368,6 +436,10 @@ def installed_runtime_versions() -> dict[str, str | None]:
 def runtime_environment_validation(runtime_versions: dict[str, Any], contract: dict[str, Any] | None = None) -> dict[str, Any]:
     """Fail closed unless every formal runtime requirement exactly matches."""
     expected = contract or load_acceptance_environment()
+    try:
+        validate_acceptance_environment_contract(expected)
+    except ValueError as exc:
+        return {"valid": False, "mismatches": {"environmentContract": {"expected": "valid frozen contract", "actual": str(exc)}}}
     required_python = str(expected["python"])
     required_packages = expected["packages"]
     mismatches: dict[str, dict[str, Any]] = {}
@@ -383,7 +455,19 @@ def runtime_environment_validation(runtime_versions: dict[str, Any], contract: d
 
 def reproducibility_complete(reproducibility: dict[str, Any], selected_models: list[str]) -> bool:
     runtime_versions = reproducibility.get("runtimeVersions", {})
-    if not isinstance(runtime_versions, dict) or not runtime_environment_validation(runtime_versions).get("valid"):
+    environment_contract = reproducibility.get("environmentContract")
+    environment_contract_sha256 = reproducibility.get("environmentContractSha256")
+    try:
+        expected_contract_sha256 = canonical_environment_contract_sha256(environment_contract)
+    except ValueError:
+        return False
+    if (
+        not isinstance(runtime_versions, dict)
+        or not isinstance(environment_contract, dict)
+        or not isinstance(environment_contract_sha256, str)
+        or environment_contract_sha256 != expected_contract_sha256
+        or not runtime_environment_validation(runtime_versions, environment_contract).get("valid")
+    ):
         return False
     artifacts = reproducibility.get("modelArtifacts", {})
     for model_id in selected_models:
@@ -442,15 +526,22 @@ def model_run_status(case_rows: list[dict[str, Any]], expected_case_count: int) 
 def classify_benchmark_status(result: dict[str, Any]) -> str:
     """Return the only status allowed to make an acceptance conclusion explicit."""
     dataset_validation = result.get("datasetValidation", {})
-    if (
-        result.get("scope") != "all-cases"
-        or not dataset_validation.get("valid")
-        or int(dataset_validation.get("completeCaseCount", 0)) < int(dataset_validation.get("requiredCaseCount", 1))
-    ):
+    if result.get("scope") != "all-cases":
+        return "PARTIAL"
+    try:
+        validate_frozen_formal_dataset_snapshot(result.get("datasetSnapshot"), dataset_validation)
+    except ValueError:
         return "PARTIAL"
 
     selected_models = list(result.get("selectedModels", []))
-    case_ids = list(result.get("caseIds", []))
+    snapshot = result["datasetSnapshot"]
+    snapshot_case_ids = snapshot["selectedCaseIds"]
+    if result.get("caseIds") != snapshot_case_ids:
+        return "PARTIAL"
+    configuration = result.get("configuration")
+    if not isinstance(configuration, dict) or selected_models != configuration.get("modelOrder"):
+        return "PARTIAL"
+    case_ids = snapshot_case_ids
     expected_pairs = {(model_id, case_id) for model_id in selected_models for case_id in case_ids}
     rows = result.get("caseResults", [])
     actual_pairs = {(row.get("modelId"), row.get("caseId")) for row in rows}

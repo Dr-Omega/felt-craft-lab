@@ -16,7 +16,7 @@ from run_benchmark import load_cases  # noqa: E402
 class AcceptanceDatasetGuardTests(unittest.TestCase):
     def test_full_acceptance_run_fails_closed_before_fifteen_complete_cases_exist(self) -> None:
         args = SimpleNamespace(case=None, all_cases=True)
-        with self.assertRaisesRegex(ValueError, "requires 15 complete cases"):
+        with self.assertRaisesRegex(ValueError, "requires 15 approved project-real reviewed cases"):
             load_cases(args, load_config())
 
 

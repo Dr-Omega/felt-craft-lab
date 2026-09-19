@@ -35,7 +35,7 @@ class CaseContractTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             case = Path(temporary) / "BR-777"
             case.mkdir()
-            (case / "case.json").write_text('{"caseId":"BR-777","category":"test","description":"jpeg","criticalStructures":["arm"]}', encoding="utf-8")
+            (case / "case.json").write_text('{"caseId":"BR-777","datasetRole":"SYNTHETIC_DEBUG","sourceLineageId":"synthetic/jpeg","category":"test","description":"jpeg","criticalStructures":["arm"]}', encoding="utf-8")
             Image.new("RGB", (8, 9), "white").save(case / "source.jpg")
             Image.new("L", (8, 9), 255).save(case / "ground_truth.png")
 
@@ -47,7 +47,7 @@ class CaseContractTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             case = Path(temporary) / "BR-778"
             case.mkdir()
-            (case / "case.json").write_text('{"caseId":"BR-other","category":"test","description":"bad","criticalStructures":[]}', encoding="utf-8")
+            (case / "case.json").write_text('{"caseId":"BR-other","datasetRole":"SYNTHETIC_DEBUG","sourceLineageId":"synthetic/bad","category":"test","description":"bad","criticalStructures":[]}', encoding="utf-8")
             Image.new("RGB", (8, 9), "white").save(case / "source.png")
             Image.new("L", (8, 9), 127).save(case / "ground_truth.png")
 
@@ -58,7 +58,7 @@ class CaseContractTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             case = Path(temporary) / "BR-779"
             case.mkdir()
-            (case / "case.json").write_text('{"caseId":"BR-779","category":"test","description":"bad mask","criticalStructures":["arm"]}', encoding="utf-8")
+            (case / "case.json").write_text('{"caseId":"BR-779","datasetRole":"SYNTHETIC_DEBUG","sourceLineageId":"synthetic/bad-mask","category":"test","description":"bad mask","criticalStructures":["arm"]}', encoding="utf-8")
             Image.new("RGB", (8, 9), "white").save(case / "source.png")
             Image.new("L", (8, 9), 127).save(case / "ground_truth.png")
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import json
 import sys
 import tempfile
 import unittest
@@ -14,7 +15,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 import run_benchmark  # noqa: E402
-from benchmark_lib import classify_benchmark_status, sha256_file  # noqa: E402
+import benchmark_lib  # noqa: E402
+from benchmark_lib import canonical_environment_contract_sha256, classify_benchmark_status, sha256_file  # noqa: E402
 from finalize_benchmark import merge_manual_reviews  # noqa: E402
 
 
@@ -27,11 +29,17 @@ def ensure_output() -> tuple[Path, str]:
 
 def run_fixture(*, run_id: str = "run-current") -> dict[str, object]:
     output, output_sha = ensure_output()
+    source = ROOT / "cases" / "BR-001" / "source.png"
+    ground_truth = ROOT / "cases" / "BR-001" / "ground_truth.png"
+    metadata = ROOT / "cases" / "BR-001" / "case.json"
+    case = json.loads(metadata.read_text(encoding="utf-8"))
+    environment_contract = {"schemaVersion": "background-removal.acceptance-environment/1", "python": "3.12", "packages": {"rembg": "2.0.81", "onnxruntime": "1.29.0", "Pillow": "12.3.0", "numpy": "2.5.2", "psutil": "7.2.2"}}
     return {
         "runId": run_id,
         "configuration": {"modelOrder": ["current-rule"]},
-        "scope": "all-cases",
-        "datasetValidation": {"valid": True, "completeCaseCount": 1, "requiredCaseCount": 1},
+        "scope": "case:BR-001",
+        "datasetValidation": {"valid": False, "manifestSha256": None, "projectRealReviewedCaseCount": 0, "requiredProjectRealReviewedCaseCount": 15, "sourceLineageCount": 1, "selectedCaseIds": ["BR-001"], "completeCaseCount": 1, "requiredCaseCount": 1},
+        "datasetSnapshot": {"acceptanceDatasetManifestSha256": None, "requiredProjectRealReviewedCaseCount": 15, "selectedCaseIds": ["BR-001"], "cases": [{"caseId": "BR-001", "sourceFile": "source.png", "sourceSha256": sha256_file(source), "groundTruthSha256": sha256_file(ground_truth), "caseMetadataSha256": sha256_file(metadata), "sourceLineageId": case["sourceLineageId"], "datasetRole": case["datasetRole"], "coverageTags": [], "groundTruthReview": None}]},
         "selectedModels": ["current-rule"],
         "caseIds": ["BR-001"],
         "caseSources": {"BR-001": "source.png"},
@@ -44,6 +52,8 @@ def run_fixture(*, run_id: str = "run-current") -> dict[str, object]:
         }],
         "reproducibility": {
             "runtimeVersions": {"python": "3.12.7", "rembg": "2.0.81", "onnxruntime": "1.29.0", "Pillow": "12.3.0", "numpy": "2.5.2", "psutil": "7.2.2"},
+            "environmentContract": environment_contract,
+            "environmentContractSha256": canonical_environment_contract_sha256(environment_contract),
             "modelArtifacts": {"current-rule": {"artifactVerified": True, "expectedSha256": "NOT_APPLICABLE", "actualSha256": "NOT_APPLICABLE", "sha256Match": "NOT_APPLICABLE", "exactModelRevision": "not-applicable", "weightLicenseVerificationStatus": "NOT_APPLICABLE"}},
         },
         "notes": [],
@@ -54,23 +64,46 @@ def complete_review_document(run_id: str) -> dict[str, object]:
     return {"runId": run_id, "reviews": {("BR-001", "current-rule"): {"boundaryQuality": "A", "criticalStructure": "PASS", "visibleInternalHole": False, "hardFailReasons": []}}}
 
 
+def formal_run_fixture() -> dict[str, object]:
+    """A synthetic in-memory formal report used only to exercise binding gates before I/O."""
+    run = run_fixture()
+    case_ids = [f"BR-{index:03d}" for index in range(1, 16)]
+    template = copy.deepcopy(run["datasetSnapshot"]["cases"][0])
+    cases = []
+    for case_id in case_ids:
+        entry = copy.deepcopy(template)
+        entry.update({
+            "caseId": case_id,
+            "sourceLineageId": f"project/{case_id.lower()}",
+            "datasetRole": "PROJECT_REAL_ACCEPTANCE",
+            "coverageTags": ["unit-test"],
+            "groundTruthReview": {"state": "APPROVED", "signoff": "SIGNED_OFF", "reviewerRole": "PROJECT_DATASET_REVIEWER"},
+        })
+        cases.append(entry)
+    run.update({
+        "scope": "all-cases",
+        "configuration": {"modelOrder": ["current-rule"]},
+        "selectedModels": ["current-rule"],
+        "caseIds": case_ids,
+        "datasetValidation": {"valid": True, "manifestSha256": "f" * 64, "projectRealReviewedCaseCount": 15, "requiredProjectRealReviewedCaseCount": 15, "sourceLineageCount": 15, "selectedCaseIds": list(case_ids)},
+        "datasetSnapshot": {"acceptanceDatasetManifestSha256": "f" * 64, "requiredProjectRealReviewedCaseCount": 15, "selectedCaseIds": list(case_ids), "cases": cases},
+    })
+    return run
+
+
 class ReviewFinalizeTests(unittest.TestCase):
     def test_missing_review_complete_finalize_writes_all_final_artifacts_without_crashing(self) -> None:
         finalized = merge_manual_reviews(run_fixture(), {"runId": "run-current", "reviews": {}})
         run_benchmark.write_results(finalized)
 
-        self.assertEqual(finalized["status"], "RUN_COMPLETE_UNREVIEWED")
+        self.assertEqual(finalized["status"], "PARTIAL")
         self.assertTrue((ROOT / "results" / "benchmark-results.json").is_file())
         self.assertTrue((ROOT / "results" / "benchmark-summary.md").is_file())
         self.assertTrue((ROOT / "results" / "comparison.html").is_file())
 
-    def test_same_run_id_allows_merge_and_complete_review_reaches_acceptance(self) -> None:
+    def test_same_run_id_allows_merge_and_debug_review_remains_partial(self) -> None:
         accepted = merge_manual_reviews(run_fixture(), complete_review_document("run-current"))
-        self.assertEqual(classify_benchmark_status(accepted), "ACCEPTANCE_COMPLETE")
-
-        unverified = copy.deepcopy(accepted)
-        unverified["reproducibility"]["runtimeVersions"]["rembg"] = None
-        self.assertEqual(classify_benchmark_status(unverified), "RUN_COMPLETE_UNVERIFIED")
+        self.assertEqual(classify_benchmark_status(accepted), "PARTIAL")
 
     def test_different_run_id_rejects_finalize_and_blocks_old_review_reuse(self) -> None:
         with self.assertRaisesRegex(ValueError, "runId does not match"):
@@ -86,6 +119,31 @@ class ReviewFinalizeTests(unittest.TestCase):
                 merge_manual_reviews(run, complete_review_document("run-current"))
         finally:
             output.write_bytes(original)
+
+    def test_source_gt_or_case_metadata_change_rejects_finalize(self) -> None:
+        for relative in ("source.png", "ground_truth.png", "case.json"):
+            with self.subTest(relative=relative):
+                run = run_fixture()
+                path = ROOT / "cases" / "BR-001" / relative
+                original = path.read_bytes()
+                try:
+                    path.write_bytes(b"changed-after-run")
+                    with self.assertRaises(ValueError):
+                        merge_manual_reviews(run, complete_review_document("run-current"))
+                finally:
+                    path.write_bytes(original)
+
+    def test_frozen_environment_snapshot_survives_worktree_contract_drift(self) -> None:
+        run = run_fixture()
+        accepted = merge_manual_reviews(run, complete_review_document("run-current"))
+        with tempfile.TemporaryDirectory() as temporary:
+            previous_root = benchmark_lib.BENCHMARK_ROOT
+            benchmark_lib.BENCHMARK_ROOT = Path(temporary)
+            try:
+                (Path(temporary) / "acceptance-environment.json").write_text('{"schemaVersion":"changed"}', encoding="utf-8")
+                self.assertEqual(classify_benchmark_status(accepted), "PARTIAL")
+            finally:
+                benchmark_lib.BENCHMARK_ROOT = previous_root
 
     def test_writing_a_new_raw_run_never_overwrites_manual_reviews(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -108,9 +166,51 @@ class ReviewFinalizeTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "forbidden"):
             run_benchmark.validate_run_mode(SimpleNamespace(all_cases=True, allow_model_download=True))
 
+    def test_formal_runner_rejects_model_subsets_but_debug_allows_current_rule(self) -> None:
+        config = {"modelOrder": ["current-rule", "isnet-anime", "birefnet-general-lite", "birefnet-general"]}
+        for subset in (["current-rule"], ["isnet-anime"], config["modelOrder"][:2], config["modelOrder"][:3]):
+            with self.subTest(subset=subset):
+                with self.assertRaisesRegex(ValueError, "complete.*modelOrder"):
+                    run_benchmark.validate_formal_model_selection(SimpleNamespace(all_cases=True), subset, config)
+        run_benchmark.validate_formal_model_selection(SimpleNamespace(all_cases=True), config["modelOrder"], config)
+        run_benchmark.validate_formal_model_selection(SimpleNamespace(all_cases=False), ["current-rule"], config)
+
+    def test_formal_finalization_rejects_synthetic_frozen_snapshot(self) -> None:
+        run = run_fixture()
+        run["scope"] = "all-cases"
+        snapshot_cases = []
+        for index in range(1, 16):
+            entry = copy.deepcopy(run["datasetSnapshot"]["cases"][0])
+            entry["caseId"] = f"BR-{index:03d}"
+            entry["sourceLineageId"] = f"synthetic/{index}"
+            entry["coverageTags"] = ["test"]
+            entry["groundTruthReview"] = {"state": "APPROVED", "signoff": "SIGNED_OFF", "reviewerRole": "PROJECT_DATASET_REVIEWER"}
+            snapshot_cases.append(entry)
+        run["datasetSnapshot"] = {"acceptanceDatasetManifestSha256": "f" * 64, "requiredProjectRealReviewedCaseCount": 15, "selectedCaseIds": [entry["caseId"] for entry in snapshot_cases], "cases": snapshot_cases}
+        run["datasetValidation"] = {"valid": True, "manifestSha256": "f" * 64, "projectRealReviewedCaseCount": 15, "requiredProjectRealReviewedCaseCount": 15, "sourceLineageCount": 15, "selectedCaseIds": [entry["caseId"] for entry in snapshot_cases]}
+        run["caseIds"] = [entry["caseId"] for entry in snapshot_cases]
+        with self.assertRaisesRegex(ValueError, "PROJECT_REAL_ACCEPTANCE"):
+            merge_manual_reviews(run, complete_review_document("run-current"))
+
+    def test_formal_finalization_rejects_case_or_model_binding_drift(self) -> None:
+        mismatched_case_ids = formal_run_fixture()
+        mismatched_case_ids["caseIds"] = ["BR-OUTSIDE"]
+        with self.assertRaisesRegex(ValueError, "caseIds do not match"):
+            merge_manual_reviews(mismatched_case_ids, complete_review_document("run-current"))
+
+        outside_case_result = formal_run_fixture()
+        outside_case_result["caseResults"][0]["caseId"] = "BR-OUTSIDE"
+        with self.assertRaisesRegex(ValueError, "outside frozen dataset snapshot"):
+            merge_manual_reviews(outside_case_result, complete_review_document("run-current"))
+
+        subset_models = formal_run_fixture()
+        subset_models["configuration"] = {"modelOrder": ["current-rule", "isnet-anime"]}
+        with self.assertRaisesRegex(ValueError, "selectedModels do not match"):
+            merge_manual_reviews(subset_models, complete_review_document("run-current"))
+
     def test_each_raw_run_result_gets_a_distinct_run_id(self) -> None:
         args = SimpleNamespace(all_cases=False, case="BR-001")
-        case = ({"caseId": "BR-001"}, ROOT / "cases" / "BR-001" / "source.png", ROOT / "cases" / "BR-001" / "ground_truth.png", ROOT / "cases" / "BR-001")
+        case = ({"caseId": "BR-001", "datasetRole": "SYNTHETIC_DEBUG", "sourceLineageId": "synthetic/br-001"}, ROOT / "cases" / "BR-001" / "source.png", ROOT / "cases" / "BR-001" / "ground_truth.png", ROOT / "cases" / "BR-001")
         manifest = {"current-rule": {"exactModelRevision": "not-applicable", "weightLicenseVerificationStatus": "NOT_APPLICABLE"}}
         first = run_benchmark.initial_result({"requiredCaseCount": 1}, ["current-rule"], args, [case], manifest)
         second = run_benchmark.initial_result({"requiredCaseCount": 1}, ["current-rule"], args, [case], manifest)

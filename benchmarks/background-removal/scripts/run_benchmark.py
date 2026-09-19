@@ -22,6 +22,7 @@ from benchmark_lib import (  # noqa: E402
     BENCHMARK_ROOT,
     ProcessRssSampler,
     calculate_metrics,
+    canonical_environment_contract_sha256,
     classify_benchmark_status,
     create_adapter,
     final_verdict_for_review,
@@ -38,6 +39,12 @@ from benchmark_lib import (  # noqa: E402
 )
 
 
+ACCEPTANCE_DATASET_PATH = BENCHMARK_ROOT / "acceptance-dataset.json"
+SYNTHETIC_DEBUG = "SYNTHETIC_DEBUG"
+PROJECT_REAL_ACCEPTANCE = "PROJECT_REAL_ACCEPTANCE"
+VALID_DATASET_ROLES = {SYNTHETIC_DEBUG, PROJECT_REAL_ACCEPTANCE}
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     scope = parser.add_mutually_exclusive_group(required=True)
@@ -51,6 +58,12 @@ def parse_args() -> argparse.Namespace:
 def validate_run_mode(args: argparse.Namespace) -> None:
     if args.all_cases and args.allow_model_download:
         raise ValueError("--allow-model-download is prepare/debug-only and is forbidden for --all-cases acceptance runs")
+
+
+def validate_formal_model_selection(args: argparse.Namespace, selected_models: list[str], config: dict[str, Any]) -> None:
+    """Formal acceptance always evaluates the frozen configuration's complete model set."""
+    if args.all_cases and selected_models != config.get("modelOrder"):
+        raise ValueError("--all-cases acceptance requires the complete benchmark-config.json modelOrder")
 
 
 def find_source(case_dir: Path) -> Path:
@@ -84,6 +97,11 @@ def validate_case(case_dir: Path) -> tuple[dict[str, Any], Path, Path, Path]:
         raise ValueError(f"{case_dir.name}: caseId is required")
     if case_id != case_dir.name:
         raise ValueError(f"{case_dir.name}: caseId must match directory name (got {case_id})")
+    for field in ("category", "description", "sourceLineageId"):
+        if not isinstance(metadata.get(field), str) or not metadata[field].strip():
+            raise ValueError(f"{case_id}: {field} is required")
+    if metadata.get("datasetRole") not in VALID_DATASET_ROLES:
+        raise ValueError(f"{case_id}: datasetRole must be one of {sorted(VALID_DATASET_ROLES)}")
     critical = metadata.get("criticalStructures")
     if not isinstance(critical, list) or not critical or not all(isinstance(item, str) and item.strip() for item in critical):
         raise ValueError(f"{case_id}: criticalStructures must be a non-empty string list")
@@ -102,28 +120,142 @@ def validate_case(case_dir: Path) -> tuple[dict[str, Any], Path, Path, Path]:
     return metadata, source, ground_truth, case_dir
 
 
-def load_cases(args: argparse.Namespace, config: dict[str, Any]) -> list[tuple[dict[str, Any], Path, Path, Path]]:
-    cases_root = BENCHMARK_ROOT / "cases"
-    dirs = sorted(path for path in cases_root.glob("BR-*") if path.is_dir())
-    records: list[tuple[dict[str, Any], Path, Path, Path]] = []
-    seen_case_ids: set[str] = set()
-    for case_dir in dirs:
-        record = validate_case(case_dir)
-        metadata = record[0]
-        if metadata["caseId"] in seen_case_ids:
-            raise ValueError(f"duplicate caseId: {metadata['caseId']}")
-        seen_case_ids.add(metadata["caseId"])
-        if args.case and metadata.get("caseId") != args.case:
+def _case_snapshot(metadata: dict[str, Any], source: Path, ground_truth: Path, case_dir: Path, manifest_case: dict[str, Any] | None = None) -> dict[str, Any]:
+    return {
+        "caseId": metadata["caseId"],
+        "sourceFile": source.name,
+        "sourceSha256": sha256_file(source),
+        "groundTruthSha256": sha256_file(ground_truth),
+        "caseMetadataSha256": sha256_file(case_dir / "case.json"),
+        "sourceLineageId": metadata["sourceLineageId"],
+        "datasetRole": metadata["datasetRole"],
+        "coverageTags": list((manifest_case or {}).get("coverageTags", [])),
+        "groundTruthReview": (manifest_case or {}).get("groundTruthReview"),
+    }
+
+
+def _excluded_debug_case_ids() -> list[str]:
+    excluded: list[str] = []
+    for case_dir in sorted((BENCHMARK_ROOT / "cases").glob("BR-*")):
+        try:
+            metadata = json.loads((case_dir / "case.json").read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
             continue
-        records.append(record)
-    if args.case and not records:
+        if metadata.get("datasetRole") == SYNTHETIC_DEBUG and isinstance(metadata.get("caseId"), str):
+            excluded.append(metadata["caseId"])
+    return excluded
+
+
+def _load_acceptance_manifest() -> tuple[dict[str, Any], str]:
+    if not ACCEPTANCE_DATASET_PATH.is_file():
+        raise ValueError("formal acceptance requires acceptance-dataset.json")
+    try:
+        manifest = json.loads(ACCEPTANCE_DATASET_PATH.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise ValueError("acceptance-dataset.json is invalid JSON") from exc
+    if manifest.get("schemaVersion") != "background-removal.acceptance-dataset/1":
+        raise ValueError("acceptance dataset manifest schemaVersion is invalid")
+    if manifest.get("requiredProjectRealReviewedCaseCount") != 15:
+        raise ValueError("acceptance dataset manifest must require exactly 15 project-real reviewed cases")
+    if not isinstance(manifest.get("cases"), list):
+        raise ValueError("acceptance dataset manifest cases must be an array")
+    return manifest, sha256_file(ACCEPTANCE_DATASET_PATH)
+
+
+def load_acceptance_cases() -> tuple[list[tuple[dict[str, Any], Path, Path, Path]], dict[str, Any], dict[str, Any]]:
+    """Select only manifest-approved project-real cases; never scan directories as acceptance data."""
+    manifest, manifest_sha256 = _load_acceptance_manifest()
+    records: list[tuple[dict[str, Any], Path, Path, Path]] = []
+    snapshots: list[dict[str, Any]] = []
+    case_ids: set[str] = set()
+    lineages: set[str] = set()
+    for index, entry in enumerate(manifest["cases"]):
+        if not isinstance(entry, dict):
+            raise ValueError(f"acceptance manifest case {index} must be an object")
+        required = ("caseId", "datasetRole", "sourceLineageId", "sourceFile", "sourceSha256", "groundTruthSha256", "caseMetadataSha256", "coverageTags", "groundTruthReview")
+        if any(not entry.get(field) for field in required):
+            raise ValueError(f"acceptance manifest case {index} is incomplete")
+        case_id = entry["caseId"]
+        lineage = entry["sourceLineageId"]
+        if not isinstance(case_id, str) or not isinstance(lineage, str) or not case_id or not lineage:
+            raise ValueError(f"acceptance manifest case {index} has invalid caseId or sourceLineageId")
+        if case_id in case_ids:
+            raise ValueError(f"duplicate acceptance manifest caseId: {case_id}")
+        if lineage in lineages:
+            raise ValueError(f"duplicate acceptance manifest sourceLineageId: {lineage}")
+        case_ids.add(case_id); lineages.add(lineage)
+        if entry["datasetRole"] != PROJECT_REAL_ACCEPTANCE:
+            raise ValueError(f"{case_id}: formal manifest may contain only {PROJECT_REAL_ACCEPTANCE}")
+        review = entry["groundTruthReview"]
+        if not isinstance(review, dict) or review.get("state") != "APPROVED" or review.get("signoff") != "SIGNED_OFF" or review.get("reviewerRole") != "PROJECT_DATASET_REVIEWER":
+            raise ValueError(f"{case_id}: ground truth review is not approved and signed off")
+        tags = entry["coverageTags"]
+        if not isinstance(tags, list) or not tags or not all(isinstance(tag, str) and tag.strip() for tag in tags):
+            raise ValueError(f"{case_id}: coverageTags must be a non-empty string array")
+        case_dir = BENCHMARK_ROOT / "cases" / case_id
+        metadata, source, ground_truth, validated_dir = validate_case(case_dir)
+        if entry["sourceFile"] != source.name or Path(entry["sourceFile"]).name != entry["sourceFile"]:
+            raise ValueError(f"{case_id}: manifest sourceFile does not match case source")
+        if metadata["caseId"] != case_id or metadata["datasetRole"] != entry["datasetRole"] or metadata["sourceLineageId"] != lineage:
+            raise ValueError(f"{case_id}: manifest and case.json identity fields differ")
+        identity = _case_snapshot(metadata, source, ground_truth, validated_dir, entry)
+        for field in ("sourceSha256", "groundTruthSha256", "caseMetadataSha256"):
+            if identity[field].lower() != str(entry[field]).lower():
+                raise ValueError(f"{case_id}: {field} does not match manifest")
+        records.append((metadata, source, ground_truth, validated_dir))
+        snapshots.append(identity)
+    required_count = manifest["requiredProjectRealReviewedCaseCount"]
+    validation = {
+        "valid": len(records) >= required_count,
+        "manifestSchemaVersion": manifest["schemaVersion"],
+        "manifestSha256": manifest_sha256,
+        "requiredProjectRealReviewedCaseCount": required_count,
+        "projectRealReviewedCaseCount": len(records),
+        "selectedCaseIds": [record[0]["caseId"] for record in records],
+        "excludedDebugCaseIds": _excluded_debug_case_ids(),
+        "sourceLineageCount": len(lineages),
+        "completeCaseCount": len(records),
+        "requiredCaseCount": required_count,
+    }
+    snapshot = {
+        "acceptanceDatasetManifestSha256": manifest_sha256,
+        "requiredProjectRealReviewedCaseCount": required_count,
+        "selectedCaseIds": validation["selectedCaseIds"],
+        "cases": snapshots,
+    }
+    return records, validation, snapshot
+
+
+def load_cases(args: argparse.Namespace, config: dict[str, Any]) -> tuple[list[tuple[dict[str, Any], Path, Path, Path]], dict[str, Any], dict[str, Any]]:
+    if args.all_cases:
+        records, validation, snapshot = load_acceptance_cases()
+        if not validation["valid"]:
+            raise ValueError(f"acceptance benchmark requires {validation['requiredProjectRealReviewedCaseCount']} approved project-real reviewed cases; found {validation['projectRealReviewedCaseCount']}. Use --case only for plumbing/debugging, not acceptance.")
+        return records, validation, snapshot
+    case_dir = BENCHMARK_ROOT / "cases" / str(args.case)
+    if not case_dir.is_dir():
         raise ValueError(f"case {args.case} does not have source.png/source.jpg/source.jpeg, ground_truth.png and case.json")
-    if args.all_cases and len(records) < int(config["requiredCaseCount"]):
-        raise ValueError(
-            f"acceptance benchmark requires {config['requiredCaseCount']} complete cases; found {len(records)}. "
-            "Use --case only for plumbing/debugging, not acceptance."
-        )
-    return records
+    record = validate_case(case_dir)
+    metadata, source, ground_truth, validated_dir = record
+    snapshot_case = _case_snapshot(metadata, source, ground_truth, validated_dir)
+    validation = {
+        "valid": False,
+        "manifestSchemaVersion": None,
+        "manifestSha256": None,
+        "requiredProjectRealReviewedCaseCount": 15,
+        "projectRealReviewedCaseCount": 0,
+        "selectedCaseIds": [metadata["caseId"]],
+        "excludedDebugCaseIds": [],
+        "sourceLineageCount": 1,
+        "completeCaseCount": 1,
+        "requiredCaseCount": int(config["requiredCaseCount"]),
+    }
+    return [record], validation, {
+        "acceptanceDatasetManifestSha256": None,
+        "requiredProjectRealReviewedCaseCount": 15,
+        "selectedCaseIds": [metadata["caseId"]],
+        "cases": [snapshot_case],
+    }
 
 
 def host_info() -> dict[str, Any]:
@@ -136,9 +268,25 @@ def host_info() -> dict[str, Any]:
     }
 
 
-def initial_result(config: dict[str, Any], selected_models: list[str], args: argparse.Namespace, cases: list[tuple[dict[str, Any], Path, Path, Path]], manifest: dict[str, dict[str, Any]]) -> dict[str, Any]:
+def initial_result(config: dict[str, Any], selected_models: list[str], args: argparse.Namespace, cases: list[tuple[dict[str, Any], Path, Path, Path]], manifest: dict[str, dict[str, Any]], dataset_validation: dict[str, Any] | None = None, dataset_snapshot: dict[str, Any] | None = None) -> dict[str, Any]:
     runtime_versions = installed_runtime_versions()
     environment_contract = load_acceptance_environment()
+    environment_contract_sha256 = canonical_environment_contract_sha256(environment_contract)
+    if dataset_validation is None:
+        dataset_validation = {
+            "valid": False, "manifestSchemaVersion": None, "manifestSha256": None,
+            "requiredProjectRealReviewedCaseCount": 15, "projectRealReviewedCaseCount": 0,
+            "selectedCaseIds": [metadata["caseId"] for metadata, _source, _ground_truth, _case_dir in cases],
+            "excludedDebugCaseIds": [], "sourceLineageCount": len(cases),
+            "completeCaseCount": len(cases), "requiredCaseCount": int(config["requiredCaseCount"]),
+        }
+    if dataset_snapshot is None:
+        dataset_snapshot = {
+            "acceptanceDatasetManifestSha256": None,
+            "requiredProjectRealReviewedCaseCount": 15,
+            "selectedCaseIds": dataset_validation["selectedCaseIds"],
+            "cases": [_case_snapshot(metadata, source, ground_truth, case_dir) for metadata, source, ground_truth, case_dir in cases],
+        }
     return {
         "schemaVersion": 1,
         "runId": uuid.uuid4().hex,
@@ -150,14 +298,12 @@ def initial_result(config: dict[str, Any], selected_models: list[str], args: arg
         "selectedModels": selected_models,
         "caseIds": [metadata["caseId"] for metadata, _source, _ground_truth, _case_dir in cases],
         "caseSources": {metadata["caseId"]: source.name for metadata, source, _ground_truth, _case_dir in cases},
-        "datasetValidation": {
-            "valid": args.all_cases and len(cases) >= int(config["requiredCaseCount"]),
-            "completeCaseCount": len(cases),
-            "requiredCaseCount": int(config["requiredCaseCount"]),
-        },
+        "datasetValidation": dataset_validation,
+        "datasetSnapshot": dataset_snapshot,
         "reproducibility": {
             "runtimeVersions": runtime_versions,
             "environmentContract": environment_contract,
+            "environmentContractSha256": environment_contract_sha256,
             "environmentValidation": runtime_environment_validation(runtime_versions, environment_contract),
             "modelArtifacts": {
                 model_id: {"source": manifest[model_id].get("source"), **model_artifact_record(model_id, manifest[model_id])}
@@ -169,7 +315,7 @@ def initial_result(config: dict[str, Any], selected_models: list[str], args: arg
         "notes": [
             "Model comparison results are valid only after human review fields are completed.",
             "processPeakRssMb is sampled at high frequency for this process during initialization and inference; it is not system-wide RAM.",
-            "ACCEPTANCE_COMPLETE requires the exact Python/package environment, reviewed results, exact model revisions, model SHA-256 values, and verified weight licences.",
+            "ACCEPTANCE_COMPLETE requires frozen dataset/environment identities, exact Python/package versions, reviewed results, exact model revisions, model SHA-256 values, and verified weight licences.",
         ],
     }
 
@@ -298,11 +444,12 @@ def main() -> int:
     manifest = load_manifest()
     validate_run_mode(args)
     selected_models = config["modelOrder"] if args.models == ["all"] else args.models
+    validate_formal_model_selection(args, selected_models, config)
     unknown = [model for model in selected_models if model not in manifest]
     if unknown:
         raise ValueError(f"unknown models: {', '.join(unknown)}")
-    cases = load_cases(args, config)
-    result = initial_result(config, selected_models, args, cases, manifest)
+    cases, dataset_validation, dataset_snapshot = load_cases(args, config)
+    result = initial_result(config, selected_models, args, cases, manifest, dataset_validation, dataset_snapshot)
     adapters = {model_id: create_adapter(model_id, allow_model_download=args.allow_model_download) for model_id in selected_models}
     availability = {model_id: adapter.availability() for model_id, adapter in adapters.items()}
 

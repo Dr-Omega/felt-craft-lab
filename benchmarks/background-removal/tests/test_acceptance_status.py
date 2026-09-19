@@ -1,13 +1,15 @@
 from __future__ import annotations
 
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
-from benchmark_lib import classify_benchmark_status, load_acceptance_environment, model_run_status, runtime_environment_validation  # noqa: E402
+import benchmark_lib  # noqa: E402
+from benchmark_lib import canonical_environment_contract_sha256, classify_benchmark_status, load_acceptance_environment, model_run_status, runtime_environment_validation  # noqa: E402
 
 
 MODELS = ["current-rule", "isnet-anime", "birefnet-general-lite", "birefnet-general"]
@@ -21,8 +23,11 @@ def review(*, complete: bool) -> dict[str, object]:
 
 
 def complete_reproducibility() -> dict[str, object]:
+    environment_contract = {"schemaVersion": "background-removal.acceptance-environment/1", "python": "3.12", "packages": {"rembg": "2.0.81", "onnxruntime": "1.29.0", "Pillow": "12.3.0", "numpy": "2.5.2", "psutil": "7.2.2"}}
     return {
         "runtimeVersions": {"python": "3.12.7", "rembg": "2.0.81", "onnxruntime": "1.29.0", "Pillow": "12.3.0", "numpy": "2.5.2", "psutil": "7.2.2"},
+        "environmentContract": environment_contract,
+        "environmentContractSha256": canonical_environment_contract_sha256(environment_contract),
         "modelArtifacts": {
             model_id: {
                 "exactModelRevision": "not-applicable" if model_id == "current-rule" else "revision-1",
@@ -37,17 +42,43 @@ def complete_reproducibility() -> dict[str, object]:
     }
 
 
+def formal_snapshot() -> dict[str, object]:
+    review = {"state": "APPROVED", "signoff": "SIGNED_OFF", "reviewerRole": "PROJECT_DATASET_REVIEWER"}
+    return {
+        "acceptanceDatasetManifestSha256": "b" * 64,
+        "requiredProjectRealReviewedCaseCount": 15,
+        "selectedCaseIds": list(CASE_IDS),
+        "cases": [
+            {
+                "caseId": case_id,
+                "sourceFile": "source.png",
+                "sourceSha256": "c" * 64,
+                "groundTruthSha256": "d" * 64,
+                "caseMetadataSha256": "e" * 64,
+                "sourceLineageId": f"project/{case_id.lower()}",
+                "datasetRole": "PROJECT_REAL_ACCEPTANCE",
+                "coverageTags": ["unit-test"],
+                "groundTruthReview": dict(review),
+            }
+            for case_id in CASE_IDS
+        ],
+    }
+
+
 def result_fixture(*, review_complete: bool, selected_models: list[str] | None = None) -> dict[str, object]:
     selected = selected_models or MODELS
+    snapshot = formal_snapshot()
     rows = [
         {"modelId": model_id, "caseId": case_id, "status": "SUCCESS", "manualReview": review(complete=review_complete)}
         for model_id in selected for case_id in CASE_IDS
     ]
     return {
         "scope": "all-cases",
-        "datasetValidation": {"valid": True, "completeCaseCount": 15, "requiredCaseCount": 15},
+        "configuration": {"modelOrder": list(MODELS)},
+        "datasetValidation": {"valid": True, "manifestSha256": snapshot["acceptanceDatasetManifestSha256"], "projectRealReviewedCaseCount": 15, "requiredProjectRealReviewedCaseCount": 15, "sourceLineageCount": 15, "selectedCaseIds": list(CASE_IDS), "completeCaseCount": 15, "requiredCaseCount": 15},
+        "datasetSnapshot": snapshot,
         "selectedModels": selected,
-        "caseIds": CASE_IDS,
+        "caseIds": list(CASE_IDS),
         "models": {model_id: {"status": "RUN_COMPLETE", "initializeStatus": "SUCCESS"} for model_id in selected},
         "caseResults": rows,
         "reproducibility": complete_reproducibility(),
@@ -92,6 +123,73 @@ class AcceptanceStatusTests(unittest.TestCase):
         result = result_fixture(review_complete=True)
         result["reproducibility"]["runtimeVersions"]["python"] = "3.11.9"
         self.assertEqual(classify_benchmark_status(result), "RUN_COMPLETE_UNVERIFIED")
+
+    def test_environment_contract_content_or_hash_drift_blocks_formal_acceptance(self) -> None:
+        changed_contract = result_fixture(review_complete=True)
+        changed_contract["reproducibility"]["environmentContract"]["semanticNote"] = "changed"
+        self.assertEqual(classify_benchmark_status(changed_contract), "RUN_COMPLETE_UNVERIFIED")
+
+        changed_hash = result_fixture(review_complete=True)
+        changed_hash["reproducibility"]["environmentContractSha256"] = "0" * 64
+        self.assertEqual(classify_benchmark_status(changed_hash), "RUN_COMPLETE_UNVERIFIED")
+
+    def test_frozen_environment_contract_survives_worktree_drift(self) -> None:
+        accepted = result_fixture(review_complete=True)
+        with tempfile.TemporaryDirectory() as temporary:
+            previous_root = benchmark_lib.BENCHMARK_ROOT
+            benchmark_lib.BENCHMARK_ROOT = Path(temporary)
+            try:
+                (Path(temporary) / "acceptance-environment.json").write_text('{"schemaVersion":"changed"}', encoding="utf-8")
+                self.assertEqual(classify_benchmark_status(accepted), "ACCEPTANCE_COMPLETE")
+            finally:
+                benchmark_lib.BENCHMARK_ROOT = previous_root
+
+    def test_missing_or_synthetic_frozen_snapshot_never_completes_acceptance(self) -> None:
+        missing = result_fixture(review_complete=True)
+        missing.pop("datasetSnapshot")
+        self.assertNotEqual(classify_benchmark_status(missing), "ACCEPTANCE_COMPLETE")
+
+        synthetic = result_fixture(review_complete=True)
+        for entry in synthetic["datasetSnapshot"]["cases"]:
+            entry["datasetRole"] = "SYNTHETIC_DEBUG"
+        self.assertNotEqual(classify_benchmark_status(synthetic), "ACCEPTANCE_COMPLETE")
+
+    def test_frozen_snapshot_review_and_count_mismatches_never_complete_acceptance(self) -> None:
+        for field, invalid in (("state", "PENDING"), ("state", "REJECTED"), ("signoff", "NOT_SIGNED"), ("reviewerRole", "WRONG_ROLE")):
+            with self.subTest(field=field, invalid=invalid):
+                result = result_fixture(review_complete=True)
+                result["datasetSnapshot"]["cases"][0]["groundTruthReview"][field] = invalid
+                self.assertNotEqual(classify_benchmark_status(result), "ACCEPTANCE_COMPLETE")
+
+        too_few = result_fixture(review_complete=True)
+        too_few["datasetSnapshot"]["cases"].pop()
+        too_few["datasetSnapshot"]["selectedCaseIds"].pop()
+        self.assertNotEqual(classify_benchmark_status(too_few), "ACCEPTANCE_COMPLETE")
+
+        duplicate_lineage = result_fixture(review_complete=True)
+        duplicate_lineage["datasetSnapshot"]["cases"][1]["sourceLineageId"] = duplicate_lineage["datasetSnapshot"]["cases"][0]["sourceLineageId"]
+        self.assertNotEqual(classify_benchmark_status(duplicate_lineage), "ACCEPTANCE_COMPLETE")
+
+    def test_run_case_ids_and_case_results_must_bind_to_frozen_snapshot(self) -> None:
+        replacement_ids = [f"ALT-{index:03d}" for index in range(1, 16)]
+        replaced = result_fixture(review_complete=True)
+        replaced["caseIds"] = replacement_ids
+        for row, replacement_id in zip(replaced["caseResults"], replacement_ids * len(MODELS), strict=True):
+            row["caseId"] = replacement_id
+        self.assertNotEqual(classify_benchmark_status(replaced), "ACCEPTANCE_COMPLETE")
+
+        case_ids_only = result_fixture(review_complete=True)
+        case_ids_only["caseIds"] = replacement_ids
+        self.assertNotEqual(classify_benchmark_status(case_ids_only), "ACCEPTANCE_COMPLETE")
+
+        outside_result = result_fixture(review_complete=True)
+        outside_result["caseResults"][0]["caseId"] = "BR-OUTSIDE"
+        self.assertNotEqual(classify_benchmark_status(outside_result), "ACCEPTANCE_COMPLETE")
+
+    def test_formal_model_subsets_never_complete_acceptance(self) -> None:
+        for subset in (MODELS[:1], [MODELS[1]], MODELS[:2], MODELS[:3]):
+            with self.subTest(subset=subset):
+                self.assertNotEqual(classify_benchmark_status(result_fixture(review_complete=True, selected_models=subset)), "ACCEPTANCE_COMPLETE")
 
     def test_non_acceptance_scope_is_partial(self) -> None:
         result = result_fixture(review_complete=True)
