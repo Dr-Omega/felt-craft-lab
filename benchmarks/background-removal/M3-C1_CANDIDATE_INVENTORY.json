@@ -1,27 +1,32 @@
 {
-  "schemaVersion": "background-removal.candidate-inventory/1",
+  "schemaVersion": "background-removal.candidate-inventory/2",
   "generatedBy": "inventory_candidates.py",
   "candidateCount": 52,
-  "uniqueSourceLineageCount": 36,
+  "uniqueByteIdentityCount": 36,
+  "confirmedSourceLineageCount": 0,
+  "unresolvedLineageGroupCount": 19,
   "records": [
     {
       "candidateId": "BRC-001",
       "sourcePath": "assets/generated/material/mock-background.png",
       "sourceSha256": "727d079576d282af2c63db08e6ab57760f801b11431e1f849e5d1bd47f257325",
+      "contentIdentitySha256": "727d079576d282af2c63db08e6ab57760f801b11431e1f849e5d1bd47f257325",
       "gitBlobSha": "938ccc6039727ce04315fe646e1732f9e3f29b03",
-      "sourceLineageId": "sha256:727d079576d282af2c63db08e6ab57760f801b11431e1f849e5d1bd47f257325",
+      "sourceLineageId": "provisional:mock-background",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": null,
       "duplicateOf": null,
       "originClass": "PROJECT_GENERATED_ASSET",
       "projectUseEvidence": "tracked project path: assets/generated/material/mock-background.png",
-      "backgroundRemovalSuitability": "NEEDS_REVIEW",
+      "backgroundRemovalSuitability": "NOT_SUITABLE",
       "coverageTags": [
         "background-removal-characteristics-needs-review"
       ],
       "rightsStatus": "NEEDS_CONFIRMATION",
       "gtStatus": "MISSING",
-      "acceptanceEligibility": "CANDIDATE",
+      "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "opaque source is a possible input, but real-background content, rights, and GT must be reviewed by a human"
+        "mock/test placeholder asset is not a project-real background-removal candidate"
       ],
       "imageFacts": {
         "width": 8,
@@ -39,20 +44,23 @@
       "candidateId": "BRC-002",
       "sourcePath": "assets/generated/material/mock-sticker.png",
       "sourceSha256": "5cf1b1405fd4babada47154f86665df6af82190f34b035f9a7a822775dca6db4",
+      "contentIdentitySha256": "5cf1b1405fd4babada47154f86665df6af82190f34b035f9a7a822775dca6db4",
       "gitBlobSha": "3774c05843565273b5e2c808c43d95e27262f4e8",
-      "sourceLineageId": "sha256:5cf1b1405fd4babada47154f86665df6af82190f34b035f9a7a822775dca6db4",
+      "sourceLineageId": "provisional:mock-sticker",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": null,
       "duplicateOf": null,
       "originClass": "PROJECT_GENERATED_ASSET",
       "projectUseEvidence": "tracked project path: assets/generated/material/mock-sticker.png",
-      "backgroundRemovalSuitability": "NEEDS_REVIEW",
+      "backgroundRemovalSuitability": "NOT_SUITABLE",
       "coverageTags": [
         "background-removal-characteristics-needs-review"
       ],
       "rightsStatus": "NEEDS_CONFIRMATION",
       "gtStatus": "MISSING",
-      "acceptanceEligibility": "CANDIDATE",
+      "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "opaque source is a possible input, but real-background content, rights, and GT must be reviewed by a human"
+        "mock/test placeholder asset is not a project-real background-removal candidate"
       ],
       "imageFacts": {
         "width": 8,
@@ -70,8 +78,11 @@
       "candidateId": "BRC-003",
       "sourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/background_couplet_gate_001.png",
       "sourceSha256": "62fca057040fda034ab5b7a02493afedd129967f9afbbab2080ce2ef330204e6",
+      "contentIdentitySha256": "62fca057040fda034ab5b7a02493afedd129967f9afbbab2080ce2ef330204e6",
       "gitBlobSha": "366aeb95012113021cfc0960bba648d5c200e389",
-      "sourceLineageId": "sha256:62fca057040fda034ab5b7a02493afedd129967f9afbbab2080ce2ef330204e6",
+      "sourceLineageId": "provisional:background_couplet_gate_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": null,
       "duplicateOf": null,
       "originClass": "PROJECT_GENERATED_ASSET",
       "projectUseEvidence": "tracked project path: assets/generated/material/snapshot_ywn_20260805_112922/background_couplet_gate_001.png",
@@ -101,8 +112,11 @@
       "candidateId": "BRC-004",
       "sourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/background_couplet_gate_001_thumb.png",
       "sourceSha256": "e9c4f544648617476f9a7171cf40c703e222d925bace9bd3b29870206f949790",
+      "contentIdentitySha256": "e9c4f544648617476f9a7171cf40c703e222d925bace9bd3b29870206f949790",
       "gitBlobSha": "b16c4610406ec9bab44b0ac37126a00c3daf1b89",
-      "sourceLineageId": "sha256:e9c4f544648617476f9a7171cf40c703e222d925bace9bd3b29870206f949790",
+      "sourceLineageId": "provisional:background_couplet_gate_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": "BRC-003",
       "duplicateOf": null,
       "originClass": "DERIVED_REVIEW_ARTIFACT",
       "projectUseEvidence": "tracked project path: assets/generated/material/snapshot_ywn_20260805_112922/background_couplet_gate_001_thumb.png",
@@ -114,7 +128,8 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "derived artifact/output is not an original input source"
+        "derived artifact/output is not an original input source",
+        "obvious filename variant grouped provisionally; human source-lineage confirmation is required"
       ],
       "imageFacts": {
         "width": 512,
@@ -132,8 +147,11 @@
       "candidateId": "BRC-005",
       "sourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/background_lake_moon_001.png",
       "sourceSha256": "8c5a85562950393523f4d2d0a9f673e5bdce169c5b7f9c5fd82db0283449449c",
+      "contentIdentitySha256": "8c5a85562950393523f4d2d0a9f673e5bdce169c5b7f9c5fd82db0283449449c",
       "gitBlobSha": "91af69d1674d8e9ed325b84643270688efbd9bba",
-      "sourceLineageId": "sha256:8c5a85562950393523f4d2d0a9f673e5bdce169c5b7f9c5fd82db0283449449c",
+      "sourceLineageId": "provisional:background_lake_moon_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": null,
       "duplicateOf": null,
       "originClass": "PROJECT_GENERATED_ASSET",
       "projectUseEvidence": "tracked project path: assets/generated/material/snapshot_ywn_20260805_112922/background_lake_moon_001.png",
@@ -163,8 +181,11 @@
       "candidateId": "BRC-006",
       "sourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/background_lake_moon_001_thumb.png",
       "sourceSha256": "a7845f7b9a642141671af877e5eac67a103e76c503c6608624eb55d1543cd1f3",
+      "contentIdentitySha256": "a7845f7b9a642141671af877e5eac67a103e76c503c6608624eb55d1543cd1f3",
       "gitBlobSha": "8fe74d3197f8b5887a16b747189fced607c8e06f",
-      "sourceLineageId": "sha256:a7845f7b9a642141671af877e5eac67a103e76c503c6608624eb55d1543cd1f3",
+      "sourceLineageId": "provisional:background_lake_moon_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": "BRC-005",
       "duplicateOf": null,
       "originClass": "DERIVED_REVIEW_ARTIFACT",
       "projectUseEvidence": "tracked project path: assets/generated/material/snapshot_ywn_20260805_112922/background_lake_moon_001_thumb.png",
@@ -176,7 +197,8 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "derived artifact/output is not an original input source"
+        "derived artifact/output is not an original input source",
+        "obvious filename variant grouped provisionally; human source-lineage confirmation is required"
       ],
       "imageFacts": {
         "width": 512,
@@ -194,8 +216,11 @@
       "candidateId": "BRC-007",
       "sourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/background_lantern_street_001.png",
       "sourceSha256": "14f4814ec10a9b8285bd5d4161eb8bfde7db29b7ee46178ae4d75e5c469014ed",
+      "contentIdentitySha256": "14f4814ec10a9b8285bd5d4161eb8bfde7db29b7ee46178ae4d75e5c469014ed",
       "gitBlobSha": "266c4027b66378806c30abd6e4f9d1ec9d5afc38",
-      "sourceLineageId": "sha256:14f4814ec10a9b8285bd5d4161eb8bfde7db29b7ee46178ae4d75e5c469014ed",
+      "sourceLineageId": "provisional:background_lantern_street_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": null,
       "duplicateOf": null,
       "originClass": "PROJECT_GENERATED_ASSET",
       "projectUseEvidence": "tracked project path: assets/generated/material/snapshot_ywn_20260805_112922/background_lantern_street_001.png",
@@ -226,8 +251,11 @@
       "candidateId": "BRC-008",
       "sourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/background_lantern_street_001_thumb.png",
       "sourceSha256": "528f511d5cf1a067fc4484447375c57e19acbd5174c4a946ec3dc0a3639f2034",
+      "contentIdentitySha256": "528f511d5cf1a067fc4484447375c57e19acbd5174c4a946ec3dc0a3639f2034",
       "gitBlobSha": "2119b78e2f93c519e578f3ab9707b1e694286b2f",
-      "sourceLineageId": "sha256:528f511d5cf1a067fc4484447375c57e19acbd5174c4a946ec3dc0a3639f2034",
+      "sourceLineageId": "provisional:background_lantern_street_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": "BRC-007",
       "duplicateOf": null,
       "originClass": "DERIVED_REVIEW_ARTIFACT",
       "projectUseEvidence": "tracked project path: assets/generated/material/snapshot_ywn_20260805_112922/background_lantern_street_001_thumb.png",
@@ -240,7 +268,8 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "derived artifact/output is not an original input source"
+        "derived artifact/output is not an original input source",
+        "obvious filename variant grouped provisionally; human source-lineage confirmation is required"
       ],
       "imageFacts": {
         "width": 512,
@@ -258,8 +287,11 @@
       "candidateId": "BRC-009",
       "sourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/background_osmanthus_moon_001.png",
       "sourceSha256": "49a5f75cb3ceca99209e709073847587c0c784668ecf3625e67c9890213b714a",
+      "contentIdentitySha256": "49a5f75cb3ceca99209e709073847587c0c784668ecf3625e67c9890213b714a",
       "gitBlobSha": "11c3721c69bed67d13ca79acd4fbbb7d2cf7e401",
-      "sourceLineageId": "sha256:49a5f75cb3ceca99209e709073847587c0c784668ecf3625e67c9890213b714a",
+      "sourceLineageId": "provisional:background_osmanthus_moon_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": null,
       "duplicateOf": null,
       "originClass": "PROJECT_GENERATED_ASSET",
       "projectUseEvidence": "tracked project path: assets/generated/material/snapshot_ywn_20260805_112922/background_osmanthus_moon_001.png",
@@ -289,8 +321,11 @@
       "candidateId": "BRC-010",
       "sourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/background_osmanthus_moon_001_thumb.png",
       "sourceSha256": "d8acb4f9fb274e0aa1df23c7dc6ad5ebebdaa433195ae1e6965603e47f56288d",
+      "contentIdentitySha256": "d8acb4f9fb274e0aa1df23c7dc6ad5ebebdaa433195ae1e6965603e47f56288d",
       "gitBlobSha": "fbeeb98735539bbf9b43080edb93a2d9fc3be3f1",
-      "sourceLineageId": "sha256:d8acb4f9fb274e0aa1df23c7dc6ad5ebebdaa433195ae1e6965603e47f56288d",
+      "sourceLineageId": "provisional:background_osmanthus_moon_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": "BRC-009",
       "duplicateOf": null,
       "originClass": "DERIVED_REVIEW_ARTIFACT",
       "projectUseEvidence": "tracked project path: assets/generated/material/snapshot_ywn_20260805_112922/background_osmanthus_moon_001_thumb.png",
@@ -302,7 +337,8 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "derived artifact/output is not an original input source"
+        "derived artifact/output is not an original input source",
+        "obvious filename variant grouped provisionally; human source-lineage confirmation is required"
       ],
       "imageFacts": {
         "width": 512,
@@ -320,8 +356,11 @@
       "candidateId": "BRC-011",
       "sourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/background_river_lantern_001.png",
       "sourceSha256": "734500581a02ef8c5057e2ab4e8e281712ea117e8d3ae52f1f64d296d92d68c7",
+      "contentIdentitySha256": "734500581a02ef8c5057e2ab4e8e281712ea117e8d3ae52f1f64d296d92d68c7",
       "gitBlobSha": "1beab42df79cbd9102a7917f39c45a1731c78cf1",
-      "sourceLineageId": "sha256:734500581a02ef8c5057e2ab4e8e281712ea117e8d3ae52f1f64d296d92d68c7",
+      "sourceLineageId": "provisional:background_river_lantern_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": null,
       "duplicateOf": null,
       "originClass": "PROJECT_GENERATED_ASSET",
       "projectUseEvidence": "tracked project path: assets/generated/material/snapshot_ywn_20260805_112922/background_river_lantern_001.png",
@@ -351,8 +390,11 @@
       "candidateId": "BRC-012",
       "sourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/background_river_lantern_001_thumb.png",
       "sourceSha256": "9a0526e5a79f2d1e4201cf3d3352224ffe75402c1f9470a566ecf3b12fd74a41",
+      "contentIdentitySha256": "9a0526e5a79f2d1e4201cf3d3352224ffe75402c1f9470a566ecf3b12fd74a41",
       "gitBlobSha": "bf9979fff1594b1379a50641152caad96ec216f7",
-      "sourceLineageId": "sha256:9a0526e5a79f2d1e4201cf3d3352224ffe75402c1f9470a566ecf3b12fd74a41",
+      "sourceLineageId": "provisional:background_river_lantern_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": "BRC-011",
       "duplicateOf": null,
       "originClass": "DERIVED_REVIEW_ARTIFACT",
       "projectUseEvidence": "tracked project path: assets/generated/material/snapshot_ywn_20260805_112922/background_river_lantern_001_thumb.png",
@@ -364,7 +406,8 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "derived artifact/output is not an original input source"
+        "derived artifact/output is not an original input source",
+        "obvious filename variant grouped provisionally; human source-lineage confirmation is required"
       ],
       "imageFacts": {
         "width": 512,
@@ -382,8 +425,11 @@
       "candidateId": "BRC-013",
       "sourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/background_snow_window_001.png",
       "sourceSha256": "da696a94dfd241e07d57e84426e336954c5a50703699a0dcbd9fb6dad2253b9e",
+      "contentIdentitySha256": "da696a94dfd241e07d57e84426e336954c5a50703699a0dcbd9fb6dad2253b9e",
       "gitBlobSha": "1a5ff54ff7f5066f9826911741b8e5660ad33178",
-      "sourceLineageId": "sha256:da696a94dfd241e07d57e84426e336954c5a50703699a0dcbd9fb6dad2253b9e",
+      "sourceLineageId": "provisional:background_snow_window_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": null,
       "duplicateOf": null,
       "originClass": "PROJECT_GENERATED_ASSET",
       "projectUseEvidence": "tracked project path: assets/generated/material/snapshot_ywn_20260805_112922/background_snow_window_001.png",
@@ -414,8 +460,11 @@
       "candidateId": "BRC-014",
       "sourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/background_snow_window_001_thumb.png",
       "sourceSha256": "e8c8871f95d5cbca28adc9e7917c73123baba31b5f1193cef0d2f78a34cd377a",
+      "contentIdentitySha256": "e8c8871f95d5cbca28adc9e7917c73123baba31b5f1193cef0d2f78a34cd377a",
       "gitBlobSha": "296cc30e02e3c2bfda332bfc44d23edb0c3d06c7",
-      "sourceLineageId": "sha256:e8c8871f95d5cbca28adc9e7917c73123baba31b5f1193cef0d2f78a34cd377a",
+      "sourceLineageId": "provisional:background_snow_window_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": "BRC-013",
       "duplicateOf": null,
       "originClass": "DERIVED_REVIEW_ARTIFACT",
       "projectUseEvidence": "tracked project path: assets/generated/material/snapshot_ywn_20260805_112922/background_snow_window_001_thumb.png",
@@ -428,7 +477,8 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "derived artifact/output is not an original input source"
+        "derived artifact/output is not an original input source",
+        "obvious filename variant grouped provisionally; human source-lineage confirmation is required"
       ],
       "imageFacts": {
         "width": 512,
@@ -446,8 +496,11 @@
       "candidateId": "BRC-015",
       "sourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/sticker_crescent_moon_001.png",
       "sourceSha256": "430aea866099626ffb2448bab16f8c02611bc6b12735c36158816e6948efbd3a",
+      "contentIdentitySha256": "430aea866099626ffb2448bab16f8c02611bc6b12735c36158816e6948efbd3a",
       "gitBlobSha": "743a1ae35c430b4468ee9394d9c464c5d1b9a96a",
-      "sourceLineageId": "sha256:430aea866099626ffb2448bab16f8c02611bc6b12735c36158816e6948efbd3a",
+      "sourceLineageId": "provisional:sticker_crescent_moon_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": null,
       "duplicateOf": null,
       "originClass": "PROJECT_GENERATED_ASSET",
       "projectUseEvidence": "tracked project path: assets/generated/material/snapshot_ywn_20260805_112922/sticker_crescent_moon_001.png",
@@ -477,8 +530,11 @@
       "candidateId": "BRC-016",
       "sourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/sticker_crescent_moon_001_thumb.png",
       "sourceSha256": "01a98158ae6a0c4dd44d1976f19863f3f5ebe8b05a7dd747affdff8123f8f761",
+      "contentIdentitySha256": "01a98158ae6a0c4dd44d1976f19863f3f5ebe8b05a7dd747affdff8123f8f761",
       "gitBlobSha": "6481d6b95fa7df058e50405211bc7390c0e0295c",
-      "sourceLineageId": "sha256:01a98158ae6a0c4dd44d1976f19863f3f5ebe8b05a7dd747affdff8123f8f761",
+      "sourceLineageId": "provisional:sticker_crescent_moon_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": "BRC-015",
       "duplicateOf": null,
       "originClass": "DERIVED_REVIEW_ARTIFACT",
       "projectUseEvidence": "tracked project path: assets/generated/material/snapshot_ywn_20260805_112922/sticker_crescent_moon_001_thumb.png",
@@ -490,7 +546,8 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "derived artifact/output is not an original input source"
+        "derived artifact/output is not an original input source",
+        "obvious filename variant grouped provisionally; human source-lineage confirmation is required"
       ],
       "imageFacts": {
         "width": 512,
@@ -508,8 +565,11 @@
       "candidateId": "BRC-017",
       "sourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/sticker_dumpling_001.png",
       "sourceSha256": "b4fa7ca19c85934eba5adfcf77e9bc3b70b5f058393579f990e969cf5fce492c",
+      "contentIdentitySha256": "b4fa7ca19c85934eba5adfcf77e9bc3b70b5f058393579f990e969cf5fce492c",
       "gitBlobSha": "2f097ebffcc190a681dd3497cf347f6dd9d58364",
-      "sourceLineageId": "sha256:b4fa7ca19c85934eba5adfcf77e9bc3b70b5f058393579f990e969cf5fce492c",
+      "sourceLineageId": "provisional:sticker_dumpling_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": null,
       "duplicateOf": null,
       "originClass": "PROJECT_GENERATED_ASSET",
       "projectUseEvidence": "tracked project path: assets/generated/material/snapshot_ywn_20260805_112922/sticker_dumpling_001.png",
@@ -539,8 +599,11 @@
       "candidateId": "BRC-018",
       "sourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/sticker_dumpling_001_thumb.png",
       "sourceSha256": "e3cf0569b1a16fa631216140ec810c154d55b58be308d03147cd772c900b496b",
+      "contentIdentitySha256": "e3cf0569b1a16fa631216140ec810c154d55b58be308d03147cd772c900b496b",
       "gitBlobSha": "66c3cb89e134ea841d26cfb6401ac95bda2c2f3e",
-      "sourceLineageId": "sha256:e3cf0569b1a16fa631216140ec810c154d55b58be308d03147cd772c900b496b",
+      "sourceLineageId": "provisional:sticker_dumpling_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": "BRC-017",
       "duplicateOf": null,
       "originClass": "DERIVED_REVIEW_ARTIFACT",
       "projectUseEvidence": "tracked project path: assets/generated/material/snapshot_ywn_20260805_112922/sticker_dumpling_001_thumb.png",
@@ -552,7 +615,8 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "derived artifact/output is not an original input source"
+        "derived artifact/output is not an original input source",
+        "obvious filename variant grouped provisionally; human source-lineage confirmation is required"
       ],
       "imageFacts": {
         "width": 512,
@@ -570,8 +634,11 @@
       "candidateId": "BRC-019",
       "sourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/sticker_firecracker_001.png",
       "sourceSha256": "242da16c54c59e0c764e5eb00d52f2b276d0130f596b57fac1c0d08a5b868ad0",
+      "contentIdentitySha256": "242da16c54c59e0c764e5eb00d52f2b276d0130f596b57fac1c0d08a5b868ad0",
       "gitBlobSha": "60eb6e62cab013a2c40b12e1fd828911af4330c4",
-      "sourceLineageId": "sha256:242da16c54c59e0c764e5eb00d52f2b276d0130f596b57fac1c0d08a5b868ad0",
+      "sourceLineageId": "provisional:sticker_firecracker_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": null,
       "duplicateOf": null,
       "originClass": "PROJECT_GENERATED_ASSET",
       "projectUseEvidence": "tracked project path: assets/generated/material/snapshot_ywn_20260805_112922/sticker_firecracker_001.png",
@@ -601,8 +668,11 @@
       "candidateId": "BRC-020",
       "sourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/sticker_firecracker_001_thumb.png",
       "sourceSha256": "89582877627d59007fe12d3386b9423670b3c6395dbccfc3a5bd40f20eb28b2c",
+      "contentIdentitySha256": "89582877627d59007fe12d3386b9423670b3c6395dbccfc3a5bd40f20eb28b2c",
       "gitBlobSha": "8b46c2da254672d28452af65fac14eb1325fd555",
-      "sourceLineageId": "sha256:89582877627d59007fe12d3386b9423670b3c6395dbccfc3a5bd40f20eb28b2c",
+      "sourceLineageId": "provisional:sticker_firecracker_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": "BRC-019",
       "duplicateOf": null,
       "originClass": "DERIVED_REVIEW_ARTIFACT",
       "projectUseEvidence": "tracked project path: assets/generated/material/snapshot_ywn_20260805_112922/sticker_firecracker_001_thumb.png",
@@ -614,7 +684,8 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "derived artifact/output is not an original input source"
+        "derived artifact/output is not an original input source",
+        "obvious filename variant grouped provisionally; human source-lineage confirmation is required"
       ],
       "imageFacts": {
         "width": 320,
@@ -632,8 +703,11 @@
       "candidateId": "BRC-021",
       "sourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/sticker_flower_lantern_001.png",
       "sourceSha256": "84991c54800da573985072149fe667048e059aaad1d42bfc2923a27859f90d28",
+      "contentIdentitySha256": "84991c54800da573985072149fe667048e059aaad1d42bfc2923a27859f90d28",
       "gitBlobSha": "988cd9bbb977832249781db06ce74417ca7ba96c",
-      "sourceLineageId": "sha256:84991c54800da573985072149fe667048e059aaad1d42bfc2923a27859f90d28",
+      "sourceLineageId": "provisional:sticker_flower_lantern_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": null,
       "duplicateOf": null,
       "originClass": "PROJECT_GENERATED_ASSET",
       "projectUseEvidence": "tracked project path: assets/generated/material/snapshot_ywn_20260805_112922/sticker_flower_lantern_001.png",
@@ -663,8 +737,11 @@
       "candidateId": "BRC-022",
       "sourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/sticker_flower_lantern_001_thumb.png",
       "sourceSha256": "2468bc8d9ab987e4975a5dfd1f3a426e318eb11736557ad2b89847f284d9ba2c",
+      "contentIdentitySha256": "2468bc8d9ab987e4975a5dfd1f3a426e318eb11736557ad2b89847f284d9ba2c",
       "gitBlobSha": "e406d27ae051c35a3bc77a97e8c67aa995bec724",
-      "sourceLineageId": "sha256:2468bc8d9ab987e4975a5dfd1f3a426e318eb11736557ad2b89847f284d9ba2c",
+      "sourceLineageId": "provisional:sticker_flower_lantern_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": "BRC-021",
       "duplicateOf": null,
       "originClass": "DERIVED_REVIEW_ARTIFACT",
       "projectUseEvidence": "tracked project path: assets/generated/material/snapshot_ywn_20260805_112922/sticker_flower_lantern_001_thumb.png",
@@ -676,7 +753,8 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "derived artifact/output is not an original input source"
+        "derived artifact/output is not an original input source",
+        "obvious filename variant grouped provisionally; human source-lineage confirmation is required"
       ],
       "imageFacts": {
         "width": 512,
@@ -694,8 +772,11 @@
       "candidateId": "BRC-023",
       "sourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/sticker_fu_001.png",
       "sourceSha256": "585d9958717ae70c1dc04d2589a97e1b640ad41a9e02cad402e623911a14292c",
+      "contentIdentitySha256": "585d9958717ae70c1dc04d2589a97e1b640ad41a9e02cad402e623911a14292c",
       "gitBlobSha": "2a72ec4ec22f4486983646414230d81885133394",
-      "sourceLineageId": "sha256:585d9958717ae70c1dc04d2589a97e1b640ad41a9e02cad402e623911a14292c",
+      "sourceLineageId": "provisional:sticker_fu_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": null,
       "duplicateOf": null,
       "originClass": "PROJECT_GENERATED_ASSET",
       "projectUseEvidence": "tracked project path: assets/generated/material/snapshot_ywn_20260805_112922/sticker_fu_001.png",
@@ -725,8 +806,11 @@
       "candidateId": "BRC-024",
       "sourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/sticker_fu_001_thumb.png",
       "sourceSha256": "4bf1203e1957a21dce864aad945146ee8f55315c31458572b58be9c57e92f477",
+      "contentIdentitySha256": "4bf1203e1957a21dce864aad945146ee8f55315c31458572b58be9c57e92f477",
       "gitBlobSha": "4f9cc75d4877b195dcea0a2dc103db1d16abda31",
-      "sourceLineageId": "sha256:4bf1203e1957a21dce864aad945146ee8f55315c31458572b58be9c57e92f477",
+      "sourceLineageId": "provisional:sticker_fu_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": "BRC-023",
       "duplicateOf": null,
       "originClass": "DERIVED_REVIEW_ARTIFACT",
       "projectUseEvidence": "tracked project path: assets/generated/material/snapshot_ywn_20260805_112922/sticker_fu_001_thumb.png",
@@ -738,7 +822,8 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "derived artifact/output is not an original input source"
+        "derived artifact/output is not an original input source",
+        "obvious filename variant grouped provisionally; human source-lineage confirmation is required"
       ],
       "imageFacts": {
         "width": 512,
@@ -756,8 +841,11 @@
       "candidateId": "BRC-025",
       "sourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/sticker_lantern_001.png",
       "sourceSha256": "19a2c17f5e6a6ca6457412cef84a97f021b0063741b3212cd13bbccbadec5289",
+      "contentIdentitySha256": "19a2c17f5e6a6ca6457412cef84a97f021b0063741b3212cd13bbccbadec5289",
       "gitBlobSha": "3102319b03fecea9155bc216795c1671a887bfb6",
-      "sourceLineageId": "sha256:19a2c17f5e6a6ca6457412cef84a97f021b0063741b3212cd13bbccbadec5289",
+      "sourceLineageId": "provisional:sticker_lantern_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": null,
       "duplicateOf": null,
       "originClass": "PROJECT_GENERATED_ASSET",
       "projectUseEvidence": "tracked project path: assets/generated/material/snapshot_ywn_20260805_112922/sticker_lantern_001.png",
@@ -787,8 +875,11 @@
       "candidateId": "BRC-026",
       "sourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/sticker_lantern_001_thumb.png",
       "sourceSha256": "9f6cbe58f884f8cc70c2edade59aa24d524bee985658ebab7764f36208979304",
+      "contentIdentitySha256": "9f6cbe58f884f8cc70c2edade59aa24d524bee985658ebab7764f36208979304",
       "gitBlobSha": "2fc651a0d730b267749d031c098546906e2e7127",
-      "sourceLineageId": "sha256:9f6cbe58f884f8cc70c2edade59aa24d524bee985658ebab7764f36208979304",
+      "sourceLineageId": "provisional:sticker_lantern_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": "BRC-025",
       "duplicateOf": null,
       "originClass": "DERIVED_REVIEW_ARTIFACT",
       "projectUseEvidence": "tracked project path: assets/generated/material/snapshot_ywn_20260805_112922/sticker_lantern_001_thumb.png",
@@ -800,7 +891,8 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "derived artifact/output is not an original input source"
+        "derived artifact/output is not an original input source",
+        "obvious filename variant grouped provisionally; human source-lineage confirmation is required"
       ],
       "imageFacts": {
         "width": 359,
@@ -818,8 +910,11 @@
       "candidateId": "BRC-027",
       "sourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/sticker_mooncake_001.png",
       "sourceSha256": "215571f797076dd34e42df2c9786178010f0495b5e06bfdf2023c0e1ff99881c",
+      "contentIdentitySha256": "215571f797076dd34e42df2c9786178010f0495b5e06bfdf2023c0e1ff99881c",
       "gitBlobSha": "eb608218133ed3d9e5850a3eee75deeeba677449",
-      "sourceLineageId": "sha256:215571f797076dd34e42df2c9786178010f0495b5e06bfdf2023c0e1ff99881c",
+      "sourceLineageId": "provisional:sticker_mooncake_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": null,
       "duplicateOf": null,
       "originClass": "PROJECT_GENERATED_ASSET",
       "projectUseEvidence": "tracked project path: assets/generated/material/snapshot_ywn_20260805_112922/sticker_mooncake_001.png",
@@ -849,8 +944,11 @@
       "candidateId": "BRC-028",
       "sourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/sticker_mooncake_001_thumb.png",
       "sourceSha256": "a0c090b8c6220f0373e15af5512b3af3015da4616cff2c343ff9d519ff78f9cf",
+      "contentIdentitySha256": "a0c090b8c6220f0373e15af5512b3af3015da4616cff2c343ff9d519ff78f9cf",
       "gitBlobSha": "e1ff577c6866abe8c4d7a14cd55838f8ac64e079",
-      "sourceLineageId": "sha256:a0c090b8c6220f0373e15af5512b3af3015da4616cff2c343ff9d519ff78f9cf",
+      "sourceLineageId": "provisional:sticker_mooncake_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": "BRC-027",
       "duplicateOf": null,
       "originClass": "DERIVED_REVIEW_ARTIFACT",
       "projectUseEvidence": "tracked project path: assets/generated/material/snapshot_ywn_20260805_112922/sticker_mooncake_001_thumb.png",
@@ -862,7 +960,8 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "derived artifact/output is not an original input source"
+        "derived artifact/output is not an original input source",
+        "obvious filename variant grouped provisionally; human source-lineage confirmation is required"
       ],
       "imageFacts": {
         "width": 512,
@@ -880,8 +979,11 @@
       "candidateId": "BRC-029",
       "sourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/sticker_rabbit_001.png",
       "sourceSha256": "8d4c5a735d1b21b55c8b3e6569616c3e0928d8e88ff0766bb24d2846e97ecc8f",
+      "contentIdentitySha256": "8d4c5a735d1b21b55c8b3e6569616c3e0928d8e88ff0766bb24d2846e97ecc8f",
       "gitBlobSha": "21a7df177d77a87e9dfaf44db6039521387e40f5",
-      "sourceLineageId": "sha256:8d4c5a735d1b21b55c8b3e6569616c3e0928d8e88ff0766bb24d2846e97ecc8f",
+      "sourceLineageId": "provisional:sticker_rabbit_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": null,
       "duplicateOf": null,
       "originClass": "PROJECT_GENERATED_ASSET",
       "projectUseEvidence": "tracked project path: assets/generated/material/snapshot_ywn_20260805_112922/sticker_rabbit_001.png",
@@ -911,8 +1013,11 @@
       "candidateId": "BRC-030",
       "sourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/sticker_rabbit_001_thumb.png",
       "sourceSha256": "8f34ce13ffddeab034e6c15b87ca0e12e9c7fb902a5bc1078e3485b64b27a63d",
+      "contentIdentitySha256": "8f34ce13ffddeab034e6c15b87ca0e12e9c7fb902a5bc1078e3485b64b27a63d",
       "gitBlobSha": "57b640f06163d73ba66d043800450650571f9e8f",
-      "sourceLineageId": "sha256:8f34ce13ffddeab034e6c15b87ca0e12e9c7fb902a5bc1078e3485b64b27a63d",
+      "sourceLineageId": "provisional:sticker_rabbit_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": "BRC-029",
       "duplicateOf": null,
       "originClass": "DERIVED_REVIEW_ARTIFACT",
       "projectUseEvidence": "tracked project path: assets/generated/material/snapshot_ywn_20260805_112922/sticker_rabbit_001_thumb.png",
@@ -924,7 +1029,8 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "derived artifact/output is not an original input source"
+        "derived artifact/output is not an original input source",
+        "obvious filename variant grouped provisionally; human source-lineage confirmation is required"
       ],
       "imageFacts": {
         "width": 512,
@@ -942,8 +1048,11 @@
       "candidateId": "BRC-031",
       "sourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/sticker_red_envelope_001.png",
       "sourceSha256": "6d3e9aca43654da4e630e4e72d236eccefac439f0c4f498e1e264b2575c3e3ab",
+      "contentIdentitySha256": "6d3e9aca43654da4e630e4e72d236eccefac439f0c4f498e1e264b2575c3e3ab",
       "gitBlobSha": "a840804ba36bfdb0f1cf92a58fc5966c753dae94",
-      "sourceLineageId": "sha256:6d3e9aca43654da4e630e4e72d236eccefac439f0c4f498e1e264b2575c3e3ab",
+      "sourceLineageId": "provisional:sticker_red_envelope_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": null,
       "duplicateOf": null,
       "originClass": "PROJECT_GENERATED_ASSET",
       "projectUseEvidence": "tracked project path: assets/generated/material/snapshot_ywn_20260805_112922/sticker_red_envelope_001.png",
@@ -973,8 +1082,11 @@
       "candidateId": "BRC-032",
       "sourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/sticker_red_envelope_001_thumb.png",
       "sourceSha256": "5e87de8dbff47f0f0af3d22d7fc643c0d052be531fb76f9089714ae100e57023",
+      "contentIdentitySha256": "5e87de8dbff47f0f0af3d22d7fc643c0d052be531fb76f9089714ae100e57023",
       "gitBlobSha": "eb5f1c797b38dbe1bac49a342e78a106e54cc7ed",
-      "sourceLineageId": "sha256:5e87de8dbff47f0f0af3d22d7fc643c0d052be531fb76f9089714ae100e57023",
+      "sourceLineageId": "provisional:sticker_red_envelope_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": "BRC-031",
       "duplicateOf": null,
       "originClass": "DERIVED_REVIEW_ARTIFACT",
       "projectUseEvidence": "tracked project path: assets/generated/material/snapshot_ywn_20260805_112922/sticker_red_envelope_001_thumb.png",
@@ -986,7 +1098,8 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "derived artifact/output is not an original input source"
+        "derived artifact/output is not an original input source",
+        "obvious filename variant grouped provisionally; human source-lineage confirmation is required"
       ],
       "imageFacts": {
         "width": 410,
@@ -1004,8 +1117,11 @@
       "candidateId": "BRC-033",
       "sourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/sticker_tangyuan_001.png",
       "sourceSha256": "da1900b93ffc2e5004b2aa3f5731c96594423bb33dbfedfa56974c39400b354f",
+      "contentIdentitySha256": "da1900b93ffc2e5004b2aa3f5731c96594423bb33dbfedfa56974c39400b354f",
       "gitBlobSha": "f8cd8a534e1ac286622c22e26a7214666c3861b8",
-      "sourceLineageId": "sha256:da1900b93ffc2e5004b2aa3f5731c96594423bb33dbfedfa56974c39400b354f",
+      "sourceLineageId": "provisional:sticker_tangyuan_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": null,
       "duplicateOf": null,
       "originClass": "PROJECT_GENERATED_ASSET",
       "projectUseEvidence": "tracked project path: assets/generated/material/snapshot_ywn_20260805_112922/sticker_tangyuan_001.png",
@@ -1035,8 +1151,11 @@
       "candidateId": "BRC-034",
       "sourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/sticker_tangyuan_001_thumb.png",
       "sourceSha256": "54989151a31cd6f50f8d18b51df2dc24218487b0b81014269ea18227d8c75984",
+      "contentIdentitySha256": "54989151a31cd6f50f8d18b51df2dc24218487b0b81014269ea18227d8c75984",
       "gitBlobSha": "c70ec5c7192470250ae45668cf54ef15b49ad261",
-      "sourceLineageId": "sha256:54989151a31cd6f50f8d18b51df2dc24218487b0b81014269ea18227d8c75984",
+      "sourceLineageId": "provisional:sticker_tangyuan_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": "BRC-033",
       "duplicateOf": null,
       "originClass": "DERIVED_REVIEW_ARTIFACT",
       "projectUseEvidence": "tracked project path: assets/generated/material/snapshot_ywn_20260805_112922/sticker_tangyuan_001_thumb.png",
@@ -1048,7 +1167,8 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "derived artifact/output is not an original input source"
+        "derived artifact/output is not an original input source",
+        "obvious filename variant grouped provisionally; human source-lineage confirmation is required"
       ],
       "imageFacts": {
         "width": 512,
@@ -1066,8 +1186,11 @@
       "candidateId": "BRC-035",
       "sourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/sticker_window_flower_001.png",
       "sourceSha256": "c084ebe62e6fa12ec99dbfe02e0a4cc05ed9588485b1fe9a35b288280a103ef2",
+      "contentIdentitySha256": "c084ebe62e6fa12ec99dbfe02e0a4cc05ed9588485b1fe9a35b288280a103ef2",
       "gitBlobSha": "77513ed9fcc4739b6afa167f38573ebf44dd4943",
-      "sourceLineageId": "sha256:c084ebe62e6fa12ec99dbfe02e0a4cc05ed9588485b1fe9a35b288280a103ef2",
+      "sourceLineageId": "provisional:sticker_window_flower_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": null,
       "duplicateOf": null,
       "originClass": "PROJECT_GENERATED_ASSET",
       "projectUseEvidence": "tracked project path: assets/generated/material/snapshot_ywn_20260805_112922/sticker_window_flower_001.png",
@@ -1098,8 +1221,11 @@
       "candidateId": "BRC-036",
       "sourcePath": "assets/generated/material/snapshot_ywn_20260805_112922/sticker_window_flower_001_thumb.png",
       "sourceSha256": "d9f5abdc6645fc48911498c5c9b38dd77b156f86f308ff572dfb99fcb0c06280",
+      "contentIdentitySha256": "d9f5abdc6645fc48911498c5c9b38dd77b156f86f308ff572dfb99fcb0c06280",
       "gitBlobSha": "c7f39dceacec3817cfd81bf262bf1ca41d0ecbb6",
-      "sourceLineageId": "sha256:d9f5abdc6645fc48911498c5c9b38dd77b156f86f308ff572dfb99fcb0c06280",
+      "sourceLineageId": "provisional:sticker_window_flower_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": "BRC-035",
       "duplicateOf": null,
       "originClass": "DERIVED_REVIEW_ARTIFACT",
       "projectUseEvidence": "tracked project path: assets/generated/material/snapshot_ywn_20260805_112922/sticker_window_flower_001_thumb.png",
@@ -1112,7 +1238,8 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "derived artifact/output is not an original input source"
+        "derived artifact/output is not an original input source",
+        "obvious filename variant grouped provisionally; human source-lineage confirmation is required"
       ],
       "imageFacts": {
         "width": 510,
@@ -1130,8 +1257,11 @@
       "candidateId": "BRC-037",
       "sourcePath": "backend/assets/style-references/felt-style-ref-v1/01.png",
       "sourceSha256": "8d4c5a735d1b21b55c8b3e6569616c3e0928d8e88ff0766bb24d2846e97ecc8f",
+      "contentIdentitySha256": "8d4c5a735d1b21b55c8b3e6569616c3e0928d8e88ff0766bb24d2846e97ecc8f",
       "gitBlobSha": "21a7df177d77a87e9dfaf44db6039521387e40f5",
-      "sourceLineageId": "sha256:8d4c5a735d1b21b55c8b3e6569616c3e0928d8e88ff0766bb24d2846e97ecc8f",
+      "sourceLineageId": "provisional:sticker_rabbit_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": "BRC-029",
       "duplicateOf": "BRC-029",
       "originClass": "PROJECT_USER_ASSET",
       "projectUseEvidence": "tracked project path: backend/assets/style-references/felt-style-ref-v1/01.png",
@@ -1144,7 +1274,8 @@
       "acceptanceEligibility": "BLOCKED",
       "notes": [
         "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input",
-        "duplicate content SHA; does not create an independent source lineage"
+        "duplicate content SHA; does not create an independent byte identity or confirmed source lineage",
+        "obvious filename variant grouped provisionally; human source-lineage confirmation is required"
       ],
       "imageFacts": {
         "width": 1024,
@@ -1162,8 +1293,11 @@
       "candidateId": "BRC-038",
       "sourcePath": "backend/assets/style-references/felt-style-ref-v1/02.png",
       "sourceSha256": "da1900b93ffc2e5004b2aa3f5731c96594423bb33dbfedfa56974c39400b354f",
+      "contentIdentitySha256": "da1900b93ffc2e5004b2aa3f5731c96594423bb33dbfedfa56974c39400b354f",
       "gitBlobSha": "f8cd8a534e1ac286622c22e26a7214666c3861b8",
-      "sourceLineageId": "sha256:da1900b93ffc2e5004b2aa3f5731c96594423bb33dbfedfa56974c39400b354f",
+      "sourceLineageId": "provisional:sticker_tangyuan_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": "BRC-033",
       "duplicateOf": "BRC-033",
       "originClass": "PROJECT_USER_ASSET",
       "projectUseEvidence": "tracked project path: backend/assets/style-references/felt-style-ref-v1/02.png",
@@ -1176,7 +1310,8 @@
       "acceptanceEligibility": "BLOCKED",
       "notes": [
         "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input",
-        "duplicate content SHA; does not create an independent source lineage"
+        "duplicate content SHA; does not create an independent byte identity or confirmed source lineage",
+        "obvious filename variant grouped provisionally; human source-lineage confirmation is required"
       ],
       "imageFacts": {
         "width": 860,
@@ -1194,8 +1329,11 @@
       "candidateId": "BRC-039",
       "sourcePath": "backend/assets/style-references/felt-style-ref-v1/03.png",
       "sourceSha256": "19a2c17f5e6a6ca6457412cef84a97f021b0063741b3212cd13bbccbadec5289",
+      "contentIdentitySha256": "19a2c17f5e6a6ca6457412cef84a97f021b0063741b3212cd13bbccbadec5289",
       "gitBlobSha": "3102319b03fecea9155bc216795c1671a887bfb6",
-      "sourceLineageId": "sha256:19a2c17f5e6a6ca6457412cef84a97f021b0063741b3212cd13bbccbadec5289",
+      "sourceLineageId": "provisional:sticker_lantern_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": "BRC-025",
       "duplicateOf": "BRC-025",
       "originClass": "PROJECT_USER_ASSET",
       "projectUseEvidence": "tracked project path: backend/assets/style-references/felt-style-ref-v1/03.png",
@@ -1208,7 +1346,8 @@
       "acceptanceEligibility": "BLOCKED",
       "notes": [
         "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input",
-        "duplicate content SHA; does not create an independent source lineage"
+        "duplicate content SHA; does not create an independent byte identity or confirmed source lineage",
+        "obvious filename variant grouped provisionally; human source-lineage confirmation is required"
       ],
       "imageFacts": {
         "width": 633,
@@ -1226,8 +1365,11 @@
       "candidateId": "BRC-040",
       "sourcePath": "backend/assets/style-references/felt-style-ref-v1/04.png",
       "sourceSha256": "84991c54800da573985072149fe667048e059aaad1d42bfc2923a27859f90d28",
+      "contentIdentitySha256": "84991c54800da573985072149fe667048e059aaad1d42bfc2923a27859f90d28",
       "gitBlobSha": "988cd9bbb977832249781db06ce74417ca7ba96c",
-      "sourceLineageId": "sha256:84991c54800da573985072149fe667048e059aaad1d42bfc2923a27859f90d28",
+      "sourceLineageId": "provisional:sticker_flower_lantern_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": "BRC-021",
       "duplicateOf": "BRC-021",
       "originClass": "PROJECT_USER_ASSET",
       "projectUseEvidence": "tracked project path: backend/assets/style-references/felt-style-ref-v1/04.png",
@@ -1240,7 +1382,8 @@
       "acceptanceEligibility": "BLOCKED",
       "notes": [
         "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input",
-        "duplicate content SHA; does not create an independent source lineage"
+        "duplicate content SHA; does not create an independent byte identity or confirmed source lineage",
+        "obvious filename variant grouped provisionally; human source-lineage confirmation is required"
       ],
       "imageFacts": {
         "width": 885,
@@ -1258,8 +1401,11 @@
       "candidateId": "BRC-041",
       "sourcePath": "backend/assets/style-references/felt-style-ref-v1/05.png",
       "sourceSha256": "b4fa7ca19c85934eba5adfcf77e9bc3b70b5f058393579f990e969cf5fce492c",
+      "contentIdentitySha256": "b4fa7ca19c85934eba5adfcf77e9bc3b70b5f058393579f990e969cf5fce492c",
       "gitBlobSha": "2f097ebffcc190a681dd3497cf347f6dd9d58364",
-      "sourceLineageId": "sha256:b4fa7ca19c85934eba5adfcf77e9bc3b70b5f058393579f990e969cf5fce492c",
+      "sourceLineageId": "provisional:sticker_dumpling_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": "BRC-017",
       "duplicateOf": "BRC-017",
       "originClass": "PROJECT_USER_ASSET",
       "projectUseEvidence": "tracked project path: backend/assets/style-references/felt-style-ref-v1/05.png",
@@ -1272,7 +1418,8 @@
       "acceptanceEligibility": "BLOCKED",
       "notes": [
         "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input",
-        "duplicate content SHA; does not create an independent source lineage"
+        "duplicate content SHA; does not create an independent byte identity or confirmed source lineage",
+        "obvious filename variant grouped provisionally; human source-lineage confirmation is required"
       ],
       "imageFacts": {
         "width": 790,
@@ -1290,8 +1437,11 @@
       "candidateId": "BRC-042",
       "sourcePath": "backend/assets/style-references/felt-style-ref-v1/06.png",
       "sourceSha256": "215571f797076dd34e42df2c9786178010f0495b5e06bfdf2023c0e1ff99881c",
+      "contentIdentitySha256": "215571f797076dd34e42df2c9786178010f0495b5e06bfdf2023c0e1ff99881c",
       "gitBlobSha": "eb608218133ed3d9e5850a3eee75deeeba677449",
-      "sourceLineageId": "sha256:215571f797076dd34e42df2c9786178010f0495b5e06bfdf2023c0e1ff99881c",
+      "sourceLineageId": "provisional:sticker_mooncake_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": "BRC-027",
       "duplicateOf": "BRC-027",
       "originClass": "PROJECT_USER_ASSET",
       "projectUseEvidence": "tracked project path: backend/assets/style-references/felt-style-ref-v1/06.png",
@@ -1304,7 +1454,8 @@
       "acceptanceEligibility": "BLOCKED",
       "notes": [
         "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input",
-        "duplicate content SHA; does not create an independent source lineage"
+        "duplicate content SHA; does not create an independent byte identity or confirmed source lineage",
+        "obvious filename variant grouped provisionally; human source-lineage confirmation is required"
       ],
       "imageFacts": {
         "width": 1024,
@@ -1322,8 +1473,11 @@
       "candidateId": "BRC-043",
       "sourcePath": "backend/assets/style-references/felt-style-ref-v1/07.png",
       "sourceSha256": "c084ebe62e6fa12ec99dbfe02e0a4cc05ed9588485b1fe9a35b288280a103ef2",
+      "contentIdentitySha256": "c084ebe62e6fa12ec99dbfe02e0a4cc05ed9588485b1fe9a35b288280a103ef2",
       "gitBlobSha": "77513ed9fcc4739b6afa167f38573ebf44dd4943",
-      "sourceLineageId": "sha256:c084ebe62e6fa12ec99dbfe02e0a4cc05ed9588485b1fe9a35b288280a103ef2",
+      "sourceLineageId": "provisional:sticker_window_flower_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": "BRC-035",
       "duplicateOf": "BRC-035",
       "originClass": "PROJECT_USER_ASSET",
       "projectUseEvidence": "tracked project path: backend/assets/style-references/felt-style-ref-v1/07.png",
@@ -1336,7 +1490,8 @@
       "acceptanceEligibility": "BLOCKED",
       "notes": [
         "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input",
-        "duplicate content SHA; does not create an independent source lineage"
+        "duplicate content SHA; does not create an independent byte identity or confirmed source lineage",
+        "obvious filename variant grouped provisionally; human source-lineage confirmation is required"
       ],
       "imageFacts": {
         "width": 823,
@@ -1354,8 +1509,11 @@
       "candidateId": "BRC-044",
       "sourcePath": "backend/assets/style-references/felt-style-ref-v1/08.png",
       "sourceSha256": "6d3e9aca43654da4e630e4e72d236eccefac439f0c4f498e1e264b2575c3e3ab",
+      "contentIdentitySha256": "6d3e9aca43654da4e630e4e72d236eccefac439f0c4f498e1e264b2575c3e3ab",
       "gitBlobSha": "a840804ba36bfdb0f1cf92a58fc5966c753dae94",
-      "sourceLineageId": "sha256:6d3e9aca43654da4e630e4e72d236eccefac439f0c4f498e1e264b2575c3e3ab",
+      "sourceLineageId": "provisional:sticker_red_envelope_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": "BRC-031",
       "duplicateOf": "BRC-031",
       "originClass": "PROJECT_USER_ASSET",
       "projectUseEvidence": "tracked project path: backend/assets/style-references/felt-style-ref-v1/08.png",
@@ -1368,7 +1526,8 @@
       "acceptanceEligibility": "BLOCKED",
       "notes": [
         "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input",
-        "duplicate content SHA; does not create an independent source lineage"
+        "duplicate content SHA; does not create an independent byte identity or confirmed source lineage",
+        "obvious filename variant grouped provisionally; human source-lineage confirmation is required"
       ],
       "imageFacts": {
         "width": 591,
@@ -1386,8 +1545,11 @@
       "candidateId": "BRC-045",
       "sourcePath": "benchmarks/fabrication-layer-decomposition/fixtures/source/FLD-001.png",
       "sourceSha256": "430aea866099626ffb2448bab16f8c02611bc6b12735c36158816e6948efbd3a",
+      "contentIdentitySha256": "430aea866099626ffb2448bab16f8c02611bc6b12735c36158816e6948efbd3a",
       "gitBlobSha": "743a1ae35c430b4468ee9394d9c464c5d1b9a96a",
-      "sourceLineageId": "sha256:430aea866099626ffb2448bab16f8c02611bc6b12735c36158816e6948efbd3a",
+      "sourceLineageId": "provisional:sticker_crescent_moon_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": "BRC-015",
       "duplicateOf": "BRC-015",
       "originClass": "PROJECT_FIXTURE",
       "projectUseEvidence": "tracked project path: benchmarks/fabrication-layer-decomposition/fixtures/source/FLD-001.png",
@@ -1400,7 +1562,8 @@
       "acceptanceEligibility": "BLOCKED",
       "notes": [
         "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input",
-        "duplicate content SHA; does not create an independent source lineage"
+        "duplicate content SHA; does not create an independent byte identity or confirmed source lineage",
+        "obvious filename variant grouped provisionally; human source-lineage confirmation is required"
       ],
       "imageFacts": {
         "width": 1024,
@@ -1418,8 +1581,11 @@
       "candidateId": "BRC-046",
       "sourcePath": "benchmarks/fabrication-layer-decomposition/fixtures/source/FLD-002.png",
       "sourceSha256": "6d3e9aca43654da4e630e4e72d236eccefac439f0c4f498e1e264b2575c3e3ab",
+      "contentIdentitySha256": "6d3e9aca43654da4e630e4e72d236eccefac439f0c4f498e1e264b2575c3e3ab",
       "gitBlobSha": "a840804ba36bfdb0f1cf92a58fc5966c753dae94",
-      "sourceLineageId": "sha256:6d3e9aca43654da4e630e4e72d236eccefac439f0c4f498e1e264b2575c3e3ab",
+      "sourceLineageId": "provisional:sticker_red_envelope_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": "BRC-031",
       "duplicateOf": "BRC-031",
       "originClass": "PROJECT_FIXTURE",
       "projectUseEvidence": "tracked project path: benchmarks/fabrication-layer-decomposition/fixtures/source/FLD-002.png",
@@ -1432,7 +1598,8 @@
       "acceptanceEligibility": "BLOCKED",
       "notes": [
         "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input",
-        "duplicate content SHA; does not create an independent source lineage"
+        "duplicate content SHA; does not create an independent byte identity or confirmed source lineage",
+        "obvious filename variant grouped provisionally; human source-lineage confirmation is required"
       ],
       "imageFacts": {
         "width": 591,
@@ -1450,8 +1617,11 @@
       "candidateId": "BRC-047",
       "sourcePath": "benchmarks/fabrication-layer-decomposition/fixtures/source/FLD-003.png",
       "sourceSha256": "215571f797076dd34e42df2c9786178010f0495b5e06bfdf2023c0e1ff99881c",
+      "contentIdentitySha256": "215571f797076dd34e42df2c9786178010f0495b5e06bfdf2023c0e1ff99881c",
       "gitBlobSha": "eb608218133ed3d9e5850a3eee75deeeba677449",
-      "sourceLineageId": "sha256:215571f797076dd34e42df2c9786178010f0495b5e06bfdf2023c0e1ff99881c",
+      "sourceLineageId": "provisional:sticker_mooncake_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": "BRC-027",
       "duplicateOf": "BRC-027",
       "originClass": "PROJECT_FIXTURE",
       "projectUseEvidence": "tracked project path: benchmarks/fabrication-layer-decomposition/fixtures/source/FLD-003.png",
@@ -1464,7 +1634,8 @@
       "acceptanceEligibility": "BLOCKED",
       "notes": [
         "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input",
-        "duplicate content SHA; does not create an independent source lineage"
+        "duplicate content SHA; does not create an independent byte identity or confirmed source lineage",
+        "obvious filename variant grouped provisionally; human source-lineage confirmation is required"
       ],
       "imageFacts": {
         "width": 1024,
@@ -1482,8 +1653,11 @@
       "candidateId": "BRC-048",
       "sourcePath": "benchmarks/fabrication-layer-decomposition/fixtures/source/FLD-004.png",
       "sourceSha256": "84991c54800da573985072149fe667048e059aaad1d42bfc2923a27859f90d28",
+      "contentIdentitySha256": "84991c54800da573985072149fe667048e059aaad1d42bfc2923a27859f90d28",
       "gitBlobSha": "988cd9bbb977832249781db06ce74417ca7ba96c",
-      "sourceLineageId": "sha256:84991c54800da573985072149fe667048e059aaad1d42bfc2923a27859f90d28",
+      "sourceLineageId": "provisional:sticker_flower_lantern_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": "BRC-021",
       "duplicateOf": "BRC-021",
       "originClass": "PROJECT_FIXTURE",
       "projectUseEvidence": "tracked project path: benchmarks/fabrication-layer-decomposition/fixtures/source/FLD-004.png",
@@ -1496,7 +1670,8 @@
       "acceptanceEligibility": "BLOCKED",
       "notes": [
         "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input",
-        "duplicate content SHA; does not create an independent source lineage"
+        "duplicate content SHA; does not create an independent byte identity or confirmed source lineage",
+        "obvious filename variant grouped provisionally; human source-lineage confirmation is required"
       ],
       "imageFacts": {
         "width": 885,
@@ -1514,8 +1689,11 @@
       "candidateId": "BRC-049",
       "sourcePath": "benchmarks/fabrication-layer-decomposition/fixtures/source/FLD-005.png",
       "sourceSha256": "242da16c54c59e0c764e5eb00d52f2b276d0130f596b57fac1c0d08a5b868ad0",
+      "contentIdentitySha256": "242da16c54c59e0c764e5eb00d52f2b276d0130f596b57fac1c0d08a5b868ad0",
       "gitBlobSha": "60eb6e62cab013a2c40b12e1fd828911af4330c4",
-      "sourceLineageId": "sha256:242da16c54c59e0c764e5eb00d52f2b276d0130f596b57fac1c0d08a5b868ad0",
+      "sourceLineageId": "provisional:sticker_firecracker_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": "BRC-019",
       "duplicateOf": "BRC-019",
       "originClass": "PROJECT_FIXTURE",
       "projectUseEvidence": "tracked project path: benchmarks/fabrication-layer-decomposition/fixtures/source/FLD-005.png",
@@ -1528,7 +1706,8 @@
       "acceptanceEligibility": "BLOCKED",
       "notes": [
         "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input",
-        "duplicate content SHA; does not create an independent source lineage"
+        "duplicate content SHA; does not create an independent byte identity or confirmed source lineage",
+        "obvious filename variant grouped provisionally; human source-lineage confirmation is required"
       ],
       "imageFacts": {
         "width": 534,
@@ -1546,8 +1725,11 @@
       "candidateId": "BRC-050",
       "sourcePath": "benchmarks/fabrication-layer-decomposition/fixtures/source/FLD-006.png",
       "sourceSha256": "8d4c5a735d1b21b55c8b3e6569616c3e0928d8e88ff0766bb24d2846e97ecc8f",
+      "contentIdentitySha256": "8d4c5a735d1b21b55c8b3e6569616c3e0928d8e88ff0766bb24d2846e97ecc8f",
       "gitBlobSha": "21a7df177d77a87e9dfaf44db6039521387e40f5",
-      "sourceLineageId": "sha256:8d4c5a735d1b21b55c8b3e6569616c3e0928d8e88ff0766bb24d2846e97ecc8f",
+      "sourceLineageId": "provisional:sticker_rabbit_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": "BRC-029",
       "duplicateOf": "BRC-029",
       "originClass": "PROJECT_FIXTURE",
       "projectUseEvidence": "tracked project path: benchmarks/fabrication-layer-decomposition/fixtures/source/FLD-006.png",
@@ -1560,7 +1742,8 @@
       "acceptanceEligibility": "BLOCKED",
       "notes": [
         "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input",
-        "duplicate content SHA; does not create an independent source lineage"
+        "duplicate content SHA; does not create an independent byte identity or confirmed source lineage",
+        "obvious filename variant grouped provisionally; human source-lineage confirmation is required"
       ],
       "imageFacts": {
         "width": 1024,
@@ -1578,8 +1761,11 @@
       "candidateId": "BRC-051",
       "sourcePath": "benchmarks/fabrication-layer-decomposition/fixtures/source/FLD-007.png",
       "sourceSha256": "c084ebe62e6fa12ec99dbfe02e0a4cc05ed9588485b1fe9a35b288280a103ef2",
+      "contentIdentitySha256": "c084ebe62e6fa12ec99dbfe02e0a4cc05ed9588485b1fe9a35b288280a103ef2",
       "gitBlobSha": "77513ed9fcc4739b6afa167f38573ebf44dd4943",
-      "sourceLineageId": "sha256:c084ebe62e6fa12ec99dbfe02e0a4cc05ed9588485b1fe9a35b288280a103ef2",
+      "sourceLineageId": "provisional:sticker_window_flower_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": "BRC-035",
       "duplicateOf": "BRC-035",
       "originClass": "PROJECT_FIXTURE",
       "projectUseEvidence": "tracked project path: benchmarks/fabrication-layer-decomposition/fixtures/source/FLD-007.png",
@@ -1592,7 +1778,8 @@
       "acceptanceEligibility": "BLOCKED",
       "notes": [
         "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input",
-        "duplicate content SHA; does not create an independent source lineage"
+        "duplicate content SHA; does not create an independent byte identity or confirmed source lineage",
+        "obvious filename variant grouped provisionally; human source-lineage confirmation is required"
       ],
       "imageFacts": {
         "width": 823,
@@ -1610,8 +1797,11 @@
       "candidateId": "BRC-052",
       "sourcePath": "benchmarks/fabrication-layer-decomposition/fixtures/source/FLD-008.png",
       "sourceSha256": "19a2c17f5e6a6ca6457412cef84a97f021b0063741b3212cd13bbccbadec5289",
+      "contentIdentitySha256": "19a2c17f5e6a6ca6457412cef84a97f021b0063741b3212cd13bbccbadec5289",
       "gitBlobSha": "3102319b03fecea9155bc216795c1671a887bfb6",
-      "sourceLineageId": "sha256:19a2c17f5e6a6ca6457412cef84a97f021b0063741b3212cd13bbccbadec5289",
+      "sourceLineageId": "provisional:sticker_lantern_001",
+      "lineageStatus": "NEEDS_REVIEW",
+      "variantOf": "BRC-025",
       "duplicateOf": "BRC-025",
       "originClass": "PROJECT_FIXTURE",
       "projectUseEvidence": "tracked project path: benchmarks/fabrication-layer-decomposition/fixtures/source/FLD-008.png",
@@ -1624,7 +1814,8 @@
       "acceptanceEligibility": "BLOCKED",
       "notes": [
         "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input",
-        "duplicate content SHA; does not create an independent source lineage"
+        "duplicate content SHA; does not create an independent byte identity or confirmed source lineage",
+        "obvious filename variant grouped provisionally; human source-lineage confirmation is required"
       ],
       "imageFacts": {
         "width": 633,

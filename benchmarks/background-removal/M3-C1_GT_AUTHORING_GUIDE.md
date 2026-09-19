@@ -25,14 +25,19 @@ This guide applies only to project-real candidate intake. A candidate is not a f
 
 ## Required review evidence
 
-Before explicit promotion, the candidate must have `gt-review.json` with exactly:
+Run `build_gt_review_pack.py` after the source, GT, and candidate metadata are ready. It writes `review-identity.json`; an authorized human may then create `gt-review.json`, copying the three reviewed-byte hashes exactly. The tool never creates an approval or signoff itself.
+
+Before explicit promotion, the candidate must have `gt-review.json` containing at least:
 
 ```json
 {
   "state": "APPROVED",
   "signoff": "SIGNED_OFF",
-  "reviewerRole": "PROJECT_DATASET_REVIEWER"
+  "reviewerRole": "PROJECT_DATASET_REVIEWER",
+  "reviewedSourceSha256": "<SHA-256 from review-identity.json>",
+  "reviewedGroundTruthSha256": "<SHA-256 from review-identity.json>",
+  "reviewedCandidateMetadataSha256": "<SHA-256 from review-identity.json>"
 }
 ```
 
-The candidate must also have `rightsStatus: "CLEARED_FOR_PROJECT_EVAL"`. The promotion tool verifies both conditions, image dimensions, binary GT, unique source lineage, and manifest identity before writing anything.
+The candidate must also have `rightsStatus: "CLEARED_FOR_PROJECT_EVAL"`, `backgroundRemovalSuitability: "SUITABLE"`, a non-derived origin class, and `lineageStatus: "CONFIRMED"`. Promotion re-hashes all three reviewed inputs and rejects any byte drift. It also verifies source opacity, dimensions, binary GT, a path-safe `BR-###` case ID, unique confirmed lineage, and manifest identity before writing anything.

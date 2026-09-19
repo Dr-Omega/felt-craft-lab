@@ -66,10 +66,17 @@ def build_review_pack(candidate_dir: Path, output_dir: Path) -> dict[str, str]:
     preview = checkerboard(source.size).convert("RGBA")
     preview.alpha_composite(foreground)
     preview.save(output_dir / "checkerboard-foreground.png")
-    return {
-        "sourceSha256": hashlib.sha256(source_path.read_bytes()).hexdigest(),
-        "draftGroundTruthSha256": hashlib.sha256(gt_path.read_bytes()).hexdigest(),
+    review_identity = {
+        "schemaVersion": "background-removal.gt-review-identity/1",
+        "reviewedSourceSha256": hashlib.sha256(source_path.read_bytes()).hexdigest(),
+        "reviewedGroundTruthSha256": hashlib.sha256(gt_path.read_bytes()).hexdigest(),
+        "reviewedCandidateMetadataSha256": hashlib.sha256(metadata_path.read_bytes()).hexdigest(),
     }
+    (output_dir / "review-identity.json").write_text(
+        json.dumps(review_identity, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    return review_identity
 
 
 def main() -> int:
