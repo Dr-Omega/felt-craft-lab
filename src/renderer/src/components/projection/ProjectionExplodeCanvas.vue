@@ -31,6 +31,12 @@ const MAX_CAMERA_DISTANCE = 14
 let dragging = false
 let lastX = 0
 let lastY = 0
+let rebuildGeneration = 0
+let sceneReady = false
+
+function layersFingerprint(layers: ExplodeLayerInput[]): string {
+  return layers.map((layer) => `${layer.layerNumber}:${layer.image.objectUrl}`).join('|')
+}
 
 function disposeMaterial(material: THREE.Material): void {
   if (material instanceof THREE.MeshBasicMaterial && material.map) {
@@ -52,6 +58,8 @@ function disposeMesh(mesh: THREE.Mesh): void {
 
 async function rebuildLayers(): Promise<void> {
   if (!scene || !layerGroup) return
+  const generation = ++rebuildGeneration
+
   for (const mesh of layerMeshes) {
     disposeMesh(mesh)
   }
@@ -59,7 +67,12 @@ async function rebuildLayers(): Promise<void> {
 
   const loader = new THREE.TextureLoader()
   for (const layer of props.layers) {
+    if (generation !== rebuildGeneration) return
     const texture = await loadTexture(loader, layer.image.objectUrl)
+    if (generation !== rebuildGeneration) {
+      texture.dispose()
+      return
+    }
     texture.colorSpace = THREE.SRGBColorSpace
     const aspect = layer.image.width / Math.max(1, layer.image.height)
     const planeW = 2.2
@@ -75,6 +88,7 @@ async function rebuildLayers(): Promise<void> {
     layerGroup.add(mesh)
     layerMeshes.push(mesh)
   }
+  if (generation !== rebuildGeneration) return
   applyExplode()
 }
 
@@ -167,6 +181,7 @@ onMounted(() => {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
   hostEl.value.appendChild(renderer.domElement)
   renderer.domElement.classList.add('projection-three-canvas')
+  sceneReady = true
   void rebuildLayers()
   resize()
   startLoop()
@@ -191,17 +206,19 @@ onUnmounted(() => {
     renderer.dispose()
   }
   layerMeshes = []
+  sceneReady = false
+  rebuildGeneration += 1
   scene = undefined
   camera = undefined
   renderer = undefined
 })
 
 watch(
-  () => props.layers,
+  () => layersFingerprint(props.layers),
   () => {
+    if (!sceneReady) return
     void rebuildLayers()
-  },
-  { deep: true }
+  }
 )
 
 watch(

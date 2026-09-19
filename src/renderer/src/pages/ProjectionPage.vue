@@ -22,6 +22,7 @@ const busy = ref(false)
 const errorMessage = ref('')
 const descriptors = ref<ProjectionLayerDescriptor[]>([])
 const loadedImages = ref<LoadedLayerImage[]>([])
+let reloadGeneration = 0
 
 const isDev = import.meta.env.DEV
 
@@ -36,6 +37,7 @@ const explodeLayers = computed(() =>
 )
 
 async function reloadLayers(): Promise<void> {
+  const generation = ++reloadGeneration
   errorMessage.value = ''
   revokeLoadedLayerImages(loadedImages.value)
   loadedImages.value = []
@@ -48,6 +50,7 @@ async function reloadLayers(): Promise<void> {
     const built = await buildProjectionLayers(launch.value.scene, {
       includeBackground: includeBackground.value
     })
+    if (generation !== reloadGeneration) return
     if (built.length === 0) {
       errorMessage.value = '这件作品还没有可展示的图层。'
       return
@@ -55,13 +58,21 @@ async function reloadLayers(): Promise<void> {
     const images: LoadedLayerImage[] = []
     for (const layer of built) {
       images.push(await loadLayerImage(layer.imageUrl))
+      if (generation !== reloadGeneration) {
+        revokeLoadedLayerImages(images)
+        return
+      }
     }
     descriptors.value = built
     loadedImages.value = images
   } catch (error) {
-    errorMessage.value = error instanceof Error ? error.message : String(error)
+    if (generation === reloadGeneration) {
+      errorMessage.value = error instanceof Error ? error.message : String(error)
+    }
   } finally {
-    busy.value = false
+    if (generation === reloadGeneration) {
+      busy.value = false
+    }
   }
 }
 
@@ -113,7 +124,6 @@ function loadDemoScene(): void {
     sourceLabel: '演示 · 中秋四层贴纸'
   })
   syncLaunch()
-  void reloadLayers()
 }
 
 function shouldAutoLoadDemo(): boolean {
