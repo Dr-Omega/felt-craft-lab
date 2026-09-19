@@ -1,0 +1,35 @@
+{
+  "designSize": { "width": 1920, "height": 1080 },
+  "layers": [
+    {
+      "slug": "background",
+      "file": "background.png",
+      "bbox": { "left": 0, "top": 0, "right": 1920, "bottom": 1080, "width": 1920, "height": 1080 }
+    },
+    {
+      "slug": "splash-decor",
+      "file": "splash-decor.png",
+      "bbox": { "left": 233, "top": 243, "right": 1688, "bottom": 837, "width": 1455, "height": 594 }
+    },
+    {
+      "slug": "login-panel",
+      "file": "login-panel.png",
+      "bbox": { "left": 596, "top": 182, "right": 1244, "bottom": 898, "width": 648, "height": 716 }
+    },
+    {
+      "slug": "name-input",
+      "file": "name-input.png",
+      "bbox": { "left": 777, "top": 427, "right": 1159, "bottom": 504, "width": 382, "height": 77 }
+    },
+    {
+      "slug": "password-input",
+      "file": "password-input.png",
+      "bbox": { "left": 780, "top": 577, "right": 1161, "bottom": 659, "width": 381, "height": 82 }
+    },
+    {
+      "slug": "login-enter-button",
+      "file": "login-enter-button.png",
+      "bbox": { "left": 775, "top": 703, "right": 1165, "bottom": 797, "width": 390, "height": 94 }
+    }
+  ]
+}

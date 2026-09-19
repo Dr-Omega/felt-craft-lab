@@ -1,0 +1,264 @@
+/* Hand-drawn UI skins — whole-image stretch (no nine-slice) for brush-stroke art. */
+
+.text-box-surface {
+  border: 0;
+  background-color: transparent;
+  background-image: url('../../../../assets/ui/hand-drawn/text-box.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  box-shadow: none;
+  color: #594738;
+}
+
+.text-box-surface--small {
+  background-image: url('../../../../assets/ui/hand-drawn/text-box-small.png');
+}
+
+.text-box-field {
+  padding: 8px 14px;
+  border: 0;
+  background-color: transparent;
+  background-image: url('../../../../assets/ui/hand-drawn/input-field.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  color: #594738;
+  font: inherit;
+}
+
+.text-box-field:focus {
+  outline: 2px solid rgba(232, 165, 114, 0.55);
+  outline-offset: 1px;
+}
+
+.text-box-chip {
+  border: 0;
+  background-color: transparent;
+  background-image: url('../../../../assets/ui/hand-drawn/text-box-small.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  color: #594738;
+}
+
+button.primary,
+.hand-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--ui-btn-primary-height, 44px);
+  min-width: var(--ui-btn-primary-min-width, 80px);
+  padding: 8px 22px;
+  border: 0;
+  background-color: transparent;
+  background-image: url('../../../../assets/ui/hand-drawn/btn-primary.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  color: #594738;
+  font-weight: 700;
+}
+
+button.ghost,
+.hand-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--ui-btn-secondary-height, 44px);
+  min-width: var(--ui-btn-secondary-min-width, 80px);
+  padding: 8px 22px;
+  border: 0;
+  background-color: transparent;
+  background-image: url('../../../../assets/ui/hand-drawn/btn-secondary.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  color: #594738;
+  font-weight: 600;
+}
+
+button.danger {
+  filter: saturate(1.15) hue-rotate(-12deg);
+}
+
+.hand-icon-btn {
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  line-height: 0;
+}
+
+.hand-icon-btn img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+
+.hand-icon-btn--undo,
+.hand-icon-btn--redo,
+.hand-icon-btn--material {
+  width: var(--ui-icon-undo-width, 52px);
+  height: var(--ui-icon-undo-height, 52px);
+}
+
+.hand-icon-btn--redo {
+  width: var(--ui-icon-redo-width, 52px);
+  height: var(--ui-icon-redo-height, 52px);
+}
+
+.hand-icon-btn--material {
+  width: var(--ui-icon-material-width, 52px);
+  height: var(--ui-icon-material-height, 52px);
+}
+
+.hand-icon-btn--back {
+  width: var(--ui-icon-back-width, 92px);
+  height: var(--ui-icon-back-height, 49px);
+}
+
+.hand-icon-btn--close {
+  width: var(--ui-icon-close-width, 44px);
+  height: var(--ui-icon-close-height, 40px);
+}
+
+.hand-icon-btn--background {
+  width: var(--ui-icon-background-width, 48px);
+  height: var(--ui-icon-background-height, 78px);
+}
+
+.material-card,
+.asset-card {
+  border: 0;
+  background-color: transparent;
+  background-image: url('../../../../assets/ui/hand-drawn/text-box-small.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  box-shadow: none;
+}
+
+.material-card-name {
+  background: transparent;
+  border-top: 0;
+}
+
+.confirm-dialog,
+.return-modal,
+.project-preview-dialog {
+  border: 0;
+  background-color: transparent;
+  background-image: url('../../../../assets/ui/hand-drawn/text-box.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  box-shadow: none;
+}
+
+.material-sheet {
+  border: 0;
+  background-color: transparent;
+  background-image: url('../../../../assets/ui/hand-drawn/material-sheet-bg.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  box-shadow: none;
+}
+
+/* Asset QA sheet — hand-drawn panel + controls */
+.asset-qa-sheet {
+  top: var(--ui-qa-sheet-top, 16px);
+  right: var(--ui-qa-sheet-right, 16px);
+  bottom: var(--ui-qa-sheet-bottom, 16px);
+  width: min(var(--ui-qa-sheet-width, 420px), 92vw);
+  padding: var(--ui-qa-sheet-padding, 18px);
+  gap: 12px;
+  border: 0;
+  border-radius: 0;
+  background-color: transparent;
+  background-image: url('../../../../assets/ui/hand-drawn/qa-panel-bg.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  box-shadow: none;
+}
+
+.qa-input-field {
+  width: 100%;
+  min-height: var(--ui-qa-input-min-height, 72px);
+  padding: 16px 20px;
+  border: 0;
+  background-color: transparent;
+  background-image: url('../../../../assets/ui/hand-drawn/qa-input-field.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  color: #594738;
+  font: inherit;
+  resize: none;
+  outline: none;
+}
+
+.qa-input-field:focus {
+  outline: 2px solid rgba(232, 165, 114, 0.55);
+  outline-offset: 1px;
+}
+
+.qa-input-field:disabled {
+  opacity: 0.65;
+}
+
+.qa-bubble-question {
+  align-self: flex-end;
+  max-width: 88%;
+  padding: 8px 14px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  border: 0;
+  background-color: transparent;
+  background-image: url('../../../../assets/ui/hand-drawn/qa-bubble-question.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  box-shadow: none;
+  color: #594738;
+  word-break: break-word;
+}
+
+.hand-btn-img {
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  line-height: 0;
+  cursor: pointer;
+}
+
+.hand-btn-img img {
+  display: block;
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+
+.hand-btn-img:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.hand-btn-img.is-live img {
+  filter: saturate(1.2) brightness(1.05);
+}
+
+.hand-btn-img.is-starting img {
+  opacity: 0.7;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

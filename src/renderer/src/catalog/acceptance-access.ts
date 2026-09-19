@@ -20,17 +20,24 @@ export function editorAssetsForAcceptanceAccess(assets: readonly AssetRecord[]):
  * refreshAccess() before rendering the picker.
  */
 export async function seedAcceptanceUnlockedAccess(
-  store: Pick<AssetAccessStore, 'save'>,
+  store: Pick<AssetAccessStore, 'save' | 'listForUser'>,
   assets: readonly AssetRecord[],
   enabled: boolean
 ): Promise<AssetAccessState[]> {
   if (!enabled) return []
 
+  const existing = await store.listForUser(DEFAULT_USER_ID)
+  const alreadyUnlocked = new Set(
+    existing.filter((row) => isAssetUnlocked(row)).map((row) => row.assetId)
+  )
+
   const seeded: AssetAccessState[] = []
   for (const asset of editorAssetsForAcceptanceAccess(assets)) {
+    if (alreadyUnlocked.has(asset.assetId)) continue
     const access = createUnlockedAccess(asset.assetId)
     await store.save(access)
     seeded.push(access)
+    alreadyUnlocked.add(asset.assetId)
   }
   return seeded
 }

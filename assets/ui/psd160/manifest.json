@@ -1,0 +1,208 @@
+{
+  "sourcePsd": "C:\\Users\\xingx\\Desktop\\160 - 副本.psd",
+  "designSize": {
+    "width": 1920,
+    "height": 1080
+  },
+  "layers": [
+    {
+      "name": "图层 2",
+      "slug": "background",
+      "file": "background.png",
+      "kind": "asset",
+      "bbox": {
+        "left": 0,
+        "top": 0,
+        "right": 1920,
+        "bottom": 1080,
+        "width": 1920,
+        "height": 1080
+      },
+      "visibleInPsd": false
+    },
+    {
+      "name": "画框",
+      "slug": "canvas-frame",
+      "file": "canvas-frame.png",
+      "kind": "asset",
+      "bbox": {
+        "left": 232,
+        "top": -90,
+        "right": 1449,
+        "bottom": 1181,
+        "width": 1217,
+        "height": 1271
+      },
+      "visibleInPsd": true
+    },
+    {
+      "name": "保存按钮",
+      "slug": "save-button",
+      "file": "save-button.png",
+      "kind": "asset",
+      "bbox": {
+        "left": 1397,
+        "top": 447,
+        "right": 1502,
+        "bottom": 653,
+        "width": 105,
+        "height": 206
+      },
+      "visibleInPsd": true
+    },
+    {
+      "name": "文本框",
+      "slug": "text-box",
+      "file": "text-box.png",
+      "kind": "asset",
+      "bbox": {
+        "left": 458,
+        "top": 14,
+        "right": 1294,
+        "bottom": 1062,
+        "width": 836,
+        "height": 1048
+      },
+      "visibleInPsd": false
+    },
+    {
+      "name": "3d投影屏",
+      "slug": "projection-screen",
+      "file": "projection-screen.png",
+      "kind": "asset",
+      "bbox": {
+        "left": 121,
+        "top": 94,
+        "right": 1431,
+        "bottom": 1015,
+        "width": 1310,
+        "height": 921
+      },
+      "visibleInPsd": false
+    },
+    {
+      "name": "书本",
+      "slug": "book",
+      "file": "book.png",
+      "kind": "asset",
+      "bbox": {
+        "left": 192,
+        "top": 106,
+        "right": 1394,
+        "bottom": 974,
+        "width": 1202,
+        "height": 868
+      },
+      "visibleInPsd": false
+    },
+    {
+      "name": "背景边框装饰",
+      "slug": "background-decor",
+      "file": "background-decor.png",
+      "kind": "asset",
+      "bbox": {
+        "left": 0,
+        "top": 0,
+        "right": 1920,
+        "bottom": 1080,
+        "width": 1920,
+        "height": 1080
+      },
+      "visibleInPsd": false
+    },
+    {
+      "name": "棕熊按钮",
+      "slug": "brown-bear-button",
+      "file": "brown-bear-button.png",
+      "kind": "asset",
+      "bbox": {
+        "left": 1565,
+        "top": 787,
+        "right": 1839,
+        "bottom": 1030,
+        "width": 274,
+        "height": 243
+      },
+      "visibleInPsd": true
+    },
+    {
+      "name": "白熊按钮",
+      "slug": "white-bear-button",
+      "file": "white-bear-button.png",
+      "kind": "asset",
+      "bbox": {
+        "left": 1559,
+        "top": 403,
+        "right": 1842,
+        "bottom": 696,
+        "width": 283,
+        "height": 293
+      },
+      "visibleInPsd": true
+    },
+    {
+      "name": "狐狸按钮",
+      "slug": "fox-button",
+      "file": "fox-button.png",
+      "kind": "asset",
+      "bbox": {
+        "left": 1551,
+        "top": 34,
+        "right": 1839,
+        "bottom": 396,
+        "width": 288,
+        "height": 362
+      },
+      "visibleInPsd": true
+    },
+    {
+      "name": "画板范围",
+      "slug": "canvas-bounds",
+      "file": null,
+      "kind": "bounds",
+      "bbox": {
+        "left": 334,
+        "top": 260,
+        "right": 1236,
+        "bottom": 776,
+        "width": 902,
+        "height": 516
+      },
+      "visibleInPsd": false
+    },
+    {
+      "name": "3d投影屏范围",
+      "slug": "projection-screen-bounds",
+      "file": null,
+      "kind": "bounds",
+      "bbox": {
+        "left": 227,
+        "top": 154,
+        "right": 1368,
+        "bottom": 895,
+        "width": 1141,
+        "height": 741
+      },
+      "visibleInPsd": false
+    },
+    {
+      "name": "书本范围",
+      "slug": "book-bounds",
+      "file": null,
+      "kind": "bounds",
+      "bbox": {
+        "left": 270,
+        "top": 123,
+        "right": 1295,
+        "bottom": 905,
+        "width": 1025,
+        "height": 782
+      },
+      "visibleInPsd": false
+    }
+  ],
+  "textBoxTokens": {
+    "border": "#6c1c04",
+    "fill": "#f4dc84"
+  }
+}

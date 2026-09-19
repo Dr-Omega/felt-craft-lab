@@ -13,6 +13,8 @@
     "src/renderer/src/catalog/**/*",
     "src/renderer/src/util/**/*",
     "src/renderer/src/app-nav.ts",
+    "src/renderer/src/projection/**/*",
+    "src/renderer/src/components/projection/**/*",
     "src/renderer/src/env.d.ts",
     "src/shared/**/*",
     "src/main/**/*",
