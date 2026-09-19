@@ -202,11 +202,11 @@ onUnmounted(() => {
             <p v-if="busy" class="muted">处理中…</p>
             <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
 
-            <ol v-if="descriptors.length > 0" class="layer-list">
+            <ul v-if="descriptors.length > 0" class="layer-list">
               <li v-for="layer in descriptors" :key="`${layer.kind}-${layer.assetId}-${layer.layerNumber}`">
                 {{ layer.layerNumber }}. {{ layer.label }}
               </li>
-            </ol>
+            </ul>
           </aside>
         </template>
       </div>
@@ -290,6 +290,7 @@ onUnmounted(() => {
   padding-left: 1.2rem;
   max-height: 140px;
   overflow: auto;
+  list-style: none;
 }
 
 .projection-empty {
