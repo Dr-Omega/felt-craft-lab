@@ -25,6 +25,9 @@ let resizeObserver: ResizeObserver | undefined
 let animationId = 0
 let yaw = 0.35
 let pitch = 0.25
+let cameraDistance = 4.2
+const MIN_CAMERA_DISTANCE = 2.2
+const MAX_CAMERA_DISTANCE = 14
 let dragging = false
 let lastX = 0
 let lastY = 0
@@ -88,6 +91,11 @@ function applyExplode(): void {
   })
 }
 
+function applyCameraDistance(): void {
+  if (!camera) return
+  camera.position.set(0, 0, cameraDistance)
+}
+
 function renderFrame(): void {
   if (!renderer || !scene || !camera || !layerGroup) return
   layerGroup.rotation.x = pitch
@@ -138,6 +146,15 @@ function onPointerUp(event: PointerEvent): void {
   hostEl.value?.releasePointerCapture(event.pointerId)
 }
 
+function onWheel(event: WheelEvent): void {
+  event.preventDefault()
+  cameraDistance = Math.max(
+    MIN_CAMERA_DISTANCE,
+    Math.min(MAX_CAMERA_DISTANCE, cameraDistance + event.deltaY * 0.004)
+  )
+  applyCameraDistance()
+}
+
 onMounted(() => {
   if (!hostEl.value) return
   scene = new THREE.Scene()
@@ -145,7 +162,7 @@ onMounted(() => {
   layerGroup = new THREE.Group()
   scene.add(layerGroup)
   camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100)
-  camera.position.set(0, 0, 4.2)
+  applyCameraDistance()
   renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
   hostEl.value.appendChild(renderer.domElement)
@@ -154,13 +171,15 @@ onMounted(() => {
   resize()
   startLoop()
   window.addEventListener('resize', resize)
-  if (hostEl.value && typeof ResizeObserver !== 'undefined') {
+  hostEl.value.addEventListener('wheel', onWheel, { passive: false })
+  if (typeof ResizeObserver !== 'undefined') {
     resizeObserver = new ResizeObserver(() => resize())
     resizeObserver.observe(hostEl.value)
   }
 })
 
 onUnmounted(() => {
+  hostEl.value?.removeEventListener('wheel', onWheel)
   window.removeEventListener('resize', resize)
   resizeObserver?.disconnect()
   cancelAnimationFrame(animationId)

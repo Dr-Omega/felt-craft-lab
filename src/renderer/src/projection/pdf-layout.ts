@@ -1,6 +1,6 @@
 import { jsPDF } from 'jspdf'
-import type { ProjectionLayerDescriptor } from './projection-layers'
 import type { LoadedLayerImage } from './load-layer-image'
+import { ensurePdfTextFont, rasterizePdfText } from './pdf-text-image'
 
 export type PaperSize = 'a4' | 'a3'
 
@@ -96,11 +96,26 @@ function fitLayerSize(layer: LayoutLayerInput, maxWidthMm: number): { width: num
   return { width, height }
 }
 
+function drawPdfText(
+  doc: jsPDF,
+  text: string,
+  x: number,
+  y: number,
+  fontSizePt: number,
+  align: 'left' | 'right' = 'left'
+): void {
+  const raster = rasterizePdfText(text, fontSizePt)
+  const drawX = align === 'right' ? x - raster.widthMm : x
+  const drawY = y - raster.heightMm * 0.82
+  doc.addImage(raster.dataUrl, 'PNG', drawX, drawY, raster.widthMm, raster.heightMm, undefined, 'FAST')
+}
+
 export async function exportLayoutPdf(options: {
   workName: string
   paper: PaperSize
   layers: LayoutLayerInput[]
 }): Promise<Blob> {
+  await ensurePdfTextFont()
   const pages = layoutLayersOnPages(options.layers, options.paper)
   const firstSize = PAGE_MM[options.paper]
   const doc = new jsPDF({
@@ -114,19 +129,22 @@ export async function exportLayoutPdf(options: {
       doc.addPage(options.paper === 'a3' ? 'a3' : 'a4', 'portrait')
     }
     const page = pages[pageIndex]!
-    doc.setFontSize(11)
-    doc.text(options.workName.trim() || '我的作品', MARGIN_MM, 8)
-    doc.setFontSize(9)
-    doc.text(`第 ${pageIndex + 1} / ${pages.length} 页`, firstSize.width - MARGIN_MM, 8, { align: 'right' })
+    drawPdfText(doc, options.workName.trim() || '我的作品', MARGIN_MM, 8, 11)
+    drawPdfText(
+      doc,
+      `第 ${pageIndex + 1} / ${pages.length} 页`,
+      firstSize.width - MARGIN_MM,
+      8,
+      9,
+      'right'
+    )
 
     for (const item of page.placed) {
       const dataUrl = await layerToPngDataUrl(item.layer)
       doc.addImage(dataUrl, 'PNG', item.x, item.y, item.width, item.height, undefined, 'FAST')
       drawCutGuide(doc, item)
-      doc.setFontSize(10)
-      doc.text(String(item.layer.descriptor.layerNumber), item.x + 2, item.y + 5)
-      doc.setFontSize(8)
-      doc.text(item.layer.descriptor.label, item.x + 2, item.y + item.height - 2)
+      drawPdfText(doc, String(item.layer.descriptor.layerNumber), item.x + 2, item.y + 5, 10)
+      drawPdfText(doc, item.layer.descriptor.label, item.x + 2, item.y + item.height - 2, 8)
     }
   }
 
