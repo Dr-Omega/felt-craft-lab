@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "background-removal.acceptance-environment/1",
+  "python": "3.12",
+  "packages": {
+    "rembg": "2.0.81",
+    "onnxruntime": "1.29.0",
+    "Pillow": "12.3.0",
+    "numpy": "2.5.2",
+    "psutil": "7.2.2"
+  }
+}

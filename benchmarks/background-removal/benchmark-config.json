@@ -1,0 +1,14 @@
+{
+  "cpuOnly": true,
+  "alphaThreshold": 128,
+  "warmRuns": 5,
+  "rssSampleIntervalMs": 10,
+  "internalHoleErosionKernel": 5,
+  "requiredCaseCount": 15,
+  "modelOrder": [
+    "current-rule",
+    "isnet-anime",
+    "birefnet-general-lite",
+    "birefnet-general"
+  ]
+}

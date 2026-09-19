@@ -1,0 +1,69 @@
+{
+  "models": {
+    "current-rule": {
+      "displayName": "Current Rule Algorithm",
+      "source": "repository backend/services/image_postprocess.py",
+      "exactModelRevision": "not-applicable",
+      "modelSha256": "not-applicable",
+      "weightLicenseVerificationStatus": "NOT_APPLICABLE",
+      "license": "Project source licence",
+      "onnxAvailable": false,
+      "cpuAvailable": true,
+      "cudaRequired": false,
+      "fp16Feasibility": "not applicable",
+      "int8Feasibility": "not applicable",
+      "estimatedMobileSuitability": "high: no learned model, validate quality separately"
+    },
+    "isnet-anime": {
+      "displayName": "ISNet Anime",
+      "rembgSession": "isnet-anime",
+      "cacheFile": "isnet-anime.onnx",
+      "source": "https://huggingface.co/skytnt/anime-seg",
+      "sourceVersion": "Manual artifact verification; rembg isnet-anime expected artifact MD5 6f184e756bb3bd901c8849220a83e38e",
+      "exactModelRevision": "skytnt/anime-seg@a0a563c41338cbe0d23dfb4bfc3e243c518e5768:isnetis.onnx",
+      "modelSha256": "f15622d853e8260172812b657053460e20806f04b9e05147d49af7bed31a6e99",
+      "weightLicenseVerificationStatus": "VERIFIED",
+      "license": "Official model repository/model card: Apache-2.0",
+      "onnxAvailable": true,
+      "cpuAvailable": true,
+      "cudaRequired": false,
+      "fp16Feasibility": "possible only when the chosen ONNX Runtime CPU build and graph support it; measure separately",
+      "int8Feasibility": "not evaluated; requires accuracy regression against this dataset",
+      "estimatedMobileSuitability": "medium: approximately 176 MB reference ONNX asset; benchmark before considering deployment"
+    },
+    "birefnet-general-lite": {
+      "displayName": "BiRefNet General Lite",
+      "rembgSession": "birefnet-general-lite",
+      "cacheFile": "birefnet-general-lite.onnx",
+      "source": "https://github.com/ZhengPeng7/BiRefNet/releases/tag/v1",
+      "sourceVersion": "Manual artifact verification; rembg birefnet-general-lite expected artifact MD5 4fab47adc4ff364be1713e97b7e66334",
+      "exactModelRevision": "ZhengPeng7/BiRefNet release v1 (a0cf992), asset BiRefNet-general-bb_swin_v1_tiny-epoch_232.onnx",
+      "modelSha256": "5600024376f572a557870a5eb0afb1e5961636bef4e1e22132025467d0f03333",
+      "weightLicenseVerificationStatus": "VERIFIED",
+      "license": "Official BiRefNet repository/model weights: MIT",
+      "onnxAvailable": true,
+      "cpuAvailable": true,
+      "cudaRequired": false,
+      "fp16Feasibility": "ONNX FP16 exports exist; CPU provider support and accuracy must be measured",
+      "int8Feasibility": "not evaluated; requires representative quantization and accuracy regression",
+      "estimatedMobileSuitability": "candidate only: Lite/tiny backbone is expected to be the lower-cost BiRefNet variant"
+    },
+    "birefnet-general": {
+      "displayName": "BiRefNet General",
+      "rembgSession": "birefnet-general",
+      "cacheFile": "birefnet-general.onnx",
+      "source": "https://github.com/ZhengPeng7/BiRefNet/releases/tag/v1",
+      "sourceVersion": "Manual artifact verification; rembg birefnet-general expected artifact MD5 7a35a0141cbbc80de11d9c9a28f52697",
+      "exactModelRevision": "ZhengPeng7/BiRefNet release v1 (a0cf992), asset BiRefNet-general-epoch_244.onnx",
+      "modelSha256": "58f621f00f5d756097615970a88a791584600dcf7c45b18a0a6267535a1ebd3c",
+      "weightLicenseVerificationStatus": "VERIFIED",
+      "license": "Official BiRefNet repository/model weights: MIT",
+      "onnxAvailable": true,
+      "cpuAvailable": true,
+      "cudaRequired": false,
+      "fp16Feasibility": "ONNX FP16 exports exist; CPU provider support and accuracy must be measured",
+      "int8Feasibility": "not evaluated; requires representative quantization and accuracy regression",
+      "estimatedMobileSuitability": "low pending measurement: full model is substantially heavier than Lite"
+    }
+  }
+}
