@@ -169,9 +169,9 @@ onUnmounted(() => {
             <h3>{{ workName }}</h3>
             <p v-if="launch?.sourceLabel" class="muted">{{ launch?.sourceLabel }}</p>
 
-            <label class="control-row">
-              <input v-model="includeBackground" type="checkbox" :disabled="busy" />
+            <label class="control-row control-row--inline">
               背景参与分层展示
+              <input v-model="includeBackground" type="checkbox" :disabled="busy" />
             </label>
 
             <label class="control-row">
@@ -252,6 +252,13 @@ onUnmounted(() => {
 .control-row {
   display: grid;
   gap: 6px;
+}
+
+.control-row--inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
 }
 
 .control-row legend {
