@@ -1,0 +1,1355 @@
+{
+  "commit": "a6eba360c07968c32fd72b66751c9057a31a8d90",
+  "mode": "built-production-electron",
+  "assertions": [
+    {
+      "name": "threeStickerScenePersisted",
+      "pass": true
+    },
+    {
+      "name": "singleClickSelection",
+      "pass": true
+    },
+    {
+      "name": "doubleClickOqt",
+      "pass": true
+    },
+    {
+      "name": "layerForwardAdjacent",
+      "pass": true
+    },
+    {
+      "name": "layerBackwardAdjacent",
+      "pass": true
+    },
+    {
+      "name": "sceneGeometrySafe",
+      "pass": true
+    },
+    {
+      "name": "oqtFollowsGeometry",
+      "pass": true
+    },
+    {
+      "name": "oqtRemainsAfterScale",
+      "pass": true
+    },
+    {
+      "name": "oqtRemainsAfterRotate",
+      "pass": true
+    },
+    {
+      "name": "rotationHandleNoOqtCollision",
+      "pass": true
+    },
+    {
+      "name": "removeExactSceneDelta",
+      "pass": true
+    },
+    {
+      "name": "removeUndoExactRestore",
+      "pass": true
+    },
+    {
+      "name": "toastInvalidation",
+      "pass": true
+    },
+    {
+      "name": "blankClickClosesOqt",
+      "pass": true
+    },
+    {
+      "name": "contextMutualExclusion",
+      "pass": true
+    },
+    {
+      "name": "resizeReprojectsAndPreservesScene",
+      "pass": true
+    }
+  ],
+  "ui": {
+    "libraryLoaded": true,
+    "theme": "lantern_festival",
+    "editorLoaded": true,
+    "canvas": {
+      "left": 324,
+      "top": 88,
+      "width": 518,
+      "height": 518,
+      "centerX": 583,
+      "centerY": 347
+    },
+    "canvasElement": {
+      "width": 1440,
+      "height": 1440,
+      "rect": {
+        "x": 324,
+        "y": 88,
+        "width": 518,
+        "height": 518,
+        "top": 88,
+        "right": 842,
+        "bottom": 606,
+        "left": 324
+      },
+      "cssWidth": "518px",
+      "cssHeight": "518px",
+      "dpr": 1.5
+    },
+    "upperCanvas": {
+      "left": 324,
+      "top": 88,
+      "width": 518,
+      "height": 518,
+      "centerX": 583,
+      "centerY": 347
+    },
+    "canvasFrame": {
+      "left": 324,
+      "top": 88,
+      "width": 518,
+      "height": 518,
+      "centerX": 583,
+      "centerY": 347
+    },
+    "canvasWrap": {
+      "left": 324,
+      "top": 88,
+      "width": 518,
+      "height": 518,
+      "centerX": 583,
+      "centerY": 347
+    },
+    "editorCanvas": {
+      "left": 324,
+      "top": 88,
+      "width": 518,
+      "height": 518,
+      "centerX": 583,
+      "centerY": 347
+    },
+    "before-sticker_flower_lantern_001-dock": {
+      "disabled": false,
+      "rect": {
+        "left": 561,
+        "top": 622,
+        "width": 44,
+        "height": 44
+      },
+      "hit": "material-box-icon",
+      "sheet": false
+    },
+    "after-sticker_flower_lantern_001-dock": {
+      "sheet": true,
+      "buttons": [
+        {
+          "disabled": false,
+          "class": "dock-material is-open"
+        }
+      ]
+    },
+    "firstStickerPixel": {
+      "x": 97,
+      "y": 119,
+      "data": [
+        251,
+        219,
+        220,
+        255
+      ]
+    },
+    "before-sticker_tangyuan_001-dock": {
+      "disabled": false,
+      "rect": {
+        "left": 561,
+        "top": 622,
+        "width": 44,
+        "height": 44
+      },
+      "hit": "material-box-icon",
+      "sheet": false
+    },
+    "after-sticker_tangyuan_001-dock": {
+      "sheet": true,
+      "buttons": [
+        {
+          "disabled": false,
+          "class": "dock-material is-open"
+        }
+      ]
+    },
+    "secondStickerPixel": {
+      "x": 194,
+      "y": 173,
+      "data": [
+        30,
+        6,
+        6,
+        255
+      ]
+    },
+    "before-sticker_rabbit_001-dock": {
+      "disabled": false,
+      "rect": {
+        "left": 561,
+        "top": 622,
+        "width": 44,
+        "height": 44
+      },
+      "hit": "material-box-icon",
+      "sheet": false
+    },
+    "after-sticker_rabbit_001-dock": {
+      "sheet": true,
+      "buttons": [
+        {
+          "disabled": false,
+          "class": "dock-material is-open"
+        }
+      ]
+    },
+    "thirdStickerPixel": {
+      "x": 259,
+      "y": 232,
+      "data": [
+        252,
+        221,
+        222,
+        255
+      ]
+    },
+    "inkBounds": {
+      "bg": [
+        255,
+        248,
+        231
+      ],
+      "left": 0,
+      "top": 12,
+      "right": 1080,
+      "bottom": 1004,
+      "count": 23883,
+      "darkLeft": 0,
+      "darkTop": 12,
+      "darkRight": 884,
+      "darkBottom": 892,
+      "darkCount": 7061
+    },
+    "projectSnapshots": {
+      "initial": {
+        "projectId": "f102a9e9-0616-416a-b4ab-68b18d732693",
+        "projectName": "我的新作品",
+        "previewUrl": "felt-resource://preview/7c5941e90f2144cd88d8f8cd8b9048a1.png",
+        "preview": {
+          "ok": true,
+          "contentType": "image/png",
+          "byteLength": 246186,
+          "png": true,
+          "width": 960,
+          "height": 960
+        },
+        "scene": {
+          "schemaVersion": 1,
+          "sceneId": "fc5bc7ea-ad15-4234-960f-a7442ebdc168",
+          "userId": "user_demo_001",
+          "workName": "我的新作品",
+          "themeId": "lantern_festival",
+          "assetSnapshotId": "snapshot_ywn_20260805_112922",
+          "createdAt": "2026-08-10T17:33:38.205Z",
+          "canvas": {
+            "width": 960,
+            "height": 960,
+            "backgroundColor": "#FFF8E7"
+          },
+          "backgroundAssetId": null,
+          "objects": [
+            {
+              "objectId": "af166589-a903-4223-b2eb-7ef5b1411e84",
+              "assetId": "sticker_flower_lantern_001",
+              "assetType": "sticker",
+              "left": 179.76833976833979,
+              "top": 218.68725868725872,
+              "scaleX": 0.5423728813559322,
+              "scaleY": 0.5423728813559322,
+              "angle": 0,
+              "zIndex": 1,
+              "visible": true,
+              "locked": false
+            },
+            {
+              "objectId": "53240bac-3f2d-4a92-a183-990b187244db",
+              "assetId": "sticker_tangyuan_001",
+              "assetType": "sticker",
+              "left": 359.53667953667957,
+              "top": 318.7644787644788,
+              "scaleX": 0.5581395348837209,
+              "scaleY": 0.5581395348837209,
+              "angle": 0,
+              "zIndex": 2,
+              "visible": true,
+              "locked": false
+            },
+            {
+              "objectId": "d5ebae40-cfa5-4ff1-9a36-65a7c84384d3",
+              "assetId": "sticker_rabbit_001",
+              "assetType": "sticker",
+              "left": 480,
+              "top": 429.96138996138995,
+              "scaleX": 0.46875,
+              "scaleY": 0.46875,
+              "angle": 0,
+              "zIndex": 3,
+              "visible": true,
+              "locked": false
+            }
+          ],
+          "updatedAt": "2026-08-10T17:33:47.225Z"
+        }
+      },
+      "afterForward": {
+        "projectId": "f102a9e9-0616-416a-b4ab-68b18d732693",
+        "projectName": "我的新作品",
+        "previewUrl": "felt-resource://preview/e419f71e1ac747a18d85c8e6a494ed68.png",
+        "preview": {
+          "ok": true,
+          "contentType": "image/png",
+          "byteLength": 225380,
+          "png": true,
+          "width": 960,
+          "height": 960
+        },
+        "scene": {
+          "schemaVersion": 1,
+          "sceneId": "fc5bc7ea-ad15-4234-960f-a7442ebdc168",
+          "userId": "user_demo_001",
+          "workName": "我的新作品",
+          "themeId": "lantern_festival",
+          "assetSnapshotId": "snapshot_ywn_20260805_112922",
+          "createdAt": "2026-08-10T17:33:38.205Z",
+          "canvas": {
+            "width": 960,
+            "height": 960,
+            "backgroundColor": "#FFF8E7"
+          },
+          "backgroundAssetId": null,
+          "objects": [
+            {
+              "objectId": "af166589-a903-4223-b2eb-7ef5b1411e84",
+              "assetId": "sticker_flower_lantern_001",
+              "assetType": "sticker",
+              "left": 179.76833976833979,
+              "top": 218.68725868725872,
+              "scaleX": 0.5423728813559322,
+              "scaleY": 0.5423728813559322,
+              "angle": 0,
+              "zIndex": 1,
+              "visible": true,
+              "locked": false
+            },
+            {
+              "objectId": "d5ebae40-cfa5-4ff1-9a36-65a7c84384d3",
+              "assetId": "sticker_rabbit_001",
+              "assetType": "sticker",
+              "left": 480,
+              "top": 429.96138996138995,
+              "scaleX": 0.46875,
+              "scaleY": 0.46875,
+              "angle": 0,
+              "zIndex": 2,
+              "visible": true,
+              "locked": false
+            },
+            {
+              "objectId": "53240bac-3f2d-4a92-a183-990b187244db",
+              "assetId": "sticker_tangyuan_001",
+              "assetType": "sticker",
+              "left": 359.53667953667957,
+              "top": 318.7644787644788,
+              "scaleX": 0.5581395348837209,
+              "scaleY": 0.5581395348837209,
+              "angle": 0,
+              "zIndex": 3,
+              "visible": true,
+              "locked": false
+            }
+          ],
+          "updatedAt": "2026-08-10T17:33:48.304Z"
+        }
+      },
+      "afterBackward": {
+        "projectId": "f102a9e9-0616-416a-b4ab-68b18d732693",
+        "projectName": "我的新作品",
+        "previewUrl": "felt-resource://preview/eaf8664a90ea4d5ead6ff4075a906bad.png",
+        "preview": {
+          "ok": true,
+          "contentType": "image/png",
+          "byteLength": 246186,
+          "png": true,
+          "width": 960,
+          "height": 960
+        },
+        "scene": {
+          "schemaVersion": 1,
+          "sceneId": "fc5bc7ea-ad15-4234-960f-a7442ebdc168",
+          "userId": "user_demo_001",
+          "workName": "我的新作品",
+          "themeId": "lantern_festival",
+          "assetSnapshotId": "snapshot_ywn_20260805_112922",
+          "createdAt": "2026-08-10T17:33:38.205Z",
+          "canvas": {
+            "width": 960,
+            "height": 960,
+            "backgroundColor": "#FFF8E7"
+          },
+          "backgroundAssetId": null,
+          "objects": [
+            {
+              "objectId": "af166589-a903-4223-b2eb-7ef5b1411e84",
+              "assetId": "sticker_flower_lantern_001",
+              "assetType": "sticker",
+              "left": 179.76833976833979,
+              "top": 218.68725868725872,
+              "scaleX": 0.5423728813559322,
+              "scaleY": 0.5423728813559322,
+              "angle": 0,
+              "zIndex": 1,
+              "visible": true,
+              "locked": false
+            },
+            {
+              "objectId": "53240bac-3f2d-4a92-a183-990b187244db",
+              "assetId": "sticker_tangyuan_001",
+              "assetType": "sticker",
+              "left": 359.53667953667957,
+              "top": 318.7644787644788,
+              "scaleX": 0.5581395348837209,
+              "scaleY": 0.5581395348837209,
+              "angle": 0,
+              "zIndex": 2,
+              "visible": true,
+              "locked": false
+            },
+            {
+              "objectId": "d5ebae40-cfa5-4ff1-9a36-65a7c84384d3",
+              "assetId": "sticker_rabbit_001",
+              "assetType": "sticker",
+              "left": 480,
+              "top": 429.96138996138995,
+              "scaleX": 0.46875,
+              "scaleY": 0.46875,
+              "angle": 0,
+              "zIndex": 3,
+              "visible": true,
+              "locked": false
+            }
+          ],
+          "updatedAt": "2026-08-10T17:33:49.128Z"
+        }
+      },
+      "afterDrag": {
+        "projectId": "f102a9e9-0616-416a-b4ab-68b18d732693",
+        "projectName": "我的新作品",
+        "previewUrl": "felt-resource://preview/5a08d97b1a3c4243b35af73fb9d5a973.png",
+        "preview": {
+          "ok": true,
+          "contentType": "image/png",
+          "byteLength": 249395,
+          "png": true,
+          "width": 960,
+          "height": 960
+        },
+        "scene": {
+          "schemaVersion": 1,
+          "sceneId": "fc5bc7ea-ad15-4234-960f-a7442ebdc168",
+          "userId": "user_demo_001",
+          "workName": "我的新作品",
+          "themeId": "lantern_festival",
+          "assetSnapshotId": "snapshot_ywn_20260805_112922",
+          "createdAt": "2026-08-10T17:33:38.205Z",
+          "canvas": {
+            "width": 960,
+            "height": 960,
+            "backgroundColor": "#FFF8E7"
+          },
+          "backgroundAssetId": null,
+          "objects": [
+            {
+              "objectId": "af166589-a903-4223-b2eb-7ef5b1411e84",
+              "assetId": "sticker_flower_lantern_001",
+              "assetType": "sticker",
+              "left": 179.76833976833979,
+              "top": 218.68725868725872,
+              "scaleX": 0.5423728813559322,
+              "scaleY": 0.5423728813559322,
+              "angle": 0,
+              "zIndex": 1,
+              "visible": true,
+              "locked": false
+            },
+            {
+              "objectId": "53240bac-3f2d-4a92-a183-990b187244db",
+              "assetId": "sticker_tangyuan_001",
+              "assetType": "sticker",
+              "left": 359.53667953667957,
+              "top": 318.7644787644788,
+              "scaleX": 0.5581395348837209,
+              "scaleY": 0.5581395348837209,
+              "angle": 0,
+              "zIndex": 2,
+              "visible": true,
+              "locked": false
+            },
+            {
+              "objectId": "d5ebae40-cfa5-4ff1-9a36-65a7c84384d3",
+              "assetId": "sticker_rabbit_001",
+              "assetType": "sticker",
+              "left": 535.5984555984556,
+              "top": 463.3204633204633,
+              "scaleX": 0.46875,
+              "scaleY": 0.46875,
+              "angle": 0,
+              "zIndex": 3,
+              "visible": true,
+              "locked": false
+            }
+          ],
+          "updatedAt": "2026-08-10T17:33:50.368Z"
+        }
+      },
+      "afterScale": {
+        "projectId": "f102a9e9-0616-416a-b4ab-68b18d732693",
+        "projectName": "我的新作品",
+        "previewUrl": "felt-resource://preview/c157ce57b9124a9cbc8663834f12b588.png",
+        "preview": {
+          "ok": true,
+          "contentType": "image/png",
+          "byteLength": 269645,
+          "png": true,
+          "width": 960,
+          "height": 960
+        },
+        "scene": {
+          "schemaVersion": 1,
+          "sceneId": "fc5bc7ea-ad15-4234-960f-a7442ebdc168",
+          "userId": "user_demo_001",
+          "workName": "我的新作品",
+          "themeId": "lantern_festival",
+          "assetSnapshotId": "snapshot_ywn_20260805_112922",
+          "createdAt": "2026-08-10T17:33:38.205Z",
+          "canvas": {
+            "width": 960,
+            "height": 960,
+            "backgroundColor": "#FFF8E7"
+          },
+          "backgroundAssetId": null,
+          "objects": [
+            {
+              "objectId": "af166589-a903-4223-b2eb-7ef5b1411e84",
+              "assetId": "sticker_flower_lantern_001",
+              "assetType": "sticker",
+              "left": 279.8455598455599,
+              "top": 318.7644787644788,
+              "scaleX": 0.5423728813559322,
+              "scaleY": 0.5423728813559322,
+              "angle": 0,
+              "zIndex": 1,
+              "visible": true,
+              "locked": false
+            },
+            {
+              "objectId": "53240bac-3f2d-4a92-a183-990b187244db",
+              "assetId": "sticker_tangyuan_001",
+              "assetType": "sticker",
+              "left": 492.972972972973,
+              "top": 452.20077220077224,
+              "scaleX": 0.5581395348837209,
+              "scaleY": 0.5581395348837209,
+              "angle": 0,
+              "zIndex": 2,
+              "visible": true,
+              "locked": false
+            },
+            {
+              "objectId": "d5ebae40-cfa5-4ff1-9a36-65a7c84384d3",
+              "assetId": "sticker_rabbit_001",
+              "assetType": "sticker",
+              "left": 549.9613899613901,
+              "top": 477.68339768339763,
+              "scaleX": 0.44069739382239387,
+              "scaleY": 0.44069739382239387,
+              "angle": 0,
+              "zIndex": 3,
+              "visible": true,
+              "locked": false
+            }
+          ],
+          "updatedAt": "2026-08-10T17:33:54.811Z"
+        }
+      },
+      "afterRotate": {
+        "projectId": "f102a9e9-0616-416a-b4ab-68b18d732693",
+        "projectName": "我的新作品",
+        "previewUrl": "felt-resource://preview/99b9e6b5f9534b498142cf7c1538eb73.png",
+        "preview": {
+          "ok": true,
+          "contentType": "image/png",
+          "byteLength": 274567,
+          "png": true,
+          "width": 960,
+          "height": 960
+        },
+        "scene": {
+          "schemaVersion": 1,
+          "sceneId": "fc5bc7ea-ad15-4234-960f-a7442ebdc168",
+          "userId": "user_demo_001",
+          "workName": "我的新作品",
+          "themeId": "lantern_festival",
+          "assetSnapshotId": "snapshot_ywn_20260805_112922",
+          "createdAt": "2026-08-10T17:33:38.205Z",
+          "canvas": {
+            "width": 960,
+            "height": 960,
+            "backgroundColor": "#FFF8E7"
+          },
+          "backgroundAssetId": null,
+          "objects": [
+            {
+              "objectId": "af166589-a903-4223-b2eb-7ef5b1411e84",
+              "assetId": "sticker_flower_lantern_001",
+              "assetType": "sticker",
+              "left": 279.8455598455599,
+              "top": 318.7644787644788,
+              "scaleX": 0.5423728813559322,
+              "scaleY": 0.5423728813559322,
+              "angle": 0,
+              "zIndex": 1,
+              "visible": true,
+              "locked": false
+            },
+            {
+              "objectId": "53240bac-3f2d-4a92-a183-990b187244db",
+              "assetId": "sticker_tangyuan_001",
+              "assetType": "sticker",
+              "left": 492.972972972973,
+              "top": 452.20077220077224,
+              "scaleX": 0.5581395348837209,
+              "scaleY": 0.5581395348837209,
+              "angle": 0,
+              "zIndex": 2,
+              "visible": true,
+              "locked": false
+            },
+            {
+              "objectId": "d5ebae40-cfa5-4ff1-9a36-65a7c84384d3",
+              "assetId": "sticker_rabbit_001",
+              "assetType": "sticker",
+              "left": 549.9613899613901,
+              "top": 477.68339768339763,
+              "scaleX": 0.44069739382239387,
+              "scaleY": 0.44069739382239387,
+              "angle": 9.74296645573645,
+              "zIndex": 3,
+              "visible": true,
+              "locked": false
+            }
+          ],
+          "updatedAt": "2026-08-10T17:33:56.792Z"
+        }
+      },
+      "afterGeometry": {
+        "projectId": "f102a9e9-0616-416a-b4ab-68b18d732693",
+        "projectName": "我的新作品",
+        "previewUrl": "felt-resource://preview/c43404e758574f96991e6ee18219ebad.png",
+        "preview": {
+          "ok": true,
+          "contentType": "image/png",
+          "byteLength": 274567,
+          "png": true,
+          "width": 960,
+          "height": 960
+        },
+        "scene": {
+          "schemaVersion": 1,
+          "sceneId": "fc5bc7ea-ad15-4234-960f-a7442ebdc168",
+          "userId": "user_demo_001",
+          "workName": "我的新作品",
+          "themeId": "lantern_festival",
+          "assetSnapshotId": "snapshot_ywn_20260805_112922",
+          "createdAt": "2026-08-10T17:33:38.205Z",
+          "canvas": {
+            "width": 960,
+            "height": 960,
+            "backgroundColor": "#FFF8E7"
+          },
+          "backgroundAssetId": null,
+          "objects": [
+            {
+              "objectId": "af166589-a903-4223-b2eb-7ef5b1411e84",
+              "assetId": "sticker_flower_lantern_001",
+              "assetType": "sticker",
+              "left": 279.8455598455599,
+              "top": 318.7644787644788,
+              "scaleX": 0.5423728813559322,
+              "scaleY": 0.5423728813559322,
+              "angle": 0,
+              "zIndex": 1,
+              "visible": true,
+              "locked": false
+            },
+            {
+              "objectId": "53240bac-3f2d-4a92-a183-990b187244db",
+              "assetId": "sticker_tangyuan_001",
+              "assetType": "sticker",
+              "left": 492.972972972973,
+              "top": 452.20077220077224,
+              "scaleX": 0.5581395348837209,
+              "scaleY": 0.5581395348837209,
+              "angle": 0,
+              "zIndex": 2,
+              "visible": true,
+              "locked": false
+            },
+            {
+              "objectId": "d5ebae40-cfa5-4ff1-9a36-65a7c84384d3",
+              "assetId": "sticker_rabbit_001",
+              "assetType": "sticker",
+              "left": 549.9613899613901,
+              "top": 477.68339768339763,
+              "scaleX": 0.44069739382239387,
+              "scaleY": 0.44069739382239387,
+              "angle": 9.74296645573645,
+              "zIndex": 3,
+              "visible": true,
+              "locked": false
+            }
+          ],
+          "updatedAt": "2026-08-10T17:33:57.208Z"
+        }
+      },
+      "afterRemove": {
+        "projectId": "f102a9e9-0616-416a-b4ab-68b18d732693",
+        "projectName": "我的新作品",
+        "previewUrl": "felt-resource://preview/fc71e77adaa8420f90c89877312f80ac.png",
+        "preview": {
+          "ok": true,
+          "contentType": "image/png",
+          "byteLength": 236811,
+          "png": true,
+          "width": 960,
+          "height": 960
+        },
+        "scene": {
+          "schemaVersion": 1,
+          "sceneId": "fc5bc7ea-ad15-4234-960f-a7442ebdc168",
+          "userId": "user_demo_001",
+          "workName": "我的新作品",
+          "themeId": "lantern_festival",
+          "assetSnapshotId": "snapshot_ywn_20260805_112922",
+          "createdAt": "2026-08-10T17:33:38.205Z",
+          "canvas": {
+            "width": 960,
+            "height": 960,
+            "backgroundColor": "#FFF8E7"
+          },
+          "backgroundAssetId": null,
+          "objects": [
+            {
+              "objectId": "af166589-a903-4223-b2eb-7ef5b1411e84",
+              "assetId": "sticker_flower_lantern_001",
+              "assetType": "sticker",
+              "left": 279.8455598455599,
+              "top": 318.7644787644788,
+              "scaleX": 0.5423728813559322,
+              "scaleY": 0.5423728813559322,
+              "angle": 0,
+              "zIndex": 1,
+              "visible": true,
+              "locked": false
+            },
+            {
+              "objectId": "53240bac-3f2d-4a92-a183-990b187244db",
+              "assetId": "sticker_tangyuan_001",
+              "assetType": "sticker",
+              "left": 492.972972972973,
+              "top": 452.20077220077224,
+              "scaleX": 0.5581395348837209,
+              "scaleY": 0.5581395348837209,
+              "angle": 0,
+              "zIndex": 2,
+              "visible": true,
+              "locked": false
+            }
+          ],
+          "updatedAt": "2026-08-10T17:33:58.050Z"
+        }
+      },
+      "afterRemoveUndo": {
+        "projectId": "f102a9e9-0616-416a-b4ab-68b18d732693",
+        "projectName": "我的新作品",
+        "previewUrl": "felt-resource://preview/2ed99418245d4ea1a3dddc98176e92b8.png",
+        "preview": {
+          "ok": true,
+          "contentType": "image/png",
+          "byteLength": 274567,
+          "png": true,
+          "width": 960,
+          "height": 960
+        },
+        "scene": {
+          "schemaVersion": 1,
+          "sceneId": "fc5bc7ea-ad15-4234-960f-a7442ebdc168",
+          "userId": "user_demo_001",
+          "workName": "我的新作品",
+          "themeId": "lantern_festival",
+          "assetSnapshotId": "snapshot_ywn_20260805_112922",
+          "createdAt": "2026-08-10T17:33:38.205Z",
+          "canvas": {
+            "width": 960,
+            "height": 960,
+            "backgroundColor": "#FFF8E7"
+          },
+          "backgroundAssetId": null,
+          "objects": [
+            {
+              "objectId": "af166589-a903-4223-b2eb-7ef5b1411e84",
+              "assetId": "sticker_flower_lantern_001",
+              "assetType": "sticker",
+              "left": 279.8455598455599,
+              "top": 318.7644787644788,
+              "scaleX": 0.5423728813559322,
+              "scaleY": 0.5423728813559322,
+              "angle": 0,
+              "zIndex": 1,
+              "visible": true,
+              "locked": false
+            },
+            {
+              "objectId": "53240bac-3f2d-4a92-a183-990b187244db",
+              "assetId": "sticker_tangyuan_001",
+              "assetType": "sticker",
+              "left": 492.972972972973,
+              "top": 452.20077220077224,
+              "scaleX": 0.5581395348837209,
+              "scaleY": 0.5581395348837209,
+              "angle": 0,
+              "zIndex": 2,
+              "visible": true,
+              "locked": false
+            },
+            {
+              "objectId": "d5ebae40-cfa5-4ff1-9a36-65a7c84384d3",
+              "assetId": "sticker_rabbit_001",
+              "assetType": "sticker",
+              "left": 549.9613899613901,
+              "top": 477.68339768339763,
+              "scaleX": 0.44069739382239387,
+              "scaleY": 0.44069739382239387,
+              "angle": 9.74296645573645,
+              "zIndex": 3,
+              "visible": true,
+              "locked": false
+            }
+          ],
+          "updatedAt": "2026-08-10T17:33:59.192Z"
+        }
+      },
+      "afterResize": {
+        "projectId": "f102a9e9-0616-416a-b4ab-68b18d732693",
+        "projectName": "我的新作品",
+        "previewUrl": "felt-resource://preview/dfa00dcba08345cba66e3911d4127556.png",
+        "preview": {
+          "ok": true,
+          "contentType": "image/png",
+          "byteLength": 274567,
+          "png": true,
+          "width": 960,
+          "height": 960
+        },
+        "scene": {
+          "schemaVersion": 1,
+          "sceneId": "fc5bc7ea-ad15-4234-960f-a7442ebdc168",
+          "userId": "user_demo_001",
+          "workName": "我的新作品",
+          "themeId": "lantern_festival",
+          "assetSnapshotId": "snapshot_ywn_20260805_112922",
+          "createdAt": "2026-08-10T17:33:38.205Z",
+          "canvas": {
+            "width": 960,
+            "height": 960,
+            "backgroundColor": "#FFF8E7"
+          },
+          "backgroundAssetId": null,
+          "objects": [
+            {
+              "objectId": "af166589-a903-4223-b2eb-7ef5b1411e84",
+              "assetId": "sticker_flower_lantern_001",
+              "assetType": "sticker",
+              "left": 279.8455598455599,
+              "top": 318.7644787644788,
+              "scaleX": 0.5423728813559322,
+              "scaleY": 0.5423728813559322,
+              "angle": 0,
+              "zIndex": 1,
+              "visible": true,
+              "locked": false
+            },
+            {
+              "objectId": "53240bac-3f2d-4a92-a183-990b187244db",
+              "assetId": "sticker_tangyuan_001",
+              "assetType": "sticker",
+              "left": 492.972972972973,
+              "top": 452.20077220077224,
+              "scaleX": 0.5581395348837209,
+              "scaleY": 0.5581395348837209,
+              "angle": 0,
+              "zIndex": 2,
+              "visible": true,
+              "locked": false
+            },
+            {
+              "objectId": "d5ebae40-cfa5-4ff1-9a36-65a7c84384d3",
+              "assetId": "sticker_rabbit_001",
+              "assetType": "sticker",
+              "left": 549.9613899613901,
+              "top": 477.68339768339763,
+              "scaleX": 0.44069739382239387,
+              "scaleY": 0.44069739382239387,
+              "angle": 9.74296645573645,
+              "zIndex": 3,
+              "visible": true,
+              "locked": false
+            }
+          ],
+          "updatedAt": "2026-08-10T17:34:03.828Z"
+        }
+      }
+    },
+    "sceneInitial": {
+      "objectCount": 3,
+      "objectIds": [
+        "af166589-a903-4223-b2eb-7ef5b1411e84",
+        "53240bac-3f2d-4a92-a183-990b187244db",
+        "d5ebae40-cfa5-4ff1-9a36-65a7c84384d3"
+      ],
+      "assetIds": [
+        "sticker_flower_lantern_001",
+        "sticker_tangyuan_001",
+        "sticker_rabbit_001"
+      ],
+      "snapshotIds": [
+        null,
+        null,
+        null
+      ],
+      "zIndexes": [
+        1,
+        2,
+        3
+      ],
+      "transforms": [
+        {
+          "objectId": "af166589-a903-4223-b2eb-7ef5b1411e84",
+          "left": 179.76833976833979,
+          "top": 218.68725868725872,
+          "scaleX": 0.5423728813559322,
+          "scaleY": 0.5423728813559322,
+          "angle": 0
+        },
+        {
+          "objectId": "53240bac-3f2d-4a92-a183-990b187244db",
+          "left": 359.53667953667957,
+          "top": 318.7644787644788,
+          "scaleX": 0.5581395348837209,
+          "scaleY": 0.5581395348837209,
+          "angle": 0
+        },
+        {
+          "objectId": "d5ebae40-cfa5-4ff1-9a36-65a7c84384d3",
+          "left": 480,
+          "top": 429.96138996138995,
+          "scaleX": 0.46875,
+          "scaleY": 0.46875,
+          "angle": 0
+        }
+      ],
+      "finite": true,
+      "uniformScale": true,
+      "zIndexContinuous": true,
+      "angleNormalized": true
+    },
+    "singleClickOqtVisible": false,
+    "singleClickSelectionRingSurface": true,
+    "oqtVisibleAfterDoubleClick": true,
+    "oqtLabels": [
+      "往前",
+      "往后",
+      "拿掉"
+    ],
+    "oqtRect": {
+      "rect": {
+        "left": 433.3333435058594,
+        "top": 34.5625,
+        "width": 169.33334350585938,
+        "height": 45.333335876464844
+      },
+      "hit": "upper-canvas editor-canvas"
+    },
+    "layerForward": {
+      "changed": [
+        {
+          "objectId": "53240bac-3f2d-4a92-a183-990b187244db",
+          "before": 2,
+          "after": 3
+        },
+        {
+          "objectId": "d5ebae40-cfa5-4ff1-9a36-65a7c84384d3",
+          "before": 3,
+          "after": 2
+        }
+      ],
+      "adjacent": true,
+      "continuous": true
+    },
+    "layerBackward": {
+      "changed": [
+        {
+          "objectId": "d5ebae40-cfa5-4ff1-9a36-65a7c84384d3",
+          "before": 2,
+          "after": 3
+        },
+        {
+          "objectId": "53240bac-3f2d-4a92-a183-990b187244db",
+          "before": 3,
+          "after": 2
+        }
+      ],
+      "adjacent": true,
+      "continuous": true
+    },
+    "layerRoundTrip": true,
+    "oqtBeforeGeometry": true,
+    "oqtAfterGeometryProbe": true,
+    "oqtFollowsGeometry": true,
+    "geometryOqtStatus": "PASS",
+    "scaleControlAttempts": [
+      {
+        "offset": 146,
+        "oqtRemains": false,
+        "changed": false
+      },
+      {
+        "offset": 144,
+        "oqtRemains": false,
+        "changed": false
+      },
+      {
+        "offset": 142,
+        "oqtRemains": false,
+        "changed": false
+      },
+      {
+        "offset": 140,
+        "oqtRemains": false,
+        "changed": false
+      },
+      {
+        "offset": 138,
+        "oqtRemains": false,
+        "changed": false
+      },
+      {
+        "offset": 136,
+        "oqtRemains": false,
+        "changed": false
+      },
+      {
+        "offset": 134,
+        "oqtRemains": false,
+        "changed": false
+      },
+      {
+        "offset": 132,
+        "oqtRemains": true,
+        "changed": true
+      }
+    ],
+    "oqtAfterScale": true,
+    "sceneAfterScale": {
+      "scaleX": 0.44069739382239387,
+      "scaleY": 0.44069739382239387,
+      "uniform": true,
+      "changedFromAfterDrag": true
+    },
+    "rotationControlAttempts": [
+      {
+        "rotationY": 188,
+        "oqtRemains": false,
+        "changed": false
+      },
+      {
+        "rotationY": 194,
+        "oqtRemains": false,
+        "changed": false
+      },
+      {
+        "rotationY": 200,
+        "oqtRemains": true,
+        "changed": true
+      }
+    ],
+    "oqtAfterRotate": true,
+    "rotationOqtRect": {
+      "left": 536.0833740234375,
+      "top": 95.8125,
+      "width": 169.33334350585938,
+      "height": 45.333335876464844
+    },
+    "rotationCenter": {
+      "x": 620.75,
+      "y": 345.74999999999994
+    },
+    "successfulRotation": {
+      "rotationY": 200,
+      "oqtRemains": true,
+      "changed": true
+    },
+    "rotationHandleCollision": true,
+    "sceneAfterGeometry": {
+      "objectCount": 3,
+      "objectIds": [
+        "af166589-a903-4223-b2eb-7ef5b1411e84",
+        "53240bac-3f2d-4a92-a183-990b187244db",
+        "d5ebae40-cfa5-4ff1-9a36-65a7c84384d3"
+      ],
+      "assetIds": [
+        "sticker_flower_lantern_001",
+        "sticker_tangyuan_001",
+        "sticker_rabbit_001"
+      ],
+      "snapshotIds": [
+        null,
+        null,
+        null
+      ],
+      "zIndexes": [
+        1,
+        2,
+        3
+      ],
+      "transforms": [
+        {
+          "objectId": "af166589-a903-4223-b2eb-7ef5b1411e84",
+          "left": 279.8455598455599,
+          "top": 318.7644787644788,
+          "scaleX": 0.5423728813559322,
+          "scaleY": 0.5423728813559322,
+          "angle": 0
+        },
+        {
+          "objectId": "53240bac-3f2d-4a92-a183-990b187244db",
+          "left": 492.972972972973,
+          "top": 452.20077220077224,
+          "scaleX": 0.5581395348837209,
+          "scaleY": 0.5581395348837209,
+          "angle": 0
+        },
+        {
+          "objectId": "d5ebae40-cfa5-4ff1-9a36-65a7c84384d3",
+          "left": 549.9613899613901,
+          "top": 477.68339768339763,
+          "scaleX": 0.44069739382239387,
+          "scaleY": 0.44069739382239387,
+          "angle": 9.74296645573645
+        }
+      ],
+      "finite": true,
+      "uniformScale": true,
+      "zIndexContinuous": true,
+      "angleNormalized": true
+    },
+    "sceneTransformSafe": true,
+    "removeToast": "拿掉啦撤销",
+    "oqtClosedAfterRemove": true,
+    "removeComparison": {
+      "removedObjectId": "d5ebae40-cfa5-4ff1-9a36-65a7c84384d3",
+      "beforeCount": 3,
+      "afterCount": 2,
+      "correctCountDelta": true,
+      "remainingScene": {
+        "objectCount": 2,
+        "objectIds": [
+          "af166589-a903-4223-b2eb-7ef5b1411e84",
+          "53240bac-3f2d-4a92-a183-990b187244db"
+        ],
+        "assetIds": [
+          "sticker_flower_lantern_001",
+          "sticker_tangyuan_001"
+        ],
+        "snapshotIds": [
+          null,
+          null
+        ],
+        "zIndexes": [
+          1,
+          2
+        ],
+        "transforms": [
+          {
+            "objectId": "af166589-a903-4223-b2eb-7ef5b1411e84",
+            "left": 279.8455598455599,
+            "top": 318.7644787644788,
+            "scaleX": 0.5423728813559322,
+            "scaleY": 0.5423728813559322,
+            "angle": 0
+          },
+          {
+            "objectId": "53240bac-3f2d-4a92-a183-990b187244db",
+            "left": 492.972972972973,
+            "top": 452.20077220077224,
+            "scaleX": 0.5581395348837209,
+            "scaleY": 0.5581395348837209,
+            "angle": 0
+          }
+        ],
+        "finite": true,
+        "uniformScale": true,
+        "zIndexContinuous": true,
+        "angleNormalized": true
+      }
+    },
+    "removeToastClosedAfterUndo": true,
+    "removeUndoComparison": {
+      "restoredObjectId": "d5ebae40-cfa5-4ff1-9a36-65a7c84384d3",
+      "exactScene": true,
+      "objectRestored": true,
+      "scene": {
+        "objectCount": 3,
+        "objectIds": [
+          "af166589-a903-4223-b2eb-7ef5b1411e84",
+          "53240bac-3f2d-4a92-a183-990b187244db",
+          "d5ebae40-cfa5-4ff1-9a36-65a7c84384d3"
+        ],
+        "assetIds": [
+          "sticker_flower_lantern_001",
+          "sticker_tangyuan_001",
+          "sticker_rabbit_001"
+        ],
+        "snapshotIds": [
+          null,
+          null,
+          null
+        ],
+        "zIndexes": [
+          1,
+          2,
+          3
+        ],
+        "transforms": [
+          {
+            "objectId": "af166589-a903-4223-b2eb-7ef5b1411e84",
+            "left": 279.8455598455599,
+            "top": 318.7644787644788,
+            "scaleX": 0.5423728813559322,
+            "scaleY": 0.5423728813559322,
+            "angle": 0
+          },
+          {
+            "objectId": "53240bac-3f2d-4a92-a183-990b187244db",
+            "left": 492.972972972973,
+            "top": 452.20077220077224,
+            "scaleX": 0.5581395348837209,
+            "scaleY": 0.5581395348837209,
+            "angle": 0
+          },
+          {
+            "objectId": "d5ebae40-cfa5-4ff1-9a36-65a7c84384d3",
+            "left": 549.9613899613901,
+            "top": 477.68339768339763,
+            "scaleX": 0.44069739382239387,
+            "scaleY": 0.44069739382239387,
+            "angle": 9.74296645573645
+          }
+        ],
+        "finite": true,
+        "uniformScale": true,
+        "zIndexContinuous": true,
+        "angleNormalized": true
+      }
+    },
+    "toastBeforeInvalidation": true,
+    "toastAfterLayerMutation": false,
+    "toastInvalidated": true,
+    "blankClickClosedOqt": true,
+    "contextMaterialSheet": {
+      "sheetOpen": true,
+      "oqtClosed": true
+    },
+    "contextBackgroundDrawer": {
+      "drawerOpen": true,
+      "oqtClosed": true
+    },
+    "contextReturnModal": {
+      "modalOpen": true,
+      "oqtClosed": true
+    },
+    "resizeRequest": {
+      "outerWidth": 1181,
+      "outerHeight": 761,
+      "innerWidth": 1166,
+      "innerHeight": 698
+    },
+    "resize": {
+      "canvasBefore": {
+        "left": 324,
+        "top": 88,
+        "width": 518,
+        "height": 518,
+        "centerX": 583,
+        "centerY": 347
+      },
+      "canvasAfter": {
+        "left": 281,
+        "top": 88,
+        "width": 398,
+        "height": 398,
+        "centerX": 480,
+        "centerY": 287
+      },
+      "oqtBefore": {
+        "left": 536.0833740234375,
+        "top": 95.8125,
+        "width": 169.33334350585938,
+        "height": 45.333335876464844,
+        "centerX": 620.7500457763672,
+        "centerY": 118.47916793823242
+      },
+      "oqtAfter": {
+        "left": 424.3333435058594,
+        "top": 68.67708587646484,
+        "width": 169.33334350585938,
+        "height": 45.333335876464844,
+        "centerX": 509.00001525878906,
+        "centerY": 91.34375381469727
+      },
+      "dpr": 1.5,
+      "viewport": {
+        "outerWidth": 961,
+        "outerHeight": 642,
+        "innerWidth": 946,
+        "innerHeight": 578
+      }
+    },
+    "resizeSceneStable": true
+  },
+  "errors": {
+    "console": [],
+    "page": [],
+    "network": [],
+    "main": [
+      "\r\n",
+      "\r\nDevTools listening on ws://127.0.0.1:9339/devtools/browser/d7d114d4-f976-4363-ac78-3cbd4b06e2aa\r\n",
+      "[63192:0811/013343.883:INFO:CONSOLE:1] \"Canvas2D: Multiple readback operations using getImageData are faster with the willReadFrequently attribute set to true. See: https://html.spec.whatwg.org/multipage/canvas.html#concept-canvas-will-read-frequently\", source:  (1)\r\n"
+    ]
+  },
+  "verdict": "OQT_SELECTION_FOCUSED_PASSED"
+}

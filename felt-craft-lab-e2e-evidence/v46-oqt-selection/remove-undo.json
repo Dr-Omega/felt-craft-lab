@@ -1,0 +1,21 @@
+{
+  "testedSource": "a6eba360c07968c32fd72b66751c9057a31a8d90",
+  "mode": "built-production-electron",
+  "removeViaProductionUi": "PASS",
+  "quickToolsClosedAfterRemove": true,
+  "toastTextObserved": "鎷挎帀鍟?",
+  "beforeCount": 3,
+  "afterCount": 2,
+  "removedObjectId": "d5ebae40-cfa5-4ff1-9a36-65a7c84384d3",
+  "remainingZIndex": [1, 2],
+  "undoViaProductionToast": "PASS",
+  "toastClosedAfterUndo": true,
+  "restoredObjectId": "d5ebae40-cfa5-4ff1-9a36-65a7c84384d3",
+  "exactSceneRestoreIgnoringUpdatedAt": true,
+  "objectTransformRestored": true,
+  "objectIdentity": "The UI path used projected selection objectId; no adapter/session direct call was made by the harness.",
+  "screenshots": [
+    "12_after_remove.png",
+    "13_after_remove_undo.png"
+  ]
+}

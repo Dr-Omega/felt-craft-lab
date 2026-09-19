@@ -1,0 +1,71 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+out/
+dist/
+release/
+release-ci/
+*.exe
+*.blockmap
+*.dmg
+*.AppImage
+*.deb
+*.rpm
+
+# Logs and caches
+*.log
+npm-debug.log*
+.npm/
+.cache/
+.vite/
+.turbo/
+coverage/
+.eslintcache
+*.tsbuildinfo
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json.example
+
+# Test / temp
+tmp/
+temp/
+*.tmp
+tmp_*
+tmp-review/
+.tmp-*
+docs/ai-services/_pr11*
+docs/_pr11*
+docs/_extract_pr_comments.py
+docs/_pr11_comments_raw.txt
+docs/_pr11_threads.md
+
+# Electron builder
+*.asar.unpacked/
+electron-builder.yaml.lock
+
+tmp-pr-*.md
+
+# Python AI gateway (组长)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+backend/cache/
+backend/data/generated/
+backend/data/logs/
+backend/data/uploads/
+backend/data/*.jsonl

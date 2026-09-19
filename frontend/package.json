@@ -1,0 +1,8 @@
+# 浏览器 Demo 依赖说明（非正式）
+# 正式 Audio/Animation 在仓库根 package.json + src/renderer/src/services
+{
+  "name": "felt-craft-lab-frontend-demos",
+  "private": true,
+  "description": "Flask 浏览器 demo 脚本依赖占位；请以仓库根 npm 依赖为准",
+  "dependencies": {}
+}

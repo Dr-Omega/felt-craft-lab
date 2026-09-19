@@ -1,0 +1,196 @@
+## 9.Service接口
+
+### 9.1 AssetService——SXY负责
+
+```ts
+export interface AssetService {
+  listAssets(filter?: {
+    themeId?: string;
+    type?: AssetType;
+    categoryId?: string;
+    unlocked?: boolean;
+    favorite?: boolean;
+  }): Promise<AssetRecord[]>;
+
+  getAsset(assetId: string): Promise<AssetRecord | null>;
+}
+```
+
+### 9.2 EditorService——XR负责
+
+```ts
+export interface EditorService {
+  setBackground(asset: AssetRecord | null): Promise<void>;
+  addSticker(asset: AssetRecord, access: AssetAccessState): Promise<string>;
+  removeObject(objectId: string): void;
+  bringForward(objectId: string): void;
+  sendBackward(objectId: string): void;
+  bringToFront(objectId: string): void;
+  sendToBack(objectId: string): void;
+  undo(): void;
+  redo(): void;
+  exportScene(meta: {
+    sceneId: string;
+    userId: string;
+    workName: string;
+    themeId: string;
+  }): SceneDocument;
+  importScene(scene: SceneDocument): Promise<void>;
+  exportPreview(): Promise<Blob>;
+}
+```
+
+防绕过规则：
+
+- `addSticker`必须验证`access.unlocked=true`；
+- 背景只允许一个；
+- 背景固定在最底层；
+- Scene导出必须包含`assetId`和`objectId`。
+
+### 9.3 StorageService——SXY负责
+
+```ts
+export interface StorageService {
+  saveDraft(record: DraftRecord): Promise<void>;
+  getLatestDraft(userId: string): Promise<DraftRecord | null>;
+  deleteDraft(draftId: string): Promise<void>;
+  saveProject(record: ProjectRecord): Promise<void>;
+  getProject(projectId: string): Promise<ProjectRecord | null>;
+}
+```
+
+### 9.4 AudioService——组长负责
+
+```ts
+export interface AudioService {
+  play(url: string, channel?: 'primary' | 'effect'): Promise<void>;
+  stop(channel?: 'primary' | 'effect'): void;
+  setEffectsEnabled(enabled: boolean): void;
+}
+```
+
+规则：
+
+- 新的主要语音播放前停止旧语音；
+- 操作音效和主要朗读使用不同通道；
+- 音频失败不得阻塞文字展示。
+
+### 9.5 AnimationService——组长负责
+
+```ts
+export interface AnimationService {
+  play(eventKey: string, target?: HTMLElement): Promise<void>;
+  stop(eventKey?: string): void;
+}
+```
+
+SXY只负责在页面事件发生后调用，不负责解析Lottie实现。
+
+### 9.6 AsrService——组长负责实现，SXY负责调用
+
+```ts
+export interface AsrService {
+  transcribe(audio: Blob, options?: {
+    language?: string;
+    sessionId?: string;
+  }): Promise<AsrResult>;
+}
+```
+
+### 9.7 QaService——组长负责实现，SXY负责调用
+
+```ts
+export interface QaService {
+  ask(input: {
+    asset: Pick<AssetRecord, 'assetId' | 'nameZh' | 'introZh' | 'themeId'>;
+    question: string;
+  }): Promise<QaResult>;
+}
+```
+
+### 9.8 TtsService——组长负责实现，SXY负责调用
+
+```ts
+export interface TtsService {
+  synthesize(input: {
+    text: string;
+    voicePurpose: 'qa_answer';
+  }): Promise<TtsResult>;
+}
+```
+
+---
+
+## 10.QwenASR架构
+
+### 10.1首版Provider
+
+```text
+qwen_cloud_http
+```
+
+流程：
+
+```text
+SXY录音
+→停止后得到Blob
+→AsrService上传
+→组长后端调用Qwen3-ASR-Flash
+→返回统一AsrResult
+→SXY展示文本
+→用户确认或修改
+```
+
+### 10.2升级顺序
+
+```text
+Qwen云端HTTP
+↓实际延迟不达标
+Qwen云端Realtime WebSocket
+↓弱网、隐私或持续延迟问题仍不满足
+Qwen本地/私有化Provider
+```
+
+### 10.3切换约束
+
+- SXY页面不得依赖具体Provider；
+- Provider切换只发生在组长负责的服务层；
+- `AsrResult`保持兼容；
+- 切换前必须记录真实延迟、失败率和目标设备情况；
+- 本地模型部署不进入第一期强制范围。
+
+### 10.4产品约束
+
+- ASR文本必须先显示；
+- 支持修改和重新录音；
+- 空文本不得提交；
+- 原始儿童录音默认不长期保存；
+- 麦克风权限被拒绝时保留文字输入。
+
+---
+
+## 11.MiniMax、DeepSeek、音频与动画
+
+### 11.1固定TTS
+
+```text
+YWN准备文本
+→组长批量工具调用MiniMax
+→YWN实际执行生成和试听
+→通过后形成固定音频快照
+→SXY页面调用AudioService
+```
+
+组长负责：
+
+- API接入；
+- 参数配置；
+- 批量工具；
+- 技术错误；
+- 音频索引格式；
+- Howler兼容性验证。
+
+YWN负责：
+
+- 文本；
+- 实际生成；

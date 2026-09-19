@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AnimationService 演示 · 第 7 步</title>
+  <style>
+    :root {
+      --bg: #2e1a47;
+      --card: #fdfdfd;
+      --gold: #f7d046;
+      --ink: #1a1231;
+      --lilac: #7b4b94;
+      --rose: #c56c86;
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+    .card {
+      width: min(560px, 100%);
+      background: var(--card);
+      border-radius: 24px;
+      padding: 28px 24px;
+      box-shadow: 0 18px 40px rgba(0,0,0,.28);
+      border: 3px solid var(--gold);
+    }
+    h1 { margin: 0 0 8px; font-size: 1.35rem; color: var(--lilac); }
+    p { margin: 0 0 16px; color: #6e5a82; line-height: 1.5; }
+    .stage {
+      height: 180px;
+      border-radius: 18px;
+      background: #f3ebf8;
+      display: grid;
+      place-items: center;
+      margin-bottom: 14px;
+      overflow: hidden;
+    }
+    #slot {
+      width: 160px;
+      height: 160px;
+    }
+    .row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 12px 16px;
+      font-weight: 800;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .primary { background: var(--gold); color: var(--ink); }
+    .ghost { background: #f3ebf8; color: var(--ink); }
+    .rose { background: var(--rose); color: #fff; }
+    #log {
+      margin-top: 12px;
+      background: #1a1231;
+      color: #fdfdfd;
+      border-radius: 12px;
+      padding: 12px;
+      min-height: 80px;
+      font-size: 0.85rem;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>第 7 步 · AnimationService（浏览器 demo）</h1>
+    <p>本页为 Flask 联调 demo，使用 CDN 示例 Lottie；正式 Electron 服务见 <code>src/renderer/src/services/animation.service.ts</code>（YWN 注入映射）。</p>
+
+    <div class="stage"><div id="slot"></div></div>
+
+    <div class="row">
+      <button class="primary" id="btnCollect">收藏反馈 collect</button>
+      <button class="primary" id="btnSave">保存反馈 save</button>
+    </div>
+    <div class="row">
+      <button class="ghost" id="btnLoading">开始 loading</button>
+      <button class="rose" id="btnStopLoading">停止 loading</button>
+      <button class="ghost" id="btnStopAll">全部停止</button>
+    </div>
+    <div id="log">准备就绪。</div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/lottie-web@5.12.2/build/player/lottie.min.js"></script>
+  <script src="/frontend/services/animation.service.js"></script>
+  <script>
+    const slot = document.getElementById("slot");
+    const logEl = document.getElementById("log");
+    function log(msg) {
+      logEl.textContent = new Date().toLocaleTimeString() + "  " + msg + "\n" + logEl.textContent;
+    }
+
+    document.getElementById("btnCollect").onclick = async () => {
+      log("play collect");
+      await animationService.play("collect", slot);
+      log("collect 结束");
+    };
+    document.getElementById("btnSave").onclick = async () => {
+      log("play save");
+      await animationService.play("save", slot);
+      log("save 结束");
+    };
+    document.getElementById("btnLoading").onclick = async () => {
+      log("play loading（循环，需手动停止）");
+      await animationService.play("loading", slot);
+    };
+    document.getElementById("btnStopLoading").onclick = () => {
+      animationService.stop("loading");
+      log("stop loading");
+    };
+    document.getElementById("btnStopAll").onclick = () => {
+      animationService.stop();
+      log("stop all");
+    };
+  </script>
+</body>
+</html>

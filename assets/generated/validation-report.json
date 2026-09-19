@@ -1,0 +1,15 @@
+{
+  "generatedAt": "2026-08-05T11:29:22.063Z",
+  "readyRowsSeen": 17,
+  "imported": 17,
+  "failed": 0,
+  "assetSnapshotId": "snapshot_ywn_20260805_112922",
+  "issues": [],
+  "copiedFiles": 0,
+  "notes": [
+    "Republished existing ready pack under new immutable snapshotId (source xlsx not required).",
+    "contentVersion continued from prior AssetRecord values via content-versions.json",
+    "previousSnapshotId=snapshot_ywn_20260805_001"
+  ],
+  "failedDetails": []
+}

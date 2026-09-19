@@ -1,0 +1,14 @@
+{
+  "testedSource": "a6eba360c07968c32fd72b66751c9057a31a8d90",
+  "mode": "built-production-electron",
+  "consoleErrors": [],
+  "pageErrors": [],
+  "networkErrors": [],
+  "mainProcessErrors": [],
+  "nonProductWarnings": [
+    "Electron DevTools listening banner",
+    "Canvas2D getImageData willReadFrequently performance hint"
+  ],
+  "cspRegression": "none observed",
+  "resourceRegression": "none observed in npm run test:electron-resource"
+}
