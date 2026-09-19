@@ -185,7 +185,7 @@ onUnmounted(() => {
             </label>
 
             <label class="control-row">
-              炸开程度 {{ explodePercent }}%
+              展开程度 {{ explodePercent }}%
               <input v-model.number="explodePercent" type="range" min="0" max="100" step="1" :disabled="busy" />
             </label>
 
