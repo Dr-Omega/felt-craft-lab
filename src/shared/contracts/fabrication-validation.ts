@@ -1,5 +1,4 @@
 import type { ValidationIssue, ValidationResult } from './validation'
-import { createHash } from 'node:crypto'
 import { manufacturingShape, resultShape, shapeErrors, structureShape } from './fabrication-shape'
 import type { FabricationInput, FabricationResult, ManufacturingAssessment, ObservedCandidate, StructuralAssessment } from './fabrication'
 
@@ -13,6 +12,35 @@ const requireAll = (ids: readonly string[], allowed: Set<string>, path: string, 
 const det = (m: readonly number[]): number => m[0] * m[3] - m[1] * m[2]
 const gatePass = (gate: { status: string; evidenceArtifactIds: string[] }): boolean => gate.status === 'PASS' && gate.evidenceArtifactIds.length > 0
 const allPass = (checks: Record<string, { status: string; evidenceArtifactIds: string[] }>): boolean => Object.values(checks).every(gatePass)
+/** Small synchronous SHA-256 for shared/renderer validation; no Node runtime dependency. */
+const sha256 = (text: string): string => {
+  const bytes = new TextEncoder().encode(text)
+  const constants = new Uint32Array([0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5, 0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174, 0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da, 0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967, 0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85, 0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070, 0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3, 0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2])
+  const padded = new Uint8Array(Math.ceil((bytes.length + 9) / 64) * 64)
+  padded.set(bytes); padded[bytes.length] = 0x80
+  const bitLength = bytes.length * 8, finalView = new DataView(padded.buffer)
+  finalView.setUint32(padded.length - 8, Math.floor(bitLength / 0x1_0000_0000))
+  finalView.setUint32(padded.length - 4, bitLength >>> 0)
+  const rotateRight = (value: number, bits: number): number => (value >>> bits) | (value << (32 - bits))
+  let h0 = 0x6a09e667, h1 = 0xbb67ae85, h2 = 0x3c6ef372, h3 = 0xa54ff53a, h4 = 0x510e527f, h5 = 0x9b05688c, h6 = 0x1f83d9ab, h7 = 0x5be0cd19
+  for (let offset = 0; offset < padded.length; offset += 64) {
+    const words = new Uint32Array(64), view = new DataView(padded.buffer, offset, 64)
+    for (let index = 0; index < 16; index++) words[index] = view.getUint32(index * 4)
+    for (let index = 16; index < 64; index++) {
+      const a = words[index - 15], b = words[index - 2]
+      words[index] = (rotateRight(a, 7) ^ rotateRight(a, 18) ^ (a >>> 3)) + words[index - 16] + (rotateRight(b, 17) ^ rotateRight(b, 19) ^ (b >>> 10)) + words[index - 7]
+    }
+    let a = h0, b = h1, c = h2, d = h3, e = h4, f = h5, g = h6, h = h7
+    for (let index = 0; index < 64; index++) {
+      const next1 = (h + (rotateRight(e, 6) ^ rotateRight(e, 11) ^ rotateRight(e, 25)) + ((e & f) ^ (~e & g)) + constants[index] + words[index]) >>> 0
+      const next2 = ((rotateRight(a, 2) ^ rotateRight(a, 13) ^ rotateRight(a, 22)) + ((a & b) ^ (a & c) ^ (b & c))) >>> 0
+      h = g; g = f; f = e; e = (d + next1) >>> 0; d = c; c = b; b = a; a = (next1 + next2) >>> 0
+    }
+    h0 = (h0 + a) >>> 0; h1 = (h1 + b) >>> 0; h2 = (h2 + c) >>> 0; h3 = (h3 + d) >>> 0
+    h4 = (h4 + e) >>> 0; h5 = (h5 + f) >>> 0; h6 = (h6 + g) >>> 0; h7 = (h7 + h) >>> 0
+  }
+  return [h0, h1, h2, h3, h4, h5, h6, h7].map(value => value.toString(16).padStart(8, '0')).join('')
+}
 
 /** Stable, recursively sorted JSON plus exactly one LF. Caller's SHA-256 is the identity hash. */
 export function canonicalPayloadJson(value: unknown): string {
@@ -39,7 +67,7 @@ export function validateFabricationResult(raw: unknown, expectedSha256?: string)
   const errors = shapeErrors(resultShape, raw)
   if (errors.length) return fail(errors)
   const result = raw as FabricationResult
-  const actualSha256 = createHash('sha256').update(canonicalPayloadJson(result.payload)).digest('hex')
+  const actualSha256 = sha256(canonicalPayloadJson(result.payload))
   if (result.identity.sha256 !== actualSha256) add(errors, '$.identity.sha256', 'Canonical identity does not match payload')
   const { input, pieces, splitGroups, relations } = result.payload
   if (expectedSha256 && result.identity.sha256 !== expectedSha256) add(errors, '$.identity.sha256', 'Does not match supplied canonical identity')
