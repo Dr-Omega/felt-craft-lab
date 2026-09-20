@@ -23,15 +23,16 @@ class R3FreezeContractTests(unittest.TestCase):
 
     def test_each_bound_file_tamper_fails_closed(self) -> None:
         freeze = benchmark_lib.validate_acceptance_freeze()
-        target = next(iter(freeze["files"]))
-        path = benchmark_lib.REPO_ROOT / target
-        original = path.read_bytes()
-        try:
-            path.write_bytes(original + b" ")
-            with self.assertRaisesRegex(ValueError, "identity mismatch"):
-                benchmark_lib.validate_acceptance_freeze()
-        finally:
-            path.write_bytes(original)
+        for target in freeze["files"]:
+            with self.subTest(target=target):
+                path = benchmark_lib.REPO_ROOT / target
+                original = path.read_bytes()
+                try:
+                    path.write_bytes(original + b" ")
+                    with self.assertRaisesRegex(ValueError, "identity mismatch"):
+                        benchmark_lib.validate_acceptance_freeze()
+                finally:
+                    path.write_bytes(original)
 
     def test_formal_model_set_mutations_fail_closed(self) -> None:
         config_path = ROOT / "benchmark-config.json"
@@ -59,6 +60,21 @@ class R3FreezeContractTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "fully opaque"): run_benchmark.validate_case(case)
             Image.new("RGB", (4, 4), "white").save(case / "source.png")
             run_benchmark.validate_case(case)
+
+    def test_each_non_opaque_alpha_and_temporary_lineage_fail(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            case = Path(temporary) / "BR-002"; case.mkdir()
+            Image.new("L", (4, 4), 255).save(case / "ground_truth.png")
+            for lineage in ("provisional:x", "temporary:x", "temp:x", "Provisional:x", "TEMP:x"):
+                with self.subTest(lineage=lineage):
+                    (case / "case.json").write_text(json.dumps({"caseId":"BR-002","datasetRole":"PROJECT_REAL_ACCEPTANCE","sourceLineageId":lineage,"category":"x","description":"x","criticalStructures":["x"]}), encoding="utf-8")
+                    Image.new("RGB", (4, 4), "white").save(case / "source.png")
+                    with self.assertRaises(ValueError): run_benchmark.validate_case(case)
+            (case / "case.json").write_text(json.dumps({"caseId":"BR-002","datasetRole":"PROJECT_REAL_ACCEPTANCE","sourceLineageId":"project/stable","category":"x","description":"x","criticalStructures":["x"]}), encoding="utf-8")
+            for alpha in (0, 1, 128, 254):
+                with self.subTest(alpha=alpha):
+                    Image.new("RGBA", (4, 4), (255, 255, 255, alpha)).save(case / "source.png")
+                    with self.assertRaisesRegex(ValueError, "fully opaque"): run_benchmark.validate_case(case)
 
 
 if __name__ == "__main__":

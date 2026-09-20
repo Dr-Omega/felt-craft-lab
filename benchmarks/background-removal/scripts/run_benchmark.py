@@ -20,6 +20,7 @@ from PIL import Image
 
 from benchmark_lib import (  # noqa: E402
     BENCHMARK_ROOT,
+    FREEZE_PATH,
     ProcessRssSampler,
     REQUIRED_COVERAGE_SLOTS,
     calculate_metrics,
@@ -145,6 +146,7 @@ def _case_snapshot(metadata: dict[str, Any], source: Path, ground_truth: Path, c
         "datasetRole": metadata["datasetRole"],
         "coverageTags": list((manifest_case or {}).get("coverageTags", [])),
         "groundTruthReview": (manifest_case or {}).get("groundTruthReview"),
+        "primaryCoverageSlot": (manifest_case or {}).get("primaryCoverageSlot"),
     }
 
 
@@ -208,10 +210,21 @@ def load_acceptance_cases() -> tuple[list[tuple[dict[str, Any], Path, Path, Path
         if not isinstance(tags, list) or not tags or not all(isinstance(tag, str) and tag.strip() for tag in tags):
             raise ValueError(f"{case_id}: coverageTags must be a non-empty string array")
         if strict_r3_contract:
+            slot = entry.get("primaryCoverageSlot")
+            if slot not in REQUIRED_COVERAGE_SLOTS:
+                raise ValueError(f"{case_id}: primaryCoverageSlot is required")
             evidence = review.get("evidence")
             if not isinstance(evidence, dict) or not isinstance(evidence.get("file"), str) or not isinstance(evidence.get("sha256"), str):
                 raise ValueError(f"{case_id}: ground truth review evidence identity is required")
-            evidence_path = BENCHMARK_ROOT / evidence["file"]
+            evidence_file = evidence["file"]
+            if Path(evidence_file).is_absolute():
+                raise ValueError(f"{case_id}: review evidence path must be relative")
+            root = BENCHMARK_ROOT.resolve()
+            evidence_path = (root / evidence_file).resolve()
+            try:
+                evidence_path.relative_to(root)
+            except ValueError as exc:
+                raise ValueError(f"{case_id}: review evidence path escapes benchmark root") from exc
             if not evidence_path.is_file() or sha256_file(evidence_path).lower() != evidence["sha256"].lower():
                 raise ValueError(f"{case_id}: ground truth review evidence identity mismatch")
         case_dir = BENCHMARK_ROOT / "cases" / case_id
@@ -227,9 +240,9 @@ def load_acceptance_cases() -> tuple[list[tuple[dict[str, Any], Path, Path, Path
         records.append((metadata, source, ground_truth, validated_dir))
         snapshots.append(identity)
     required_count = manifest["requiredProjectRealReviewedCaseCount"]
-    covered = {tag for snapshot in snapshots for tag in snapshot["coverageTags"]}
-    if strict_r3_contract and len(records) >= required_count and not set(REQUIRED_COVERAGE_SLOTS).issubset(covered):
-        raise ValueError("formal acceptance dataset is missing required coverage slots")
+    slots = {snapshot.get("primaryCoverageSlot"): snapshot["sourceLineageId"] for snapshot in snapshots if snapshot.get("primaryCoverageSlot")}
+    if strict_r3_contract and len(records) >= required_count and (set(slots) != set(REQUIRED_COVERAGE_SLOTS) or len(set(slots.values())) != len(REQUIRED_COVERAGE_SLOTS)):
+        raise ValueError("formal acceptance dataset is missing injective required coverage slots")
     validation = {
         "valid": len(records) >= required_count,
         "manifestSchemaVersion": manifest["schemaVersion"],
@@ -256,6 +269,8 @@ def load_cases(args: argparse.Namespace, config: dict[str, Any]) -> tuple[list[t
         records, validation, snapshot = load_acceptance_cases()
         if not validation["valid"]:
             raise ValueError(f"acceptance benchmark requires {validation['requiredProjectRealReviewedCaseCount']} approved project-real reviewed cases; found {validation['projectRealReviewedCaseCount']}. Use --case only for plumbing/debugging, not acceptance.")
+        if validation["manifestSchemaVersion"] != "background-removal.acceptance-dataset/2":
+            raise ValueError("formal acceptance requires acceptance-dataset schema v2")
         return records, validation, snapshot
     case_dir = BENCHMARK_ROOT / "cases" / str(args.case)
     if not case_dir.is_dir():
@@ -297,6 +312,7 @@ def initial_result(config: dict[str, Any], selected_models: list[str], args: arg
     runtime_versions = installed_runtime_versions()
     environment_contract = load_acceptance_environment()
     environment_contract_sha256 = canonical_environment_contract_sha256(environment_contract)
+    freeze = validate_acceptance_freeze() if args.all_cases else None
     if dataset_validation is None:
         dataset_validation = {
             "valid": False, "manifestSchemaVersion": None, "manifestSha256": None,
@@ -325,6 +341,9 @@ def initial_result(config: dict[str, Any], selected_models: list[str], args: arg
         "caseSources": {metadata["caseId"]: source.name for metadata, source, _ground_truth, _case_dir in cases},
         "datasetValidation": dataset_validation,
         "datasetSnapshot": dataset_snapshot,
+        "acceptanceFreezeSha256": sha256_file(FREEZE_PATH) if freeze else None,
+        "acceptanceFreezeSchemaVersion": freeze.get("schemaVersion") if freeze else None,
+        "acceptanceFreezeRecipeVersion": freeze.get("recipeVersion") if freeze else None,
         "acceptanceSemantics": {
             "datasetAcceptanceStatus": "PENDING_FORMAL_DATASET_VALIDATION",
             "reproducibilityStatus": "PENDING_RUNTIME_AND_ARTIFACT_VERIFICATION",
@@ -335,6 +354,7 @@ def initial_result(config: dict[str, Any], selected_models: list[str], args: arg
             "runtimeVersions": runtime_versions,
             "environmentContract": environment_contract,
             "environmentContractSha256": environment_contract_sha256,
+            "environmentFileSha256": sha256_file(BENCHMARK_ROOT / "acceptance-environment.json"),
             "environmentValidation": runtime_environment_validation(runtime_versions, environment_contract),
             "modelArtifacts": {
                 model_id: {"source": manifest[model_id].get("source"), **model_artifact_record(model_id, manifest[model_id])}

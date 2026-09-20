@@ -54,9 +54,12 @@ def validate_acceptance_freeze() -> dict[str, Any]:
     for relative, expected in files.items():
         if not isinstance(relative, str) or not isinstance(expected, str) or len(expected) != 64:
             raise ValueError("formal acceptance freeze identity entry is invalid")
-        candidate = REPO_ROOT / relative
+        if Path(relative).is_absolute():
+            raise ValueError("formal acceptance freeze path must be relative")
+        root = REPO_ROOT.resolve()
+        candidate = (root / relative).resolve()
         try:
-            candidate.relative_to(REPO_ROOT)
+            candidate.relative_to(root)
         except ValueError as exc:
             raise ValueError("formal acceptance freeze path escapes repository") from exc
         if not candidate.is_file() or sha256_file(candidate).lower() != expected.lower():
@@ -331,9 +334,9 @@ def model_artifact_record(model_id: str, metadata: dict[str, Any]) -> dict[str, 
         return {
             "modelPath": "NOT_APPLICABLE",
             "modelSizeBytes": None,
-            "expectedSha256": "NOT_APPLICABLE",
-            "actualSha256": "NOT_APPLICABLE",
-            "actualModelSha256": "NOT_APPLICABLE",
+            "expectedSha256": metadata.get("modelSha256"),
+            "actualSha256": metadata.get("modelSha256"),
+            "actualModelSha256": metadata.get("modelSha256"),
             "sha256Match": "NOT_APPLICABLE",
             "exactModelRevision": exact_revision,
             "weightLicenseVerificationStatus": license_status,

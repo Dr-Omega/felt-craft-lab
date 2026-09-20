@@ -67,6 +67,9 @@ def complete_review_document(run_id: str) -> dict[str, object]:
 def formal_run_fixture() -> dict[str, object]:
     """A synthetic in-memory formal report used only to exercise binding gates before I/O."""
     run = run_fixture()
+    freeze = benchmark_lib.validate_acceptance_freeze()
+    manifest_sha = freeze["files"]["benchmarks/background-removal/acceptance-dataset.json"]
+    manifest = benchmark_lib.load_manifest()
     case_ids = [f"BR-{index:03d}" for index in range(1, 16)]
     template = copy.deepcopy(run["datasetSnapshot"]["cases"][0])
     cases = []
@@ -85,9 +88,14 @@ def formal_run_fixture() -> dict[str, object]:
         "configuration": {"modelOrder": ["current-rule"]},
         "selectedModels": ["current-rule"],
         "caseIds": case_ids,
-        "datasetValidation": {"valid": True, "manifestSha256": "f" * 64, "projectRealReviewedCaseCount": 15, "requiredProjectRealReviewedCaseCount": 15, "sourceLineageCount": 15, "selectedCaseIds": list(case_ids)},
-        "datasetSnapshot": {"acceptanceDatasetManifestSha256": "f" * 64, "requiredProjectRealReviewedCaseCount": 15, "selectedCaseIds": list(case_ids), "cases": cases},
+        "acceptanceFreezeSha256": sha256_file(benchmark_lib.FREEZE_PATH),
+        "datasetValidation": {"valid": True, "manifestSchemaVersion": "background-removal.acceptance-dataset/2", "manifestSha256": manifest_sha, "projectRealReviewedCaseCount": 15, "requiredProjectRealReviewedCaseCount": 15, "sourceLineageCount": 15, "selectedCaseIds": list(case_ids)},
+        "datasetSnapshot": {"acceptanceDatasetManifestSha256": manifest_sha, "requiredProjectRealReviewedCaseCount": 15, "selectedCaseIds": list(case_ids), "cases": cases},
     })
+    run["reproducibility"]["environmentFileSha256"] = freeze["files"]["benchmarks/background-removal/acceptance-environment.json"]
+    run["reproducibility"]["environmentContract"] = benchmark_lib.load_acceptance_environment()
+    run["reproducibility"]["environmentContractSha256"] = canonical_environment_contract_sha256(run["reproducibility"]["environmentContract"])
+    run["reproducibility"]["modelArtifacts"]["current-rule"]["expectedSha256"] = manifest["current-rule"]["modelSha256"]
     return run
 
 
@@ -176,18 +184,19 @@ class ReviewFinalizeTests(unittest.TestCase):
         run_benchmark.validate_formal_model_selection(SimpleNamespace(all_cases=False), ["current-rule"], config)
 
     def test_formal_finalization_rejects_synthetic_frozen_snapshot(self) -> None:
-        run = run_fixture()
-        run["scope"] = "all-cases"
+        run = formal_run_fixture()
         snapshot_cases = []
         for index in range(1, 16):
             entry = copy.deepcopy(run["datasetSnapshot"]["cases"][0])
             entry["caseId"] = f"BR-{index:03d}"
             entry["sourceLineageId"] = f"synthetic/{index}"
+            entry["datasetRole"] = "SYNTHETIC_DEBUG"
             entry["coverageTags"] = ["test"]
             entry["groundTruthReview"] = {"state": "APPROVED", "signoff": "SIGNED_OFF", "reviewerRole": "PROJECT_DATASET_REVIEWER"}
             snapshot_cases.append(entry)
-        run["datasetSnapshot"] = {"acceptanceDatasetManifestSha256": "f" * 64, "requiredProjectRealReviewedCaseCount": 15, "selectedCaseIds": [entry["caseId"] for entry in snapshot_cases], "cases": snapshot_cases}
-        run["datasetValidation"] = {"valid": True, "manifestSha256": "f" * 64, "projectRealReviewedCaseCount": 15, "requiredProjectRealReviewedCaseCount": 15, "sourceLineageCount": 15, "selectedCaseIds": [entry["caseId"] for entry in snapshot_cases]}
+        manifest_sha = run["datasetSnapshot"]["acceptanceDatasetManifestSha256"]
+        run["datasetSnapshot"] = {"acceptanceDatasetManifestSha256": manifest_sha, "requiredProjectRealReviewedCaseCount": 15, "selectedCaseIds": [entry["caseId"] for entry in snapshot_cases], "cases": snapshot_cases}
+        run["datasetValidation"] = {"valid": True, "manifestSchemaVersion": "background-removal.acceptance-dataset/2", "manifestSha256": manifest_sha, "projectRealReviewedCaseCount": 15, "requiredProjectRealReviewedCaseCount": 15, "sourceLineageCount": 15, "selectedCaseIds": [entry["caseId"] for entry in snapshot_cases]}
         run["caseIds"] = [entry["caseId"] for entry in snapshot_cases]
         with self.assertRaisesRegex(ValueError, "PROJECT_REAL_ACCEPTANCE"):
             merge_manual_reviews(run, complete_review_document("run-current"))

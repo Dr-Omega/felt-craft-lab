@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from benchmark_lib import BENCHMARK_ROOT, final_verdict_for_review, sha256_file, validate_acceptance_freeze, validate_frozen_formal_dataset_snapshot
+from benchmark_lib import BENCHMARK_ROOT, FREEZE_PATH, final_verdict_for_review, load_acceptance_environment, load_manifest, model_artifact_record, sha256_file, validate_acceptance_freeze, validate_frozen_formal_dataset_snapshot
 from run_benchmark import PROJECT_REAL_ACCEPTANCE, validate_case, write_results
 
 
@@ -56,7 +56,30 @@ def verify_output_integrity(run_result: dict[str, Any]) -> None:
 def verify_dataset_snapshot_integrity(run_result: dict[str, Any]) -> None:
     """Ensure review is applied to the exact source/GT/case bytes used by the run."""
     if run_result.get("scope") == "all-cases":
-        validate_acceptance_freeze()
+        freeze = validate_acceptance_freeze()
+        is_r3_formal_run = run_result.get("datasetValidation", {}).get("manifestSchemaVersion") == "background-removal.acceptance-dataset/2"
+        if not is_r3_formal_run:
+            raise ValueError("formal run requires acceptance-dataset schema v2")
+        if run_result.get("acceptanceFreezeSha256") != sha256_file(FREEZE_PATH):
+            raise ValueError("formal run freeze identity does not match current freeze")
+        reproducibility = run_result.get("reproducibility", {})
+        if reproducibility.get("environmentFileSha256") != freeze["files"].get("benchmarks/background-removal/acceptance-environment.json"):
+            raise ValueError("formal run environment file identity does not match freeze")
+        if reproducibility.get("environmentContract") != load_acceptance_environment():
+            raise ValueError("formal run environment contract does not match frozen environment")
+        if run_result.get("datasetValidation", {}).get("manifestSha256") != freeze["files"].get("benchmarks/background-removal/acceptance-dataset.json"):
+            raise ValueError("formal run dataset manifest identity does not match freeze")
+        manifest = load_manifest()
+        for model_id in run_result.get("selectedModels", []):
+            record = reproducibility.get("modelArtifacts", {}).get(model_id, {})
+            if model_id not in manifest or (
+                record.get("exactModelRevision") != manifest[model_id].get("exactModelRevision")
+                or record.get("expectedSha256") != manifest[model_id].get("modelSha256")
+                or record.get("weightLicenseVerificationStatus") != manifest[model_id].get("weightLicenseVerificationStatus")
+            ):
+                raise ValueError("formal run model identity does not match frozen manifest")
+            if model_id != "current-rule" and not model_artifact_record(model_id, manifest[model_id]).get("artifactVerified"):
+                raise ValueError("formal model artifact no longer verifies")
         validate_frozen_formal_dataset_snapshot(run_result.get("datasetSnapshot"), run_result.get("datasetValidation"))
         snapshot = run_result["datasetSnapshot"]
         selected_case_ids = snapshot["selectedCaseIds"]
@@ -100,6 +123,15 @@ def verify_dataset_snapshot_integrity(run_result: dict[str, Any]) -> None:
                 raise ValueError(f"dataset snapshot {field} mismatch: {case_id}")
         if entry["datasetRole"] == PROJECT_REAL_ACCEPTANCE and not isinstance(entry.get("groundTruthReview"), dict):
             raise ValueError(f"formal dataset snapshot is missing ground truth review: {case_id}")
+        if entry["datasetRole"] == PROJECT_REAL_ACCEPTANCE:
+            evidence = entry["groundTruthReview"].get("evidence")
+            if not isinstance(evidence, dict) or not isinstance(evidence.get("file"), str) or not isinstance(evidence.get("sha256"), str) or Path(evidence["file"]).is_absolute():
+                raise ValueError(f"formal dataset snapshot review evidence is invalid: {case_id}")
+            root = BENCHMARK_ROOT.resolve(); evidence_path = (root / evidence["file"]).resolve()
+            try: evidence_path.relative_to(root)
+            except ValueError as exc: raise ValueError("formal dataset snapshot review evidence escapes benchmark root") from exc
+            if not evidence_path.is_file() or sha256_file(evidence_path).lower() != evidence["sha256"].lower():
+                raise ValueError(f"formal dataset snapshot review evidence identity mismatch: {case_id}")
     if set(selected) != case_ids:
         raise ValueError("dataset snapshot selectedCaseIds do not match snapshot cases")
 

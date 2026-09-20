@@ -12,9 +12,9 @@
     "benchmarks/background-removal/acceptance-environment.json": "ca669f3c25d9cb200a27c3bfc8942ba28ca69edeb1166efb55320059ac3b5027",
     "benchmarks/background-removal/model-manifest.json": "dc8231e7894926a7316518922cb00733880b7a00b9c2370df8d0219068d2555c",
     "benchmarks/background-removal/acceptance-dataset.json": "75fbb8c9948138d16ead1112ab3cb9d7c1fd0ba0a58f7cccb06f94a7ab483d15",
-    "benchmarks/background-removal/scripts/benchmark_lib.py": "69162480252edec22c858b47b42b853759a824ae81c243446d90d10b6069682d",
-    "benchmarks/background-removal/scripts/run_benchmark.py": "f28ca6bdfb84186863c0d6b4d10453eebcf58ec0fa3c1cd931847e15878729fa",
-    "benchmarks/background-removal/scripts/finalize_benchmark.py": "0c7af73d6e6d5e17394789f0936053da21c3c6c6f429275485e8f5149c8b3a06",
+    "benchmarks/background-removal/scripts/benchmark_lib.py": "72395d800e741b12efe8397b179e9c57a7ac71abb3df98e0f99851290f27d0f6",
+    "benchmarks/background-removal/scripts/run_benchmark.py": "8c7b5f3d146163a1ce8c3afebdf0c0ee08f5a8402d21e6a99ba5a0711ef5d4ba",
+    "benchmarks/background-removal/scripts/finalize_benchmark.py": "788f5b6183f646df7ec97b60baab91e3b4a370e772d49ace7b74f3d583f026b4",
     "backend/services/image_postprocess.py": "ef6fc4dd7a9e126778c5a3f179b7daf7d7c0c7af95e6109fc5616044f87bdfde"
   }
 }
