@@ -79,4 +79,37 @@ describe('M2 review contract', () => {
     expect(assertFlatInputSafe({ items: [{ safe: { reviewedGT: 'bad' } }] }).ok).toBe(false)
     expect(assertFlatInputSafe({ source: 'x', items: [{ safe: true }] }).ok).toBe(true)
   })
+
+  it('rejects malformed raw array elements without throwing', () => {
+    for (const malformed of [null, 1, 'bad', []]) {
+      expect(() => validateReviewRecords([malformed], new Set(), new Map(), evidence)).not.toThrow()
+      expect(validateReviewRecords([malformed], new Set(), new Map(), evidence).ok).toBe(false)
+      expect(() => validateMappings([malformed], evidence)).not.toThrow()
+      expect(validateMappings([malformed], evidence).ok).toBe(false)
+      expect(() => validateDataset([malformed])).not.toThrow()
+      expect(validateDataset([malformed]).ok).toBe(false)
+    }
+  })
+
+  it('runtime-validates review and mapping enums plus required fields', () => {
+    const bindings = new Map([['relation-1', relationBinding]])
+    for (const invalid of [
+      { schemaVersion: 'bad' },
+      { domain: 'bad' },
+      { reviewType: 'WHATEVER' },
+      { reviewerRole: 'bad' },
+      { state: 'bad' },
+      { signoff: 'bad' },
+      { question: '' },
+      { options: ['NO_RELATION', 'NO_RELATION'] },
+      { answer: '' },
+      { evidenceArtifactIds: [''] },
+      { recordedAt: '' },
+      { binding: [] },
+    ]) {
+      expect(validateReviewRecords([{ ...approvedRelation, ...invalid }], new Set(['relation-1']), bindings, evidence).ok).toBe(false)
+    }
+    expect(validateMappings([{ ...mapping('bad-state', null), state: 'UNKNOWN' }], evidence).ok).toBe(false)
+    expect(validateMappings([{ ...mapping('bad-approval', null), approvalReviewId: '' }], evidence).ok).toBe(false)
+  })
 })
