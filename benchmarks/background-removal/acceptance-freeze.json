@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "background-removal.acceptance-freeze/1",
+  "recipeVersion": "r3-reproducibility-contract/1",
+  "formalModelOrder": [
+    "current-rule",
+    "isnet-anime",
+    "birefnet-general-lite",
+    "birefnet-general"
+  ],
+  "files": {
+    "benchmarks/background-removal/benchmark-config.json": "a5f5e11958b42aa2adee745dde09b5aca32ce09b01fe68fd2ad133ed264a8bfe",
+    "benchmarks/background-removal/acceptance-environment.json": "ca669f3c25d9cb200a27c3bfc8942ba28ca69edeb1166efb55320059ac3b5027",
+    "benchmarks/background-removal/model-manifest.json": "dc8231e7894926a7316518922cb00733880b7a00b9c2370df8d0219068d2555c",
+    "benchmarks/background-removal/acceptance-dataset.json": "75fbb8c9948138d16ead1112ab3cb9d7c1fd0ba0a58f7cccb06f94a7ab483d15",
+    "benchmarks/background-removal/scripts/benchmark_lib.py": "69162480252edec22c858b47b42b853759a824ae81c243446d90d10b6069682d",
+    "benchmarks/background-removal/scripts/run_benchmark.py": "ae40c082e0a24eedde80216dd3b11e5d0282141c398babf89c403c73401bd917",
+    "benchmarks/background-removal/scripts/finalize_benchmark.py": "0c7af73d6e6d5e17394789f0936053da21c3c6c6f429275485e8f5149c8b3a06",
+    "backend/services/image_postprocess.py": "ef6fc4dd7a9e126778c5a3f179b7daf7d7c0c7af95e6109fc5616044f87bdfde"
+  }
+}

@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from benchmark_lib import BENCHMARK_ROOT, final_verdict_for_review, sha256_file, validate_frozen_formal_dataset_snapshot
+from benchmark_lib import BENCHMARK_ROOT, final_verdict_for_review, sha256_file, validate_acceptance_freeze, validate_frozen_formal_dataset_snapshot
 from run_benchmark import PROJECT_REAL_ACCEPTANCE, validate_case, write_results
 
 
@@ -56,6 +56,7 @@ def verify_output_integrity(run_result: dict[str, Any]) -> None:
 def verify_dataset_snapshot_integrity(run_result: dict[str, Any]) -> None:
     """Ensure review is applied to the exact source/GT/case bytes used by the run."""
     if run_result.get("scope") == "all-cases":
+        validate_acceptance_freeze()
         validate_frozen_formal_dataset_snapshot(run_result.get("datasetSnapshot"), run_result.get("datasetValidation"))
         snapshot = run_result["datasetSnapshot"]
         selected_case_ids = snapshot["selectedCaseIds"]

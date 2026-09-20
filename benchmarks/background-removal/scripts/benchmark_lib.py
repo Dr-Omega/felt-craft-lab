@@ -24,6 +24,10 @@ BENCHMARK_ROOT = Path(__file__).resolve().parent.parent
 REPO_ROOT = BENCHMARK_ROOT.parents[1]
 BACKEND_ROOT = REPO_ROOT / "backend"
 MODEL_CACHE_ROOT = BENCHMARK_ROOT / "models" / "rembg-cache"
+FREEZE_PATH = BENCHMARK_ROOT / "acceptance-freeze.json"
+FORMAL_MODEL_ORDER = ["current-rule", "isnet-anime", "birefnet-general-lite", "birefnet-general"]
+REQUIRED_COVERAGE_SLOTS = [f"slot-{index:02d}" for index in range(1, 16)]
+TEMPORARY_LINEAGE_PREFIXES = ("provisional:", "temporary:", "temp:")
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -32,6 +36,35 @@ def load_json(path: Path) -> dict[str, Any]:
 
 def load_config() -> dict[str, Any]:
     return load_json(BENCHMARK_ROOT / "benchmark-config.json")
+
+
+def validate_acceptance_freeze() -> dict[str, Any]:
+    """Validate the non-self-referential, byte-pinned formal acceptance root."""
+    freeze = load_json(FREEZE_PATH)
+    if freeze.get("schemaVersion") != "background-removal.acceptance-freeze/1":
+        raise ValueError("formal acceptance freeze schema is invalid")
+    if freeze.get("formalModelOrder") != FORMAL_MODEL_ORDER:
+        raise ValueError("formal acceptance freeze model order is invalid")
+    files = freeze.get("files")
+    if not isinstance(files, dict) or not files:
+        raise ValueError("formal acceptance freeze files are invalid")
+    # The root intentionally does not include itself: no self-hash cycle.
+    if "acceptance-freeze.json" in files:
+        raise ValueError("formal acceptance freeze must not hash itself")
+    for relative, expected in files.items():
+        if not isinstance(relative, str) or not isinstance(expected, str) or len(expected) != 64:
+            raise ValueError("formal acceptance freeze identity entry is invalid")
+        candidate = REPO_ROOT / relative
+        try:
+            candidate.relative_to(REPO_ROOT)
+        except ValueError as exc:
+            raise ValueError("formal acceptance freeze path escapes repository") from exc
+        if not candidate.is_file() or sha256_file(candidate).lower() != expected.lower():
+            raise ValueError(f"formal acceptance freeze identity mismatch: {relative}")
+    config = load_config()
+    if config.get("modelOrder") != freeze["formalModelOrder"]:
+        raise ValueError("benchmark-config modelOrder differs from frozen formal model set")
+    return freeze
 
 
 def load_acceptance_environment() -> dict[str, Any]:

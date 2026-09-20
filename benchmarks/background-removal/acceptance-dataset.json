@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "background-removal.acceptance-dataset/1",
+  "schemaVersion": "background-removal.acceptance-dataset/2",
   "requiredProjectRealReviewedCaseCount": 15,
   "cases": []
 }

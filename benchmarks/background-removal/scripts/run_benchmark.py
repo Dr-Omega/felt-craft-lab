@@ -21,6 +21,7 @@ from PIL import Image
 from benchmark_lib import (  # noqa: E402
     BENCHMARK_ROOT,
     ProcessRssSampler,
+    REQUIRED_COVERAGE_SLOTS,
     calculate_metrics,
     canonical_environment_contract_sha256,
     classify_benchmark_status,
@@ -36,6 +37,7 @@ from benchmark_lib import (  # noqa: E402
     runtime_environment_validation,
     run_timed,
     sha256_file,
+    validate_acceptance_freeze,
 )
 
 
@@ -64,6 +66,10 @@ def validate_formal_model_selection(args: argparse.Namespace, selected_models: l
     """Formal acceptance always evaluates the frozen configuration's complete model set."""
     if args.all_cases and selected_models != config.get("modelOrder"):
         raise ValueError("--all-cases acceptance requires the complete benchmark-config.json modelOrder")
+    if args.all_cases:
+        freeze = validate_acceptance_freeze()
+        if selected_models != freeze["formalModelOrder"]:
+            raise ValueError("--all-cases acceptance requires the frozen formal model order")
 
 
 def find_source(case_dir: Path) -> Path:
@@ -112,6 +118,13 @@ def validate_case(case_dir: Path) -> tuple[dict[str, Any], Path, Path, Path]:
     ground_truth_size = _verify_decodable(ground_truth, label=f"{case_id} ground truth")
     if source_size != ground_truth_size:
         raise ValueError(f"{case_id}: source and ground truth dimensions differ: {source_size} != {ground_truth_size}")
+    if metadata["datasetRole"] == PROJECT_REAL_ACCEPTANCE:
+        if metadata["sourceLineageId"].lower().startswith(("provisional:", "temporary:", "temp:")):
+            raise ValueError(f"{case_id}: formal sourceLineageId must be stable")
+        with Image.open(source) as source_image:
+            source_image.load()
+            if "A" in source_image.getbands() and any(alpha != 255 for alpha in source_image.getchannel("A").get_flattened_data()):
+                raise ValueError(f"{case_id}: formal source alpha must be fully opaque")
     with Image.open(ground_truth) as gt_image:
         gt_image.load()
         values = set(gt_image.convert("L").get_flattened_data())
@@ -153,7 +166,7 @@ def _load_acceptance_manifest() -> tuple[dict[str, Any], str]:
         manifest = json.loads(ACCEPTANCE_DATASET_PATH.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise ValueError("acceptance-dataset.json is invalid JSON") from exc
-    if manifest.get("schemaVersion") != "background-removal.acceptance-dataset/1":
+    if manifest.get("schemaVersion") not in {"background-removal.acceptance-dataset/1", "background-removal.acceptance-dataset/2"}:
         raise ValueError("acceptance dataset manifest schemaVersion is invalid")
     if manifest.get("requiredProjectRealReviewedCaseCount") != 15:
         raise ValueError("acceptance dataset manifest must require exactly 15 project-real reviewed cases")
@@ -165,6 +178,7 @@ def _load_acceptance_manifest() -> tuple[dict[str, Any], str]:
 def load_acceptance_cases() -> tuple[list[tuple[dict[str, Any], Path, Path, Path]], dict[str, Any], dict[str, Any]]:
     """Select only manifest-approved project-real cases; never scan directories as acceptance data."""
     manifest, manifest_sha256 = _load_acceptance_manifest()
+    strict_r3_contract = manifest["schemaVersion"] == "background-removal.acceptance-dataset/2"
     records: list[tuple[dict[str, Any], Path, Path, Path]] = []
     snapshots: list[dict[str, Any]] = []
     case_ids: set[str] = set()
@@ -192,6 +206,13 @@ def load_acceptance_cases() -> tuple[list[tuple[dict[str, Any], Path, Path, Path
         tags = entry["coverageTags"]
         if not isinstance(tags, list) or not tags or not all(isinstance(tag, str) and tag.strip() for tag in tags):
             raise ValueError(f"{case_id}: coverageTags must be a non-empty string array")
+        if strict_r3_contract:
+            evidence = review.get("evidence")
+            if not isinstance(evidence, dict) or not isinstance(evidence.get("file"), str) or not isinstance(evidence.get("sha256"), str):
+                raise ValueError(f"{case_id}: ground truth review evidence identity is required")
+            evidence_path = BENCHMARK_ROOT / evidence["file"]
+            if not evidence_path.is_file() or sha256_file(evidence_path).lower() != evidence["sha256"].lower():
+                raise ValueError(f"{case_id}: ground truth review evidence identity mismatch")
         case_dir = BENCHMARK_ROOT / "cases" / case_id
         metadata, source, ground_truth, validated_dir = validate_case(case_dir)
         if entry["sourceFile"] != source.name or Path(entry["sourceFile"]).name != entry["sourceFile"]:
@@ -205,6 +226,9 @@ def load_acceptance_cases() -> tuple[list[tuple[dict[str, Any], Path, Path, Path
         records.append((metadata, source, ground_truth, validated_dir))
         snapshots.append(identity)
     required_count = manifest["requiredProjectRealReviewedCaseCount"]
+    covered = {tag for snapshot in snapshots for tag in snapshot["coverageTags"]}
+    if strict_r3_contract and len(records) >= required_count and not set(REQUIRED_COVERAGE_SLOTS).issubset(covered):
+        raise ValueError("formal acceptance dataset is missing required coverage slots")
     validation = {
         "valid": len(records) >= required_count,
         "manifestSchemaVersion": manifest["schemaVersion"],
@@ -300,6 +324,12 @@ def initial_result(config: dict[str, Any], selected_models: list[str], args: arg
         "caseSources": {metadata["caseId"]: source.name for metadata, source, _ground_truth, _case_dir in cases},
         "datasetValidation": dataset_validation,
         "datasetSnapshot": dataset_snapshot,
+        "acceptanceSemantics": {
+            "datasetAcceptanceStatus": "PENDING_FORMAL_DATASET_VALIDATION",
+            "reproducibilityStatus": "PENDING_RUNTIME_AND_ARTIFACT_VERIFICATION",
+            "modelQualityResult": "NOT_EVALUATED",
+            "modelSelectionStatus": "NOT_SELECTED",
+        },
         "reproducibility": {
             "runtimeVersions": runtime_versions,
             "environmentContract": environment_contract,
@@ -316,6 +346,7 @@ def initial_result(config: dict[str, Any], selected_models: list[str], args: arg
             "Model comparison results are valid only after human review fields are completed.",
             "processPeakRssMb is sampled at high frequency for this process during initialization and inference; it is not system-wide RAM.",
             "ACCEPTANCE_COMPLETE requires frozen dataset/environment identities, exact Python/package versions, reviewed results, exact model revisions, model SHA-256 values, and verified weight licences.",
+            "ACCEPTANCE_COMPLETE establishes dataset/reproducibility completeness only; it neither selects a production model nor asserts a model-quality threshold.",
         ],
     }
 
