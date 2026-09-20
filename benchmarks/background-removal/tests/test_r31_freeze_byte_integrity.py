@@ -10,7 +10,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 BENCHMARK_ROOT = ROOT / "benchmarks" / "background-removal"
-FREEZE_PATH = BENCHMARK_ROOT / "acceptance-freeze.json"
+FREEZE_RELATIVE = Path("benchmarks/background-removal/acceptance-freeze.json")
+FREEZE_PATH = ROOT / FREEZE_RELATIVE
 VERIFIER = BENCHMARK_ROOT / "scripts" / "verify_freeze_git_bytes.py"
 sys.path.insert(0, str(BENCHMARK_ROOT / "scripts"))
 
@@ -37,7 +38,7 @@ class R31FreezeByteIntegrityTests(unittest.TestCase):
             "schemaVersion": "background-removal.acceptance-freeze/1",
             "files": {target: expected},
         }
-        (repo / FREEZE_PATH).write_text(json.dumps(freeze), encoding="utf-8")
+        (repo / FREEZE_RELATIVE).write_text(json.dumps(freeze), encoding="utf-8")
         for command in (
             ["git", "init", "-q"],
             ["git", "config", "user.email", "r31-test@example.invalid"],
