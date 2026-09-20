@@ -5,6 +5,7 @@ const bad = <T>(errors: ValidationIssue[]): ValidationResult<T> => ({ ok: false,
 const ok = <T>(value: T): ValidationResult<T> => ({ ok: true, value })
 const error = (errors: ValidationIssue[], path: string, message: string): void => { errors.push({ path, message }) }
 const text = (value: unknown): value is string => typeof value === 'string' && value.trim().length > 0
+const sha256Text = (value: unknown): value is string => typeof value === 'string' && /^[a-f0-9]{64}$/.test(value)
 const objectRecord = (value: unknown): value is Record<string, unknown> => value !== null && typeof value === 'object' && !Array.isArray(value)
 const deny = ['psdLayerName', 'psdZOrder', 'reviewAnswers', 'reviewedGT', 'semanticCategoryHint', 'fabricationAnnotation'] as const
 const allowedSplits = new Set(['development', 'calibration', 'holdout'])
@@ -23,7 +24,7 @@ function bindingIsValid(binding: unknown): binding is ReviewBinding {
   return objectRecord(binding)
     && text(binding.targetId)
     && text(binding.targetVersion)
-    && text(binding.targetSha256)
+    && sha256Text(binding.targetSha256)
     && text(binding.recipeIdentity)
     && text(binding.endpointIdentity)
 }
@@ -54,7 +55,15 @@ function addReviewShapeErrors(review: unknown, path: string, errors: ValidationI
   if (review.schemaVersion !== 'b2.review/1') error(errors, path + '.schemaVersion', 'schemaVersion must be b2.review/1')
   if (!text(review.reviewId)) error(errors, path + '.reviewId', 'reviewId must be a non-empty string')
   if (typeof review.domain !== 'string' || !reviewDomains.has(review.domain)) error(errors, path + '.domain', 'Invalid review domain')
-  if (!bindingIsValid(review.binding)) error(errors, path + '.binding', 'Binding must contain all non-empty identity fields')
+  if (!objectRecord(review.binding)) {
+    error(errors, path + '.binding', 'Binding must be a non-null object, not an array')
+  } else {
+    if (!text(review.binding.targetId)) error(errors, path + '.binding.targetId', 'targetId must be a non-empty string')
+    if (!text(review.binding.targetVersion)) error(errors, path + '.binding.targetVersion', 'targetVersion must be a non-empty string')
+    if (!sha256Text(review.binding.targetSha256)) error(errors, path + '.binding.targetSha256', 'targetSha256 must be a lowercase SHA-256 hex digest')
+    if (!text(review.binding.recipeIdentity)) error(errors, path + '.binding.recipeIdentity', 'recipeIdentity must be a non-empty string')
+    if (!text(review.binding.endpointIdentity)) error(errors, path + '.binding.endpointIdentity', 'endpointIdentity must be a non-empty string')
+  }
   if (typeof review.reviewType !== 'string' || !reviewTypes.has(review.reviewType)) error(errors, path + '.reviewType', 'Invalid review type')
   if (typeof review.reviewerRole !== 'string' || !reviewerRoles.has(review.reviewerRole)) error(errors, path + '.reviewerRole', 'Invalid reviewer role')
   if (!text(review.question)) error(errors, path + '.question', 'question must be a non-empty string')

@@ -112,4 +112,15 @@ describe('M2 review contract', () => {
     expect(validateMappings([{ ...mapping('bad-state', null), state: 'UNKNOWN' }], evidence).ok).toBe(false)
     expect(validateMappings([{ ...mapping('bad-approval', null), approvalReviewId: '' }], evidence).ok).toBe(false)
   })
+
+  it('requires a lowercase SHA-256 target binding even when both sides match', () => {
+    const targets = new Set(['relation-1'])
+    expect(validateReviewRecords([approvedRelation], targets, new Map([['relation-1', relationBinding]]), evidence).ok).toBe(true)
+    for (const targetSha256 of ['target', 'g'.repeat(64), 'A'.repeat(64), 'a'.repeat(63), 'a'.repeat(65)]) {
+      const forgedBinding = { ...relationBinding, targetSha256 }
+      const result = validateReviewRecords([{ ...approvedRelation, binding: forgedBinding }], targets, new Map([['relation-1', forgedBinding]]), evidence)
+      expect(result.ok).toBe(false)
+      if (!result.ok) expect(result.errors.some(issue => issue.path === '$[0].binding.targetSha256')).toBe(true)
+    }
+  })
 })

@@ -176,8 +176,8 @@ export function validateFabricationResult(raw: unknown, expectedSha256?: string)
     const path = at('$.payload.relationCoverage', index)
     if (coverage.status === 'COMPLETE') {
       if (coverage.evidenceArtifactIds.length === 0) add(errors, path + '.evidenceArtifactIds', 'COMPLETE coverage requires evidence')
-      requireAll(coverage.evidenceArtifactIds, artifactIds, path + '.evidenceArtifactIds', errors)
     }
+    requireAll(coverage.evidenceArtifactIds, artifactIds, path + '.evidenceArtifactIds', errors)
   })
   if (!relationIds.size && result.payload.relationCoverage.some(coverage => coverage.status === 'COMPLETE')) add(errors, '$.payload.relationCoverage', 'COMPLETE coverage needs recorded evidence/relations')
   return errors.length ? fail(errors) : pass(result)
