@@ -34,6 +34,7 @@ from benchmark_lib import (  # noqa: E402
     model_run_status,
     model_artifact_record,
     performance_record,
+    reproducibility_complete,
     runtime_environment_validation,
     run_timed,
     sha256_file,
@@ -357,6 +358,17 @@ def write_results(result: dict[str, Any]) -> None:
         if review is not None:
             review["finalVerdict"] = final_verdict_for_review(review)
     result["status"] = classify_benchmark_status(result)
+    semantics = result.setdefault("acceptanceSemantics", {})
+    try:
+        from benchmark_lib import validate_frozen_formal_dataset_snapshot
+        validate_frozen_formal_dataset_snapshot(result.get("datasetSnapshot"), result.get("datasetValidation"))
+        semantics["datasetAcceptanceStatus"] = "DATASET_ACCEPTANCE_COMPLETE"
+    except ValueError:
+        semantics["datasetAcceptanceStatus"] = "DATASET_ACCEPTANCE_INCOMPLETE"
+    semantics["reproducibilityStatus"] = "REPRODUCIBILITY_COMPLETE" if reproducibility_complete(result.get("reproducibility", {}), list(result.get("selectedModels", []))) else "REPRODUCIBILITY_INCOMPLETE"
+    reviewed = [row.get("manualReview") or {} for row in result.get("caseResults", []) if row.get("status") == "SUCCESS"]
+    semantics["modelQualityResult"] = "REVIEWED_HARD_FAILURE_PRESENT" if any(review.get("finalVerdict") == "FAIL" for review in reviewed) else "QUALITY_NOT_SELECTED_BY_ACCEPTANCE"
+    semantics["modelSelectionStatus"] = "NOT_SELECTED"
     results_dir = BENCHMARK_ROOT / "results"
     results_dir.mkdir(exist_ok=True)
     (results_dir / "benchmark-results.json").write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
