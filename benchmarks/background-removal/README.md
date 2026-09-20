@@ -66,6 +66,10 @@ formal acceptance runtime: Python `3.12.x`, `rembg 2.0.81`, `onnxruntime
 runtime mismatch is recorded and can never produce `ACCEPTANCE_COMPLETE`;
 single-case debug remains explicitly `PARTIAL`.
 
+The acceptance-freeze SHA-256 values are derived from the committed Git blob
+content, never from a working tree. A release candidate must pass both the
+runtime freeze validation and the Git-blob release gate.
+
 Model provenance is in `model-manifest.json`. Before an acceptance conclusion,
 the result must record the exact formal runtime versions; the exact model revision/source; SHA-256; and a `VERIFIED` weight-licence
 status. Before a public redistribution, verify the weight licence and checksum

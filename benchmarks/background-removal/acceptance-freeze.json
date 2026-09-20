@@ -8,13 +8,13 @@
     "birefnet-general"
   ],
   "files": {
-    "benchmarks/background-removal/benchmark-config.json": "a5f5e11958b42aa2adee745dde09b5aca32ce09b01fe68fd2ad133ed264a8bfe",
-    "benchmarks/background-removal/acceptance-environment.json": "ca669f3c25d9cb200a27c3bfc8942ba28ca69edeb1166efb55320059ac3b5027",
-    "benchmarks/background-removal/model-manifest.json": "dc8231e7894926a7316518922cb00733880b7a00b9c2370df8d0219068d2555c",
-    "benchmarks/background-removal/acceptance-dataset.json": "75fbb8c9948138d16ead1112ab3cb9d7c1fd0ba0a58f7cccb06f94a7ab483d15",
-    "benchmarks/background-removal/scripts/benchmark_lib.py": "955db454ba863df9beddb0ca3b6fd09320d220dfdabe1f1603b6021c0d1f59d4",
-    "benchmarks/background-removal/scripts/run_benchmark.py": "8c7b5f3d146163a1ce8c3afebdf0c0ee08f5a8402d21e6a99ba5a0711ef5d4ba",
-    "benchmarks/background-removal/scripts/finalize_benchmark.py": "9598ec2f28f37a7e8ee0b58aad7f6d63a62fd823db362279918cecc43e1597c2",
-    "backend/services/image_postprocess.py": "ef6fc4dd7a9e126778c5a3f179b7daf7d7c0c7af95e6109fc5616044f87bdfde"
+    "benchmarks/background-removal/benchmark-config.json": "86e35bee7ea3f5d6f8def4d305b71822df9288f53e6b12f4b0d91ad64ebc9d4a",
+    "benchmarks/background-removal/acceptance-environment.json": "bb054461e6fb59488fca5b8f97a0352cb7c71f5d997190c8eb966085a518f888",
+    "benchmarks/background-removal/model-manifest.json": "09462abed3e96c13c6f82e5f5b4d536127621293c3c42673587ff351687870c7",
+    "benchmarks/background-removal/acceptance-dataset.json": "7f98c7f6162c94f6d6e19519dabbebacd467afb201c67f7fc792d1e0db8cdf13",
+    "benchmarks/background-removal/scripts/benchmark_lib.py": "fc89342165646306849eaa3d9a984ec66276156ba47c384b487d392a884c1dcc",
+    "benchmarks/background-removal/scripts/run_benchmark.py": "5ac8a848e216393a27f0fc917416075afda07e5c8463c4760f96c7f931c8ef35",
+    "benchmarks/background-removal/scripts/finalize_benchmark.py": "abda5421e23fb2deaec0c6b3d2fe3365e7bbe1f913e7ef2ff0c8d78914d18784",
+    "backend/services/image_postprocess.py": "a50ce637cbe2427ec94954839eda6543ca4fab043ce4717ef937c7dcba656254"
   }
 }

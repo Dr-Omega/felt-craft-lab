@@ -1,0 +1,3 @@
+/benchmarks/background-removal/**/*.json text eol=lf
+/benchmarks/background-removal/**/*.py text eol=lf
+/backend/services/image_postprocess.py text eol=lf
