@@ -189,7 +189,9 @@ class AcceptanceStatusTests(unittest.TestCase):
     def test_formal_model_subsets_never_complete_acceptance(self) -> None:
         for subset in (MODELS[:1], [MODELS[1]], MODELS[:2], MODELS[:3]):
             with self.subTest(subset=subset):
-                self.assertNotEqual(classify_benchmark_status(result_fixture(review_complete=True, selected_models=subset)), "ACCEPTANCE_COMPLETE")
+                result = result_fixture(review_complete=True, selected_models=subset)
+                result["configuration"]["modelOrder"] = subset
+                self.assertNotEqual(classify_benchmark_status(result), "ACCEPTANCE_COMPLETE")
 
     def test_non_acceptance_scope_is_partial(self) -> None:
         result = result_fixture(review_complete=True)

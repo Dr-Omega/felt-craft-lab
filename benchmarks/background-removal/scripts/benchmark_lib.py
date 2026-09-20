@@ -570,6 +570,8 @@ def classify_benchmark_status(result: dict[str, Any]) -> str:
         return "PARTIAL"
 
     selected_models = list(result.get("selectedModels", []))
+    if selected_models != FORMAL_MODEL_ORDER:
+        return "PARTIAL"
     snapshot = result["datasetSnapshot"]
     snapshot_case_ids = snapshot["selectedCaseIds"]
     if result.get("caseIds") != snapshot_case_ids:

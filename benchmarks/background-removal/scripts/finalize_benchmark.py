@@ -8,8 +8,8 @@ import json
 from pathlib import Path
 from typing import Any
 
-from benchmark_lib import BENCHMARK_ROOT, FREEZE_PATH, final_verdict_for_review, load_acceptance_environment, load_manifest, model_artifact_record, sha256_file, validate_acceptance_freeze, validate_frozen_formal_dataset_snapshot
-from run_benchmark import PROJECT_REAL_ACCEPTANCE, validate_case, write_results
+from benchmark_lib import BENCHMARK_ROOT, FREEZE_PATH, final_verdict_for_review, load_acceptance_environment, load_config, load_manifest, model_artifact_record, sha256_file, validate_acceptance_freeze, validate_frozen_formal_dataset_snapshot
+from run_benchmark import PROJECT_REAL_ACCEPTANCE, load_acceptance_cases, validate_case, write_results
 
 
 def load_review_document(path: Path, *, default_run_id: str | None = None) -> dict[str, Any]:
@@ -62,6 +62,10 @@ def verify_dataset_snapshot_integrity(run_result: dict[str, Any]) -> None:
             raise ValueError("formal run requires acceptance-dataset schema v2")
         if run_result.get("acceptanceFreezeSha256") != sha256_file(FREEZE_PATH):
             raise ValueError("formal run freeze identity does not match current freeze")
+        if run_result.get("selectedModels") != freeze["formalModelOrder"]:
+            raise ValueError("formal run selectedModels do not match frozen formal model order")
+        if run_result.get("configuration") != load_config():
+            raise ValueError("formal run configuration does not match frozen benchmark configuration")
         reproducibility = run_result.get("reproducibility", {})
         if reproducibility.get("environmentFileSha256") != freeze["files"].get("benchmarks/background-removal/acceptance-environment.json"):
             raise ValueError("formal run environment file identity does not match freeze")
@@ -80,6 +84,21 @@ def verify_dataset_snapshot_integrity(run_result: dict[str, Any]) -> None:
                 raise ValueError("formal run model identity does not match frozen manifest")
             if model_id != "current-rule" and not model_artifact_record(model_id, manifest[model_id]).get("artifactVerified"):
                 raise ValueError("formal model artifact no longer verifies")
+        _records, frozen_validation, frozen_snapshot = load_acceptance_cases()
+        snapshot = run_result.get("datasetSnapshot")
+        validation = run_result.get("datasetValidation")
+        frozen_validation_projection = {
+            field: frozen_validation[field]
+            for field in ("manifestSchemaVersion", "manifestSha256", "requiredProjectRealReviewedCaseCount", "projectRealReviewedCaseCount", "sourceLineageCount", "selectedCaseIds")
+        }
+        run_validation_projection = {
+            field: validation.get(field) if isinstance(validation, dict) else None
+            for field in frozen_validation_projection
+        }
+        if run_validation_projection != frozen_validation_projection:
+            raise ValueError("formal run dataset validation does not match frozen acceptance manifest")
+        if _formal_snapshot_projection(snapshot) != _formal_snapshot_projection(frozen_snapshot):
+            raise ValueError("formal run dataset snapshot does not match frozen acceptance manifest")
         validate_frozen_formal_dataset_snapshot(run_result.get("datasetSnapshot"), run_result.get("datasetValidation"))
         snapshot = run_result["datasetSnapshot"]
         selected_case_ids = snapshot["selectedCaseIds"]
@@ -134,6 +153,33 @@ def verify_dataset_snapshot_integrity(run_result: dict[str, Any]) -> None:
                 raise ValueError(f"formal dataset snapshot review evidence identity mismatch: {case_id}")
     if set(selected) != case_ids:
         raise ValueError("dataset snapshot selectedCaseIds do not match snapshot cases")
+
+
+def _formal_snapshot_projection(snapshot: object) -> dict[str, Any]:
+    """Return exactly the formal manifest identity fields carried by a run snapshot."""
+    if not isinstance(snapshot, dict) or not isinstance(snapshot.get("cases"), list):
+        raise ValueError("formal run dataset snapshot is invalid")
+    cases: list[dict[str, Any]] = []
+    for entry in snapshot["cases"]:
+        if not isinstance(entry, dict):
+            raise ValueError("formal run dataset snapshot case is invalid")
+        review = entry.get("groundTruthReview")
+        evidence = review.get("evidence") if isinstance(review, dict) else None
+        if not isinstance(evidence, dict):
+            raise ValueError("formal run dataset snapshot review evidence is invalid")
+        cases.append({
+            field: entry.get(field)
+            for field in ("caseId", "datasetRole", "sourceLineageId", "sourceFile", "sourceSha256", "groundTruthSha256", "caseMetadataSha256", "coverageTags", "primaryCoverageSlot")
+        } | {"groundTruthReview": {
+            field: review.get(field)
+            for field in ("state", "signoff", "reviewerRole")
+        } | {"evidence": {field: evidence.get(field) for field in ("file", "sha256")}}})
+    return {
+        "acceptanceDatasetManifestSha256": snapshot.get("acceptanceDatasetManifestSha256"),
+        "requiredProjectRealReviewedCaseCount": snapshot.get("requiredProjectRealReviewedCaseCount"),
+        "selectedCaseIds": snapshot.get("selectedCaseIds"),
+        "cases": cases,
+    }
 
 
 def merge_manual_reviews(run_result: dict[str, Any], review_document: dict[str, Any]) -> dict[str, Any]:

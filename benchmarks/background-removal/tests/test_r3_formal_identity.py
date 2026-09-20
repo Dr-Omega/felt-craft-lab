@@ -48,12 +48,14 @@ def formal_sandbox():
         shutil.copy2(ROOT.parents[1] / "backend" / "services" / "image_postprocess.py", backend / "image_postprocess.py")
 
         manifest = json.loads((bench / "model-manifest.json").read_text(encoding="utf-8"))
-        learned = manifest["models"]["isnet-anime"]
-        learned_bytes = b"verified test artifact"
         cache = bench / "models" / "rembg-cache"
         cache.mkdir(parents=True)
-        (cache / learned["cacheFile"]).write_bytes(learned_bytes)
-        learned["modelSha256"] = __import__("hashlib").sha256(learned_bytes).hexdigest()
+        for model_id, learned in manifest["models"].items():
+            if model_id == "current-rule":
+                continue
+            learned_bytes = f"verified {model_id} test artifact".encode("utf-8")
+            (cache / learned["cacheFile"]).write_bytes(learned_bytes)
+            learned["modelSha256"] = __import__("hashlib").sha256(learned_bytes).hexdigest()
         write_json(bench / "model-manifest.json", manifest)
 
         cases: list[dict[str, object]] = []
@@ -104,9 +106,9 @@ def formal_sandbox():
 
 
 def formal_run(models: list[str] | None = None) -> dict[str, object]:
-    selected = models or ["current-rule"]
+    selected = models or list(benchmark_lib.FORMAL_MODEL_ORDER)
     cases, validation, snapshot = run_benchmark.load_acceptance_cases()
-    return run_benchmark.initial_result({"modelOrder": selected}, selected, SimpleNamespace(all_cases=True), cases, benchmark_lib.load_manifest(), validation, snapshot)
+    return run_benchmark.initial_result(benchmark_lib.load_config(), selected, SimpleNamespace(all_cases=True), cases, benchmark_lib.load_manifest(), validation, snapshot)
 
 
 class R3FormalIdentityTests(unittest.TestCase):
@@ -151,7 +153,7 @@ class R3FormalIdentityTests(unittest.TestCase):
 
     def test_artifact_and_review_evidence_are_reverified_from_bytes(self) -> None:
         with formal_sandbox() as bench:
-            learned = formal_run(["isnet-anime"])
+            learned = formal_run()
             finalize_benchmark.verify_dataset_snapshot_integrity(learned)
             artifact = bench / "models" / "rembg-cache" / "isnet-anime.onnx"
             artifact.write_bytes(b"tampered")
@@ -228,6 +230,58 @@ class R3FormalIdentityTests(unittest.TestCase):
             result["datasetSnapshot"]["cases"] = result["datasetSnapshot"]["cases"][:-1]
             run_benchmark.write_results(result)
             self.assertEqual(result["acceptanceSemantics"]["datasetAcceptanceStatus"], "DATASET_ACCEPTANCE_INCOMPLETE")
+
+    def test_formal_model_configuration_and_snapshot_tampering_fail_closed(self) -> None:
+        with formal_sandbox() as bench:
+            valid = formal_run()
+            finalize_benchmark.verify_dataset_snapshot_integrity(valid)
+            for models in (
+                ["current-rule"],
+                ["isnet-anime"],
+                list(benchmark_lib.FORMAL_MODEL_ORDER[:2]),
+                list(benchmark_lib.FORMAL_MODEL_ORDER[:3]),
+                list(reversed(benchmark_lib.FORMAL_MODEL_ORDER)),
+                ["current-rule", "isnet-anime", "birefnet-general-lite", "other"],
+            ):
+                with self.subTest(models=models):
+                    changed = copy.deepcopy(valid)
+                    changed["selectedModels"] = models
+                    changed["configuration"]["modelOrder"] = models
+                    changed["models"] = {model_id: changed["models"][model_id] for model_id in models if model_id in changed["models"]}
+                    changed["reproducibility"]["modelArtifacts"] = {model_id: changed["reproducibility"]["modelArtifacts"][model_id] for model_id in models if model_id in changed["reproducibility"]["modelArtifacts"]}
+                    changed["caseResults"] = [row for row in changed["caseResults"] if row["modelId"] in models]
+                    with self.assertRaises(ValueError):
+                        finalize_benchmark.verify_dataset_snapshot_integrity(changed)
+                    self.assertNotEqual(benchmark_lib.classify_benchmark_status(changed), "ACCEPTANCE_COMPLETE")
+
+            for field, value in (("cpuOnly", False), ("alphaThreshold", 129), ("warmRuns", 6), ("rssSampleIntervalMs", 11), ("internalHoleErosionKernel", 3), ("requiredCaseCount", 16)):
+                with self.subTest(config_field=field):
+                    changed = copy.deepcopy(valid)
+                    changed["configuration"][field] = value
+                    with self.assertRaisesRegex(ValueError, "configuration"):
+                        finalize_benchmark.verify_dataset_snapshot_integrity(changed)
+
+            mutations = {
+                "caseSubstitution": lambda snapshot: snapshot["cases"].__setitem__(0, {**snapshot["cases"][0], "caseId": "BR-002"}),
+                "lineage": lambda snapshot: snapshot["cases"][0].__setitem__("sourceLineageId", "project/substituted"),
+                "coverage": lambda snapshot: snapshot["cases"][0].__setitem__("coverageTags", ["drift"]),
+                "slot": lambda snapshot: snapshot["cases"][0].__setitem__("primaryCoverageSlot", "slot-15"),
+                "reviewState": lambda snapshot: snapshot["cases"][0]["groundTruthReview"].__setitem__("state", "PENDING"),
+                "reviewSignoff": lambda snapshot: snapshot["cases"][0]["groundTruthReview"].__setitem__("signoff", "NOT_SIGNED"),
+                "reviewRole": lambda snapshot: snapshot["cases"][0]["groundTruthReview"].__setitem__("reviewerRole", "OTHER"),
+            }
+            substitute = bench / "evidence" / "substitute.json"
+            write_json(substitute, {"review": "different but valid"})
+            for name, mutate in mutations.items():
+                with self.subTest(snapshot=name):
+                    changed = copy.deepcopy(valid)
+                    mutate(changed["datasetSnapshot"])
+                    with self.assertRaisesRegex(ValueError, "snapshot"):
+                        finalize_benchmark.verify_dataset_snapshot_integrity(changed)
+            evidence_substitution = copy.deepcopy(valid)
+            evidence_substitution["datasetSnapshot"]["cases"][0]["groundTruthReview"]["evidence"] = {"file": "evidence/substitute.json", "sha256": benchmark_lib.sha256_file(substitute)}
+            with self.assertRaisesRegex(ValueError, "snapshot"):
+                finalize_benchmark.verify_dataset_snapshot_integrity(evidence_substitution)
 
     def test_freeze_paths_opacity_and_lineage_fail_closed(self) -> None:
         with formal_sandbox() as bench:
