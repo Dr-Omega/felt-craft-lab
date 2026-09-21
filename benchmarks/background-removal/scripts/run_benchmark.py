@@ -125,7 +125,8 @@ def validate_case(case_dir: Path) -> tuple[dict[str, Any], Path, Path, Path]:
             raise ValueError(f"{case_id}: formal sourceLineageId must be stable")
         with Image.open(source) as source_image:
             source_image.load()
-            if "A" in source_image.getbands() and any(alpha != 255 for alpha in source_image.getchannel("A").get_flattened_data()):
+            alpha = source_image.convert("RGBA").getchannel("A")
+            if any(value != 255 for value in alpha.get_flattened_data()):
                 raise ValueError(f"{case_id}: formal source alpha must be fully opaque")
     with Image.open(ground_truth) as gt_image:
         gt_image.load()

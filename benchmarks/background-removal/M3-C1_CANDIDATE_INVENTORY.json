@@ -512,7 +512,7 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input"
+        "contains non-opaque pixels; likely a pre-cut/sticker asset and not a background-removal input"
       ],
       "imageFacts": {
         "width": 1024,
@@ -581,7 +581,7 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input"
+        "contains non-opaque pixels; likely a pre-cut/sticker asset and not a background-removal input"
       ],
       "imageFacts": {
         "width": 790,
@@ -650,7 +650,7 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input"
+        "contains non-opaque pixels; likely a pre-cut/sticker asset and not a background-removal input"
       ],
       "imageFacts": {
         "width": 534,
@@ -719,7 +719,7 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input"
+        "contains non-opaque pixels; likely a pre-cut/sticker asset and not a background-removal input"
       ],
       "imageFacts": {
         "width": 885,
@@ -788,7 +788,7 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input"
+        "contains non-opaque pixels; likely a pre-cut/sticker asset and not a background-removal input"
       ],
       "imageFacts": {
         "width": 1024,
@@ -857,7 +857,7 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input"
+        "contains non-opaque pixels; likely a pre-cut/sticker asset and not a background-removal input"
       ],
       "imageFacts": {
         "width": 633,
@@ -926,7 +926,7 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input"
+        "contains non-opaque pixels; likely a pre-cut/sticker asset and not a background-removal input"
       ],
       "imageFacts": {
         "width": 1024,
@@ -995,7 +995,7 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input"
+        "contains non-opaque pixels; likely a pre-cut/sticker asset and not a background-removal input"
       ],
       "imageFacts": {
         "width": 1024,
@@ -1064,7 +1064,7 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input"
+        "contains non-opaque pixels; likely a pre-cut/sticker asset and not a background-removal input"
       ],
       "imageFacts": {
         "width": 591,
@@ -1133,7 +1133,7 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input"
+        "contains non-opaque pixels; likely a pre-cut/sticker asset and not a background-removal input"
       ],
       "imageFacts": {
         "width": 860,
@@ -1203,7 +1203,7 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input"
+        "contains non-opaque pixels; likely a pre-cut/sticker asset and not a background-removal input"
       ],
       "imageFacts": {
         "width": 823,
@@ -1273,7 +1273,7 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input",
+        "contains non-opaque pixels; likely a pre-cut/sticker asset and not a background-removal input",
         "duplicate content SHA; does not create an independent byte identity or confirmed source lineage"
       ],
       "imageFacts": {
@@ -1308,7 +1308,7 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input",
+        "contains non-opaque pixels; likely a pre-cut/sticker asset and not a background-removal input",
         "duplicate content SHA; does not create an independent byte identity or confirmed source lineage"
       ],
       "imageFacts": {
@@ -1343,7 +1343,7 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input",
+        "contains non-opaque pixels; likely a pre-cut/sticker asset and not a background-removal input",
         "duplicate content SHA; does not create an independent byte identity or confirmed source lineage"
       ],
       "imageFacts": {
@@ -1378,7 +1378,7 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input",
+        "contains non-opaque pixels; likely a pre-cut/sticker asset and not a background-removal input",
         "duplicate content SHA; does not create an independent byte identity or confirmed source lineage"
       ],
       "imageFacts": {
@@ -1413,7 +1413,7 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input",
+        "contains non-opaque pixels; likely a pre-cut/sticker asset and not a background-removal input",
         "duplicate content SHA; does not create an independent byte identity or confirmed source lineage"
       ],
       "imageFacts": {
@@ -1448,7 +1448,7 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input",
+        "contains non-opaque pixels; likely a pre-cut/sticker asset and not a background-removal input",
         "duplicate content SHA; does not create an independent byte identity or confirmed source lineage"
       ],
       "imageFacts": {
@@ -1483,7 +1483,7 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input",
+        "contains non-opaque pixels; likely a pre-cut/sticker asset and not a background-removal input",
         "duplicate content SHA; does not create an independent byte identity or confirmed source lineage"
       ],
       "imageFacts": {
@@ -1518,7 +1518,7 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input",
+        "contains non-opaque pixels; likely a pre-cut/sticker asset and not a background-removal input",
         "duplicate content SHA; does not create an independent byte identity or confirmed source lineage"
       ],
       "imageFacts": {
@@ -1553,7 +1553,7 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input",
+        "contains non-opaque pixels; likely a pre-cut/sticker asset and not a background-removal input",
         "duplicate content SHA; does not create an independent byte identity or confirmed source lineage"
       ],
       "imageFacts": {
@@ -1588,7 +1588,7 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input",
+        "contains non-opaque pixels; likely a pre-cut/sticker asset and not a background-removal input",
         "duplicate content SHA; does not create an independent byte identity or confirmed source lineage"
       ],
       "imageFacts": {
@@ -1623,7 +1623,7 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input",
+        "contains non-opaque pixels; likely a pre-cut/sticker asset and not a background-removal input",
         "duplicate content SHA; does not create an independent byte identity or confirmed source lineage"
       ],
       "imageFacts": {
@@ -1658,7 +1658,7 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input",
+        "contains non-opaque pixels; likely a pre-cut/sticker asset and not a background-removal input",
         "duplicate content SHA; does not create an independent byte identity or confirmed source lineage"
       ],
       "imageFacts": {
@@ -1693,7 +1693,7 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input",
+        "contains non-opaque pixels; likely a pre-cut/sticker asset and not a background-removal input",
         "duplicate content SHA; does not create an independent byte identity or confirmed source lineage"
       ],
       "imageFacts": {
@@ -1728,7 +1728,7 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input",
+        "contains non-opaque pixels; likely a pre-cut/sticker asset and not a background-removal input",
         "duplicate content SHA; does not create an independent byte identity or confirmed source lineage"
       ],
       "imageFacts": {
@@ -1763,7 +1763,7 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input",
+        "contains non-opaque pixels; likely a pre-cut/sticker asset and not a background-removal input",
         "duplicate content SHA; does not create an independent byte identity or confirmed source lineage"
       ],
       "imageFacts": {
@@ -1798,7 +1798,7 @@
       "gtStatus": "MISSING",
       "acceptanceEligibility": "BLOCKED",
       "notes": [
-        "contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input",
+        "contains non-opaque pixels; likely a pre-cut/sticker asset and not a background-removal input",
         "duplicate content SHA; does not create an independent byte identity or confirmed source lineage"
       ],
       "imageFacts": {

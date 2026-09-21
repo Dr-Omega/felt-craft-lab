@@ -107,12 +107,18 @@ selected artifact is absent/unverified. It preflights every selected artifact
 before starting any timed session initialization or inference. Use a single
 named case only for plumbing/debugging; it is never an acceptance run.
 
-The only status that permits a model-selection conclusion is
+The only status that permits a separate model-selection process to evaluate a conclusion is
 `ACCEPTANCE_COMPLETE`. It requires a valid manifest-selected full dataset of
 15 independent project-real source lineages, GT review/signoff, every selected model
 to initialize, every model/case result to succeed, every manual review to be
 complete, and an exact matching environment/artifact reproducibility record. `RUN_COMPLETE_UNREVIEWED` and
 `RUN_COMPLETE_UNVERIFIED` are intentionally not acceptance outcomes.
+
+`ACCEPTANCE_COMPLETE` means that the formal benchmark's dataset, execution,
+review, and reproducibility contracts are complete. It does not automatically
+mean that a model has been selected, that a winner has been determined, or that
+any model is Production Ready. `modelSelectionStatus` remains `NOT_SELECTED`
+until a separate model-selection decision is made.
 
 Each run freezes the acceptance manifest SHA, selected case identities and
 source/GT/case metadata SHA-256 values, plus the environment contract and its

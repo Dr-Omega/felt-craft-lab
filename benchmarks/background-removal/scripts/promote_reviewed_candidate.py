@@ -50,7 +50,8 @@ def validate_source(source: Path) -> tuple[int, int]:
     try:
         with Image.open(source) as image:
             image.load()
-            if "A" in image.getbands() and any(value != 255 for value in image.getchannel("A").get_flattened_data()):
+            alpha = image.convert("RGBA").getchannel("A")
+            if any(value != 255 for value in alpha.get_flattened_data()):
                 raise ValueError("candidate source alpha must be fully opaque")
             return image.size
     except ValueError:
@@ -147,12 +148,54 @@ def canonical_json_bytes(payload: dict[str, Any]) -> bytes:
     return (json.dumps(payload, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
 
 
+def canonical_review_json_bytes(payload: dict[str, Any]) -> bytes:
+    return (json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n").encode("utf-8")
+
+
+def validate_formal_layout(cases_root: Path, manifest_path: Path) -> tuple[Path, Path, Path]:
+    resolved_cases = cases_root.resolve()
+    benchmark_root = resolved_cases.parent
+    expected_cases = (benchmark_root / "cases").resolve()
+    expected_manifest = (benchmark_root / "acceptance-dataset.json").resolve()
+    if resolved_cases != expected_cases or manifest_path.resolve() != expected_manifest:
+        raise ValueError(
+            "formal promotion requires <benchmark_root>/cases and "
+            "<benchmark_root>/acceptance-dataset.json"
+        )
+    return benchmark_root, resolved_cases, expected_manifest
+
+
+def remove_path(path: Path) -> None:
+    if path.is_dir():
+        shutil.rmtree(path)
+    elif path.exists():
+        path.unlink()
+
+
+def rollback_after_failure(original: Exception, paths: list[Path]) -> None:
+    failures: list[str] = []
+    for path in paths:
+        if not path.exists():
+            continue
+        try:
+            remove_path(path)
+        except Exception as cleanup_error:  # noqa: BLE001
+            failures.append(f"{path}: {cleanup_error}")
+            continue
+        if path.exists():
+            failures.append(f"{path}: cleanup returned but the path still exists")
+    if failures:
+        residues = "; ".join(failures)
+        raise RuntimeError(
+            "promotion failed and exception-level rollback/cleanup also failed; "
+            f"manual cleanup is required for residual path(s): {residues}"
+        ) from original
+
+
 def promote_reviewed_candidate(candidate_dir: Path, cases_root: Path, manifest_path: Path, case_id: str) -> dict[str, Any]:
     """Promote one reviewed candidate with exception-level case/manifest rollback."""
+    benchmark_root, cases_root, manifest_path = validate_formal_layout(cases_root, manifest_path)
     target = safe_target(cases_root, case_id)
-    benchmark_root = cases_root.resolve().parent
-    if manifest_path.resolve().parent != benchmark_root:
-        raise ValueError("acceptance manifest must be located at benchmark root")
     candidate_path = candidate_dir / "candidate.json"
     gt = candidate_dir / "draft_ground_truth.png"
     review_path = candidate_dir / "gt-review.json"
@@ -163,6 +206,7 @@ def promote_reviewed_candidate(candidate_dir: Path, cases_root: Path, manifest_p
     source_size = validate_source(source)
     validate_binary_mask(gt, source_size)
     validate_review_identity(review, source, gt, candidate_path)
+    final_review_bytes = canonical_review_json_bytes(review)
     manifest = load_json(manifest_path, "acceptance-dataset.json")
     cases = validate_manifest(manifest)
     if target.exists() or any(entry.get("caseId") == case_id for entry in cases):
@@ -180,7 +224,7 @@ def promote_reviewed_candidate(candidate_dir: Path, cases_root: Path, manifest_p
         "criticalStructures": candidate["criticalStructures"],
     }
     case_metadata_bytes = canonical_json_bytes(case_metadata)
-    evidence_relative = f"cases/{case_id}/gt-review.json"
+    evidence_relative = (target / "gt-review.json").relative_to(benchmark_root).as_posix()
     entry = {
         "caseId": case_id,
         "datasetRole": FORMAL_ROLE,
@@ -195,7 +239,7 @@ def promote_reviewed_candidate(candidate_dir: Path, cases_root: Path, manifest_p
             "state": review["state"],
             "signoff": review["signoff"],
             "reviewerRole": review["reviewerRole"],
-            "evidence": {"file": evidence_relative, "sha256": sha256_file(review_path)},
+            "evidence": {"file": evidence_relative, "sha256": hashlib.sha256(final_review_bytes).hexdigest()},
             **{field: review[field] for field in REVIEW_IDENTITY_FIELDS},
         },
     }
@@ -208,19 +252,17 @@ def promote_reviewed_candidate(candidate_dir: Path, cases_root: Path, manifest_p
     try:
         shutil.copyfile(source, temporary_case / source.name)
         shutil.copyfile(gt, temporary_case / "ground_truth.png")
-        shutil.copyfile(review_path, temporary_case / "gt-review.json")
+        (temporary_case / "gt-review.json").write_bytes(final_review_bytes)
         (temporary_case / "case.json").write_bytes(case_metadata_bytes)
         temporary_manifest.write_bytes(manifest_bytes)
         os.replace(temporary_case, target)
         moved_case = True
         os.replace(temporary_manifest, manifest_path)
-    except Exception:
-        if moved_case and target.exists():
-            shutil.rmtree(target, ignore_errors=True)
-        if temporary_case.exists():
-            shutil.rmtree(temporary_case, ignore_errors=True)
-        if temporary_manifest.exists():
-            temporary_manifest.unlink()
+    except Exception as original:
+        rollback_after_failure(
+            original,
+            ([target] if moved_case else []) + [temporary_case, temporary_manifest],
+        )
         raise
     return entry
 

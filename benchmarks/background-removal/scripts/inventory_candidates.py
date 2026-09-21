@@ -51,16 +51,22 @@ def git_blob_sha(repo_root: Path, path: Path) -> str | None:
 
 def origin_class_for(relative_path: str) -> str:
     lowered = relative_path.lower()
+    stem = Path(lowered).stem
+    if (
+        re.search(r"(?:^|[_-])(?:thumb|thumbnail|preview)(?:$|[_-])", stem)
+        or "contact-sheet" in lowered
+        or "contact_sheet" in lowered
+        or "review" in lowered
+    ):
+        return "DERIVED_REVIEW_ARTIFACT"
+    if "/outputs/" in f"/{lowered}" or "purified" in lowered or "overlay" in lowered:
+        return "DERIVED_OUTPUT"
     if "/fixtures/source/" in f"/{lowered}":
         return "PROJECT_FIXTURE"
-    if "_thumb" in Path(lowered).stem or "contact-sheet" in lowered or "review" in lowered:
-        return "DERIVED_REVIEW_ARTIFACT"
     if "/assets/generated/material/" in f"/{lowered}":
         return "PROJECT_GENERATED_ASSET"
     if "/backend/assets/style-references/" in f"/{lowered}":
         return "PROJECT_USER_ASSET"
-    if "/outputs/" in f"/{lowered}" or "purified" in lowered or "overlay" in lowered:
-        return "DERIVED_OUTPUT"
     return "UNKNOWN"
 
 
@@ -96,22 +102,17 @@ def image_facts(path: Path) -> dict[str, Any]:
     with Image.open(path) as image:
         image.load()
         width, height = image.size
-        has_alpha = "A" in image.getbands() or image.mode == "P"
-        alpha = image.convert("RGBA").getchannel("A") if has_alpha else None
+        alpha = image.convert("RGBA").getchannel("A")
         total = width * height
-        if alpha is None:
-            transparent = semitransparent = 0
-            opaque = total
-        else:
-            histogram = alpha.histogram()
-            transparent = histogram[0]
-            opaque = histogram[255]
-            semitransparent = total - transparent - opaque
+        histogram = alpha.histogram()
+        transparent = histogram[0]
+        opaque = histogram[255]
+        semitransparent = total - transparent - opaque
     return {
         "width": width,
         "height": height,
         "mode": image.mode,
-        "hasAlpha": has_alpha,
+        "hasAlpha": "A" in image.getbands() or image.mode == "P",
         "transparentPixelCount": transparent,
         "semiTransparentPixelCount": semitransparent,
         "opaquePixelCount": opaque,
@@ -128,8 +129,8 @@ def conservative_assessment(relative_path: str, facts: dict[str, Any]) -> tuple[
         return origin, "NOT_SUITABLE", "BLOCKED", ["mock/test placeholder asset is not a project-real background-removal candidate"]
     if origin in {"DERIVED_REVIEW_ARTIFACT", "DERIVED_OUTPUT"}:
         return origin, "NOT_SUITABLE", "BLOCKED", ["derived artifact/output is not an original input source"]
-    if facts["transparentPixelCount"]:
-        return origin, "NOT_SUITABLE", "BLOCKED", ["contains transparent pixels; likely a pre-cut/sticker asset and not a background-removal input"]
+    if facts["transparentPixelCount"] or facts["semiTransparentPixelCount"]:
+        return origin, "NOT_SUITABLE", "BLOCKED", ["contains non-opaque pixels; likely a pre-cut/sticker asset and not a background-removal input"]
     if "background_" in Path(lowered).name:
         return origin, "NOT_SUITABLE", "BLOCKED", ["path indicates a background-only asset rather than a foreground-plus-background input"]
     if origin == "UNKNOWN":
