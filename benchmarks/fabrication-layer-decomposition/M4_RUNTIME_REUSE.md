@@ -11,3 +11,5 @@
 | QC view | existing label/vector data | Existing reports are fixture-oriented | Render this run's input, output, labels, components, vectors, warnings and timing |
 
 The runtime reads profile values from the existing color and vector configuration files. It does not select new algorithms, perform background removal, infer hidden contours, choose a base, infer layer order, or authorize manufacturing/export.
+
+`m4_runtime.run_runtime(...)` is the only public processing entry. It normalizes caller input, validates output isolation, then calls the underscore-prefixed writer; the CLI uses the same API.

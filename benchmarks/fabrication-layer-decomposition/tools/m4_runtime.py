@@ -74,6 +74,9 @@ class M4RuntimeError(ValueError):
     """A caller-visible hard-contract failure."""
 
 
+__all__ = ["M4RuntimeError", "run_runtime"]
+
+
 @dataclass(frozen=True)
 class NormalizedForeground:
     rgba: np.ndarray
@@ -380,7 +383,7 @@ def _write_html(output: Path, report: dict[str, Any]) -> None:
     (output / "index.html").write_text(document, encoding="utf-8", newline="\n")
 
 
-def run_runtime(
+def _run_runtime(
     foreground: NormalizedForeground,
     *,
     runtime_id: str,
@@ -505,3 +508,40 @@ def run_runtime(
     (output_root / "report.json").write_bytes(_canonical_json(report))
     _write_html(output_root, report)
     return report
+
+
+def run_runtime(
+    *,
+    image_path: Path,
+    mode: str,
+    mask_path: Path | None,
+    foreground_source: str,
+    manual_confirmation: str,
+    runtime_id: str,
+    profile: str,
+    output_root: Path,
+    whole_image_foreground: bool = False,
+) -> dict[str, Any]:
+    """Run the complete M4 chain through its single public processing API.
+
+    Input normalization is read-only. Output isolation is then enforced before
+    this function delegates to the private writer. Keeping the writer private
+    prevents reusable service callers from accidentally bypassing the same
+    protected-path, non-empty-directory, and overlap gates used by the CLI.
+    """
+    foreground = load_foreground(
+        image_path,
+        mode=mode,
+        mask_path=mask_path,
+        foreground_source=foreground_source,
+        manual_confirmation=manual_confirmation,
+        whole_image_foreground=whole_image_foreground,
+    )
+    input_paths = [path for path in (image_path, mask_path) if path is not None]
+    validated_output = validate_output_root(output_root, input_paths)
+    return _run_runtime(
+        foreground,
+        runtime_id=runtime_id,
+        profile=profile,
+        output_root=validated_output,
+    )

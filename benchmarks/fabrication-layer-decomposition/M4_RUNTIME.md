@@ -2,6 +2,8 @@
 
 This audit-only runtime consumes a caller-supplied foreground, runs the existing CP-B → RC-A → Region/Component → P0-04C vector chain, and emits observed-only candidates plus a static QC page. It does **not** perform or evaluate automatic background removal, select a Base, infer hidden contours or layer order, create final pieces, or authorize production/manufacturing export.
 
+The single reusable processing API is `m4_runtime.run_runtime(...)`. It owns input normalization and always enforces protected-path, non-empty-output, and input/output-overlap checks before delegating to the private writer. Service callers must not import underscore-prefixed implementation functions.
+
 ## Run the project-real development example
 
 From the repository root, using the existing color-purification environment:

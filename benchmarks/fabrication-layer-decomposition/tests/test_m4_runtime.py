@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import sys
 import tempfile
@@ -110,16 +111,90 @@ class M4InputContractTests(unittest.TestCase):
 class M4RuntimeIntegrationTests(unittest.TestCase):
     def _run(self, root: Path, rgba: np.ndarray, runtime_id: str = "runtime-test") -> tuple[dict, Path]:
         image = _save(root / f"{runtime_id}.png", rgba)
-        foreground = m4_runtime.load_foreground(
-            image,
+        output = root / f"out-{runtime_id}"
+        report = m4_runtime.run_runtime(
+            image_path=image,
             mode="embedded-alpha",
             mask_path=None,
             foreground_source="SYNTHETIC_TEST",
             manual_confirmation="PENDING_REVIEW",
+            runtime_id=runtime_id,
+            profile="aggressive",
+            output_root=output,
         )
-        output = root / f"out-{runtime_id}"
-        m4_runtime.validate_output_root(output, [image])
-        return m4_runtime.run_runtime(foreground, runtime_id=runtime_id, profile="aggressive", output_root=output), output
+        return report, output
+
+    def test_public_api_rejects_protected_path_before_any_write(self):
+        def snapshot(root: Path) -> dict[str, str]:
+            return {
+                path.relative_to(root).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+                for path in root.rglob("*")
+                if path.is_file()
+            }
+
+        with tempfile.TemporaryDirectory() as temporary:
+            source = _save(Path(temporary) / "source.png", _foreground_array(8))
+            protected_root = ROOT / "fixtures"
+            attempted_output = protected_root / "m4-public-api-attempt"
+            before = snapshot(protected_root)
+            self.assertFalse(attempted_output.exists())
+            with self.assertRaisesRegex(m4_runtime.M4RuntimeError, "protected"):
+                m4_runtime.run_runtime(
+                    image_path=source,
+                    mode="embedded-alpha",
+                    mask_path=None,
+                    foreground_source="DIRECT_API_TEST",
+                    manual_confirmation="PENDING_REVIEW",
+                    runtime_id="protected-attempt",
+                    profile="aggressive",
+                    output_root=attempted_output,
+                )
+            self.assertFalse(attempted_output.exists())
+            self.assertEqual(before, snapshot(protected_root))
+
+    def test_public_api_rejects_nonempty_output_without_changing_keep_bytes(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source = _save(root / "source.png", _foreground_array(8))
+            output = root / "output"
+            output.mkdir()
+            keep = output / "keep.txt"
+            expected = b"preserve-these-bytes\x00\xff"
+            keep.write_bytes(expected)
+            with self.assertRaisesRegex(m4_runtime.M4RuntimeError, "absent or empty"):
+                m4_runtime.run_runtime(
+                    image_path=source,
+                    mode="embedded-alpha",
+                    mask_path=None,
+                    foreground_source="DIRECT_API_TEST",
+                    manual_confirmation="PENDING_REVIEW",
+                    runtime_id="nonempty-attempt",
+                    profile="aggressive",
+                    output_root=output,
+                )
+            self.assertEqual(keep.read_bytes(), expected)
+            self.assertEqual([path.name for path in output.iterdir()], ["keep.txt"])
+            for forbidden in ("failure.json", "purified.png", "structural_label_map.npz", "report.json"):
+                self.assertFalse((output / forbidden).exists())
+
+    def test_public_api_rejects_output_containing_input_before_write(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary)
+            source = _save(output / "source.png", _foreground_array(8))
+            source_bytes = source.read_bytes()
+            with self.assertRaisesRegex(m4_runtime.M4RuntimeError, "isolated from input"):
+                m4_runtime.run_runtime(
+                    image_path=source,
+                    mode="embedded-alpha",
+                    mask_path=None,
+                    foreground_source="DIRECT_API_TEST",
+                    manual_confirmation="PENDING_REVIEW",
+                    runtime_id="overlap-attempt",
+                    profile="aggressive",
+                    output_root=output,
+                )
+            self.assertEqual(source.read_bytes(), source_bytes)
+            self.assertEqual([path.name for path in output.iterdir()], ["source.png"])
 
     def test_real_kernels_complete_non_fixture_run_and_emit_loadable_page(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -144,15 +219,17 @@ class M4RuntimeIntegrationTests(unittest.TestCase):
             mask[2, 2:14] = 80
             mask_path = root / "mask.png"
             Image.fromarray(mask, "L").save(mask_path)
-            foreground = m4_runtime.load_foreground(
-                image,
+            report = m4_runtime.run_runtime(
+                image_path=image,
                 mode="external-mask",
                 mask_path=mask_path,
                 foreground_source="CALLER_MASK_TEST",
                 manual_confirmation="CONFIRMED",
+                runtime_id="external-mask-run",
+                profile="balanced",
+                output_root=root / "external-output",
             )
             output = root / "external-output"
-            report = m4_runtime.run_runtime(foreground, runtime_id="external-mask-run", profile="balanced", output_root=output)
             purified = np.asarray(Image.open(output / "purified.png").convert("RGBA"))
             self.assertTrue(np.array_equal(purified[..., 3], mask))
             self.assertEqual(report["input"]["foregroundMode"], "external-mask")
@@ -217,13 +294,21 @@ class M4RuntimeIntegrationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             image = _save(root / "source.png", _foreground_array())
-            foreground = m4_runtime.load_foreground(image, mode="embedded-alpha", mask_path=None, foreground_source="TEST", manual_confirmation="PENDING_REVIEW")
             output = root / "failed"
             failing = mock.Mock()
             failing.propose.side_effect = RuntimeError("intentional kernel failure")
             with mock.patch.object(m4_runtime, "get_candidate", return_value=failing):
                 with self.assertRaisesRegex(RuntimeError, "intentional kernel failure"):
-                    m4_runtime.run_runtime(foreground, runtime_id="hard-fail", profile="aggressive", output_root=output)
+                    m4_runtime.run_runtime(
+                        image_path=image,
+                        mode="embedded-alpha",
+                        mask_path=None,
+                        foreground_source="TEST",
+                        manual_confirmation="PENDING_REVIEW",
+                        runtime_id="hard-fail",
+                        profile="aggressive",
+                        output_root=output,
+                    )
             failure = json.loads((output / "failure.json").read_text(encoding="utf-8"))
             self.assertTrue(failure["downstreamStopped"])
             self.assertFalse((output / "purified.png").exists())
