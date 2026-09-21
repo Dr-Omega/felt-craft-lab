@@ -338,10 +338,26 @@ class M3C1IntakeTests(unittest.TestCase):
             for command in commands:
                 subprocess.run(command, cwd=source, check=True, capture_output=True)
             subprocess.run(
-                ["git", "-c", "core.autocrlf=true", "clone", "--quiet", str(source), str(checkout)],
+                ["git", "clone", "-c", "core.autocrlf=true", "--quiet", str(source), str(checkout)],
                 check=True,
                 capture_output=True,
             )
+            local_autocrlf = subprocess.run(
+                ["git", "config", "--local", "--get", "core.autocrlf"],
+                cwd=checkout,
+                check=True,
+                capture_output=True,
+                text=True,
+            ).stdout.strip()
+            self.assertEqual(local_autocrlf, "true")
+            initial_status = subprocess.run(
+                ["git", "status", "--porcelain"],
+                cwd=checkout,
+                check=True,
+                capture_output=True,
+                text=True,
+            ).stdout
+            self.assertEqual(initial_status, "")
             checked_benchmark = checkout / "benchmarks" / "background-removal"
             markdown = checked_benchmark / "M3-C1_CANDIDATE_INVENTORY.md"
             attributes = subprocess.run(
@@ -368,6 +384,12 @@ class M3C1IntakeTests(unittest.TestCase):
                 text=True,
             ).stdout
             self.assertEqual(status, "")
+            subprocess.run(
+                ["git", "diff", "--exit-code"],
+                cwd=checkout,
+                check=True,
+                capture_output=True,
+            )
 
     def test_rollback_cleanup_failure_reports_residual_path_and_original_cause(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
