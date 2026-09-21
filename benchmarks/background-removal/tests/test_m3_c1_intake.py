@@ -315,6 +315,60 @@ class M3C1IntakeTests(unittest.TestCase):
                 self.assertGreater(record["imageFacts"]["semiTransparentPixelCount"], 0)
                 self.assertEqual(record["acceptanceEligibility"], "BLOCKED")
 
+    def test_generated_inventory_markdown_stays_clean_with_autocrlf_true(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            source = Path(temporary) / "source"
+            checkout = Path(temporary) / "checkout"
+            benchmark = source / "benchmarks" / "background-removal"
+            benchmark.mkdir(parents=True)
+            (source / ".gitattributes").write_bytes((ROOT.parents[1] / ".gitattributes").read_bytes())
+            inventory_candidates.write_inventory(
+                [],
+                benchmark / "M3-C1_CANDIDATE_INVENTORY.json",
+                benchmark / "M3-C1_CANDIDATE_INVENTORY.md",
+            )
+            commands = (
+                ["git", "init"],
+                ["git", "config", "core.autocrlf", "false"],
+                ["git", "config", "user.email", "test@example.invalid"],
+                ["git", "config", "user.name", "R4 EOL Test"],
+                ["git", "add", "."],
+                ["git", "commit", "-m", "fixture"],
+            )
+            for command in commands:
+                subprocess.run(command, cwd=source, check=True, capture_output=True)
+            subprocess.run(
+                ["git", "-c", "core.autocrlf=true", "clone", "--quiet", str(source), str(checkout)],
+                check=True,
+                capture_output=True,
+            )
+            checked_benchmark = checkout / "benchmarks" / "background-removal"
+            markdown = checked_benchmark / "M3-C1_CANDIDATE_INVENTORY.md"
+            attributes = subprocess.run(
+                ["git", "check-attr", "text", "eol", "--", markdown.relative_to(checkout).as_posix()],
+                cwd=checkout,
+                check=True,
+                capture_output=True,
+                text=True,
+            ).stdout
+            self.assertIn(": text: set", attributes)
+            self.assertIn(": eol: lf", attributes)
+            self.assertNotIn(b"\r\n", markdown.read_bytes())
+            inventory_candidates.write_inventory(
+                [],
+                checked_benchmark / "M3-C1_CANDIDATE_INVENTORY.json",
+                markdown,
+            )
+            self.assertNotIn(b"\r\n", markdown.read_bytes())
+            status = subprocess.run(
+                ["git", "status", "--porcelain"],
+                cwd=checkout,
+                check=True,
+                capture_output=True,
+                text=True,
+            ).stdout
+            self.assertEqual(status, "")
+
     def test_rollback_cleanup_failure_reports_residual_path_and_original_cause(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary); candidate = make_candidate(root)
