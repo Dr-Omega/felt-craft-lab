@@ -36,3 +36,36 @@ export interface StoryCardRepository {
   getByWorkId(workId: string): Promise<StoryCard | undefined>
   replace(card: StoryCard): Promise<StoryCard>
 }
+
+export type StoryCardInputKind =
+  | 'initial_full_recording'
+  | 'manual_text'
+  | 'full_rerecording'
+  | 'partial_supplement'
+
+export interface StoryCardAudioInputRequest {
+  workId: string
+  kind: 'initial_full_recording' | 'full_rerecording' | 'partial_supplement'
+  audioRef: ResourceRef
+  durationMs: number
+}
+
+export type TemporaryFullRecordingInput = StoryCardAudioInputRequest & {
+  kind: 'initial_full_recording' | 'full_rerecording'
+}
+
+export type TemporaryPartialSupplementInput = StoryCardAudioInputRequest & {
+  kind: 'partial_supplement'
+}
+
+export interface StoryCardManualTextInputRequest {
+  workId: string
+  kind: 'manual_text'
+  text: string
+  baseOriginalAudioRef: ResourceRef
+}
+
+export type StoryCardInputRequest =
+  | TemporaryFullRecordingInput
+  | TemporaryPartialSupplementInput
+  | StoryCardManualTextInputRequest

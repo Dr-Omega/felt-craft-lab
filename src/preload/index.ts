@@ -5,6 +5,9 @@ import type { ResourceInspectResult } from '@shared/resource'
 
 type PreviewSaveIpcResult = { ok: true; ref: ResourceRef } | { ok: false; error: SharedError }
 type PreviewDeleteIpcResult = { ok: true } | { ok: false; error: SharedError }
+type StoryCardAudioSaveIpcResult = { ok: true; ref: ResourceRef } | { ok: false; error: SharedError }
+type StoryCardAudioPromoteIpcResult = { ok: true; ref: ResourceRef } | { ok: false; error: SharedError }
+type StoryCardAudioDeleteIpcResult = { ok: true } | { ok: false; error: SharedError }
 
 async function invokePreviewSave(pngBytes: ArrayBuffer | Uint8Array): Promise<ResourceRef> {
   const result = (await ipcRenderer.invoke(IPC_CHANNELS.PREVIEW_SAVE, pngBytes)) as PreviewSaveIpcResult
@@ -31,6 +34,44 @@ async function invokePreviewDelete(previewRef: string): Promise<void> {
   }
 }
 
+async function invokeStoryCardAudioSave(audioBytes: ArrayBuffer | Uint8Array, mimeType: string): Promise<ResourceRef> {
+  const result = (await ipcRenderer.invoke(IPC_CHANNELS.STORY_CARD_AUDIO_SAVE, {
+    audioBytes,
+    mimeType
+  })) as StoryCardAudioSaveIpcResult
+  if (!result?.ok) {
+    throw result?.error ?? {
+      code: 'UNKNOWN' as const,
+      message: '临时录音写入失败。',
+      retryable: true
+    }
+  }
+  return result.ref
+}
+
+async function invokeStoryCardAudioDelete(audioRef: string): Promise<void> {
+  const result = (await ipcRenderer.invoke(IPC_CHANNELS.STORY_CARD_AUDIO_DELETE, audioRef)) as StoryCardAudioDeleteIpcResult
+  if (!result?.ok) {
+    throw result?.error ?? {
+      code: 'UNKNOWN' as const,
+      message: '临时录音删除失败。',
+      retryable: true
+    }
+  }
+}
+
+async function invokeStoryCardAudioPromote(audioRef: string): Promise<ResourceRef> {
+  const result = (await ipcRenderer.invoke(IPC_CHANNELS.STORY_CARD_AUDIO_PROMOTE, audioRef)) as StoryCardAudioPromoteIpcResult
+  if (!result?.ok) {
+    throw result?.error ?? {
+      code: 'UNKNOWN' as const,
+      message: '完整录音确认失败。',
+      retryable: true
+    }
+  }
+  return result.ref
+}
+
 const electronAPI = {
   ping: (): Promise<BootstrapPingResult> => ipcRenderer.invoke(IPC_CHANNELS.PING),
   /**
@@ -49,6 +90,11 @@ const electronAPI = {
    * Delete a previously saved preview by felt-resource://preview/... ref only.
    */
   deleteProjectPreview: (previewRef: string): Promise<void> => invokePreviewDelete(previewRef),
+  /** Saves an unconfirmed full recording and returns a renderer-safe audio ResourceRef. */
+  saveTemporaryStoryCardAudio: (audioBytes: ArrayBuffer | Uint8Array, mimeType: string): Promise<ResourceRef> =>
+    invokeStoryCardAudioSave(audioBytes, mimeType),
+  promoteTemporaryStoryCardAudio: (audioRef: string): Promise<ResourceRef> => invokeStoryCardAudioPromote(audioRef),
+  deleteTemporaryStoryCardAudio: (audioRef: string): Promise<void> => invokeStoryCardAudioDelete(audioRef),
   uploadImage: (input: {
     imageBase64: string
     mimeType: string

@@ -7,6 +7,7 @@ import { isAllowedExternalUrl } from './external-url'
 import { resolveRuntimeAssetPath } from './paths'
 import { registerAiIpc } from './ai/ipc'
 import { registerPreviewIpc } from './preview'
+import { registerStoryCardAudioIpc } from './story-card-audio'
 import {
   attachFeltResourceProtocol,
   createResourceRoots,
@@ -131,6 +132,7 @@ app.whenReady().then(() => {
   attachFeltResourceProtocol(resourceRoots)
   registerResourceIpc(resourceRoots)
   registerPreviewIpc(resourceRoots)
+  registerStoryCardAudioIpc(resourceRoots)
   registerBootstrapIpc()
   registerAiIpc()
   createWindow(packagedRendererPath)
