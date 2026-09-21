@@ -15,7 +15,7 @@ import {
   type FabricObjectPort
 } from '../../src/renderer/src/editor/fabric-editor-adapter'
 import type { EditorSelectionEvent } from '../../src/renderer/src/editor/editor-selection.types'
-import { cloneFixture, validAccess, validAsset, validScene, validSnapshotContext } from '../shared/contracts.fixtures'
+import { cloneFixture, validAccess, validAsset, validRendererScene as validScene, validSnapshotContext } from '../shared/contracts.fixtures'
 
 function deferred<T>(): { promise: Promise<T>; resolve(value: T): void } {
   let resolvePromise: ((value: T) => void) | undefined

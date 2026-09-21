@@ -3,9 +3,9 @@ import type { AssetAccessState, AssetRecord } from './asset'
 import type { AsrResult, QaResult, TtsResult } from './ai'
 import { SHARED_ERROR_CODES } from './error'
 import type { SharedError } from './error'
-import { PROJECT_SYNC_STATUSES } from './project'
+import { PROJECT_COMPLETION_STATUSES, PROJECT_SYNC_STATUSES } from './project'
 import type { DraftRecord, ProjectRecord } from './project'
-import type { SceneDocument, SceneObject } from './scene'
+import type { SceneDocument, SceneObject, SceneSubject } from './scene'
 
 export interface ValidationIssue {
   path: string
@@ -294,11 +294,21 @@ export function validateSceneObject(raw: unknown): ValidationResult<SceneObject>
   return errors.length ? failure(errors) : success(raw as SceneObject)
 }
 
-export function validateSceneDocument(raw: unknown): ValidationResult<SceneDocument> {
+export function validateSceneSubject(raw: unknown, resourcePolicy: unknown = MOCK_RESOURCE_REF_POLICY): ValidationResult<SceneSubject> {
+  const errors: ValidationIssue[] = []
+  const value = requireObject(raw, 'scene.subject', errors)
+  if (!value) return failure(errors)
+  hasOnlyKeys(value, ['name', 'imageRef'], 'scene.subject', errors)
+  requireString(value.name, 'scene.subject.name', errors)
+  requireResourceRef(value.imageRef, 'scene.subject.imageRef', errors, resourcePolicy)
+  return errors.length ? failure(errors) : success(raw as SceneSubject)
+}
+
+export function validateSceneDocument(raw: unknown, resourcePolicy: unknown = MOCK_RESOURCE_REF_POLICY): ValidationResult<SceneDocument> {
   const errors: ValidationIssue[] = []
   const value = requireObject(raw, 'scene', errors)
   if (!value) return failure(errors)
-  hasOnlyKeys(value, ['schemaVersion', 'sceneId', 'userId', 'workName', 'themeId', 'assetSnapshotId', 'canvas', 'backgroundAssetId', 'objects', 'createdAt', 'updatedAt'], 'scene', errors)
+  hasOnlyKeys(value, ['schemaVersion', 'sceneId', 'userId', 'workName', 'themeId', 'assetSnapshotId', 'canvas', 'backgroundAssetId', 'subject', 'objects', 'createdAt', 'updatedAt'], 'scene', errors)
   if (value.schemaVersion !== SCHEMA_VERSION) errors.push({ path: 'scene.schemaVersion', message: '不支持的 Scene schemaVersion。' })
   requireUuid(value.sceneId, 'scene.sceneId', errors)
   requireString(value.userId, 'scene.userId', errors)
@@ -308,6 +318,10 @@ export function validateSceneDocument(raw: unknown): ValidationResult<SceneDocum
   validateCanvas(value.canvas, errors)
   if (value.backgroundAssetId !== null && !requireString(value.backgroundAssetId, 'scene.backgroundAssetId', errors)) {
     // The diagnostic was emitted by requireString.
+  }
+  if (value.subject !== null) {
+    const subject = validateSceneSubject(value.subject, resourcePolicy)
+    if (!subject.ok) errors.push(...subject.errors)
   }
   if (!Array.isArray(value.objects)) {
     errors.push({ path: 'scene.objects', message: '必须是对象数组。' })
@@ -360,8 +374,8 @@ export function validateSceneSnapshotValidationContext(raw: unknown): Validation
  * Verifies a structurally valid Scene against the exact immutable asset
  * snapshot selected by assetSnapshotId, without adding fields to SceneDocument.
  */
-export function validateSceneDocumentAgainstSnapshot(raw: unknown, snapshotContext: unknown): ValidationResult<SceneDocument> {
-  const scene = validateSceneDocument(raw)
+export function validateSceneDocumentAgainstSnapshot(raw: unknown, snapshotContext: unknown, resourcePolicy: unknown = MOCK_RESOURCE_REF_POLICY): ValidationResult<SceneDocument> {
+  const scene = validateSceneDocument(raw, resourcePolicy)
   if (!scene.ok) return scene
   const context = validateSceneSnapshotValidationContext(snapshotContext)
   if (!context.ok) return failure(context.errors)
@@ -420,13 +434,13 @@ function validateContinuousLayers(objects: unknown[], errors: ValidationIssue[])
   }
 }
 
-export function validateDraftRecord(raw: unknown): ValidationResult<DraftRecord> {
+export function validateDraftRecord(raw: unknown, resourcePolicy: unknown = MOCK_RESOURCE_REF_POLICY): ValidationResult<DraftRecord> {
   const errors: ValidationIssue[] = []
   const value = requireObject(raw, 'draft', errors)
   if (!value) return failure(errors)
   hasOnlyKeys(value, ['draftId', 'scene', 'updatedAt', 'status'], 'draft', errors)
   requireUuid(value.draftId, 'draft.draftId', errors)
-  const scene = validateSceneDocument(value.scene)
+  const scene = validateSceneDocument(value.scene, resourcePolicy)
   if (!scene.ok) errors.push(...scene.errors.map((issue) => ({ ...issue, path: `draft.${issue.path}` })))
   requireUtcTimestamp(value.updatedAt, 'draft.updatedAt', errors)
   if (value.status !== 'draft') errors.push({ path: 'draft.status', message: '必须是 draft。' })
@@ -438,12 +452,13 @@ export function validateProjectRecord(raw: unknown, resourcePolicy: unknown = MO
   const errors: ValidationIssue[] = []
   const value = requireObject(raw, 'project', errors)
   if (!value) return failure(errors)
-  hasOnlyKeys(value, ['projectId', 'projectName', 'scene', 'previewUrl', 'syncStatus', 'createdAt', 'updatedAt'], 'project', errors)
+  hasOnlyKeys(value, ['projectId', 'projectName', 'scene', 'previewUrl', 'completionStatus', 'syncStatus', 'createdAt', 'updatedAt'], 'project', errors)
   requireUuid(value.projectId, 'project.projectId', errors)
   requireString(value.projectName, 'project.projectName', errors)
-  const scene = validateSceneDocument(value.scene)
+  const scene = validateSceneDocument(value.scene, resourcePolicy)
   if (!scene.ok) errors.push(...scene.errors.map((issue) => ({ ...issue, path: `project.${issue.path}` })))
   requireResourceRef(value.previewUrl, 'project.previewUrl', errors, resourcePolicy)
+  if (!PROJECT_COMPLETION_STATUSES.includes(value.completionStatus as (typeof PROJECT_COMPLETION_STATUSES)[number])) errors.push({ path: 'project.completionStatus', message: '不是允许的完成状态。' })
   if (!PROJECT_SYNC_STATUSES.includes(value.syncStatus as (typeof PROJECT_SYNC_STATUSES)[number])) errors.push({ path: 'project.syncStatus', message: '不是允许的同步状态。' })
   requireUtcTimestamp(value.createdAt, 'project.createdAt', errors)
   const projectUpdated = requireUtcTimestamp(value.updatedAt, 'project.updatedAt', errors)

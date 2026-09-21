@@ -1,4 +1,10 @@
-import type { AssetAccessState, DraftRecord, ProjectRecord } from '@shared/contracts'
+import type {
+  AssetAccessState,
+  DraftRecord,
+  ProjectRecord,
+  StoryCard,
+  StoryCardRepository
+} from '@shared/contracts'
 import {
   validateAssetAccessState,
   validateDraftRecord,
@@ -29,7 +35,7 @@ export class DraftStore {
   constructor(private readonly db: FeltCraftDatabase) {}
 
   async save(raw: unknown): Promise<DraftRecord> {
-    const validated = validateDraftRecord(raw)
+    const validated = validateDraftRecord(raw, FELT_RESOURCE_REF_POLICY)
     if (!validated.ok) rejectDraft('草稿记录未通过 Shared Contract 校验。')
     const record = structuredClone(validated.value) as DraftRecord
     await this.db.drafts.put(record)
@@ -39,7 +45,7 @@ export class DraftStore {
   async get(draftId: string): Promise<DraftRecord | undefined> {
     const raw = await this.db.drafts.get(draftId)
     if (raw === undefined) return undefined
-    const validated = validateDraftRecord(raw)
+    const validated = validateDraftRecord(raw, FELT_RESOURCE_REF_POLICY)
     if (!validated.ok) rejectDraft('读取到的草稿记录未通过 Shared Contract 校验。')
     return Object.freeze(structuredClone(validated.value)) as DraftRecord
   }
@@ -47,7 +53,7 @@ export class DraftStore {
   async list(): Promise<DraftRecord[]> {
     const rows = await this.db.drafts.orderBy('updatedAt').reverse().toArray()
     return rows.map((raw) => {
-      const validated = validateDraftRecord(raw)
+      const validated = validateDraftRecord(raw, FELT_RESOURCE_REF_POLICY)
       if (!validated.ok) rejectDraft('读取到的草稿记录未通过 Shared Contract 校验。')
       return Object.freeze(structuredClone(validated.value)) as DraftRecord
     })
@@ -88,6 +94,28 @@ export class ProjectStore {
 
   async delete(projectId: string): Promise<void> {
     await this.db.projects.delete(projectId)
+  }
+}
+
+export class StoryCardStore implements StoryCardRepository {
+  constructor(private readonly db: FeltCraftDatabase) {}
+
+  async create(card: StoryCard): Promise<StoryCard> {
+    const record = structuredClone(card)
+    await this.db.storyCards.add(record)
+    return Object.freeze(structuredClone(record)) as StoryCard
+  }
+
+  async getByWorkId(workId: string): Promise<StoryCard | undefined> {
+    const card = await this.db.storyCards.get(workId)
+    if (card === undefined) return undefined
+    return Object.freeze(structuredClone(card)) as StoryCard
+  }
+
+  async replace(card: StoryCard): Promise<StoryCard> {
+    const record = structuredClone(card)
+    await this.db.storyCards.put(record)
+    return Object.freeze(structuredClone(record)) as StoryCard
   }
 }
 

@@ -64,9 +64,16 @@ export const validScene: SceneDocument = {
   assetSnapshotId: 'snapshot_demo_20260730_001',
   canvas: { width: 1200, height: 800, backgroundColor: '#FFF8E7' },
   backgroundAssetId: 'background_moon_001',
+  subject: { name: '小兔子', imageRef: 'mock://subjects/rabbit.png' },
   objects: [validSceneObject],
   createdAt: '2026-07-30T05:10:00.000Z',
   updatedAt: fixtureTime
+}
+
+/** Renderer runtime accepts only felt-resource:// references. */
+export const validRendererScene: SceneDocument = {
+  ...validScene,
+  subject: { name: '小兔子', imageRef: 'felt-resource://material/subject-rabbit.png' }
 }
 
 export const validSnapshotContext: SceneSnapshotValidationContext = {
@@ -90,6 +97,7 @@ export const validProject: ProjectRecord = {
   projectName: validScene.workName,
   scene: validScene,
   previewUrl: 'mock://previews/c3ac4f13-c4be-4ce0-8781-c60b78a21e83.png',
+  completionStatus: 'completed',
   syncStatus: 'local_only',
   createdAt: fixtureTime,
   updatedAt: fixtureTime

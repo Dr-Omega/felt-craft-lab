@@ -128,6 +128,7 @@ export function createBlankScene(workName: string, themeId?: string): SceneDocum
     assetSnapshotId: YWN_SNAPSHOT_ID,
     canvas: { ...DEFAULT_SCENE_CANVAS, backgroundColor: '#FFF8E7' },
     backgroundAssetId: null,
+    subject: null,
     objects: [],
     createdAt: now,
     updatedAt: now

@@ -115,6 +115,7 @@ describe('project workflow', () => {
       createdAt: fixtureTime
     })
     expect(project.projectName).toBe(input.scene.workName)
+    expect(project.completionStatus).toBe('completed')
     expect(project.syncStatus).toBe('local_only')
     expect(project.previewUrl).toMatch(/^felt-resource:\/\/preview\//)
     expect(await new ProjectStore(db).get(project.projectId)).toEqual(project)

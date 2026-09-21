@@ -37,6 +37,7 @@ function buildProjectRecord(input: {
     projectName: input.scene.workName,
     scene: input.scene,
     previewUrl: input.previewUrl,
+    completionStatus: 'completed',
     syncStatus: 'local_only',
     createdAt: input.createdAt,
     updatedAt: input.updatedAt

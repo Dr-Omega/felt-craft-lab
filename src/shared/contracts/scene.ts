@@ -1,4 +1,10 @@
-import type { SchemaVersion, UtcIso8601 } from './common'
+import type { ResourceRef, SchemaVersion, UtcIso8601 } from './common'
+
+/** The child-defined core image generated for a work. */
+export interface SceneSubject {
+  name: string
+  imageRef: ResourceRef
+}
 
 export interface SceneObject {
   objectId: string
@@ -38,6 +44,8 @@ export interface SceneDocument {
   canvas: SceneCanvas
   /** A material background; null encodes either solid-color or transparent. */
   backgroundAssetId: string | null
+  /** Null until the child has generated the core subject image. */
+  subject: SceneSubject | null
   objects: SceneObject[]
   createdAt: UtcIso8601
   updatedAt: UtcIso8601

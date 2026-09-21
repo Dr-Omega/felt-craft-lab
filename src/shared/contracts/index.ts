@@ -4,5 +4,6 @@ export * from './common'
 export * from './error'
 export * from './project'
 export * from './scene'
+export * from './story-card'
 export * from './validation'
 

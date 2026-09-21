@@ -1,4 +1,5 @@
 import { toSharedError, validateSceneDocument } from '@shared/contracts'
+import { FELT_RESOURCE_REF_POLICY } from '@shared/resource'
 import type { AssetAccessState, AssetRecord, SceneDocument, SharedError, SharedErrorCode } from '@shared/contracts'
 import type { FabricEditorAssetResolver, SceneImportResult, SceneRecoveryIssue } from './fabric-editor-adapter'
 import type {
@@ -276,7 +277,7 @@ export class EditorSessionService {
     const adapter = this.requireSaveAdapter('DRAFT_SAVE_FAILED')
     try {
       const scene = adapter.exportScene()
-      const validation = validateSceneDocument(scene)
+      const validation = validateSceneDocument(scene, FELT_RESOURCE_REF_POLICY)
       if (!validation.ok) throw sessionError('DRAFT_SAVE_FAILED', 'Scene failed runtime validation for draft save.')
       return validation.value
     } catch (error) {
@@ -290,7 +291,7 @@ export class EditorSessionService {
       // Both exports are captured synchronously before exportPng's first await,
       // so the Scene and preview describe one stable Canvas state.
       const scene = adapter.exportScene()
-      const validation = validateSceneDocument(scene)
+      const validation = validateSceneDocument(scene, FELT_RESOURCE_REF_POLICY)
       if (!validation.ok) throw sessionError('PROJECT_SAVE_FAILED', 'Scene failed runtime validation for project save.')
       const previewPng = await adapter.exportPng()
       if (!previewPng || typeof previewPng.size !== 'number') {

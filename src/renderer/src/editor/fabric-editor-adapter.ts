@@ -455,7 +455,7 @@ export class FabricEditorAdapter {
   }
 
   initialize(element: HTMLCanvasElement, scene: SceneDocument): void {
-    const validation = validateSceneDocument(scene)
+    const validation = validateSceneDocument(scene, FELT_RESOURCE_REF_POLICY)
     if (!validation.ok) throw editorError('SCENE_VALIDATION_FAILED', 'Scene document failed validation.')
     this.dispose()
 
@@ -480,7 +480,7 @@ export class FabricEditorAdapter {
     resolver: FabricEditorAssetResolver,
     historyRestoreGeneration?: number
   ): Promise<SceneImportResult> {
-    const validation = validateSceneDocument(scene)
+    const validation = validateSceneDocument(scene, FELT_RESOURCE_REF_POLICY)
     if (!validation.ok) throw editorError('SCENE_IMPORT_FAILED', 'Scene document failed validation.')
     const canvas = this.requireCanvas()
     const operation = this.beginSceneTransition(canvas, historyRestoreGeneration)
@@ -760,9 +760,9 @@ export class FabricEditorAdapter {
   exportScene(): SceneDocument {
     this.requireReadyCanvas()
     const scene = this.serializeScene()
-    const validation = validateSceneDocument(scene)
+    const validation = validateSceneDocument(scene, FELT_RESOURCE_REF_POLICY)
     if (!validation.ok) throw editorError('SCENE_VALIDATION_FAILED', 'Editor state cannot be serialized as SceneDocument.')
-    const snapshotValidation = validateSceneDocumentAgainstSnapshot(validation.value, this.snapshotContext)
+    const snapshotValidation = validateSceneDocumentAgainstSnapshot(validation.value, this.snapshotContext, FELT_RESOURCE_REF_POLICY)
     if (!snapshotValidation.ok || this.recoveryIssues.length > 0) {
       throw editorError('SCENE_VALIDATION_FAILED', 'Scene has unresolved asset snapshot or resource recovery issues.')
     }
@@ -1142,7 +1142,7 @@ export class FabricEditorAdapter {
       },
       backgroundAssetId: 'backgroundAssetId' in change ? change.backgroundAssetId ?? null : current.backgroundAssetId
     }
-    const validation = validateSceneDocument(candidate)
+    const validation = validateSceneDocument(candidate, FELT_RESOURCE_REF_POLICY)
     if (!validation.ok) throw editorError('INVALID_ARGUMENT', 'Canvas state change violates SceneDocument constraints.')
   }
 
@@ -1439,6 +1439,7 @@ function metadataFromScene(scene: SceneDocument): EditorSceneMetadata {
     workName: scene.workName,
     themeId: scene.themeId,
     assetSnapshotId: scene.assetSnapshotId,
+    subject: scene.subject,
     createdAt: scene.createdAt
   }
 }

@@ -89,7 +89,14 @@ describe('shared material-library contracts', () => {
     expect(isSafeResourceRef('mock://assets/lantern.png')).toBe(true)
     expect(isSafeResourceRef('felt-resource://previews/saved.png')).toBe(false)
     expect(isSafeResourceRef('felt-resource://previews/saved.png', resolverPolicy)).toBe(true)
-    expect(validateProjectRecord({ ...validProject, previewUrl: 'felt-resource://previews/saved.png' }, resolverPolicy).ok).toBe(true)
+    expect(validateProjectRecord({
+      ...validProject,
+      scene: {
+        ...validProject.scene,
+        subject: { ...validProject.scene.subject!, imageRef: 'felt-resource://previews/subject.png' }
+      },
+      previewUrl: 'felt-resource://previews/saved.png'
+    }, resolverPolicy).ok).toBe(true)
   })
 
   it('rejects unstable, unsafe, credential-bearing, fragmented, and traversal resource references', () => {
@@ -113,6 +120,19 @@ describe('shared material-library contracts', () => {
     delete missingPreview.previewUrl
     expect(validateProjectRecord(missingPreview).ok).toBe(false)
     expect(validateProjectRecord({ ...validProject, projectName: '不同的名字' }).ok).toBe(false)
+  })
+
+  it('requires an explicit allowed project completion status', () => {
+    const missingCompletionStatus = cloneFixture(validProject) as unknown as Record<string, unknown>
+    delete missingCompletionStatus.completionStatus
+    expect(validateProjectRecord(missingCompletionStatus).ok).toBe(false)
+    expect(validateProjectRecord({ ...validProject, completionStatus: 'publishing' }).ok).toBe(false)
+  })
+
+  it('accepts an empty generated subject slot and rejects malformed generated subjects', () => {
+    expect(validateSceneDocument({ ...validScene, subject: null }).ok).toBe(true)
+    expect(validateSceneDocument({ ...validScene, subject: { name: '', imageRef: 'mock://subjects/rabbit.png' } }).ok).toBe(false)
+    expect(validateSceneDocument({ ...validScene, subject: { name: '小兔子', imageRef: 'https://example.com/rabbit.png' } }).ok).toBe(false)
   })
 
   it('rebuilds a clean SharedError and drops unknown provider fields', () => {

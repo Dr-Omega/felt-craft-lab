@@ -1,5 +1,6 @@
 import type { DraftRecord, SceneDocument } from '@shared/contracts'
 import { validateDraftRecord } from '@shared/contracts/validation'
+import { FELT_RESOURCE_REF_POLICY } from '@shared/resource'
 import { getFeltCraftDatabase, type FeltCraftDatabase } from './db'
 import { asPersistenceError, persistenceError } from './errors'
 import { DraftStore } from './stores'
@@ -27,7 +28,7 @@ export async function saveDraftFromPreparedScene(
     status: 'draft'
   }
 
-  const validated = validateDraftRecord(record)
+  const validated = validateDraftRecord(record, FELT_RESOURCE_REF_POLICY)
   if (!validated.ok) {
     throw persistenceError('DRAFT_SAVE_FAILED', '草稿记录未通过 Shared Contract 校验。')
   }

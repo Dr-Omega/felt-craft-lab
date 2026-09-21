@@ -4,7 +4,7 @@ import { EditorSessionService, type EditorSessionAdapter } from '../../src/rende
 import type { FabricEditorAssetResolver, SceneImportResult, SceneRecoveryIssue } from '../../src/renderer/src/editor'
 import type { EditorSelectionEvent, EditorSelectionListener } from '../../src/renderer/src/editor'
 import type { EditorHistoryListener, EditorHistoryProjection } from '../../src/renderer/src/editor'
-import { cloneFixture, validAccess, validAsset, validScene } from '../shared/contracts.fixtures'
+import { cloneFixture, validAccess, validAsset, validRendererScene as validScene } from '../shared/contracts.fixtures'
 
 function deferred<T>(): { promise: Promise<T>; resolve(value: T): void; reject(error: unknown): void } {
   let resolvePromise: ((value: T) => void) | undefined

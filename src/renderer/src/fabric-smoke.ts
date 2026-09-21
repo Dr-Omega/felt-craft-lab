@@ -35,6 +35,7 @@ const scene: SceneDocument = {
   assetSnapshotId: snapshotId,
   canvas: { width: 320, height: 240, backgroundColor: '#FFFFFF' },
   backgroundAssetId: backgroundId,
+  subject: null,
   objects: [{
     objectId: '53dd8862-8616-44c0-91bf-0d95bfe1161e',
     assetId: stickerId,
