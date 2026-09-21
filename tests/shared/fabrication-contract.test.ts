@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto'
 import { describe, expect, it } from 'vitest'
-import { adaptB2V0ObservedOnly, canonicalPayloadJson, canonicalPayloadSha256, canonicalTextLfUtf8, exportEligibility, validateFabricationResult, validateManufacturingAssessment, validateStructuralAssessment } from '@shared/contracts/fabrication-validation'
+import { adaptB2V0ObservedOnly, canonicalPayloadJson, canonicalPayloadSha256, canonicalTextLfUtf8, exportEligibility, validateFabricationInput, validateFabricationResult, validateManufacturingAssessment, validateStructuralAssessment } from '@shared/contracts/fabrication-validation'
 import type { FabricationResult, ManufacturingAssessment, StructuralAssessment } from '@shared/contracts/fabrication'
 
 const hash = (value: unknown): string => createHash('sha256').update(canonicalPayloadJson(value)).digest('hex')
@@ -29,6 +29,28 @@ function manufacturing(r: FabricationResult): ManufacturingAssessment { return {
 function rehash(r: FabricationResult): FabricationResult { r.identity.sha256=hash(r.payload); return r }
 
 describe('B2 M1 fabrication contract', () => {
+  it('validates standalone input without inventing fabrication pieces', () => {
+    const input = result().payload.input
+    expect(validateFabricationInput(input)).toMatchObject({ ok: true })
+    expect('pieces' in input).toBe(false)
+  })
+  it('applies identical input reference and coordinate rules standalone and embedded', () => {
+    for (const mutate of [
+      (input: FabricationResult['payload']['input']) => { input.observedRegions[0].geometry.artifactId = 'missing' },
+      (input: FabricationResult['payload']['input']) => { input.coordinates.transforms[0].matrix = [0, 0, 0, 0, 0, 0] },
+      (input: FabricationResult['payload']['input']) => { input.coordinates.transforms[0].fromFrameId = 'analysis' },
+      (input: FabricationResult['payload']['input']) => { input.colorSlots[0].rgb = [256, 0, 0] },
+      (input: FabricationResult['payload']['input']) => { input.observedRegions[1].componentIds = input.observedRegions[0].componentIds },
+    ]) {
+      const value = result()
+      mutate(value.payload.input)
+      const standalone = validateFabricationInput(value.payload.input)
+      const embedded = validateFabricationResult(rehash(value))
+      expect(standalone.ok).toBe(false)
+      expect(embedded.ok).toBe(false)
+      if (!standalone.ok && !embedded.ok) expect(embedded.errors).toEqual(standalone.errors.map(issue => ({ ...issue, path: '$.payload.input' + issue.path.slice(1) })))
+    }
+  })
   it('accepts independently bound structural and current-size manufacturing assessments', () => { const r=result(), s=structural(r), m=manufacturing(r); expect(validateFabricationResult(r).ok).toBe(true); expect(validateStructuralAssessment(s,r).ok).toBe(true); expect(validateManufacturingAssessment(m,r).ok).toBe(true); expect(exportEligibility(r,s,[m],m.target)).toEqual({eligible:true,reasons:[]}) })
   it('rejects dangling geometry, invalid visual endpoint, cyclic assembly and blocking unresolved structural PASS', () => { const r=result(); r.payload.pieces[0].geometry.frameId='missing'; expect(validateFabricationResult(r).ok).toBe(false); const v=result(); v.payload.relations[0]={...v.payload.relations[0],status:'RESOLVED',direction:'A_TO_B',a:'piece-a',b:'piece-b',evidenceArtifactIds:['artifact']}; expect(validateFabricationResult(v).ok).toBe(false); const c=result(); c.payload.relations=[{id:'ab',kind:'ASSEMBLY_PRECEDENCE',a:'piece-a',b:'piece-b',status:'RESOLVED',direction:'A_TO_B',fabricationImpact:'BLOCKING',impactReason:'x',evidenceArtifactIds:['artifact']},{id:'ba',kind:'ASSEMBLY_PRECEDENCE',a:'piece-a',b:'piece-b',status:'RESOLVED',direction:'B_TO_A',fabricationImpact:'BLOCKING',impactReason:'x',evidenceArtifactIds:['artifact']}]; expect(validateFabricationResult(c).ok).toBe(false); const b=result(); b.payload.relations[0]={...b.payload.relations[0],status:'UNRESOLVED',fabricationImpact:'BLOCKING'}; expect(validateStructuralAssessment(structural(b),b).ok).toBe(false) })
   it('rejects wrong result binding and inconsistent seam metrics', () => { const r=result(), m=manufacturing(r); m.resultSha256='b'.repeat(64); expect(validateManufacturingAssessment(m,r).ok).toBe(false); const n=manufacturing(r); n.seamMetrics.count=0; expect(validateManufacturingAssessment(n,r).ok).toBe(false) })

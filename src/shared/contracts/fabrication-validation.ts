@@ -1,5 +1,5 @@
 import type { ValidationIssue, ValidationResult } from './validation'
-import { manufacturingShape, resultShape, shapeErrors, structureShape } from './fabrication-shape'
+import { inputShape, manufacturingShape, resultShape, shapeErrors, structureShape } from './fabrication-shape'
 import type { ArtifactIdentity, FabricationInput, FabricationResult, ManufacturingAssessment, ObservedCandidate, StructuralAssessment } from './fabrication'
 
 const fail = <T>(errors: ValidationIssue[]): ValidationResult<T> => ({ ok: false, errors })
@@ -65,28 +65,30 @@ export async function canonicalPayloadSha256(value: unknown): Promise<string> {
   return [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2, '0')).join('')
 }
 
-export function validateFabricationResult(raw: unknown, expectedSha256?: string): ValidationResult<FabricationResult> {
-  const errors = shapeErrors(resultShape, raw)
+/** Validate real fabrication input independently of any candidate pieces. */
+export function validateFabricationInput(raw: unknown): ValidationResult<FabricationInput> {
+  const errors = shapeErrors(inputShape, raw)
   if (errors.length) return fail(errors)
-  const result = raw as FabricationResult
-  if (result.identity.sha256 !== sha256Exact(canonicalPayloadJson(result.payload))) add(errors, '$.identity.sha256', 'Canonical identity does not match payload')
-  if (expectedSha256 && result.identity.sha256 !== expectedSha256) add(errors, '$.identity.sha256', 'Does not match supplied canonical identity')
-  const { input, pieces, splitGroups, relations } = result.payload
-  const artifactIds = unique(input.artifacts.map(artifact => artifact.id), '$.payload.input.artifacts', errors)
-  const frameIds = unique(input.coordinates.frames.map(frame => frame.id), '$.payload.input.coordinates.frames', errors)
-  unique(input.coordinates.transforms.map(transform => transform.id), '$.payload.input.coordinates.transforms', errors)
+  validateInputRules(raw as FabricationInput, errors)
+  return errors.length ? fail(errors) : pass(raw as FabricationInput)
+}
+
+const validateInputRules = (input: FabricationInput, errors: ValidationIssue[]): void => {
+  const artifactIds = unique(input.artifacts.map(artifact => artifact.id), '$.artifacts', errors)
+  const frameIds = unique(input.coordinates.frames.map(frame => frame.id), '$.coordinates.frames', errors)
+  unique(input.coordinates.transforms.map(transform => transform.id), '$.coordinates.transforms', errors)
   const requiredFrames: Array<[string, string, string]> = [
     ['sourceFrameId', input.coordinates.sourceFrameId, 'source-native'],
     ['analysisFrameId', input.coordinates.analysisFrameId, 'analysis-raster'],
     ['p004cFrameId', input.coordinates.p004cFrameId, 'p0-04c'],
     ['canonicalFrameId', input.coordinates.canonicalFrameId, 'fabrication-canonical'],
   ]
-  requiredFrames.forEach(([role, id, space]) => { if (!input.coordinates.frames.some(frame => frame.id === id && frame.space === space)) add(errors, '$.payload.input.coordinates.' + role, 'Must identify a ' + space + ' frame') })
-  requireAll([input.source.artifactId, input.frozenRegionArtifactId, input.frozenVectorArtifactId], artifactIds, '$.payload.input', errors)
-  if (input.source.normalizedLayerEvidenceId) requireAll([input.source.normalizedLayerEvidenceId], artifactIds, '$.payload.input.source.normalizedLayerEvidenceId', errors)
-  input.coordinates.frames.forEach((frame, index) => requireAll([frame.sourceArtifactId], artifactIds, at('$.payload.input.coordinates.frames', index) + '.sourceArtifactId', errors))
+  requiredFrames.forEach(([role, id, space]) => { if (!input.coordinates.frames.some(frame => frame.id === id && frame.space === space)) add(errors, '$.coordinates.' + role, 'Must identify a ' + space + ' frame') })
+  requireAll([input.source.artifactId, input.frozenRegionArtifactId, input.frozenVectorArtifactId], artifactIds, '$', errors)
+  if (input.source.normalizedLayerEvidenceId) requireAll([input.source.normalizedLayerEvidenceId], artifactIds, '$.source.normalizedLayerEvidenceId', errors)
+  input.coordinates.frames.forEach((frame, index) => requireAll([frame.sourceArtifactId], artifactIds, at('$.coordinates.frames', index) + '.sourceArtifactId', errors))
   input.coordinates.transforms.forEach((transform, index) => {
-    const path = at('$.payload.input.coordinates.transforms', index)
+    const path = at('$.coordinates.transforms', index)
     requireAll([transform.fromFrameId, transform.toFrameId], frameIds, path, errors)
     requireAll(transform.evidenceArtifactIds, artifactIds, path + '.evidenceArtifactIds', errors)
     if (det(transform.matrix) === 0) add(errors, path + '.matrix', 'Transform is not invertible')
@@ -102,12 +104,30 @@ export function validateFabricationResult(raw: unknown, expectedSha256?: string)
     }
     return false
   }
-  if (!reachable(input.coordinates.sourceFrameId, input.coordinates.analysisFrameId) || !reachable(input.coordinates.analysisFrameId, input.coordinates.p004cFrameId) || !reachable(input.coordinates.p004cFrameId, input.coordinates.canonicalFrameId)) add(errors, '$.payload.input.coordinates.transforms', 'Missing required source→analysis→p0-04c→canonical lineage')
+  if (!reachable(input.coordinates.sourceFrameId, input.coordinates.analysisFrameId) || !reachable(input.coordinates.analysisFrameId, input.coordinates.p004cFrameId) || !reachable(input.coordinates.p004cFrameId, input.coordinates.canonicalFrameId)) add(errors, '$.coordinates.transforms', 'Missing required source→analysis→p0-04c→canonical lineage')
   const checkGeometry = (geometry: { artifactId: string; frameId: string }, path: string): void => { requireAll([geometry.artifactId], artifactIds, path + '.artifactId', errors); requireAll([geometry.frameId], frameIds, path + '.frameId', errors) }
-  const colorIds = unique(input.colorSlots.map(slot => slot.id), '$.payload.input.colorSlots', errors)
-  input.colorSlots.forEach((slot, index) => requireAll([slot.purificationArtifactId], artifactIds, at('$.payload.input.colorSlots', index) + '.purificationArtifactId', errors))
-  const regionIds = unique(input.observedRegions.map(region => region.id), '$.payload.input.observedRegions', errors)
-  input.observedRegions.forEach((region, index) => { requireAll([region.colorSlotId], colorIds, at('$.payload.input.observedRegions', index) + '.colorSlotId', errors); checkGeometry(region.geometry, at('$.payload.input.observedRegions', index) + '.geometry') })
+  const colorIds = unique(input.colorSlots.map(slot => slot.id), '$.colorSlots', errors)
+  input.colorSlots.forEach((slot, index) => requireAll([slot.purificationArtifactId], artifactIds, at('$.colorSlots', index) + '.purificationArtifactId', errors))
+  unique(input.observedRegions.map(region => region.id), '$.observedRegions', errors)
+  input.observedRegions.forEach((region, index) => { requireAll([region.colorSlotId], colorIds, at('$.observedRegions', index) + '.colorSlotId', errors); checkGeometry(region.geometry, at('$.observedRegions', index) + '.geometry') })
+  input.colorSlots.forEach((slot, index) => { if (slot.rgb.some(channel => channel > 255)) add(errors, at('$.colorSlots', index) + '.rgb', 'RGB channels must be within 0..255') })
+  unique(input.observedRegions.flatMap(region => region.componentIds), '$.observedRegions.componentIds', errors)
+}
+
+export function validateFabricationResult(raw: unknown, expectedSha256?: string): ValidationResult<FabricationResult> {
+  const errors = shapeErrors(resultShape, raw)
+  if (errors.length) return fail(errors)
+  const result = raw as FabricationResult
+  if (result.identity.sha256 !== sha256Exact(canonicalPayloadJson(result.payload))) add(errors, '$.identity.sha256', 'Canonical identity does not match payload')
+  if (expectedSha256 && result.identity.sha256 !== expectedSha256) add(errors, '$.identity.sha256', 'Does not match supplied canonical identity')
+  const { input, pieces, splitGroups, relations } = result.payload
+  const inputValidation = validateFabricationInput(input)
+  if (!inputValidation.ok) inputValidation.errors.forEach(issue => add(errors, '$.payload.input' + issue.path.slice(1), issue.message))
+  const artifactIds = new Set(input.artifacts.map(artifact => artifact.id))
+  const frameIds = new Set(input.coordinates.frames.map(frame => frame.id))
+  const colorIds = new Set(input.colorSlots.map(slot => slot.id))
+  const regionIds = new Set(input.observedRegions.map(region => region.id))
+  const checkGeometry = (geometry: { artifactId: string; frameId: string }, path: string): void => { requireAll([geometry.artifactId], artifactIds, path + '.artifactId', errors); requireAll([geometry.frameId], frameIds, path + '.frameId', errors) }
   const pieceIds = unique(pieces.map(piece => piece.id), '$.payload.pieces', errors)
   pieces.forEach((piece, index) => { requireAll([piece.colorSlotId], colorIds, at('$.payload.pieces', index) + '.colorSlotId', errors); requireAll(piece.sourceRegionIds, regionIds, at('$.payload.pieces', index) + '.sourceRegionIds', errors); checkGeometry(piece.geometry, at('$.payload.pieces', index) + '.geometry') })
   result.payload.baseExposures.forEach((exposure, index) => {

@@ -9,6 +9,8 @@ import base64
 import copy
 import hashlib
 import html
+import importlib.util
+import io
 import json
 import sys
 import time
@@ -44,14 +46,15 @@ from bezier_fit import fit_chain, flatten_segments  # noqa: E402
 from boundary_graph import build_boundary_graph, serialize_graph  # noqa: E402
 from geometry_validation import aggregate_deviation, validate_embedding  # noqa: E402
 from polygon_simplify import exact_line_segments, simplify_chain  # noqa: E402
-from runner import (  # noqa: E402
-    ROUTE_V0,
-    ROUTE_V1,
-    ROUTE_V2,
-    _enforce_continuous_bound,
-    _result,
-    _stabilize,
-)
+# The colour PoC also has a runner.py. Load this adapter dependency by exact
+# path, leaving a caller's existing sys.modules['runner'] untouched.
+_runner_spec = importlib.util.spec_from_file_location('_m4_frozen_vector_runner', VECTOR_ROOT / 'src' / 'runner.py')
+_vector_runner = importlib.util.module_from_spec(_runner_spec)
+_runner_spec.loader.exec_module(_vector_runner)
+ROUTE_V0, ROUTE_V1, ROUTE_V2 = _vector_runner.ROUTE_V0, _vector_runner.ROUTE_V1, _vector_runner.ROUTE_V2
+_enforce_continuous_bound = _vector_runner._enforce_continuous_bound
+_result, _stabilize = _vector_runner._result, _vector_runner._stabilize
+from m4_checks import validate_labels, candidate_polygons, render_polygons
 
 
 PROFILE_TO_RUNTIME_ID = {
@@ -62,6 +65,8 @@ SUPPORTED_IMAGE_SUFFIXES = {".png"}
 PROTECTED_RELATIVE_ROOTS = (
     Path("benchmarks/background-removal"),
     Path("benchmarks/fabrication-layer-decomposition/fixtures"),
+    Path("benchmarks/fabrication-layer-decomposition/candidates"),
+    Path("benchmarks/fabrication-layer-decomposition/schemas"),
     Path("benchmarks/fabrication-layer-decomposition/region-core"),
     Path("benchmarks/fabrication-layer-decomposition/vector-edge-smoothing"),
     Path("benchmarks/fabrication-layer-decomposition/fabrication-decomposition"),
@@ -81,6 +86,8 @@ __all__ = ["M4RuntimeError", "run_runtime"]
 class NormalizedForeground:
     rgba: np.ndarray
     provenance: dict[str, Any]
+    source_bytes: bytes = b''
+    mask_bytes: bytes | None = None
 
 
 def _sha256_bytes(value: bytes) -> str:
@@ -136,12 +143,18 @@ def load_foreground(
         raise M4RuntimeError("runtime currently supports PNG input only")
     if manual_confirmation not in {"CONFIRMED", "PENDING_REVIEW"}:
         raise M4RuntimeError("manual confirmation must be CONFIRMED or PENDING_REVIEW")
-    with Image.open(image_path) as decoded:
+    source_bytes = image_path.read_bytes()
+    with Image.open(io.BytesIO(source_bytes)) as decoded:
+        if decoded.format != 'PNG' or getattr(decoded, 'n_frames', 1) != 1:
+            raise M4RuntimeError('only single-frame PNG decoding is supported')
+        if decoded.getexif().get(274, 1) != 1:
+            raise M4RuntimeError('non-identity EXIF orientation is unsupported')
         source_mode = decoded.mode
         rgba = np.asarray(decoded.convert("RGBA"), dtype=np.uint8).copy()
     source_alpha = rgba[..., 3].copy()
     has_non_opaque_alpha = bool(np.any(source_alpha != 255))
     mask_record = None
+    mask_bytes = None
     if mode == "embedded-alpha":
         if mask_path is not None:
             raise M4RuntimeError("embedded-alpha mode does not accept an external mask")
@@ -152,7 +165,12 @@ def load_foreground(
         if mask_path is None:
             raise M4RuntimeError("external-mask mode requires --mask")
         mask_path = mask_path.resolve()
-        with Image.open(mask_path) as decoded_mask:
+        mask_bytes = mask_path.read_bytes()
+        with Image.open(io.BytesIO(mask_bytes)) as decoded_mask:
+            if mask_path.suffix.lower() != '.png' or decoded_mask.format != 'PNG' or getattr(decoded_mask, 'n_frames', 1) != 1:
+                raise M4RuntimeError('external mask supports only single-frame PNG')
+            if decoded_mask.getexif().get(274, 1) != 1:
+                raise M4RuntimeError('external mask non-identity EXIF orientation is unsupported')
             if decoded_mask.mode != "L":
                 raise M4RuntimeError("external mask must be a single-channel 8-bit image (mode L)")
             mask = np.asarray(decoded_mask, dtype=np.uint8).copy()
@@ -164,7 +182,7 @@ def load_foreground(
         interpretation = "CALLER_PROVIDED_EXTERNAL_MASK_AS_EFFECTIVE_ALPHA"
         mask_record = {
             "path": str(mask_path),
-            "sha256": _sha256_file(mask_path),
+            "sha256": _sha256_bytes(mask_bytes),
             "mode": "L",
             "softAlphaPreserved": bool(np.any((mask > 0) & (mask < 255))),
         }
@@ -175,7 +193,7 @@ def load_foreground(
     provenance = {
         "sourceImage": {
             "path": str(image_path),
-            "sha256": _sha256_file(image_path),
+            "sha256": _sha256_bytes(source_bytes),
             "decodedMode": source_mode,
             "width": int(rgba.shape[1]),
             "height": int(rgba.shape[0]),
@@ -188,7 +206,7 @@ def load_foreground(
         "externalMask": mask_record,
         "automaticBackgroundRemovalEvaluated": False,
     }
-    return NormalizedForeground(rgba=rgba, provenance=provenance)
+    return NormalizedForeground(rgba=rgba, provenance=provenance, source_bytes=source_bytes, mask_bytes=mask_bytes)
 
 
 def load_profile(profile: str) -> tuple[dict[str, Any], dict[str, Any]]:
@@ -240,7 +258,13 @@ def _vectorize(labels: np.ndarray, alpha: np.ndarray, runtime_id: str, profile_i
     v2_diagnostics: dict[str, dict[str, Any]] = {}
     v2_raw: dict[str, list[dict[str, Any]]] = {}
     for edge in graph["edges"]:
-        v2_raw[edge["edgeId"]], v2_diagnostics[edge["edgeId"]] = fit_chain(edge, tolerance, config["cornerDetection"], config["bezier"])
+        try:
+            v2_raw[edge["edgeId"]], v2_diagnostics[edge["edgeId"]] = fit_chain(edge, tolerance, config["cornerDetection"], config["bezier"])
+        except (np.linalg.LinAlgError, FloatingPointError) as error:
+            # Only numerical fit failures are recoverable. Malformed geometry,
+            # missing references and arbitrary implementation exceptions escape.
+            v2_raw[edge['edgeId']] = v1[edge['edgeId']]
+            v2_diagnostics[edge['edgeId']] = {'recoverableFitFailure': type(error).__name__, 'fallbackRoute': ROUTE_V1}
     v2, v2_fallbacks, v2_validation = _stabilize(graph, labels, v2_raw, [v1, exact], flatness, ROUTE_V2)
     v2, v2_deviation = _enforce_continuous_bound(graph, v2, [v1, exact], tolerance, flatness, v2_fallbacks, ROUTE_V2)
     v2, extra, v2_validation = _stabilize(graph, labels, v2, [v1, exact], flatness, ROUTE_V2)
@@ -319,7 +343,7 @@ def _save_png(path: Path, rgba: np.ndarray) -> None:
     Image.fromarray(rgba, "RGBA").save(path)
 
 
-def _numbered_preview(structural: np.ndarray, *, components: bool) -> np.ndarray:
+def _numbered_preview(structural: np.ndarray, *, components: bool, regions=None) -> np.ndarray:
     import cv2
 
     preview = label_map_preview(structural)
@@ -329,7 +353,18 @@ def _numbered_preview(structural: np.ndarray, *, components: bool) -> np.ndarray
         region_mask = structural == region_id
         if components:
             count, component_labels = cv2.connectedComponents(region_mask.astype(np.uint8), connectivity=4)
-            items = [(component_id, component_labels == component_id) for component_id in range(1, count)]
+            masks = [component_labels == component_id for component_id in range(1, count)]
+            masks.sort(key=lambda mask: int(np.flatnonzero(mask)[0]))
+            actual = next(item for item in regions if int(item['regionId']) == region_id)['components']
+            if len(actual) != len(masks):
+                raise M4RuntimeError('preview Component count differs from actual records')
+            items = []
+            for record, mask in zip(actual, masks, strict=True):
+                ys, xs = np.where(mask)
+                bbox = [int(xs.min()), int(ys.min()), int(xs.max()-xs.min()+1), int(ys.max()-ys.min()+1)]
+                if bbox != record['bbox'] or int(mask.sum()) != record['area']:
+                    raise M4RuntimeError('preview Component identity differs from actual record')
+                items.append((record['componentId'], mask))
         else:
             items = [(None, region_mask)]
         for component_id, mask in items:
@@ -337,7 +372,7 @@ def _numbered_preview(structural: np.ndarray, *, components: bool) -> np.ndarray
             if len(xs) == 0:
                 continue
             x, y = int(np.median(xs)), int(np.median(ys))
-            label = f"R{region_id}" if component_id is None else f"R{region_id} C{component_id}"
+            label = f"R{region_id:05d}" if component_id is None else component_id
             box = draw.textbbox((x, y), label, anchor="mm")
             draw.rectangle((box[0] - 1, box[1] - 1, box[2] + 1, box[3] + 1), fill=(0, 0, 0, 190))
             draw.text((x, y), label, fill=(255, 255, 255, 255), anchor="mm")
@@ -394,8 +429,11 @@ def _run_runtime(
         raise M4RuntimeError("runtime ID must be non-empty and separate from the frozen FLD fixture ID space")
     output_root.mkdir(parents=True, exist_ok=True)
     stages: dict[str, dict[str, Any]] = {}
+    current_stage = 'configuration'
 
     def timed(name: str, operation: Any) -> Any:
+        nonlocal current_stage
+        current_stage = name
         started = time.perf_counter()
         value = operation()
         stages[name] = {"status": "PASS", "durationMs": round((time.perf_counter() - started) * 1000.0, 3)}
@@ -411,18 +449,22 @@ def _run_runtime(
         )
         if not np.array_equal(rgba[..., 3], purified[..., 3]):
             raise M4RuntimeError("purified alpha differs from effective foreground alpha")
+        label_validation = timed('independentLabelValidation', lambda: validate_labels(
+            rgba, purified, proposal.structural_label_map, proposal.pixel_label_map, metadata, color_config))
         regions, adjacency = timed("regionAndComponentDerivation", lambda: _runtime_regions(proposal.structural_label_map, metadata))
         graph, vector_result, attempted = timed(
             "boundaryAndVectorDerivation",
             lambda: _vectorize(proposal.structural_label_map, rgba[..., 3], runtime_id, PROFILE_TO_RUNTIME_ID[profile], vector_config),
         )
         candidates = timed("observedCandidateDerivation", lambda: _observed_candidates(runtime_id, graph, vector_result, regions, attempted))
-        metrics = metrics_for_run(rgba, proposal.structural_label_map, purified, color_config, None, pixel_label_map=proposal.pixel_label_map, regions=metadata)
+        geometry_objects = timed('selectedGeometryValidation', lambda: candidate_polygons(
+            candidates, graph, vector_result, float(vector_config['bezier']['validationFlatnessPx'])))
+        metrics = timed('diagnosticMetrics', lambda: metrics_for_run(rgba, proposal.structural_label_map, purified, color_config, None, pixel_label_map=proposal.pixel_label_map, regions=metadata))
     except Exception as error:
         failure = {
             "runtimeId": runtime_id,
             "status": "HARD_CONTRACT_FAILED",
-            "failedStage": next((name for name in ("cpBProposal", "rcARepresentativeAssignment", "regionAndComponentDerivation", "boundaryAndVectorDerivation", "observedCandidateDerivation") if name not in stages), "UNKNOWN"),
+            "failedStage": current_stage,
             "errorType": type(error).__name__,
             "error": str(error),
             "completedStages": stages,
@@ -431,16 +473,23 @@ def _run_runtime(
         (output_root / "failure.json").write_bytes(_canonical_json(failure))
         raise
 
+    # Keep actual completed computation stages if any subsequent artifact or
+    # page write fails. This is execution evidence, excluded from stable identity.
+    (output_root / 'stage-progress.json').write_bytes(_canonical_json(stages))
     np.savez_compressed(output_root / "structural_label_map.npz", labels=proposal.structural_label_map.astype(np.int32))
+    (output_root / 'source-snapshot.png').write_bytes(foreground.source_bytes)
+    if foreground.mask_bytes is not None:
+        (output_root / 'external-mask-snapshot.png').write_bytes(foreground.mask_bytes)
     np.savez_compressed(output_root / "pixel_label_map.npz", labels=proposal.pixel_label_map.astype(np.int32))
     _save_png(output_root / "input-foreground.png", rgba)
     _save_png(output_root / "purified.png", purified)
     _save_png(output_root / "region-labels.png", _numbered_preview(proposal.structural_label_map, components=False))
-    component_preview = _numbered_preview(proposal.structural_label_map, components=True)
+    component_preview = _numbered_preview(proposal.structural_label_map, components=True, regions=regions)
     _save_png(output_root / "components.png", component_preview)
     flatness = float(vector_config["bezier"]["validationFlatnessPx"])
     _save_png(output_root / "vector-overlay.png", _vector_overlay(purified, vector_result, flatness))
-    _save_png(output_root / "observed-candidates.png", component_preview)
+    _save_png(output_root / "observed-candidates.png", render_polygons(geometry_objects, rgba.shape[:2], numbered=True))
+    _save_png(output_root / 'observed-geometry.png', render_polygons(geometry_objects, rgba.shape[:2]))
     (output_root / "boundary-graph.json").write_bytes(_canonical_json(serialize_graph(graph)))
     (output_root / "vector-result.json").write_bytes(_canonical_json(vector_result))
     (output_root / "regions.json").write_bytes(_canonical_json(regions))
@@ -460,6 +509,8 @@ def _run_runtime(
         "status": "COMPLETE_PENDING_MANUAL_QUALITY_REVIEW",
         "input": foreground.provenance,
         "configuration": {
+            'effectiveColorConfig': color_config,
+            'effectiveVectorConfig': vector_config,
             "candidateId": "CP-B",
             "representativeMethod": "RC-A",
             "profile": profile,
@@ -470,6 +521,7 @@ def _run_runtime(
             "vectorToleranceSourcePixels": 0.5,
         },
         "contracts": {
+            'independentLabelValidation': label_validation,
             "alphaBitIdentical": alpha_equal,
             "geometryTruth": "structural_label_map",
             "proposalConnectivity": 8,
@@ -490,7 +542,14 @@ def _run_runtime(
             "regionArea": {"mean": metrics["mean_region_area"], "median": metrics["median_region_area"], "p10": metrics["p10_region_area"]},
         },
         "metrics": metrics,
-        "topology": {"voids": void_topology(rgba[..., 3]), "adjacency": adjacency},
+        "topology": {"voids": void_topology(rgba[..., 3]), "adjacency": adjacency,
+                     'structuralVoids': void_topology(np.where(proposal.structural_label_map > 0, 255, 0).astype(np.uint8)),
+                     'regionInnerRingCount': sum(len(c['observedGeometry']['innerRings']) for c in candidates),
+                     'semantics': 'Original alpha voids, threshold voids and Region inner rings are distinct; another positive Region inside a ring is not a global hole.'},
+        'metricDefinitions': {'geometry_component_count': 'Frozen metric: whole effective foreground 8-connectivity',
+                              'geometryComponentCount': 'Sum of per-Region 4-connected Components',
+                              'smallRegionCount': 'Diagnostic source-pixel area threshold; not manual cutting qualification',
+                              'proposalColorDistance': 'CIEDE2000', 'diagnosticDeltaE': 'LAB_EUCLIDEAN_APPROX'},
         "selectedVector": {"route": vector_result["route"], "toleranceSourcePixels": vector_result.get("tolerancePx"), "attemptedRoutes": attempted},
         "review": {"status": "PENDING_MANUAL_REVIEW", "callerForegroundConfirmation": foreground.provenance["manualConfirmation"], "items": review_items},
         "stages": stages,
@@ -505,8 +564,21 @@ def _run_runtime(
             "observedCandidates": "observed-candidates.json",
         },
     }
-    (output_root / "report.json").write_bytes(_canonical_json(report))
     _write_html(output_root, report)
+    stable = {'sourceSha256': foreground.provenance['sourceImage']['sha256'],
+              'maskSha256': (foreground.provenance['externalMask'] or {}).get('sha256'),
+              'effectiveRgbaSha256': _sha256_bytes(rgba.tobytes()),
+              'configuration': report['configuration'],
+              'implementation': {p.name: _sha256_bytes(p.read_bytes().replace(b'\r\n', b'\n')) for p in (Path(__file__), Path(__file__).with_name('m4_checks.py'))},
+              'structuralLabelsSha256': _sha256_bytes(proposal.structural_label_map.astype('<i4').tobytes()),
+              'pixelLabelsSha256': _sha256_bytes(proposal.pixel_label_map.astype('<i4').tobytes()),
+              'purifiedRgbaSha256': _sha256_bytes(purified.tobytes()),
+              'selectedGeometrySha256': _sha256_bytes(_canonical_json(vector_result['geometry']))}
+    report['algorithmIdentity'] = _sha256_bytes(_canonical_json(stable))
+    (output_root / 'algorithm-identity.json').write_bytes(_canonical_json(stable))
+    report['artifactSha256'] = {p.name: _sha256_file(p) for p in sorted(output_root.iterdir()) if p.is_file()}
+    # COMPLETE is the final write, after all mandatory plots/pages/artifacts.
+    (output_root / "report.json").write_bytes(_canonical_json(report))
     return report
 
 
@@ -539,9 +611,18 @@ def run_runtime(
     )
     input_paths = [path for path in (image_path, mask_path) if path is not None]
     validated_output = validate_output_root(output_root, input_paths)
-    return _run_runtime(
-        foreground,
-        runtime_id=runtime_id,
-        profile=profile,
-        output_root=validated_output,
-    )
+    try:
+        return _run_runtime(foreground, runtime_id=runtime_id, profile=profile, output_root=validated_output)
+    except Exception as error:
+        if validated_output.exists() and not (validated_output / 'failure.json').exists():
+            failure = {'runtimeId': runtime_id, 'status': 'RUNTIME_FAILED', 'errorType': type(error).__name__,
+                       'error': str(error), 'downstreamStopped': True,
+                       'completedArtifactNames': sorted(p.name for p in validated_output.iterdir() if p.is_file())}
+            progress = validated_output / 'stage-progress.json'
+            if progress.exists():
+                failure['completedStages'] = json.loads(progress.read_text(encoding='utf-8'))
+            try:
+                (validated_output / 'failure.json').write_bytes(_canonical_json(failure))
+            except OSError as cleanup_error:
+                raise M4RuntimeError(f'failure record could not be written; inspect residual output {validated_output}: {cleanup_error}') from error
+        raise

@@ -1,0 +1,12 @@
+# Isolated batch environment; never install into backend/R4 environments.
+numpy==2.2.6
+opencv-python-headless==4.12.0.88
+Pillow==12.3.0
+scikit-image==0.25.2
+shapely==2.1.2
+scipy==1.18.1
+imageio==2.37.4
+lazy-loader==0.5
+networkx==3.7
+packaging==26.3
+tifffile==2026.9.20
