@@ -77,3 +77,10 @@ export type StoryCardDraft =
   | { workId: string; status: 'ready_for_review'; suggestedTitle: string; suggestedStoryText: string }
   | { workId: string; status: 'needs_more_input'; followUpQuestions: [string, string, ...string[]] }
   | { workId: string; status: 'failed'; error: SharedError }
+
+/** Editable content derived from a ready candidate draft. It is not a formal StoryCard. */
+export interface StoryCardEditPayload {
+  workId: string
+  title: string
+  storyText: string
+}

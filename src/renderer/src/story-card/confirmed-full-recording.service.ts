@@ -31,8 +31,8 @@ function isFullRecording(recording: TemporaryFullRecordingInput): boolean {
 }
 
 /**
- * The only Phase 2 path that places a full recording ref onto a formal card.
- * UI confirmation and text editing are deliberately deferred to the next phase.
+ * Infrastructure helper for promoting a full recording and writing a formal card.
+ * The Phase 4 confirmation command supplies the edited title and story text.
  */
 export async function confirmStoryCardWithFullRecording(
   content: ConfirmedStoryCardContent,

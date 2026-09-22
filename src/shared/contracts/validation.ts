@@ -134,7 +134,7 @@ function requireUtcTimestamp(value: unknown, path: string, errors: ValidationIss
 }
 
 /** Never throws, including for regex-matching but calendar-invalid timestamps. */
-function isUtcIso8601Timestamp(value: string): boolean {
+export function isUtcIso8601Timestamp(value: string): boolean {
   if (!UTC_ISO_8601_MS.test(value)) return false
   try {
     const milliseconds = Date.parse(value)
