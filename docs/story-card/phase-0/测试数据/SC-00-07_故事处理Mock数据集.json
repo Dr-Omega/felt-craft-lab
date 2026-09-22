@@ -182,7 +182,7 @@
       "expected": {
         "status": "failed",
         "error": {
-          "code": "STORY_REWRITE_FAILED",
+          "code": "QA_TIMEOUT",
           "message": "故事暂时没有整理好，请稍后再试。",
           "retryable": true
         }

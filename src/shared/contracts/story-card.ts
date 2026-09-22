@@ -1,4 +1,5 @@
 import type { ResourceRef, UtcIso8601 } from './common'
+import type { SharedError } from './error'
 
 export interface StoryCardWorkElement {
   name: string
@@ -69,3 +70,10 @@ export type StoryCardInputRequest =
   | TemporaryFullRecordingInput
   | TemporaryPartialSupplementInput
   | StoryCardManualTextInputRequest
+
+/** A temporary story-processing result. It is never persisted as a formal StoryCard. */
+export type StoryCardDraft =
+  | { workId: string; status: 'processing' }
+  | { workId: string; status: 'ready_for_review'; suggestedTitle: string; suggestedStoryText: string }
+  | { workId: string; status: 'needs_more_input'; followUpQuestions: [string, string, ...string[]] }
+  | { workId: string; status: 'failed'; error: SharedError }

@@ -101,7 +101,7 @@ export class StoryCardStore implements StoryCardRepository {
   constructor(private readonly db: FeltCraftDatabase) {}
 
   async create(card: StoryCard): Promise<StoryCard> {
-    const record = structuredClone(card)
+    const record = storyCardRecord(card)
     await this.db.storyCards.add(record)
     return Object.freeze(structuredClone(record)) as StoryCard
   }
@@ -113,9 +113,20 @@ export class StoryCardStore implements StoryCardRepository {
   }
 
   async replace(card: StoryCard): Promise<StoryCard> {
-    const record = structuredClone(card)
+    const record = storyCardRecord(card)
     await this.db.storyCards.put(record)
     return Object.freeze(structuredClone(record)) as StoryCard
+  }
+}
+
+function storyCardRecord(card: StoryCard): StoryCard {
+  return {
+    workId: card.workId,
+    artworkImageRef: card.artworkImageRef,
+    title: card.title,
+    storyText: card.storyText,
+    originalAudioRef: card.originalAudioRef,
+    confirmedAt: card.confirmedAt
   }
 }
 

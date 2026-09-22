@@ -49,4 +49,22 @@ describe('StoryCardStore', () => {
     expect(await db.storyCards.count()).toBe(1)
     expect(await store.getByWorkId(first.workId)).toEqual(replacement)
   })
+
+  it('does not persist or return an intermediate transcript attached at runtime', async () => {
+    const store = new StoryCardStore(db)
+    const cardWithTranscript = {
+      ...storyCard(),
+      firstTranscript: '嗯，我把小兔子放在花园里。'
+    }
+
+    await store.create(cardWithTranscript)
+    await store.replace({ ...cardWithTranscript, title: '小兔子的花园故事（二）' })
+
+    const persisted = await db.storyCards.get(cardWithTranscript.workId)
+    const readCard = await store.getByWorkId(cardWithTranscript.workId)
+    expect(persisted).toEqual(storyCard({ title: '小兔子的花园故事（二）' }))
+    expect(readCard).toEqual(storyCard({ title: '小兔子的花园故事（二）' }))
+    expect(persisted).not.toHaveProperty('firstTranscript')
+    expect(readCard).not.toHaveProperty('firstTranscript')
+  })
 })
