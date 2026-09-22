@@ -115,3 +115,43 @@ Strictly disjoint or merely touching axis-aligned bounds skip positive-area
 intersection tests only; they never change geometry or exclude actual overlap.
 Cached/fresh validation equality and rejection of geometry mutation under an
 unchanged plan ID are regression-tested.
+
+## Seam declaration completeness hotfix
+
+The original `90b4201` checker verified only declared groups. For the synthetic
+`box(0,0,12,10).difference(box(3,3,8,7))` source, the original Git blob
+`8fdd7784f453c740aae4fffbd8ae6a5a985bf0d0` produced X/Y lengths 6/7, each with
+two physical seam records. Removing every group and Piece back-reference,
+without changing any polygon, incorrectly passed and scored zero. This was
+reproduced before edits; it is not a claim about omissions in the normal cases.
+
+`_actual_parents` now derives Base bodies directly from polygon parts of the
+observed union, and VISIBLE parents from individual observed Components.
+Actual positive-area intersections determine each Piece's source and parent;
+declared provenance must agree. Members reconstruct the complete parent with
+the existing area and boundary tolerances. Neither IDs, `baseChoices`, group
+source polygons nor previous PASS values determine these domains.
+
+Every multi-member actual parent requires exactly one full group. Its source
+identities, parent polygon and complete member set must match. Shared boundary
+geometry for every actual member pair determines required cuts. Declaration
+matching is bijective, including geometrically identical lines encoded with
+different redundant vertices. No positive-area cell or short seam is removed.
+Groups of two locally consistent members cannot conceal seams to other members
+of the same actual parent. Disconnected and point-contact Base bodies, and
+different Components of a same-color Region, remain independent parents.
+
+`_score` validates on every call (body-local observed domains for local
+options, full observed domains for global plans). `rank_plans` recomputes scores
+and ranks before runtime selection. `build_result(..., observed=...)` requires
+trusted source geometry and performs actual validation before returning any
+wire result. Independent `verify_and_render` derives sources from dereferenced
+Piece geometry and runs the same complete-parent checks, even after legal
+artifact rehashing and shared result signing. The assessment requires the new
+independent completeness gate bound to that exact result and evidence bytes.
+
+The report's `actualParents` records give role, Component identities, complete
+Piece membership, required split status and independently derived physical
+seam counts/lengths. Physical records retain their parent and two-sided identity;
+the existing projected-union score metrics are unchanged. No generator search,
+X/Y geometry, rank objective, frozen kernel or manufacturing status changes.

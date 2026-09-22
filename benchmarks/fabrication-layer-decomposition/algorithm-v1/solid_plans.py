@@ -269,7 +269,9 @@ def _local_plan(sources, body, body_index, slot, axis, split_cache=None):
                 "foregroundAreaCanonical": float(body.area), "globalHoleCount": len(body.interiors)}]}
 
 
-def _score(plan, sources):
+def _score(plan, sources, *, geometry_cache=None):
+    # A reusable scoring call must never interpret omitted declarations as zero.
+    plan["geometryChecks"] = validate_plan(sources, plan, geometry_cache=geometry_cache)
     all_lines, visible_lines = [], []
     pieces = {p["id"]: p for p in plan["pieces"]}
     original_boundaries = unary_union([s["polygon"].boundary for s in sources])
@@ -306,6 +308,60 @@ def _rank(plan):
     score = plan["score"]
     return [score["interiorSeamLengthCanonical"], score["visibleSeamLengthCanonical"],
             score["pieceCount"], score["vertexCount"], score["totalSeamLengthCanonical"]]
+
+
+def rank_plans(observed, plans):
+    """Revalidate and recompute every score before selection, including cache hits."""
+    cache = {}
+    for plan in plans:
+        plan["score"] = _score(plan, observed, geometry_cache=cache)
+        plan["rankingKey"] = _rank(plan)
+    return sorted(plans, key=lambda p: (p["rankingKey"], p["id"]))
+
+
+def _actual_parents(sources, foreground, pieces, geometry_cache):
+    """Derive physical parent domains without generator/group/ID-prefix claims.
+
+    Polygon parts of the observed union are the v1 Base bodies (point contacts
+    stay separate). Each observed Component is its own possible VISIBLE parent.
+    Only pure geometry is cached; member/provenance declarations are rechecked.
+    """
+    parents = []
+    for index, body in enumerate(_sort(_parts(foreground)), 1):
+        parents.append({"parent": f"BASE/body-{index}", "role": "BASE", "polygon": body,
+                        "sources": [s for s in sources if _intersects_area(s["polygon"], body)],
+                        "members": []})
+    for source in sources:
+        parents.append({"parent": "VISIBLE/" + source["componentId"], "role": "VISIBLE",
+                        "polygon": source["polygon"], "sources": [source], "members": []})
+    parent_by_piece = {}
+    for piece in pieces:
+        touching = [s for s in sources if _intersects_area(s["polygon"], piece["polygon"])]
+        actual_ids = sorted(s["componentId"] for s in touching)
+        if sorted(piece["sourceComponentIds"]) != actual_ids:
+            raise SolidPlanError(f"Piece {piece['id']}: actual source Components {actual_ids} differ from declaration")
+        candidates = [p for p in parents if p["role"] == piece["role"]
+                      and _intersects_area(p["polygon"], piece["polygon"])]
+        if len(candidates) != 1:
+            raise SolidPlanError(f"Piece {piece['id']}: must belong to exactly one actual {piece['role']} parent")
+        parent = candidates[0]
+        if _difference_area(piece["polygon"], parent["polygon"], geometry_cache) > _tolerance(parent["polygon"]):
+            raise SolidPlanError(f"{parent['parent']}: Piece {piece['id']} extends outside actual parent")
+        parent["members"].append(piece)
+        parent_by_piece[piece["id"]] = parent
+    for parent in parents:
+        members = parent["members"]
+        if not members:
+            if parent["role"] == "BASE":
+                raise SolidPlanError(f"{parent['parent']}: missing Base members")
+            continue
+        if len({p["colorSlotId"] for p in members}) != 1:
+            raise SolidPlanError(f"{parent['parent']}: mixed exact colors in one physical parent")
+        partition = unary_union([p["polygon"] for p in members])
+        if (_symmetric_difference_area(partition, parent["polygon"], geometry_cache) > _tolerance(parent["polygon"])
+                or _boundary_distance(partition, parent["polygon"], geometry_cache) > _boundary_tolerance(parent["polygon"])):
+            raise SolidPlanError(f"{parent['parent']}: members fail complete actual parent coverage")
+    return parents, parent_by_piece
 
 
 def validate_plan(observed, plan, *, geometry_cache=None):
@@ -381,6 +437,9 @@ def validate_plan(observed, plan, *, geometry_cache=None):
             raise SolidPlanError("dangling Base exposure source")
     if sum(p.area for p in rendered)-unary_union(rendered).area > tolerance:
         raise SolidPlanError("source presentations overlap")
+    parents, parent_by_piece = _actual_parents(sources, foreground, pieces, geometry_cache)
+    expected_parents = {p["parent"]: p for p in parents if len(p["members"]) > 1}
+    matched_parents = set()
     all_group_ids, grouped, all_seam_ids = set(), set(), set()
     for group in plan["splitGroups"]:
         if group["id"] in all_group_ids:
@@ -394,6 +453,19 @@ def validate_plan(observed, plan, *, geometry_cache=None):
                 raise SolidPlanError("split membership or back-reference mismatch")
             grouped.add(pid)
             members.append(by_id[pid])
+        parent = parent_by_piece[members[0]["id"]]
+        expected_ids = {p["id"] for p in parent["members"]}
+        if set(group["pieceIds"]) != expected_ids:
+            raise SolidPlanError(f"{parent['parent']}: SplitGroup {group['id']} must contain complete actual parent Pieces {sorted(expected_ids)}")
+        if parent["parent"] in matched_parents:
+            raise SolidPlanError(f"{parent['parent']}: duplicate parent SplitGroup {group['id']}")
+        matched_parents.add(parent["parent"])
+        actual_sources = sorted(s["componentId"] for s in parent["sources"])
+        if sorted(group.get("sourceComponentIds", [])) != actual_sources:
+            raise SolidPlanError(f"{parent['parent']}: SplitGroup {group['id']} source Component mismatch; expected {actual_sources}")
+        if (_symmetric_difference_area(parent["polygon"], group["sourcePolygon"], geometry_cache) > _tolerance(parent["polygon"])
+                or _boundary_distance(parent["polygon"], group["sourcePolygon"], geometry_cache) > _boundary_tolerance(parent["polygon"])):
+            raise SolidPlanError(f"{parent['parent']}: SplitGroup {group['id']} false source parent polygon")
         if set(group["sourceRegionIds"]) != {r for p in members for r in p["sourceRegionIds"]}:
             raise SolidPlanError("split source Region mismatch")
         partition = unary_union([p["polygon"] for p in members])
@@ -401,29 +473,51 @@ def validate_plan(observed, plan, *, geometry_cache=None):
             raise SolidPlanError("SplitGroup fails source conservation")
         expected = _group_seams(members, group["id"])
         if not expected or len(expected) != len(group["seams"]):
-            raise SolidPlanError("missing or duplicate seam record")
+            raise SolidPlanError(f"{parent['parent']}: SplitGroup {group['id']}: missing or duplicate seam record")
+        matched_seams = set()
         for seam in group["seams"]:
             if seam["id"] in all_seam_ids:
                 raise SolidPlanError("duplicate seam identity")
             all_seam_ids.add(seam["id"])
             a, b = seam["pieceIds"]
             if a == b or a not in group["pieceIds"] or b not in group["pieceIds"]:
-                raise SolidPlanError("seam endpoints must be two member Pieces")
+                raise SolidPlanError(f"{parent['parent']}: seam {seam['id']} endpoints must be two member Pieces")
             line = seam["polyline"]
             if not isinstance(line, LineString) or not line.is_valid or line.length <= 0:
                 raise SolidPlanError("invalid seam geometry")
             if not math.isfinite(seam["lengthCanonical"]) or abs(line.length-seam["lengthCanonical"]) > 1e-8:
-                raise SolidPlanError("seam length measurement mismatch")
+                raise SolidPlanError(f"{parent['parent']}: seam {seam['id']} length measurement mismatch")
             matches = [s for s in expected if set(s["pieceIds"]) == {a,b} and line.equals(s["polyline"])]
             if len(matches) != 1:
-                raise SolidPlanError("seam does not equal actual shared cut boundary")
+                raise SolidPlanError(f"{parent['parent']}: seam {seam['id']} does not equal actual shared cut boundary")
+            expected_id = matches[0]["id"]
+            if expected_id in matched_seams:
+                raise SolidPlanError(f"{parent['parent']}: seam {seam['id']} duplicates an actual physical seam")
+            matched_seams.add(expected_id)
         signatures = [(tuple(sorted(s["pieceIds"])), _key(s["polyline"])) for s in group["seams"]]
         if len(set(signatures)) != len(signatures):
             raise SolidPlanError("duplicate physical seam geometry")
+    missing = sorted(set(expected_parents) - matched_parents)
+    if missing:
+        detail = {name: [p["id"] for p in expected_parents[name]["members"]] for name in missing}
+        raise SolidPlanError(f"missing actual parent SplitGroup declarations: {detail}")
     for piece in pieces:
         if (piece["splitGroupId"] is not None) != (piece["id"] in grouped):
             raise SolidPlanError("unrecorded split membership")
+    completeness = []
+    for parent in parents:
+        if not parent["members"]:
+            continue
+        expected = _group_seams(parent["members"], parent["parent"])
+        completeness.append({"parent": parent["parent"], "role": parent["role"],
+            "sourceComponentIds": sorted(s["componentId"] for s in parent["sources"]),
+            "pieceIds": sorted(p["id"] for p in parent["members"]),
+            "splitRequired": len(parent["members"]) > 1,
+            "physicalSeamRecordCount": len(expected),
+            "physicalSeamLengthCanonical": float(sum(s["lengthCanonical"] for s in expected)),
+            "declarationMatch": "PASS"})
     return {"solidGeometry": "PASS", "sourceCoverage": "PASS", "splitConservation": "PASS",
+            "splitDeclarationCompleteness": "PASS", "actualParents": completeness,
             "frozenBoundaryAndVoids": "PASS", "addedSeams": "PASS", "baseSupport": "PASS",
             "maximumSourceSymmetricDifferenceArea": max_source_error,
             "foregroundSymmetricDifferenceArea": float(foreground_error),
@@ -457,7 +551,7 @@ def propose_plans(observed):
                     rejected.append({"bodyId": f"body-{body_index}", "colorSlotId": slot,
                                      "splitAxis": axis, "reason": str(exc)})
                     continue
-                option["score"] = _score(option, members)
+                option["score"] = _score(option, members, geometry_cache=geometry_cache)
                 options.append(option)
         if not options:
             raise SolidPlanError("No valid Base/solid partition for body: " + json.dumps(rejected, sort_keys=True))
@@ -478,7 +572,7 @@ def propose_plans(observed):
         plan["id"] = "m7-plan-" + hashlib.sha256(signature.encode()).hexdigest()[:16]
         plan["geometryChecks"] = validate_plan(sources, plan, geometry_cache=geometry_cache)
         plan["rejectedCandidates"] = rejected
-        plan["score"] = _score(plan, sources)
+        plan["score"] = _score(plan, sources, geometry_cache=geometry_cache)
         plan["rankingKey"] = _rank(plan)
         plan["selectionReasons"] = ["Hard geometry, inherited boundary, global void, exact-color exposure and coverage checks passed.",
             "Rank experimentally by exposed interior seam length, total exposed seam length, then piece/vertex count and total cut length.",

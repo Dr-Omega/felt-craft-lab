@@ -154,6 +154,8 @@ def verify_and_render(result_wire: dict, geometry_document: dict, observed: list
     for group in payload["splitGroups"]:
         seams = [{**s, "polyline": dereference(s["geometry"], s["id"], "LineString")} for s in group["seams"]]
         plan["splitGroups"].append({**group, "seams": seams,
+            "sourceComponentIds": sorted({c for p in plan["pieces"] if p["id"] in group["pieceIds"]
+                                           for c in p["sourceComponentIds"]}),
             "sourcePolygon": object_geometry("source:"+group["id"], "Polygon")})
     try:
         checks = validate_plan(observed, plan)

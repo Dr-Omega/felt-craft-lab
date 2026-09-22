@@ -85,7 +85,7 @@ def serialize(plan, observed, size=16):
         "frozenRegionArtifactId": original["id"], "frozenVectorArtifactId": original["id"],
         "colorSlots": list(slots.values()), "observedRegions": regions}
     result = build_result(input_value, plan, relations, bytes_artifact("fabrication-geometry.json", doc),
-                          bytes_artifact("relation-evidence.json", relations))
+                          bytes_artifact("relation-evidence.json", relations), observed=observed)
     return result, doc
 
 
@@ -181,7 +181,7 @@ class RerenderTest(unittest.TestCase):
         rehash(result, doc)
         group["seams"][0]["lengthCanonical"] += 1
         resign(result)
-        with self.assertRaisesRegex(RerenderError, "seam length"):
+        with self.assertRaisesRegex(RerenderError, "BASE/body-1: seam .* length measurement mismatch"):
             verify_and_render(result, doc, sources, (16,16))
 
     def test_wire_source_identity_and_exact_color_cannot_be_faked(self):

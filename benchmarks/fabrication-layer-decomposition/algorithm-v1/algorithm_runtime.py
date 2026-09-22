@@ -25,7 +25,7 @@ from m4_checks import candidate_polygons, render_polygons
 from layered_sources import parse_layered
 from m1_adapter import artifact, build_input, canonical_bytes, run_shared_validation
 from relations import assembly_relations, visual_relations, RelationError
-from solid_plans import propose_plans, SolidPlanError
+from solid_plans import propose_plans, rank_plans, SolidPlanError
 from result_wire import build_result, build_assessment
 from rerender import verify_and_render
 
@@ -238,7 +238,7 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
             obj["colorSlotId"] = slots[obj["regionId"]]
         visual = visual_relations(observed, labels, parsed)
         completed.append("M6_VISUAL_EVIDENCE")
-        plans = propose_plans(observed)
+        plans = rank_plans(observed, propose_plans(observed))
         comparisons, selected = [], None
         geometry_cache = {}
         # Evaluate relation hard constraints for every geometric alternative,
@@ -273,7 +273,7 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
                     "comparisons": comparisons, "rejectedGeometricCandidates": plan.get("rejectedCandidates", [])}
         _write(output / "relation-evidence.json", evidence)
         result = build_result(input_object, plan, relations,
-                              artifact(output / "fabrication-geometry.json"), artifact(output / "relation-evidence.json"))
+                              artifact(output / "fabrication-geometry.json"), artifact(output / "relation-evidence.json"), observed=observed)
         # Read back actual serialized objects. No original Piece geometry reaches
         # this independent checker, only observed source domains and wire refs.
         _write(output / "fabrication-result.json", result)

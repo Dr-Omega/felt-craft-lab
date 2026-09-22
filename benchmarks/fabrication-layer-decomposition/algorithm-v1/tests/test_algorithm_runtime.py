@@ -16,6 +16,7 @@ from algorithm_runtime import run_algorithm
 from generate_layered_examples import development_psd, development_svg
 from m1_adapter import run_shared_validation
 from m4_runtime import REPOSITORY_ROOT
+from solid_plans import propose_plans, SolidPlanError
 
 
 def ring_rgba():
@@ -126,6 +127,30 @@ class AlgorithmIntegrationTests(unittest.TestCase):
             failure = json.loads((root / "result/failure.json").read_text())
             self.assertIn("INDEPENDENT_PIECE_RERENDER", failure["completedStages"])
             self.assertIn("page failure", failure["error"])
+
+    def test_real_generated_candidate_with_omitted_groups_fails_before_selection(self):
+        def remove_groups(observed):
+            plans = propose_plans(observed)
+            self.assertTrue(plans[0]['splitGroups'])
+            plans[0]['splitGroups'] = []
+            for piece in plans[0]['pieces']:
+                piece['splitGroupId'] = None
+            # Keep the real old PASS and score to exercise the actual reusable
+            # rank boundary inside run_algorithm, not just direct validate_plan.
+            return plans
+
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            source = root / 'ring.png'
+            Image.fromarray(ring_rgba()).save(source)
+            with patch('algorithm_runtime.propose_plans', side_effect=remove_groups):
+                with self.assertRaisesRegex(SolidPlanError, 'missing actual parent SplitGroup.*BASE/body-1'):
+                    self.call(source, root / 'result')
+            failure = json.loads((root / 'result/failure.json').read_text())
+            self.assertIn('M6_VISUAL_EVIDENCE', failure['completedStages'])
+            self.assertNotIn('M7_PLAN_AND_M6_REVIEW', failure['completedStages'])
+            self.assertFalse((root / 'result/fabrication-result.json').exists())
+            self.assertFalse((root / 'result/report.json').exists())
 
 
 if __name__ == "__main__":

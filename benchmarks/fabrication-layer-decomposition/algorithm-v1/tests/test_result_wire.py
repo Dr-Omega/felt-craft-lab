@@ -25,6 +25,7 @@ class ResultWireTests(unittest.TestCase):
             {'componentId': 'R00002-C001', 'regionId': 'R00002', 'colorSlotId': 'RGB-143CE1', 'rgb': [20, 60, 225], 'polygon': center,
              'boundaryProvenance': {'source': 'SYNTHETIC_DEVELOPMENT_EXACT_VECTOR', 'edgeIds': ['inner']}},
         ]
+        self.observed = observed
         source_objects = {value['regionId']: mapping(value['polygon']) for value in observed}
         (root / 'development-source.json').write_bytes(canonical_bytes({'source': 'SYNTHETIC_DEVELOPMENT', 'objects': source_objects,
             'palette': {value['colorSlotId']: value['rgb'] for value in observed}}))
@@ -52,7 +53,7 @@ class ResultWireTests(unittest.TestCase):
         objects.update({'source:'+group['id']: mapping(group['sourcePolygon']) for group in plan['splitGroups']})
         (root / 'fabrication-geometry.json').write_bytes(canonical_bytes({'objects': objects}))
         (root / 'relation-evidence.json').write_bytes(canonical_bytes({'relations': relations, 'partitionChecks': validate_plan(observed, plan)}))
-        result = build_result(input_value, plan, relations, artifact(root / 'fabrication-geometry.json'), artifact(root / 'relation-evidence.json'))
+        result = build_result(input_value, plan, relations, artifact(root / 'fabrication-geometry.json'), artifact(root / 'relation-evidence.json'), observed=observed)
         rendered = verify_and_render(result, {'objects': objects}, observed, (10, 12))
         checks_data = {key: value for key, value in rendered.items() if not isinstance(value, np.ndarray)}
         (root / 'geometry-checks.json').write_bytes(canonical_bytes(checks_data))
@@ -62,7 +63,7 @@ class ResultWireTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             inp, plan, relations, geometry, evidence, checks, checks_data = self.fixture(Path(temp))
             before = copy.deepcopy(inp)
-            result = build_result(inp, plan, relations, geometry, evidence)
+            result = build_result(inp, plan, relations, geometry, evidence, observed=self.observed)
             self.assertEqual(inp, before)
             self.assertTrue(run_shared_validation(result=result)['ok'])
             self.assertTrue(result['payload']['splitGroups'])
@@ -75,7 +76,7 @@ class ResultWireTests(unittest.TestCase):
             self.assertEqual(assessment['checks']['purification']['status'], 'REVIEW_REQUIRED')
             self.assertEqual(assessment['checks']['sourceSemantics']['status'], 'REVIEW_REQUIRED')
             self.assertTrue(run_shared_validation(result=result, assessment=assessment)['ok'])
-            self.assertEqual(result, build_result(inp, plan, relations, geometry, evidence))
+            self.assertEqual(result, build_result(inp, plan, relations, geometry, evidence, observed=self.observed))
 
     def test_missing_proof_invalid_solid_and_bad_seam_fail_closed(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -83,15 +84,15 @@ class ResultWireTests(unittest.TestCase):
             bad = copy.deepcopy(plan)
             bad['geometryChecks']['sourceCoverage'] = 'FAIL'
             with self.assertRaisesRegex(ResultWireError, 'not passed'):
-                build_result(inp, bad, relations, geometry, evidence)
+                build_result(inp, bad, relations, geometry, evidence, observed=self.observed)
             bad = copy.deepcopy(plan)
             bad['pieces'][0]['polygon'] = box(0, 0, 12, 10).difference(box(3, 3, 8, 7))
             with self.assertRaisesRegex(ResultWireError, 'retaining an interior hole'):
-                build_result(inp, bad, relations, geometry, evidence)
+                build_result(inp, bad, relations, geometry, evidence, observed=self.observed)
             bad = copy.deepcopy(plan)
             bad['splitGroups'][0]['seams'][0]['lengthCanonical'] += 1
             with self.assertRaisesRegex(ResultWireError, 'Seam measurement'):
-                build_result(inp, bad, relations, geometry, evidence)
+                build_result(inp, bad, relations, geometry, evidence, observed=self.observed)
 
     def test_artifact_collision_dangling_reference_and_cycle_are_rejected(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -99,22 +100,22 @@ class ResultWireTests(unittest.TestCase):
             bad = copy.deepcopy(inp)
             bad['artifacts'].append({**geometry, 'sha256': '0'*64})
             with self.assertRaisesRegex(ResultWireError, 'Conflicting artifact'):
-                build_result(bad, plan, relations, geometry, evidence)
+                build_result(bad, plan, relations, geometry, evidence, observed=self.observed)
             bad_relations = copy.deepcopy(relations)
             assembly = next(value for value in bad_relations['records'] if value['kind'] == 'ASSEMBLY_PRECEDENCE' and value['status'] == 'RESOLVED')
             bad_relations['records'].append({**assembly, 'id': 'reverse-cycle', 'direction': 'B_TO_A' if assembly['direction'] == 'A_TO_B' else 'A_TO_B'})
             with self.assertRaisesRegex(ResultWireError, 'Shared FabricationResult rejected'):
-                build_result(inp, plan, bad_relations, geometry, evidence)
+                build_result(inp, plan, bad_relations, geometry, evidence, observed=self.observed)
             bad_plan = copy.deepcopy(plan)
             bad_plan['pieces'][0]['sourceRegionIds'] = ['missing']
             with self.assertRaisesRegex(ResultWireError, 'Shared FabricationResult rejected'):
-                build_result(inp, bad_plan, relations, geometry, evidence)
+                build_result(inp, bad_plan, relations, geometry, evidence, observed=self.observed)
 
     def test_assessment_rejects_failed_or_unbound_independent_checks(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
             inp, plan, relations, geometry, evidence, checks, checks_data = self.fixture(root)
-            result = build_result(inp, plan, relations, geometry, evidence)
+            result = build_result(inp, plan, relations, geometry, evidence, observed=self.observed)
             bad = copy.deepcopy(checks_data)
             bad['mismatchPixelCount'] = 1
             with self.assertRaisesRegex(ResultWireError, 'evidence artifact identity'):
@@ -127,7 +128,7 @@ class ResultWireTests(unittest.TestCase):
                 lambda value: value.update(topologicalOrder=list(reversed(value['topologicalOrder']))),
             ]
             mutations.extend(lambda value, gate=gate: value['geometryChecks'].update({gate: 'FAIL'})
-                             for gate in ('solidGeometry', 'frozenBoundaryAndVoids', 'sourceCoverage', 'splitConservation', 'addedSeams', 'baseSupport'))
+                             for gate in ('solidGeometry', 'frozenBoundaryAndVoids', 'sourceCoverage', 'splitConservation', 'addedSeams', 'baseSupport', 'splitDeclarationCompleteness'))
             for mutate in mutations:
                 bad = copy.deepcopy(checks_data)
                 mutate(bad)
@@ -138,7 +139,7 @@ class ResultWireTests(unittest.TestCase):
     def test_actual_independent_checks_cannot_be_replayed_for_a_different_result(self):
         with tempfile.TemporaryDirectory() as temp:
             inp, plan, relations, geometry, evidence, checks, checks_data = self.fixture(Path(temp))
-            original = build_result(inp, plan, relations, geometry, evidence)
+            original = build_result(inp, plan, relations, geometry, evidence, observed=self.observed)
             self.assertEqual(checks_data['resultSha256'], original['identity']['sha256'])
             altered = copy.deepcopy(original)
             next(record for record in altered['payload']['input']['artifacts']

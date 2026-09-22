@@ -25,6 +25,23 @@ Do not infer human acceptance from test counts.
 
 ## Full test commands
 
+The seam-completeness hotfix adds `tests/test_seam_completeness.py`: whole-group,
+role-specific and fake two-member-subgroup omissions; false parent/source/member
+claims; missing/duplicate/endpoint/length seams; warm-cache metadata mutations;
+direct scoring/ranking/result serialization; and correctly rehashed/signed wire
+mutations rejected by independent geometry. Controls cover legal multi-groups,
+zero/nonzero seams, disconnected/point-contact bodies, same-color Components,
+original color boundaries, cross-role support, coincident physical seams and a
+positive tiny Piece/short seam. No original tests are removed. Existing wire
+fixtures now supply mandatory trusted `observed` domains; the seam-length error
+assertion now also checks its parent/located seam diagnostic.
+
+Compare normal examples with the preserved `90b4201` outputs: selected Base
+choices, exact Piece/source/seam objects, split membership and candidate scores
+and ordering. Compare new development versus clean runs separately for full
+stable identities. Old/new recipe/result SHA equality is not expected because
+implementation identity and independently measured completeness evidence change.
+
 Use the following six Python discovery roots with
 `PYTHON -m unittest discover -s ROOT -v`:
 

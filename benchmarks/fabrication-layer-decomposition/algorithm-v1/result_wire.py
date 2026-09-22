@@ -12,6 +12,7 @@ import math
 
 from m1_adapter import canonical_bytes, run_shared_validation
 from relations import validate_relations
+from solid_plans import validate_plan, SolidPlanError
 
 
 class ResultWireError(ValueError):
@@ -37,13 +38,12 @@ def _add_artifact(input_object, record):
         input_object["artifacts"].append(copy.deepcopy(record))
 
 
-def build_result(input_object, plan, relations, geometry_artifact, evidence_artifact):
+def build_result(input_object, plan, relations, geometry_artifact, evidence_artifact, *, observed):
     """Convert actual M7 polygons/splits and M6 records; sign with shared JS.
 
     Artifacts use objects keyed by Piece.id, ``exposure:<zero-based index>``
-    and AddedSeam.id. Geometry/source conservation must have passed M7's
-    independent validate_plan before this conversion. This boundary additionally
-    checks actual solidity, seam geometry and expected validation results.
+    and AddedSeam.id. Trusted observed domains are required: a cached PASS or
+    self-consistent subset of declared split groups is not a geometry proof.
     """
     for gate in ("solidGeometry", "sourceCoverage", "splitConservation", "frozenBoundaryAndVoids"):
         if plan.get("geometryChecks", {}).get(gate) != "PASS":
@@ -97,6 +97,10 @@ def build_result(input_object, plan, relations, geometry_artifact, evidence_arti
     checked = run_shared_validation(result=result, sign_result=True)
     if not checked["ok"]:
         raise ResultWireError("Shared FabricationResult rejected: " + str(checked.get("result")))
+    try:
+        validate_plan(observed, plan)
+    except SolidPlanError as exc:
+        raise ResultWireError("Actual parent/seam verification failed: " + str(exc)) from exc
     return checked["signedResult"]
 
 
@@ -116,7 +120,7 @@ def build_assessment(result, evidence_artifact, checks):
         raise ResultWireError("Actual geometry checks do not match the evidence artifact identity")
     if checks.get("resultSha256") != result["identity"]["sha256"]:
         raise ResultWireError("Independent geometry checks do not bind the assessed result identity")
-    for name in ("solidGeometry", "frozenBoundaryAndVoids", "sourceCoverage", "splitConservation", "addedSeams", "baseSupport"):
+    for name in ("solidGeometry", "frozenBoundaryAndVoids", "sourceCoverage", "splitConservation", "addedSeams", "baseSupport", "splitDeclarationCompleteness"):
         if checks.get("geometryChecks", {}).get(name) != "PASS":
             raise ResultWireError("Independent geometry check not passed: " + name)
     if checks.get("renderBackStatus") != "PASS" or type(checks.get("mismatchPixelCount")) is not int or checks["mismatchPixelCount"] != 0:
