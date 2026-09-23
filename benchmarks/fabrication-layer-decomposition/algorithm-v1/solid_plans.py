@@ -14,6 +14,7 @@ import math
 from shapely.geometry import Polygon, LineString
 from shapely.ops import split, unary_union, linemerge
 from shapely import normalize
+from shapely.strtree import STRtree
 
 
 class SolidPlanError(ValueError):
@@ -91,13 +92,58 @@ def _difference_area(a, b, geometry_cache=None):
     return value
 
 
-def _intersects_area(a, b):
+def _intersects_area(a, b, geometry_cache=None):
     # An exact axis-aligned bbox broad phase cannot suppress a positive-area
     # intersection, and avoids many GEOS overlays across disconnected bodies.
     ax0, ay0, ax1, ay1 = a.bounds
     bx0, by0, bx1, by1 = b.bounds
-    return (max(ax0, bx0) < min(ax1, bx1) and max(ay0, by0) < min(ay1, by1)
-            and a.intersection(b).area > 0)
+    if not (max(ax0, bx0) < min(ax1, bx1) and max(ay0, by0) < min(ay1, by1)):
+        return False
+    key = ("positive-area-intersection", a.wkb, b.wkb) if geometry_cache is not None else None
+    if geometry_cache is not None and key in geometry_cache:
+        return geometry_cache[key]
+    value = a.intersection(b).area > 0
+    if geometry_cache is not None:
+        geometry_cache[key] = value
+    return value
+
+
+class _AreaIndex:
+    """Call-local broad phase; never retains identities or validation verdicts.
+
+    STRtree returns every overlapping envelope, including duplicates and edge
+    contacts. The original exact positive-area operation remains the narrow
+    phase. Restore input order so no downstream numeric/identity ordering moves.
+    The cache contains only a pure predicate of both complete WKB operands.
+    """
+
+    def __init__(self, items, geometry_cache):
+        self.items = items
+        self.tree = STRtree([item["polygon"] for item in items])
+        self.cache = geometry_cache
+        # Shapely geometries are immutable. These summaries live only for this
+        # index invocation; declarations and their metadata are never cached.
+        self.bounds = [item["polygon"].bounds for item in items]
+        self.wkb = [item["polygon"].wkb for item in items] if geometry_cache is not None else None
+
+    def touching(self, polygon):
+        bx0, by0, bx1, by1 = polygon.bounds
+        query_wkb = polygon.wkb if self.cache is not None else None
+        result = []
+        for i in sorted(self.tree.query(polygon).tolist()):
+            ax0, ay0, ax1, ay1 = self.bounds[i]
+            if not (max(ax0, bx0) < min(ax1, bx1) and max(ay0, by0) < min(ay1, by1)):
+                continue
+            key = ("positive-area-intersection", self.wkb[i], query_wkb) if self.cache is not None else None
+            if self.cache is not None and key in self.cache:
+                intersects = self.cache[key]
+            else:
+                intersects = self.items[i]["polygon"].intersection(polygon).area > 0
+                if self.cache is not None:
+                    self.cache[key] = intersects
+            if intersects:
+                result.append(self.items[i])
+        return result
 
 
 def _require_polygon(polygon, label, *, solid=False):
@@ -327,21 +373,23 @@ def _actual_parents(sources, foreground, pieces, geometry_cache):
     Only pure geometry is cached; member/provenance declarations are rechecked.
     """
     parents = []
+    source_index = _AreaIndex(sources, geometry_cache)
     for index, body in enumerate(_sort(_parts(foreground)), 1):
         parents.append({"parent": f"BASE/body-{index}", "role": "BASE", "polygon": body,
-                        "sources": [s for s in sources if _intersects_area(s["polygon"], body)],
+                        "sources": source_index.touching(body),
                         "members": []})
     for source in sources:
         parents.append({"parent": "VISIBLE/" + source["componentId"], "role": "VISIBLE",
                         "polygon": source["polygon"], "sources": [source], "members": []})
     parent_by_piece = {}
+    parent_indices = {role: _AreaIndex([p for p in parents if p["role"] == role], geometry_cache)
+                      for role in ("BASE", "VISIBLE")}
     for piece in pieces:
-        touching = [s for s in sources if _intersects_area(s["polygon"], piece["polygon"])]
+        touching = source_index.touching(piece["polygon"])
         actual_ids = sorted(s["componentId"] for s in touching)
         if sorted(piece["sourceComponentIds"]) != actual_ids:
             raise SolidPlanError(f"Piece {piece['id']}: actual source Components {actual_ids} differ from declaration")
-        candidates = [p for p in parents if p["role"] == piece["role"]
-                      and _intersects_area(p["polygon"], piece["polygon"])]
+        candidates = parent_indices[piece["role"]].touching(piece["polygon"])
         if len(candidates) != 1:
             raise SolidPlanError(f"Piece {piece['id']}: must belong to exactly one actual {piece['role']} parent")
         parent = candidates[0]
