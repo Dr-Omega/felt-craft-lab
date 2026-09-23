@@ -20,6 +20,9 @@ import {
   ProjectStore
 } from '../persistence'
 import ProjectPreviewModal from '../components/library/ProjectPreviewModal.vue'
+import PlazaUploadDialog from '../components/plaza/PlazaUploadDialog.vue'
+import { listMySharedProjectIds, publishPlazaPost, withdrawPlazaPost } from '../services/plaza-api'
+import { loadPlazaSession } from '../services/plaza-session'
 import PsdFrameStage from '../components/shell/PsdFrameStage.vue'
 import { friendlyRelativeTime } from '../util/friendly-time'
 import { friendlyUserError, withDbRetry } from '../util/friendly-user-error'
@@ -41,6 +44,9 @@ const confirmDelete = ref<
 >(null)
 const previewProject = ref<ProjectRecord | null>(null)
 const previewOpen = ref(false)
+const sharedProjectIds = ref<Set<string>>(new Set())
+const uploadTarget = ref<ProjectRecord | null>(null)
+const uploadOpen = ref(false)
 
 const themes = listCatalogThemes()
 const visibleAssets = computed(() => {
@@ -66,6 +72,20 @@ function nextBookSpread(): void {
   bookSpread.value = 1
 }
 
+async function refreshSharedProjectIds(): Promise<void> {
+  const session = loadPlazaSession()
+  if (!session?.token) {
+    sharedProjectIds.value = new Set()
+    return
+  }
+  try {
+    const ids = await listMySharedProjectIds(session.token)
+    sharedProjectIds.value = new Set(ids)
+  } catch {
+    sharedProjectIds.value = new Set()
+  }
+}
+
 async function refreshLists(): Promise<void> {
   try {
     await withDbRetry(async () => {
@@ -76,8 +96,74 @@ async function refreshLists(): Promise<void> {
       const accessRows = await new AssetAccessStore(db).listForUser(DEFAULT_USER_ID)
       unlockedIds.value = new Set(accessRows.filter((row) => isAssetUnlocked(row)).map((row) => row.assetId))
     })
+    await refreshSharedProjectIds()
   } catch (error) {
     message.value = friendlyUserError(error)
+  }
+}
+
+function isProjectShared(project: ProjectRecord): boolean {
+  return sharedProjectIds.value.has(project.projectId)
+}
+
+function askUploadProject(project: ProjectRecord): void {
+  if (!project.previewUrl) {
+    message.value = '请先保存带预览图的作品后再上传。'
+    return
+  }
+  if (isProjectShared(project)) return
+  uploadTarget.value = project
+  uploadOpen.value = true
+}
+
+function cancelUpload(): void {
+  uploadOpen.value = false
+  uploadTarget.value = null
+}
+
+async function confirmUpload(title: string): Promise<void> {
+  const project = uploadTarget.value
+  const session = loadPlazaSession()
+  if (!project?.previewUrl || !session?.token) {
+    message.value = '请先登录后再上传。'
+    return
+  }
+  busy.value = true
+  message.value = ''
+  try {
+    await publishPlazaPost({
+      token: session.token,
+      projectId: project.projectId,
+      title,
+      previewRef: project.previewUrl
+    })
+    message.value = '已上传到分享广场'
+    uploadOpen.value = false
+    uploadTarget.value = null
+    await refreshSharedProjectIds()
+  } catch (error) {
+    message.value = friendlyUserError(error)
+  } finally {
+    busy.value = false
+  }
+}
+
+async function withdrawSharedProject(project: ProjectRecord): Promise<void> {
+  const session = loadPlazaSession()
+  if (!session?.token) {
+    message.value = '请先登录后再操作。'
+    return
+  }
+  busy.value = true
+  message.value = ''
+  try {
+    await withdrawPlazaPost(session.token, project.projectId)
+    message.value = '已从分享广场撤回'
+    await refreshSharedProjectIds()
+  } catch (error) {
+    message.value = friendlyUserError(error)
+  } finally {
+    busy.value = false
   }
 }
 
@@ -254,15 +340,17 @@ onUnmounted(() => {
 
             <p v-if="drafts.length === 0" class="book-empty">还没有草稿，新建一件作品开始吧。</p>
             <ul v-else class="book-list">
-              <li v-for="draft in drafts" :key="draft.draftId" class="book-item text-box-surface">
-                <div>
+              <li v-for="draft in drafts" :key="draft.draftId" class="book-item book-item-draft text-box-surface">
+                <div class="book-item-main">
                   <h4>{{ draftLabel(draft) }}</h4>
                   <p class="muted">{{ friendlyRelativeTime(draft.updatedAt) }} · 草稿</p>
-                </div>
-                <div class="book-item-actions">
-                  <button type="button" class="primary" :disabled="busy" @click="openDraft(draft)">继续</button>
-                  <button type="button" class="ghost" :disabled="busy" @click="openDraftProjection(draft)">展示</button>
-                  <button type="button" class="ghost" :disabled="busy" @click="askRemoveDraft(draft)">删除</button>
+                  <button type="button" class="primary book-item-continue" :disabled="busy" @click="openDraft(draft)">
+                    继续
+                  </button>
+                  <div class="book-item-actions-row">
+                    <button type="button" class="ghost" :disabled="busy" @click="openDraftProjection(draft)">展示</button>
+                    <button type="button" class="ghost" :disabled="busy" @click="askRemoveDraft(draft)">删除</button>
+                  </div>
                 </div>
               </li>
             </ul>
@@ -290,12 +378,31 @@ onUnmounted(() => {
                 <div class="book-item-body">
                   <h4>{{ projectLabel(project) }}</h4>
                   <p class="muted">{{ friendlyRelativeTime(project.updatedAt) }} · 作品</p>
-                  <div class="book-item-actions">
-                    <button type="button" class="primary" :disabled="busy" @click="continueProject(project)">打开</button>
+                  <button type="button" class="primary book-item-open" :disabled="busy" @click="continueProject(project)">打开</button>
+                  <div class="book-item-actions-grid">
                     <button type="button" class="ghost" :disabled="busy" @click="openProjectProjection(project)">展示</button>
                     <button type="button" class="ghost" :disabled="busy" @click="showProjectPreview(project)">预览</button>
                     <button type="button" class="ghost" :disabled="busy" @click="askRemoveProject(project)">删除</button>
+                    <button
+                      v-if="!isProjectShared(project)"
+                      type="button"
+                      class="ghost"
+                      :disabled="busy || !project.previewUrl"
+                      @click="askUploadProject(project)"
+                    >
+                      上传
+                    </button>
+                    <button v-else type="button" class="ghost" disabled aria-disabled="true">已分享</button>
                   </div>
+                  <button
+                    v-if="isProjectShared(project)"
+                    type="button"
+                    class="ghost book-item-withdraw"
+                    :disabled="busy"
+                    @click="withdrawSharedProject(project)"
+                  >
+                    撤回分享
+                  </button>
                 </div>
               </li>
             </ul>
@@ -388,6 +495,14 @@ onUnmounted(() => {
       @close="closeProjectPreview"
       @open="openProjectFromPreview"
     />
+
+    <PlazaUploadDialog
+      :open="uploadOpen"
+      :default-title="uploadTarget ? projectLabel(uploadTarget) : ''"
+      :busy="busy"
+      @close="cancelUpload"
+      @confirm="confirmUpload"
+    />
   </section>
 </template>
 
@@ -402,7 +517,8 @@ onUnmounted(() => {
 .library :deep(.psd-frame-stage__content),
 .library :deep(.psd-frame-stage__footer),
 .library .confirm-backdrop,
-.library :deep(.project-preview-backdrop) {
+.library :deep(.project-preview-backdrop),
+.library :deep(.plaza-upload-backdrop) {
   pointer-events: auto;
 }
 
@@ -540,9 +656,31 @@ onUnmounted(() => {
   padding: 8px 10px;
 }
 
+.book-item-draft {
+  grid-template-columns: 1fr;
+}
+
+.book-item-main {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.book-item-continue {
+  width: fit-content;
+  justify-self: start;
+}
+
+.book-item-actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
 .book-item-project {
-  grid-template-columns: 56px 1fr;
-  align-items: stretch;
+  grid-template-columns: 128px 1fr;
+  align-items: start;
+  gap: 12px;
 }
 
 .book-item h4 {
@@ -550,26 +688,36 @@ onUnmounted(() => {
   font-size: 0.95rem;
 }
 
-.book-item-actions {
-  display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+.book-item-actions-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  width: 100%;
+  max-width: 220px;
 }
 
-.book-item-project .book-item-actions {
-  justify-content: flex-start;
-}
-
-.book-item-actions button {
+.book-item-actions-grid button,
+.book-item-actions-row button,
+.book-item-open,
+.book-item-withdraw {
   padding: 6px 10px;
   border-radius: 10px;
   font-size: 0.85rem;
 }
 
+.book-item-open {
+  width: fit-content;
+  justify-self: start;
+}
+
+.book-item-withdraw {
+  width: fit-content;
+  margin-top: 2px;
+}
+
 .book-item-thumb {
-  width: 56px;
-  height: 56px;
+  width: 128px;
+  height: 128px;
   padding: 0;
   border: 3px solid var(--text-box-border, #d4a843);
   border-radius: 12px;

@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { mkdirSync, renameSync, unlinkSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 'node:fs'
 import type { ResourceRef, SharedError } from '@shared/contracts'
 import { toSharedError } from '@shared/contracts/error'
 import { buildFeltResourceRef, parseFeltResourceRef } from '@shared/resource'
@@ -114,4 +114,43 @@ export function deletePreviewPng(rawRef: unknown, roots: ResourceRoots): Preview
   }
 
   return { ok: true }
+}
+
+export type PreviewReadResult =
+  | { ok: true; bytes: Buffer; mimeType: 'image/png' }
+  | { ok: false; error: SharedError }
+
+function failRead(code: SharedError['code'], message: string, retryable = false): PreviewReadResult {
+  return {
+    ok: false,
+    error: toSharedError({ code, message, retryable }, code)
+  }
+}
+
+/** Read a saved project preview PNG for plaza upload (felt-resource ref only). */
+export function readPreviewPngBytes(rawRef: unknown, roots: ResourceRoots): PreviewReadResult {
+  if (typeof rawRef !== 'string') {
+    return failRead('INVALID_ARGUMENT', '预览引用必须是字符串。')
+  }
+  const parsed = parseFeltResourceRef(rawRef)
+  if (!parsed || parsed.kind !== 'preview') {
+    return failRead('INVALID_ARGUMENT', '只能读取 felt-resource://preview/... 预览引用。')
+  }
+  const resolved = resolveFeltResourcePath(parsed.ref, roots, { requireExists: true })
+  if (!resolved.ok) {
+    return { ok: false, error: resolved.error }
+  }
+  if (resolved.kind !== 'preview') {
+    return failRead('INVALID_ARGUMENT', '不允许读取非 preview 资源。')
+  }
+  try {
+    const bytes = readFileSync(resolved.absolutePath)
+    const trusted = parseTrustedPngBytes(bytes)
+    if (!trusted.ok) {
+      return failRead('INVALID_ARGUMENT', '预览图格式无效。')
+    }
+    return { ok: true, bytes: trusted.bytes, mimeType: 'image/png' }
+  } catch {
+    return failRead('UNKNOWN', '预览读取失败，请稍后重试。', true)
+  }
 }

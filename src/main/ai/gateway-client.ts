@@ -26,12 +26,17 @@ function authHeaders(auth?: GatewayAuth): Record<string, string> {
   }
 }
 
-function unconfiguredError(reason: string): SharedError {
+function isPlazaGatewayPath(path: string): boolean {
+  return path.startsWith('/api/plaza')
+}
+
+function unconfiguredError(reason: string, path: string): SharedError {
+  const plaza = isPlazaGatewayPath(path)
   if (reason === 'remote_http') {
     return toSharedError(
       {
         code: 'UNKNOWN',
-        message: '正式 AI 网关必须使用 HTTPS。',
+        message: plaza ? '分享广场服务地址无效。' : '正式 AI 网关必须使用 HTTPS。',
         retryable: false
       },
       'UNKNOWN'
@@ -41,7 +46,7 @@ function unconfiguredError(reason: string): SharedError {
     return toSharedError(
       {
         code: 'UNKNOWN',
-        message: 'AI 网关地址无效。',
+        message: plaza ? '分享广场服务地址无效。' : 'AI 网关地址无效。',
         retryable: false
       },
       'UNKNOWN'
@@ -50,11 +55,22 @@ function unconfiguredError(reason: string): SharedError {
   return toSharedError(
     {
       code: 'UNKNOWN',
-      message: 'AI 网关未配置。请在构建时设置 FELT_AI_GATEWAY_BASE_URL 或运行时 AI_GATEWAY_BASE_URL。',
+      message: plaza
+        ? '分享广场服务未配置。'
+        : 'AI 网关未配置。请在构建时设置 FELT_AI_GATEWAY_BASE_URL 或运行时 AI_GATEWAY_BASE_URL。',
       retryable: false
     },
     'UNKNOWN'
   )
+}
+
+function gatewayInvalidResponseMessage(path: string): string {
+  return isPlazaGatewayPath(path) ? '分享广场响应无效。' : 'AI 网关响应无效。'
+}
+
+function gatewayConnectionMessage(path: string, cancelled: boolean): string {
+  if (cancelled) return '请求已取消。'
+  return isPlazaGatewayPath(path) ? '分享广场服务未连接。' : '无法连接 AI 服务，请稍后重试。'
 }
 
 export async function gatewayJson(
@@ -69,11 +85,13 @@ export async function gatewayJson(
     isPackaged?: boolean
     auth?: GatewayAuth
     skipAuth?: boolean
+    /** Share-plaza user JWT (no installation header). */
+    plazaUserToken?: string
   } = {}
 ): Promise<GatewayJsonResult> {
   const resolved = resolveAiGatewayBaseUrlResult({ isPackaged: init.isPackaged })
   if (!resolved.ok) {
-    return { ok: false, error: unconfiguredError(resolved.reason) }
+    return { ok: false, error: unconfiguredError(resolved.reason, path) }
   }
 
   const url = `${resolved.baseUrl}${path.startsWith('/') ? path : `/${path}`}`
@@ -90,7 +108,11 @@ export async function gatewayJson(
   try {
     const headers: Record<string, string> = {
       ...(init.headers || {}),
-      ...(init.skipAuth ? {} : authHeaders(init.auth))
+      ...(init.plazaUserToken
+        ? { Authorization: `Bearer ${init.plazaUserToken}` }
+        : init.skipAuth
+          ? {}
+          : authHeaders(init.auth))
     }
     const response = await fetch(url, {
       method: init.method || 'GET',
@@ -111,7 +133,11 @@ export async function gatewayJson(
           return {
             ok: false,
             error: toSharedError(
-              { code: 'INVALID_ARGUMENT', message: 'AI 网关响应过大。', retryable: false },
+              {
+                code: 'INVALID_ARGUMENT',
+                message: isPlazaGatewayPath(path) ? '分享广场响应过大。' : 'AI 网关响应过大。',
+                retryable: false
+              },
               'INVALID_ARGUMENT'
             )
           }
@@ -128,7 +154,7 @@ export async function gatewayJson(
         return {
           ok: false,
           error: toSharedError(
-            { code: 'UNKNOWN', message: 'AI 网关响应无效。', retryable: true },
+            { code: 'UNKNOWN', message: gatewayInvalidResponseMessage(path), retryable: true },
             'UNKNOWN'
           )
         }
@@ -140,7 +166,7 @@ export async function gatewayJson(
         error: toSharedError(
           {
             code: 'UNKNOWN',
-            message: 'AI 网关响应无效。',
+            message: gatewayInvalidResponseMessage(path),
             retryable: true
           },
           'UNKNOWN'
@@ -157,7 +183,7 @@ export async function gatewayJson(
       error: toSharedError(
         {
           code: cancelled ? 'REQUEST_CANCELLED' : 'UNKNOWN',
-          message: cancelled ? '请求已取消。' : '无法连接 AI 服务，请稍后重试。',
+          message: gatewayConnectionMessage(path, cancelled),
           retryable: !cancelled
         },
         cancelled ? 'REQUEST_CANCELLED' : 'UNKNOWN'

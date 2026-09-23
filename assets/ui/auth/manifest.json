@@ -17,6 +17,11 @@
       "bbox": { "left": 596, "top": 182, "right": 1244, "bottom": 898, "width": 648, "height": 716 }
     },
     {
+      "slug": "register-panel",
+      "file": "register-panel.png",
+      "bbox": { "left": 596, "top": 182, "right": 1244, "bottom": 898, "width": 648, "height": 716 }
+    },
+    {
       "slug": "name-input",
       "file": "name-input.png",
       "bbox": { "left": 777, "top": 427, "right": 1159, "bottom": 504, "width": 382, "height": 77 }

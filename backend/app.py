@@ -41,6 +41,18 @@ from services.guards import (
     tts_provider_allowed,
 )
 from services.image_upload import ImageUploadError, save_uploaded_image
+from services.plaza_auth import (
+    authenticate_user,
+    issue_user_token,
+    parse_bearer_user_token,
+    register_user,
+    validate_password,
+    validate_username,
+    verify_user_token,
+)
+from services.plaza_db import PlazaDb
+from services.plaza_dev_seed import seed_plaza_demo_posts, seed_plaza_dev_users
+from services.plaza_posts import PLAZA_UPLOAD_DIR_NAME, post_public_dict, publish_post
 from services.ops_rules import ops_rules_doc
 from services.qa_service import QaService, UnknownQaProvider
 from services.qa_types import QA_ERROR_CODES
@@ -71,6 +83,9 @@ app.config["MAX_CONTENT_LENGTH"] = _MAX_CONTENT_LENGTH
 # JSON audioUrl is not a general client feature — only allowlisted smoke sample.
 _ALLOWED_ASR_AUDIO_URLS = frozenset({SAMPLE_AUDIO_URL})
 IMAGE_UPLOAD_DIR = BASE_DIR / "data" / "uploads"
+PLAZA_DB = PlazaDb()
+seed_plaza_dev_users(PLAZA_DB)
+seed_plaza_demo_posts(PLAZA_DB, IMAGE_UPLOAD_DIR)
 
 SAMPLE_ASSET = {
     "assetId": "sticker_rabbit_demo",
@@ -99,6 +114,23 @@ def _client_bucket() -> str:
 def _json_fail(code: str, http_status: int = 400):
     body = fail(code=code)
     return jsonify(body), http_status
+
+
+def _json_ok(payload: dict, http_status: int = 200):
+    return jsonify({"ok": True, **payload}), http_status
+
+
+def _require_plaza_user():
+    token = parse_bearer_user_token(request.headers.get("Authorization"))
+    if not token:
+        return None, _json_fail("SESSION_MISSING", 401)
+    claims = verify_user_token(token)
+    if not claims:
+        return None, _json_fail("SESSION_INVALID", 401)
+    user = PLAZA_DB.find_user_by_id(claims.user_id)
+    if not user:
+        return None, _json_fail("SESSION_INVALID", 401)
+    return user, None
 
 
 def _require_session(*, apply_install_rate: bool = True):
@@ -140,6 +172,152 @@ def _is_mock_provider(name: str) -> bool:
 @app.errorhandler(RequestEntityTooLarge)
 def _payload_too_large(_err):
     return _json_fail("PAYLOAD_TOO_LARGE", 413)
+
+
+@app.post("/api/plaza/auth/register")
+def plaza_register():
+    body = request.get_json(silent=True) or {}
+    username = body.get("username") if isinstance(body, dict) else None
+    password = body.get("password") if isinstance(body, dict) else None
+    if not isinstance(username, str) or not isinstance(password, str):
+        return _json_fail("INVALID_ARGUMENT")
+    if validate_username(username):
+        return jsonify(fail(code="INVALID_ARGUMENT", message="用户名格式不正确。")), 400
+    if validate_password(password):
+        return jsonify(fail(code="INVALID_ARGUMENT", message="密码需为3到20位之间，请重新输入")), 400
+    existing = PLAZA_DB.find_user_by_username(username)
+    if existing:
+        return jsonify(fail(code="INVALID_ARGUMENT", message="账号已存在，请前往登录界面")), 409
+    try:
+        user = register_user(PLAZA_DB, username, password)
+    except ValueError as exc:
+        code = str(exc)
+        if code == "USERNAME_TAKEN":
+            return jsonify(fail(code="INVALID_ARGUMENT", message="账号已存在，请前往登录界面")), 409
+        return _json_fail("INVALID_ARGUMENT")
+    token = issue_user_token(user)
+    return _json_ok(
+        {
+            "result": {
+                "token": token,
+                "user": {"userId": user.user_id, "username": user.username},
+            }
+        },
+        201,
+    )
+
+
+@app.post("/api/plaza/auth/login")
+def plaza_login():
+    body = request.get_json(silent=True) or {}
+    username = body.get("username") if isinstance(body, dict) else None
+    password = body.get("password") if isinstance(body, dict) else None
+    if not isinstance(username, str) or not isinstance(password, str):
+        return _json_fail("INVALID_ARGUMENT")
+    row = PLAZA_DB.find_user_by_username(username)
+    if not row:
+        return jsonify(fail(code="INVALID_ARGUMENT", message="账号不存在")), 401
+    user = authenticate_user(PLAZA_DB, username, password)
+    if not user:
+        return jsonify(fail(code="INVALID_ARGUMENT", message="密码错误")), 401
+    token = issue_user_token(user)
+    return _json_ok({"result": {"token": token, "user": {"userId": user.user_id, "username": user.username}}})
+
+
+@app.get("/api/plaza/posts")
+def plaza_list_posts():
+    user, err = _require_plaza_user()
+    if err:
+        return err
+    _ = user
+    posts = [post_public_dict(row) for row in PLAZA_DB.list_posts()]
+    return _json_ok({"result": {"posts": posts}})
+
+
+@app.get("/api/plaza/posts/mine/project-ids")
+def plaza_my_shared_project_ids():
+    user, err = _require_plaza_user()
+    if err:
+        return err
+    project_ids = PLAZA_DB.list_shared_project_ids_for_user(user.user_id)
+    return _json_ok({"result": {"projectIds": project_ids}})
+
+
+@app.get("/api/plaza/posts/<post_id>")
+def plaza_get_post(post_id: str):
+    user, err = _require_plaza_user()
+    if err:
+        return err
+    _ = user
+    post = PLAZA_DB.get_post((post_id or "").strip())
+    if not post:
+        return _json_fail("INVALID_ARGUMENT", 404)
+    return _json_ok({"result": {"post": post_public_dict(post)}})
+
+
+@app.post("/api/plaza/posts")
+def plaza_publish_post():
+    user, err = _require_plaza_user()
+    if err:
+        return err
+
+    project_id = (request.form.get("projectId") or "").strip()
+    title = (request.form.get("title") or "").strip()
+    preview = request.files.get("file") or request.files.get("image")
+    if not preview:
+        return _json_fail("IMAGE_MISSING_FILE")
+
+    try:
+        post = publish_post(
+            PLAZA_DB,
+            user_id=user.user_id,
+            author_name=user.username,
+            project_id=project_id,
+            title=title,
+            preview_stream=preview.stream,
+            preview_filename=preview.filename,
+            preview_mime=preview.mimetype,
+            upload_root=IMAGE_UPLOAD_DIR,
+        )
+    except ValueError as exc:
+        code = str(exc)
+        status = 409 if code == "PROJECT_ALREADY_SHARED" else 400
+        if code == "PAYLOAD_TOO_LARGE":
+            status = 413
+        return _json_fail(code if code in {"PROJECT_ALREADY_SHARED", "PAYLOAD_TOO_LARGE"} else "INVALID_ARGUMENT", status)
+
+    return _json_ok({"result": {"post": post_public_dict(post)}}, 201)
+
+
+@app.delete("/api/plaza/posts/by-project/<project_id>")
+def plaza_withdraw_post(project_id: str):
+    user, err = _require_plaza_user()
+    if err:
+        return err
+    removed = PLAZA_DB.delete_post_for_user(user.user_id, (project_id or "").strip())
+    if not removed:
+        return _json_fail("INVALID_ARGUMENT", 404)
+    media_path = IMAGE_UPLOAD_DIR / PLAZA_UPLOAD_DIR_NAME / removed.preview_filename
+    if media_path.is_file():
+        try:
+            media_path.unlink()
+        except OSError:
+            pass
+    return _json_ok({"result": {"projectId": removed.project_id}})
+
+
+@app.get("/api/plaza/media/<path:filename>")
+def plaza_media(filename: str):
+    user, err = _require_plaza_user()
+    if err:
+        return err
+    _ = user
+    rel = filename.replace("\\", "/")
+    if ".." in rel.split("/") or rel.startswith("/"):
+        return _json_fail("INVALID_ARGUMENT")
+    folder = IMAGE_UPLOAD_DIR / PLAZA_UPLOAD_DIR_NAME
+    folder.mkdir(parents=True, exist_ok=True)
+    return send_from_directory(folder, Path(rel).name)
 
 
 @app.post("/api/images/upload")

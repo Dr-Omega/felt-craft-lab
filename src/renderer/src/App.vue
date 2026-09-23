@@ -7,6 +7,7 @@ import {
   openEditorCanvas,
   openLibrary,
   openProjection,
+  openPlaza,
   openStatus,
   subscribeAppNav,
   type AppView,
@@ -19,6 +20,8 @@ import LibraryPage from './pages/LibraryPage.vue'
 import EditorPage from './pages/EditorPage.vue'
 import ProjectionPage from './pages/ProjectionPage.vue'
 import StatusPage from './pages/StatusPage.vue'
+import PlazaPage from './pages/PlazaPage.vue'
+import CenterToastOverlay from './components/shell/CenterToastOverlay.vue'
 
 const view = ref<AppView>(getAppView())
 const editorRef = ref<{ requestBack: () => void } | null>(null)
@@ -82,15 +85,17 @@ onUnmounted(() => {
 </script>
 
 <template>
+  <CenterToastOverlay />
   <SplashPage v-if="view === 'splash'" />
   <LoginPage v-else-if="view === 'login'" />
+  <PlazaPage v-else-if="view === 'plaza'" />
   <div v-else-if="view === 'status'" class="status-shell">
     <header class="status-shell__bar">
-      <button type="button" class="ghost" @click="openLibrary">返回素材库</button>
+      <button type="button" class="ghost" @click="openPlaza">返回分享广场</button>
     </header>
     <StatusPage />
   </div>
-  <AppShell v-else-if="mainView" :active-view="mainView" @navigate="handleNavigate">
+  <AppShell v-else-if="mainView" :active-view="mainView" @navigate="handleNavigate" @back-to-plaza="openPlaza">
     <LibraryPage v-if="mainView === 'library'" />
     <EditorPage v-if="mainView === 'editor'" ref="editorRef" />
     <ProjectionPage v-if="mainView === 'projection'" :key="projectionPageKey" />

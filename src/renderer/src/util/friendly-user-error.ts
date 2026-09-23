@@ -1,6 +1,13 @@
+function isSharedError(error: unknown): error is { message?: string; code?: string } {
+  return Boolean(error && typeof error === 'object' && 'message' in error)
+}
+
 function errorText(error: unknown): string {
   if (error instanceof Error) {
     return `${error.name} ${error.message}`.trim()
+  }
+  if (isSharedError(error) && typeof error.message === 'string') {
+    return error.message
   }
   return String(error)
 }
@@ -17,8 +24,14 @@ export function isTransientDbError(error: unknown): boolean {
  * Dexie / provider internals in the UI.
  */
 export function friendlyUserError(error: unknown): string {
-  const text = error instanceof Error ? error.message : String(error)
-  const combined = errorText(error).toLowerCase()
+  if (isSharedError(error) && typeof error.message === 'string' && error.message.trim()) {
+    const shared = error.message.trim()
+    if (shared.length < 120 && !/\[object object\]/i.test(shared)) {
+      return shared
+    }
+  }
+  const text = errorText(error)
+  const combined = text.toLowerCase()
 
   if (isTransientDbError(error)) {
     return '本地存储暂时有点忙，请稍后再试。'

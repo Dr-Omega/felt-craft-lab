@@ -6,6 +6,7 @@ import type { ResourceInspectResult } from '@shared/resource'
 
 type PreviewSaveIpcResult = { ok: true; ref: ResourceRef } | { ok: false; error: SharedError }
 type PreviewDeleteIpcResult = { ok: true } | { ok: false; error: SharedError }
+type PlazaIpcResult<T> = { ok: true; result: T } | { ok: false; error: SharedError }
 
 async function invokePreviewSave(pngBytes: ArrayBuffer | Uint8Array): Promise<ResourceRef> {
   const result = (await ipcRenderer.invoke(IPC_CHANNELS.PREVIEW_SAVE, pngBytes)) as PreviewSaveIpcResult
@@ -59,6 +60,27 @@ const electronAPI = {
    * AI Gateway proxy (Main→Flask). Renderer must not fetch Flask / set CORS.
    * Dev: Main→localhost; Prod: Main→remote AI_GATEWAY_BASE_URL.
    */
+  plaza: {
+    register: (input: { username: string; password: string }): Promise<PlazaIpcResult<unknown>> =>
+      ipcRenderer.invoke(IPC_CHANNELS.PLAZA_AUTH_REGISTER, input),
+    login: (input: { username: string; password: string }): Promise<PlazaIpcResult<unknown>> =>
+      ipcRenderer.invoke(IPC_CHANNELS.PLAZA_AUTH_LOGIN, input),
+    listPosts: (input: { token: string }): Promise<PlazaIpcResult<unknown>> =>
+      ipcRenderer.invoke(IPC_CHANNELS.PLAZA_LIST_POSTS, input),
+    mySharedProjectIds: (input: { token: string }): Promise<PlazaIpcResult<unknown>> =>
+      ipcRenderer.invoke(IPC_CHANNELS.PLAZA_MY_PROJECT_IDS, input),
+    publish: (input: {
+      token: string
+      projectId: string
+      title: string
+      previewRef: string
+    }): Promise<PlazaIpcResult<unknown>> => ipcRenderer.invoke(IPC_CHANNELS.PLAZA_PUBLISH, input),
+    withdraw: (input: { token: string; projectId: string }): Promise<PlazaIpcResult<unknown>> =>
+      ipcRenderer.invoke(IPC_CHANNELS.PLAZA_WITHDRAW, input),
+    previewBytes: (input: { token: string; previewMediaPath: string }): Promise<
+      PlazaIpcResult<{ previewUrl: string }>
+    > => ipcRenderer.invoke(IPC_CHANNELS.PLAZA_PREVIEW_BYTES, input)
+  },
   ai: {
     health: (): Promise<unknown> => ipcRenderer.invoke(IPC_CHANNELS.AI_HEALTH),
     asrTranscribe: (input: {

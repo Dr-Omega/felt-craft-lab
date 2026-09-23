@@ -9,6 +9,7 @@ defineProps<{
 
 const emit = defineEmits<{
   navigate: [view: MainAppView]
+  backToPlaza: []
 }>()
 
 const foxStyle = computed(() => psdBoxStyle('fox-button'))
@@ -19,6 +20,8 @@ const brownBearStyle = computed(() => psdBoxStyle('brown-bear-button'))
 <template>
   <div class="psd-shell">
     <img class="psd-shell__background" :src="psd160Assets.background" alt="" aria-hidden="true" />
+
+    <button type="button" class="psd-shell__back-plaza primary" @click="emit('backToPlaza')">返回广场</button>
 
     <main class="psd-shell__content">
       <slot />
@@ -90,6 +93,17 @@ const brownBearStyle = computed(() => psdBoxStyle('brown-bear-button'))
   object-fit: cover;
   pointer-events: none;
   user-select: none;
+}
+
+.psd-shell__back-plaza {
+  position: absolute;
+  left: 28px;
+  top: 22px;
+  z-index: 110;
+  min-width: 160px;
+  min-height: 52px;
+  font-size: 22px;
+  pointer-events: auto;
 }
 
 .psd-shell__content {

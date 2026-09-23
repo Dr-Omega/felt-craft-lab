@@ -2,6 +2,7 @@ import manifest from '../../../../assets/ui/auth/manifest.json'
 import backgroundUrl from '../../../../assets/ui/auth/background.png'
 import splashDecorUrl from '../../../../assets/ui/auth/splash-decor.png'
 import loginPanelUrl from '../../../../assets/ui/auth/login-panel.png'
+import registerPanelUrl from '../../../../assets/ui/auth/register-panel.png'
 import nameInputUrl from '../../../../assets/ui/auth/name-input.png'
 import passwordInputUrl from '../../../../assets/ui/auth/password-input.png'
 import loginEnterButtonUrl from '../../../../assets/ui/auth/login-enter-button.png'
@@ -13,6 +14,7 @@ export const authAssets = {
   background: backgroundUrl,
   splashDecor: splashDecorUrl,
   loginPanel: loginPanelUrl,
+  registerPanel: registerPanelUrl,
   nameInput: nameInputUrl,
   passwordInput: passwordInputUrl,
   loginEnterButton: loginEnterButtonUrl
