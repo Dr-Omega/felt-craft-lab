@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>背景兼容性检查</title>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; padding: 24px; color: #25353d; background: #f3f1eb; font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif; }
+      h1 { margin: 0 0 18px; font-size: 24px; }
+      #gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+      figure { margin: 0; padding: 10px; border: 1px solid #d9dfdb; border-radius: 8px; background: white; }
+      .preview { position: relative; overflow: hidden; aspect-ratio: 1024 / 583; border-radius: 6px; background-position: center; background-size: cover; }
+      .marker { position: absolute; width: 66px; height: 66px; border: 3.5px dashed #557d78; border-radius: 50%; filter: drop-shadow(0 0 2px rgba(255,253,243,.95)); }
+      .marker:nth-child(1) { top: 12%; left: 12%; }
+      .marker:nth-child(2) { top: 42%; left: 46%; border-radius: 42% 58% 45% 55%; }
+      .marker:nth-child(3) { right: 12%; bottom: 10%; border-radius: 35%; }
+      figcaption { padding-top: 8px; overflow-wrap: anywhere; color: #536d69; font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <h1>背景图与轮廓对比度检查</h1>
+    <main id="gallery"></main>
+    <script>
+      const backgrounds = [
+        "animals/backgrounds/background_animal_riverbank_001.png",
+        "autumn/backgrounds/background_autumn_field_dusk_001.png",
+        "autumn/backgrounds/background_autumn_ginkgo_path_001.png",
+        "brush_ink_painting/backgrounds/background_study_desk_001.png",
+        "chinese_tea_culture/backgrounds/background_classical_tea_room_001.png",
+        "dragon_boat_festival/backgrounds/background_dragon_boat_race_001.png",
+        "lantern_festival/backgrounds/background_lantern_street_001.png",
+        "lantern_festival/backgrounds/background_river_lantern_001.png",
+        "mid_autumn_festival/backgrounds/background_lake_moon_001.png",
+        "mid_autumn_festival/backgrounds/background_osmanthus_moon_001.png",
+        "plants/backgrounds/background_pastoral_courtyard_001.png",
+        "qingming_festival/backgrounds/background_kite_meadow_001.png",
+        "qingming_festival/backgrounds/background_willow_riverbank_001.png",
+        "spring/backgrounds/background_spring_meadow_001.png",
+        "spring_festival/backgrounds/background_couplet_gate_001.png",
+        "spring_festival/backgrounds/background_snow_window_001.png",
+        "summer/backgrounds/background_summer_courtyard_001.png",
+        "summer/backgrounds/background_summer_lotus_pond_001.png",
+        "traditional_folk_music/backgrounds/background_elegant_hall_001.png",
+        "traditional_opera/backgrounds/background_ancient_opera_stage_001.png",
+        "winter/backgrounds/background_winter_snowman_field_001.png"
+      ];
+      const gallery = document.querySelector("#gallery");
+      backgrounds.forEach((path) => {
+        const figure = document.createElement("figure");
+        const preview = document.createElement("div");
+        preview.className = "preview";
+        preview.style.backgroundImage = `url('/assets/${path}')`;
+        preview.innerHTML = '<i class="marker"></i><i class="marker"></i><i class="marker"></i>';
+        const caption = document.createElement("figcaption");
+        caption.textContent = path;
+        figure.append(preview, caption);
+        gallery.append(figure);
+      });
+    </script>
+  </body>
+</html>
