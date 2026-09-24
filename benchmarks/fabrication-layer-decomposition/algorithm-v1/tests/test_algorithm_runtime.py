@@ -129,8 +129,8 @@ class AlgorithmIntegrationTests(unittest.TestCase):
             self.assertIn("page failure", failure["error"])
 
     def test_real_generated_candidate_with_omitted_groups_fails_before_selection(self):
-        def remove_groups(observed):
-            plans = propose_plans(observed)
+        def remove_groups(observed, **options):
+            plans = propose_plans(observed, **options)
             self.assertTrue(plans[0]['splitGroups'])
             plans[0]['splitGroups'] = []
             for piece in plans[0]['pieces']:

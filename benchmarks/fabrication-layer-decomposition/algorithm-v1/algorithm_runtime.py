@@ -44,16 +44,19 @@ def _png(path, rgba):
     Image.fromarray(rgba).save(path)
 
 
-def _recipe(m4):
+def _recipe(m4, quality_settings=None):
     sources = [*sorted(HERE.glob('*.py')), HERE / 'validate_contract.ts', HERE / 'requirements.txt',
                HERE.parent / 'tools/m4_runtime.py', HERE.parent / 'tools/m4_checks.py']
-    return {'recipe': 'm4-m7-conservative-solid-plan/1',
+    recipe = {'recipe': 'm4-m7-conservative-solid-plan/1',
             'effectiveConfiguration': m4['configuration'],
             'implementationLfUtf8Sha256': {str(p.relative_to(HERE.parent)).replace('\\', '/'):
                  hashlib.sha256(p.read_bytes().replace(b'\r\n', b'\n')).hexdigest() for p in sources},
             'dependencies': {name: importlib.metadata.version(name) for name in
                 ('numpy', 'opencv-python-headless', 'Pillow', 'scikit-image', 'shapely', 'scipy')},
             'manualQuality': 'PENDING_MANUAL_REVIEW', 'manufacturing': 'NOT_EVALUATED'}
+    if quality_settings is not None:
+        recipe['experimentalQuality'] = quality_settings
+    return recipe
 
 
 def _verify_artifacts(output, result_input, portable):
@@ -62,7 +65,7 @@ def _verify_artifacts(output, result_input, portable):
         identifier = record['id']
         if identifier == 'layered-source':
             path = Path(portable['sourceArtifact']['path'])
-        elif identifier in {'algorithm-recipe.json', 'fabrication-geometry.json', 'relation-evidence.json', 'layer-arrays.npz'}:
+        elif identifier in {'algorithm-recipe.json', 'fabrication-geometry.json', 'relation-evidence.json', 'layer-arrays.npz', 'quality-seam-comparison.json'}:
             path = output / identifier
         else:
             path = output / 'm4' / identifier
@@ -70,6 +73,9 @@ def _verify_artifacts(output, result_input, portable):
         if measured != record:
             raise ValueError('Persisted artifact bytes differ from result identity: ' + identifier)
         locations[identifier] = str(path.relative_to(output)).replace('\\', '/')
+    if (output / 'm4/experimental-design.json').exists():
+        from quality_binding import verify_quality_design
+        verify_quality_design(output / 'm4')
     _write(output / 'artifact-locations.json', locations)
 
 
@@ -162,6 +168,18 @@ def _page(output, summary):
               ("Rerender difference (magenta)", "rerender-difference.png"),
               ("Purification RGB change intensity (not a quality grade)", "purification-difference.png"),
               ("Original visual hierarchy unresolved: located Region IDs", "unresolved-regions.png")]
+    if 'experimentalQuality' in summary:
+        images = [("Actual assembled geometry — same 3× Lanczos for every comparison",'appearance-aa.png'),
+                  ("Actual physical seams: exposed magenta / covered cyan",'seams-aa.png'),
+                  ("Separate Piece references",'references-aa.png'),
+                  ("Actual shared curves, one SVG path per edge",'shared-edges.svg')] + images
+        if summary.get('experimentalDesign'):
+            images = [("A: original effective foreground (immutable)",'m4/original-effective-foreground.png'),
+                      ("A: baseline CP-B / RC-A analysis",'m4/baseline-purified.png')] + images
+        if summary.get('seamPlacementComparison'):
+            for row in summary['seamPlacementComparison']['comparisons']:
+                label=row['anonymousLabel']
+                images.extend((label+' anonymous '+suffix,label+'-'+suffix+'.png') for suffix in ('appearance','seams','appearance-detail','seams-detail'))
     cards = "".join(f'<figure><figcaption>{html.escape(title)}</figcaption><img src="{filename}" alt="{html.escape(title)}"></figure>' for title, filename in images)
     doc = '<!doctype html><meta charset="utf-8"><title>M4–M7 algorithm v1</title><style>body{font:14px system-ui;margin:24px;background:#eee;color:#222}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}figure{margin:0;background:white;padding:12px}img{width:100%;background:repeating-conic-gradient(#ddd 0 25%,#fff 0 50%) 0/16px 16px}pre{white-space:pre-wrap;overflow-wrap:anywhere}</style>'
     doc += '<h1>M4–M7 algorithm initial candidate</h1><p>Human visual quality pending. Manufacturing NOT_EVALUATED. Production export NO.</p>'
@@ -176,7 +194,9 @@ def _page(output, summary):
 def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str,
                   manual_confirmation: str = "PENDING_REVIEW", profile: str = "aggressive",
                   mode: str = "embedded-alpha", mask_path: Path | None = None,
-                  whole_image_foreground: bool = False, selected_layer_ids: list[str] | None = None) -> dict:
+                  whole_image_foreground: bool = False, selected_layer_ids: list[str] | None = None,
+                  quality_mode: str = 'baseline', foreground_cleanup: bool = False,
+                  seam_strategy: str = 'baseline') -> dict:
     """Run finite supported input → actual Base/Piece candidates, safely.
 
     All output protection runs here before *any* write (including failure files).
@@ -186,6 +206,16 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
     image_path = Path(image_path).resolve()
     mask_path = Path(mask_path).resolve() if mask_path is not None else None
     output = validate_output_root(Path(output_root), [p for p in (image_path, mask_path) if p is not None])
+    if quality_mode not in {'baseline', 'selection', 'contour', 'combined'} or seam_strategy not in {'baseline', 'compare', 'visual-proxy'}:
+        raise ValueError('invalid experimental quality/seam strategy')
+    if type(foreground_cleanup) is not bool or (foreground_cleanup and quality_mode == 'baseline'):
+        raise ValueError('foreground cleanup requires an explicit experimental design mode')
+    if quality_mode != 'baseline' and image_path.suffix.lower() != '.png':
+        raise ValueError('experimental design V1 supports explicit PNG foreground; layered baseline remains available')
+    experimental = quality_mode != 'baseline' or seam_strategy != 'baseline'
+    quality_settings = ({'version':'application-quality/1','mode':quality_mode,
+                         'foregroundCleanup':foreground_cleanup,'seamStrategy':seam_strategy,
+                         'humanConfirmation':'PENDING_REVIEW'} if experimental else None)
     if not foreground_source.strip():
         raise ValueError("foreground_source must locate actual caller/development evidence")
     if manual_confirmation not in {"CONFIRMED", "PENDING_REVIEW"}:
@@ -200,6 +230,13 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
     elif selected_layer_ids is not None:
         raise ValueError("flat input cannot claim selected layers")
     started = time.perf_counter()
+    phase_started = started
+    stage_seconds = {}
+    def phase(name):
+        nonlocal phase_started
+        now = time.perf_counter()
+        stage_seconds[name] = now - phase_started
+        phase_started = now
     completed = []
     output.mkdir(parents=True, exist_ok=True)
     try:
@@ -216,18 +253,21 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
         # source and algorithm identities independently bind the exact snapshot.
         m4 = run_runtime(image_path=runtime_source, output_root=output / "m4", mode=mode, mask_path=mask_path,
                          foreground_source=foreground_source, manual_confirmation=manual_confirmation,
-                         whole_image_foreground=whole_image_foreground, runtime_id="algorithm-v1", profile=profile)
+                         whole_image_foreground=whole_image_foreground, runtime_id="algorithm-v1", profile=profile,
+                         **({'quality_mode':quality_mode,'foreground_cleanup':foreground_cleanup} if quality_mode != 'baseline' else {}))
         completed.append("M4_RUNTIME")
+        phase('M4_AND_INPUT_NORMALIZATION')
         input_object = build_input(output / "m4", portable)
         if portable is not None:
             input_object['artifacts'].append(portable['arrayArtifact'])
-        _write(output / 'algorithm-recipe.json', _recipe(m4))
+        _write(output / 'algorithm-recipe.json', _recipe(m4, quality_settings))
         input_object['artifacts'].append(artifact(output / 'algorithm-recipe.json'))
         input_checked = run_shared_validation(input=input_object)
         if not input_checked["ok"]:
             raise ValueError("real M1 input validator rejected: " + str(input_checked))
         _write(output / "fabrication-input.json", input_object)
         completed.append("M1_INPUT")
+        phase('M1_SHARED_AND_DESIGN_REPLAY')
         labels = np.load(output / "m4/structural_label_map.npz")["labels"]
         observed = candidate_polygons(_read(output / "m4/observed-candidates.json"),
                                       _read(output / "m4/boundary-graph.json"),
@@ -238,7 +278,21 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
             obj["colorSlotId"] = slots[obj["regionId"]]
         visual = visual_relations(observed, labels, parsed)
         completed.append("M6_VISUAL_EVIDENCE")
-        plans = rank_plans(observed, propose_plans(observed))
+        phase('M6_OBSERVED_AND_VISUAL')
+        plans = rank_plans(observed, propose_plans(
+            observed, reject_invalid_options=quality_mode in {'contour', 'combined'}))
+        phase('M7_PROPOSE_VALIDATE_SCORE')
+        quality_comparison = None
+        if seam_strategy != 'baseline':
+            from quality_seams import rank_quality_plans, compare_quality_plans
+            plans, quality_ranking = rank_quality_plans(observed, plans, enabled=seam_strategy == 'visual-proxy')
+            quality_comparison, preview_images = compare_quality_plans(observed, plans, labels.shape, scale=3)
+            quality_comparison['ranking'] = quality_ranking
+            for filename, preview in preview_images.items():
+                if Path(filename).name != filename or any(c not in 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-' for c in filename):
+                    raise ValueError('invalid internal comparison image name')
+                preview.save(output / (filename + '.png'))
+        phase('OPTIONAL_SEAM_COMPARISON_AND_IMAGES')
         comparisons, selected = [], None
         geometry_cache = {}
         # Evaluate relation hard constraints for every geometric alternative,
@@ -246,6 +300,9 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
         for plan in plans:
             entry = {"id": plan["id"], "baseChoices": plan["baseChoices"], "score": plan["score"],
                      "selectionReasons": plan["selectionReasons"]}
+            if seam_strategy == 'visual-proxy':
+                entry['experimentalQualityRankingKey'] = next(r['qualityRankingKey'] for r in quality_ranking['candidates'] if r['planId'] == plan['id'])
+                entry['selectionReasons'] = ['Hard geometry and relation constraints first; declared experimental visible-seam proxy then complexity. Original score remains diagnostic.']
             try:
                 # M6 independently validates the actual geometry before using
                 # it. Only exact-geometry scalar operations are reused across
@@ -263,8 +320,17 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
         if selected is None:
             raise ValueError("no legal Base/solid plan after finite relation review")
         plan, relations = selected
+        if quality_comparison is not None:
+            quality_comparison['relationReview'] = {e['id']:{k:e[k] for k in ('status','reason') if k in e} for e in comparisons}
+            quality_comparison['selectedRelationValidPlanId'] = plan['id']
+            _write(output / 'quality-seam-comparison.json', quality_comparison)
+            input_object['artifacts'].append(artifact(output / 'quality-seam-comparison.json'))
+            _write(output / 'fabrication-input.json', input_object)
         completed.append("M7_PLAN_AND_M6_REVIEW")
+        phase('M6_ALL_CANDIDATE_RELATIONS')
         geometry = _geometry_document(plan, observed)
+        if quality_mode != 'baseline':
+            geometry['numericPolicy'] = 'Experimental design B selected shared edges; unchanged M7 numerical/conservation checks; no post-split boundary movement'
         _write(output / "fabrication-geometry.json", geometry)
         evidence = {"schemaVersion": "algorithm-v1-located-evidence/1", "planId": plan["id"],
                     "visual": visual, "finalRelations": relations, "geometryChecks": plan["geometryChecks"],
@@ -277,14 +343,30 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
         # Read back actual serialized objects. No original Piece geometry reaches
         # this independent checker, only observed source domains and wire refs.
         _write(output / "fabrication-result.json", result)
+        phase('PERSIST_AND_SHARED_RESULT')
         rendered = verify_and_render(_read(output / "fabrication-result.json"),
                                      _read(output / "fabrication-geometry.json"), observed, labels.shape)
         if rendered['renderBackStatus'] != 'PASS' or rendered['mismatchPixelCount'] != 0:
             raise ValueError('Independent final Piece render failed: ' + str(rendered['mismatchPixelCount']))
         _verify_artifacts(output, result['payload']['input'], portable)
         completed.append("INDEPENDENT_PIECE_RERENDER")
+        phase('INDEPENDENT_PIECE_AND_DESIGN_REPLAY')
         color_by_id = {c["id"]: c["rgb"] for c in input_object["colorSlots"]}
         _draw_diagnostics(output, plan, observed, color_by_id, rendered, relations)
+        if experimental:
+            from quality_seams import render_plan_preview
+            for filename, options in [('appearance-aa.png', {}), ('seams-aa.png', {'seams':True}),
+                                      ('references-aa.png', {'numbered':True})]:
+                render_plan_preview(plan, observed, labels.shape, scale=3, **options).save(output / filename)
+            from quality_diagnostics import _write_shared_edge_svg
+            _write_shared_edge_svg(output/'shared-edges.svg', _read(output/'m4/vector-result.json'), labels.shape)
+            _write(output/'quality-display.json', {
+                'sampling':{'scale':3,'filter':'LANCZOS','background':'TRANSPARENT_RGBA'},
+                'pieceNumberMap':{str(i):p['id'] for i,p in enumerate(sorted(plan['pieces'],key=lambda p:(p['role']!='BASE',p['id'])),1)},
+                'geometrySource':'Actual Base exposures and VISIBLE Pieces, exact ColorSlots; no original-image paste',
+                'svgSource':'One actual LINE/CUBIC path per shared edge, no refitting for display',
+                'visualAcceptance':'PENDING'})
+        phase('DIAGNOSTICS_AND_IMAGES')
         checks = {k: v for k, v in rendered.items() if not isinstance(v, np.ndarray)}
         _write(output / "geometry-checks.json", checks)
         assessment = build_assessment(result, artifact(output / "geometry-checks.json"), checks)
@@ -293,7 +375,9 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
         if not final_validation["ok"]:
             raise ValueError("final shared result/assessment rejected: " + str(final_validation))
         _write(output / "shared-validation.json", final_validation)
-        with Image.open(output / "m4/input-foreground.png") as image:
+        phase('FINAL_SHARED_ASSESSMENT')
+        original_path = 'm4/original-effective-foreground.png' if quality_mode != 'baseline' else 'm4/input-foreground.png'
+        with Image.open(output / original_path) as image:
             original = np.asarray(image.convert("RGBA"))
         with Image.open(output / "m4/purified.png") as image:
             purified = np.asarray(image.convert("RGBA"))
@@ -313,8 +397,15 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
                                           "alphaUnchanged": bool(np.array_equal(original[..., 3], purified[..., 3]))},
                    "visualQuality": "PENDING_MANUAL_REVIEW", "falseMerge": "NOT_EVALUATED", "falseSplit": "NOT_EVALUATED",
                    "manufacturingAssessment": "NOT_EVALUATED", "productionExportEligible": False}
+        if experimental:
+            summary['experimentalQuality'] = quality_settings
+            summary['experimentalDesign'] = m4.get('experimentalDesign')
+            summary['seamPlacementComparison'] = quality_comparison
+            summary['qualityAcceptance'] = {'AtoB':'PENDING_MANUAL_REVIEW','BtoC':checks['renderBackStatus']}
         _page(output, summary)
+        phase('DIFFERENCE_AND_PAGE')
         _write(output / "execution.json", {"durationSeconds": time.perf_counter() - started,
+                                           'stageSecondsNonOverlapping':stage_seconds,
                                            "inputPath": str(image_path), "outputPath": str(output)})
         summary["artifactSha256"] = {str(p.relative_to(output)).replace("\\", "/"): hashlib.sha256(p.read_bytes()).hexdigest()
                                      for p in sorted(output.rglob("*")) if p.is_file()}
@@ -342,11 +433,16 @@ def main():
     parser.add_argument("--mask", type=Path)
     parser.add_argument("--whole-image-foreground", action="store_true")
     parser.add_argument("--select-layer", action="append")
+    parser.add_argument('--quality-mode', choices=['baseline','selection','contour','combined'], default='baseline')
+    parser.add_argument('--foreground-cleanup', action='store_true', help='Unconfirmed experimental foreground proposal; never overwrites original alpha')
+    parser.add_argument('--seam-strategy', choices=['baseline','compare','visual-proxy'], default='baseline')
     args = parser.parse_args()
     report = run_algorithm(image_path=args.input, output_root=args.output, foreground_source=args.foreground_source,
                            manual_confirmation=args.manual_confirmation, profile=args.profile, mask_path=args.mask,
                            mode="external-mask" if args.mask else "embedded-alpha",
-                           whole_image_foreground=args.whole_image_foreground, selected_layer_ids=args.select_layer)
+                           whole_image_foreground=args.whole_image_foreground, selected_layer_ids=args.select_layer,
+                           quality_mode=args.quality_mode, foreground_cleanup=args.foreground_cleanup,
+                           seam_strategy=args.seam_strategy)
     print(json.dumps({"status": report["status"], "resultSha256": report["resultSha256"]}))
 
 

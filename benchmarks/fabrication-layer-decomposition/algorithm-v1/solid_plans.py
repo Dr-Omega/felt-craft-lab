@@ -574,13 +574,15 @@ def validate_plan(observed, plan, *, geometry_cache=None):
             "areaVerificationTolerance": tolerance}
 
 
-def propose_plans(observed):
+def propose_plans(observed, *, reject_invalid_options=False):
     """Search exact Base colors and two deterministic hole-cut directions.
 
     Every disconnected body receives a separate Base. Finite global proposals
     comprise every uniform color strategy plus the independently best local
     choices; no exponential search or synthetic connecting geometry is used.
     """
+    if type(reject_invalid_options) is not bool:
+        raise SolidPlanError("reject_invalid_options must be a boolean")
     sources, foreground = _sources(observed)
     body_options, rejected = [], []
     # Immutable Shapely polygons, cache lifetime limited to this one search.
@@ -599,7 +601,19 @@ def propose_plans(observed):
                     rejected.append({"bodyId": f"body-{body_index}", "colorSlotId": slot,
                                      "splitAxis": axis, "reason": str(exc)})
                     continue
-                option["score"] = _score(option, members, geometry_cache=geometry_cache)
+                try:
+                    option["score"] = _score(option, members, geometry_cache=geometry_cache)
+                except SolidPlanError as exc:
+                    # Experimental contours can expose finite-precision split
+                    # artifacts. Reject the actual illegal partition, never
+                    # relax source/coverage checks or manufacture source IDs.
+                    # The default path retains its historical fail-fast behavior.
+                    if not reject_invalid_options:
+                        raise
+                    rejected.append({"bodyId": f"body-{body_index}", "colorSlotId": slot,
+                                     "splitAxis": axis, "stage": "HARD_VALIDATION_BEFORE_RANKING",
+                                     "reason": str(exc)})
+                    continue
                 options.append(option)
         if not options:
             raise SolidPlanError("No valid Base/solid partition for body: " + json.dumps(rejected, sort_keys=True))

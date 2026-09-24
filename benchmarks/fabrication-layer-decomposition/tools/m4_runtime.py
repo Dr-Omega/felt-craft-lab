@@ -17,6 +17,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+from types import SimpleNamespace
 
 import numpy as np
 from PIL import Image, ImageDraw
@@ -424,6 +425,8 @@ def _run_runtime(
     runtime_id: str,
     profile: str,
     output_root: Path,
+    quality_mode: str = 'baseline',
+    foreground_cleanup: bool = False,
 ) -> dict[str, Any]:
     if not runtime_id or runtime_id.startswith("FLD-"):
         raise M4RuntimeError("runtime ID must be non-empty and separate from the frozen FLD fixture ID space")
@@ -441,8 +444,36 @@ def _run_runtime(
 
     color_config, vector_config = load_profile(profile)
     rgba = foreground.rgba
+    quality = None
+    baseline_analysis = None
+    original_rgba = rgba.copy()
     try:
         proposal = timed("cpBProposal", lambda: get_candidate("CP-B").propose(rgba, color_config))
+        if quality_mode != 'baseline':
+            # Optional experimental design B. Frozen proposal A is retained,
+            # never overwritten or relabeled as an accepted design.
+            quality_root = str(BENCHMARK_ROOT / 'algorithm-v1')
+            if quality_root not in sys.path:
+                sys.path.insert(0, quality_root)
+            from quality_fragments import propose_foreground_cleanup, refine_selection
+            baseline_purified, baseline_metadata = apply_representatives(
+                rgba, proposal.structural_label_map, 'RC-A', color_config, proposal.pixel_label_map)
+            baseline_analysis = (proposal.structural_label_map.copy(), proposal.pixel_label_map.copy(),
+                                 baseline_purified, baseline_metadata)
+            rgba, cleanup = timed('experimentalForegroundProposal', lambda: propose_foreground_cleanup(
+                original_rgba, enabled=foreground_cleanup))
+            if not np.array_equal(rgba, original_rgba):
+                proposal = timed('derivedForegroundCpB', lambda: get_candidate('CP-B').propose(rgba, color_config))
+            structural, pixels, refinement = timed('experimentalSelection', lambda: refine_selection(
+                rgba, proposal.structural_label_map, proposal.pixel_label_map, color_config,
+                enabled=quality_mode in {'selection', 'combined'}))
+            proposal = SimpleNamespace(structural_label_map=structural, pixel_label_map=pixels)
+            quality = {'schemaVersion': 'application-quality-design/1', 'mode': quality_mode,
+                       'foregroundCleanupEnabled': foreground_cleanup, 'cleanup': cleanup,
+                       'selection': refinement, 'sourceSha256': foreground.provenance['sourceImage']['sha256'],
+                       'originalEffectiveRgbaSha256': _sha256_bytes(original_rgba.tobytes()),
+                       'derivedEffectiveRgbaSha256': _sha256_bytes(rgba.tobytes()),
+                       'humanConfirmation': 'PENDING_REVIEW', 'frozenEvidence': False}
         purified, metadata = timed(
             "rcARepresentativeAssignment",
             lambda: apply_representatives(rgba, proposal.structural_label_map, "RC-A", color_config, proposal.pixel_label_map),
@@ -456,6 +487,13 @@ def _run_runtime(
             "boundaryAndVectorDerivation",
             lambda: _vectorize(proposal.structural_label_map, rgba[..., 3], runtime_id, PROFILE_TO_RUNTIME_ID[profile], vector_config),
         )
+        if quality is not None:
+            from quality_contours import refine_contours
+            vector_result, quality['contours'] = timed('experimentalSharedContours', lambda: refine_contours(
+                graph, vector_result, proposal.structural_label_map, vector_config,
+                enabled=quality_mode in {'contour', 'combined'}))
+            # This is a new selected geometry, not a claim to frozen P0-04C evidence.
+            attempted = list(dict.fromkeys([vector_result['route'], *attempted]))
         candidates = timed("observedCandidateDerivation", lambda: _observed_candidates(runtime_id, graph, vector_result, regions, attempted))
         geometry_objects = timed('selectedGeometryValidation', lambda: candidate_polygons(
             candidates, graph, vector_result, float(vector_config['bezier']['validationFlatnessPx'])))
@@ -481,6 +519,28 @@ def _run_runtime(
     if foreground.mask_bytes is not None:
         (output_root / 'external-mask-snapshot.png').write_bytes(foreground.mask_bytes)
     np.savez_compressed(output_root / "pixel_label_map.npz", labels=proposal.pixel_label_map.astype(np.int32))
+    if quality is not None:
+        old_structural, old_pixels, old_purified, old_metadata = baseline_analysis
+        np.savez_compressed(output_root / 'baseline-analysis.npz', structural=old_structural,
+                            pixels=old_pixels)
+        _save_png(output_root / 'original-effective-foreground.png', original_rgba)
+        _save_png(output_root / 'baseline-purified.png', old_purified)
+        (output_root / 'baseline-regions.json').write_bytes(_canonical_json(old_metadata))
+        quality.update({
+            'baselineStructuralSha256': _sha256_bytes(old_structural.astype('<i4').tobytes()),
+            'newStructuralSha256': _sha256_bytes(proposal.structural_label_map.astype('<i4').tobytes()),
+            'newPixelLabelsSha256': _sha256_bytes(proposal.pixel_label_map.astype('<i4').tobytes()),
+            'newPurifiedRgbaSha256': _sha256_bytes(purified.tobytes()),
+            'selectedGeometrySha256': _sha256_bytes(_canonical_json(vector_result['geometry'])),
+            'newRegionMetadata': metadata,
+            'originalRegionMetadata': old_metadata,
+            'numericChecks': label_validation,
+            'colorMappingSemantics': 'Recomputed exact RC-A RGB per new label; experimental groups are not ColorSlots',
+            'alphaOriginalRetained': bool(np.array_equal(original_rgba[..., 3], foreground.rgba[..., 3])),
+            'derivedAlphaChangedPixels': int(np.count_nonzero(original_rgba[..., 3] != rgba[..., 3])),
+            'sourceToDesignChangedRgbPixels': int(np.count_nonzero(np.any(original_rgba[..., :3] != purified[..., :3], axis=2) & (original_rgba[..., 3] > 0))),
+        })
+        (output_root / 'experimental-design.json').write_bytes(_canonical_json(quality))
     _save_png(output_root / "input-foreground.png", rgba)
     _save_png(output_root / "purified.png", purified)
     _save_png(output_root / "region-labels.png", _numbered_preview(proposal.structural_label_map, components=False))
@@ -564,6 +624,16 @@ def _run_runtime(
             "observedCandidates": "observed-candidates.json",
         },
     }
+    if quality is not None:
+        report['experimentalDesign'] = {'artifact': 'experimental-design.json',
+            'sha256': _sha256_file(output_root / 'experimental-design.json'),
+            'mode': quality_mode, 'foregroundCleanupEnabled': foreground_cleanup,
+            'frozenEvidence': False, 'humanConfirmation': 'PENDING_REVIEW'}
+        report['configuration']['experimentalDesign'] = report['experimentalDesign']
+        report['configuration']['baselineFitToleranceSourcePixels'] = 0.5
+        report['configuration']['vectorToleranceSourcePixels'] = vector_result.get('tolerancePx')
+        report['contracts']['geometryTruth'] = 'experimental design B structural labels and explicitly selected shared contours'
+        report['review']['items'].append('Experimental design B changes original analysis A; exact B-to-Piece rerender is NOT original-image quality acceptance.')
     _write_html(output_root, report)
     stable = {'sourceSha256': foreground.provenance['sourceImage']['sha256'],
               'maskSha256': (foreground.provenance['externalMask'] or {}).get('sha256'),
@@ -593,6 +663,8 @@ def run_runtime(
     profile: str,
     output_root: Path,
     whole_image_foreground: bool = False,
+    quality_mode: str = 'baseline',
+    foreground_cleanup: bool = False,
 ) -> dict[str, Any]:
     """Run the complete M4 chain through its single public processing API.
 
@@ -601,6 +673,10 @@ def run_runtime(
     prevents reusable service callers from accidentally bypassing the same
     protected-path, non-empty-directory, and overlap gates used by the CLI.
     """
+    if quality_mode not in {'baseline', 'selection', 'contour', 'combined'}:
+        raise M4RuntimeError('invalid experimental quality mode')
+    if type(foreground_cleanup) is not bool or (foreground_cleanup and quality_mode == 'baseline'):
+        raise M4RuntimeError('foreground cleanup requires an explicit experimental quality mode')
     foreground = load_foreground(
         image_path,
         mode=mode,
@@ -612,7 +688,8 @@ def run_runtime(
     input_paths = [path for path in (image_path, mask_path) if path is not None]
     validated_output = validate_output_root(output_root, input_paths)
     try:
-        return _run_runtime(foreground, runtime_id=runtime_id, profile=profile, output_root=validated_output)
+        options = {} if quality_mode == 'baseline' else {'quality_mode': quality_mode, 'foreground_cleanup': foreground_cleanup}
+        return _run_runtime(foreground, runtime_id=runtime_id, profile=profile, output_root=validated_output, **options)
     except Exception as error:
         if validated_output.exists() and not (validated_output / 'failure.json').exists():
             failure = {'runtimeId': runtime_id, 'status': 'RUNTIME_FAILED', 'errorType': type(error).__name__,

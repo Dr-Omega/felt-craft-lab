@@ -102,6 +102,12 @@ def build_input(runtime_dir: Path, layered_evidence: dict | None = None) -> dict
     native_sampling = "PIXEL_CELL_BOUNDARY"
     source_transform = [1, 0, 0, 1, 0, 0]
     original_identity = None
+    design = report.get('experimentalDesign')
+    if design is not None:
+        from quality_binding import verify_quality_design
+        verify_quality_design(root)
+        provenance['experimentalDesign'] = design
+        provenance['normalization'] = 'Original A snapshot retained; actual experimental B labels, exact palette and selected shared edges independently versioned; NOT frozen or human-accepted evidence'
     if layered_evidence is not None:
         original = layered_evidence["sourceArtifact"]
         original_identity = artifact(Path(original["path"]), "layered-source", original["mediaType"])
@@ -128,6 +134,11 @@ def build_input(runtime_dir: Path, layered_evidence: dict | None = None) -> dict
         provenance["normalization"] = "M5 parser native canvas/viewBox is mapped to its actual normalized foreground raster; no inferred layers or scaling"
     identities = [source, *[artifact(root / name) for name in
                   ("input-foreground.png", "purified.png", "regions.json", "boundary-graph.json", "vector-result.json")]]
+    if design is not None:
+        identities.extend(artifact(root / name, media_type='application/x-npz' if name.endswith('.npz') else None)
+                          for name in ('experimental-design.json', 'baseline-analysis.npz', 'baseline-regions.json',
+                                       'original-effective-foreground.png', 'baseline-purified.png',
+                                       'structural_label_map.npz', 'pixel_label_map.npz'))
     if (root / "external-mask-snapshot.png").exists():
         mask_artifact = artifact(root / "external-mask-snapshot.png")
         if mask_artifact["sha256"] != report["input"]["externalMask"]["sha256"]:
@@ -142,6 +153,8 @@ def build_input(runtime_dir: Path, layered_evidence: dict | None = None) -> dict
     source_descriptor = {"mediaType": source["mediaType"], "sourceKind": "FLAT", "artifactId": source["id"],
                          "normalizedLayerEvidenceId": None,
                          "adapter": {"id": "m4-explicit-foreground", "version": "1", "status": "SUPPORTED"}}
+    if design is not None:
+        source_descriptor['adapter'] = {'id': 'm4-experimental-application-design', 'version': '1', 'status': 'SUPPORTED'}
     if layered_evidence is not None:
         # Layered source records must use portable evidence, not a local locator.
         portable = {key: value for key, value in layered_evidence.items() if key != "sourceArtifact"}
@@ -161,7 +174,7 @@ def build_input(runtime_dir: Path, layered_evidence: dict | None = None) -> dict
                        "xDirection": "RIGHT", "yDirection": "DOWN", "sampleConvention": sampling, "sourceArtifactId": source_id})
     frames[0].update({"bounds": native_bounds, "sampleConvention": native_sampling,
                       "sourceArtifactId": source_descriptor["artifactId"]})
-    return {"schemaVersion": "b2.input/1", "assetVersionId": "sha256:" + (original_identity or source)["sha256"],
+    return {"schemaVersion": "b2.input/1", "assetVersionId": "sha256:" + (design['sha256'] if design else (original_identity or source)["sha256"]),
             "artifacts": identities, "source": source_descriptor,
             "coordinates": {"frames": frames, "transforms": [
                 {"id": f"{a}-to-{b}", "fromFrameId": a, "toFrameId": b, "matrix": source_transform if a == "source" else [1, 0, 0, 1, 0, 0],
