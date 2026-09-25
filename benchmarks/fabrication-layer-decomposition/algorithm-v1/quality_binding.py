@@ -27,6 +27,9 @@ def verify_quality_design(root):
                   'sha256': sha((root / 'experimental-design.json').read_bytes()),
                   'mode': record['mode'], 'foregroundCleanupEnabled': record['foregroundCleanupEnabled'],
                   'frozenEvidence': False, 'humanConfirmation': 'PENDING_REVIEW'}
+    design_mode = record['mode'] in {'design-colors','design-cleanup'}
+    if design_mode:
+        descriptor['designColorRequest'] = record['designColorRequest']
     if any(canonical_bytes(value) != canonical_bytes(descriptor) for value in
            (report.get('experimentalDesign'), report['configuration'].get('experimentalDesign'))):
         raise ValueError('experimental design descriptor/approval differs from persisted design')
@@ -75,7 +78,7 @@ def verify_quality_design(root):
     color, vector_config = kernel.load_profile(config['profile'])
     if color != config['effectiveColorConfig'] or vector_config != config['effectiveVectorConfig']:
         raise ValueError('experimental effective profile differs from declared configuration')
-    if record['mode'] not in {'selection','contour','combined'} or type(record['foregroundCleanupEnabled']) is not bool:
+    if record['mode'] not in {'selection','contour','combined','design-colors','design-cleanup'} or type(record['foregroundCleanupEnabled']) is not bool:
         raise ValueError('invalid persisted experimental mode')
     if any(report['experimentalDesign'][k] != record[k] for k in ('mode','foregroundCleanupEnabled')):
         raise ValueError('experimental mode declaration mismatch')
@@ -93,15 +96,37 @@ def verify_quality_design(root):
             raise ValueError('baseline analysis is not original CP-B result')
     if not np.array_equal(old_purified,rgba('baseline-purified.png')) or old_metadata != record['originalRegionMetadata']:
         raise ValueError('baseline representative analysis differs')
-    replay_effective, cleanup = propose_foreground_cleanup(original,enabled=record['foregroundCleanupEnabled'])
+    if design_mode:
+        from design_color_regions import validate_request, cleanup_foreground, rebuild_regions
+        request = record['designColorRequest']
+        validated = validate_request(request['referencePalette'], request['referenceProvenance'])
+        if canonical_bytes(validated) != canonical_bytes(request) or canonical_bytes(config.get('designColorRequest')) != canonical_bytes(request):
+            raise ValueError('design colour request/reference provenance mismatch')
+        replay_effective,cleanup = cleanup_foreground(original,color,request,enabled=record['foregroundCleanupEnabled'])
+    else:
+        replay_effective, cleanup = propose_foreground_cleanup(original,enabled=record['foregroundCleanupEnabled'])
     if cleanup != record['cleanup'] or not np.array_equal(replay_effective,effective):
         raise ValueError('foreground cleanup mapping/proposal differs from actual change')
     if not np.array_equal(original,effective):
         proposal = kernel.get_candidate('CP-B').propose(effective,color)
-    new_labels,new_pixels,selection = refine_selection(effective,proposal.structural_label_map,proposal.pixel_label_map,color,
-                                                     enabled=record['mode'] in {'selection','combined'})
+    if record['mode'] == 'design-colors':
+        new_labels,new_pixels,selection = rebuild_regions(effective,proposal.structural_label_map,proposal.pixel_label_map,color,request)
+    else:
+        new_labels,new_pixels,selection = refine_selection(effective,proposal.structural_label_map,proposal.pixel_label_map,color,
+                                                         enabled=record['mode'] in {'selection','combined'})
     if selection != record['selection'] or not np.array_equal(new_labels,labels) or not np.array_equal(new_pixels,pixels):
         raise ValueError('experimental selection mapping differs from actual labels')
+    if design_mode:
+        alpha_change=original[...,3]!=effective[...,3]
+        label_change=baseline!=labels
+        with np.load(root/'design-change-maps.npz') as arrays:
+            for key,expected_map in (('alpha_changed',alpha_change),('labels_changed',label_change)):
+                if arrays[key].dtype!=np.bool_ or not np.array_equal(arrays[key],expected_map):
+                    raise ValueError('design change map differs from actual source and labels')
+        preview=np.zeros_like(original)
+        preview[label_change]=[255,180,0,255];preview[alpha_change]=[255,0,255,255]
+        if not np.array_equal(preview,rgba('design-changes.png')):
+            raise ValueError('design change preview differs from actual changes')
     replay_purified, metadata = kernel.apply_representatives(effective,labels,'RC-A',color,pixels)
     if not np.array_equal(replay_purified,purified) or metadata != record['newRegionMetadata']:
         raise ValueError('experimental RC-A palette/purified RGB mismatch')

@@ -196,7 +196,8 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
                   mode: str = "embedded-alpha", mask_path: Path | None = None,
                   whole_image_foreground: bool = False, selected_layer_ids: list[str] | None = None,
                   quality_mode: str = 'baseline', foreground_cleanup: bool = False,
-                  seam_strategy: str = 'baseline') -> dict:
+                  seam_strategy: str = 'baseline', design_palette: list[list[int]] | None = None,
+                  palette_provenance: str | None = None) -> dict:
     """Run finite supported input → actual Base/Piece candidates, safely.
 
     All output protection runs here before *any* write (including failure files).
@@ -206,7 +207,7 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
     image_path = Path(image_path).resolve()
     mask_path = Path(mask_path).resolve() if mask_path is not None else None
     output = validate_output_root(Path(output_root), [p for p in (image_path, mask_path) if p is not None])
-    if quality_mode not in {'baseline', 'selection', 'contour', 'combined'} or seam_strategy not in {'baseline', 'compare', 'visual-proxy'}:
+    if quality_mode not in {'baseline', 'selection', 'contour', 'combined', 'design-colors', 'design-cleanup'} or seam_strategy not in {'baseline', 'compare', 'visual-proxy'}:
         raise ValueError('invalid experimental quality/seam strategy')
     if type(foreground_cleanup) is not bool or (foreground_cleanup and quality_mode == 'baseline'):
         raise ValueError('foreground cleanup requires an explicit experimental design mode')
@@ -216,6 +217,13 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
     quality_settings = ({'version':'application-quality/1','mode':quality_mode,
                          'foregroundCleanup':foreground_cleanup,'seamStrategy':seam_strategy,
                          'humanConfirmation':'PENDING_REVIEW'} if experimental else None)
+    design_options = {}
+    if quality_mode in {'design-colors', 'design-cleanup'}:
+        from design_color_regions import validate_request
+        quality_settings['designColorRequest'] = validate_request(design_palette, palette_provenance)
+        design_options = {'design_palette':design_palette, 'palette_provenance':palette_provenance}
+    elif design_palette is not None or palette_provenance is not None:
+        raise ValueError('design palette requires the explicit design-colour path')
     if not foreground_source.strip():
         raise ValueError("foreground_source must locate actual caller/development evidence")
     if manual_confirmation not in {"CONFIRMED", "PENDING_REVIEW"}:
@@ -254,7 +262,8 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
         m4 = run_runtime(image_path=runtime_source, output_root=output / "m4", mode=mode, mask_path=mask_path,
                          foreground_source=foreground_source, manual_confirmation=manual_confirmation,
                          whole_image_foreground=whole_image_foreground, runtime_id="algorithm-v1", profile=profile,
-                         **({'quality_mode':quality_mode,'foreground_cleanup':foreground_cleanup} if quality_mode != 'baseline' else {}))
+                         **({'quality_mode':quality_mode,'foreground_cleanup':foreground_cleanup} if quality_mode != 'baseline' else {}),
+                         **design_options)
         completed.append("M4_RUNTIME")
         phase('M4_AND_INPUT_NORMALIZATION')
         input_object = build_input(output / "m4", portable)
@@ -280,7 +289,7 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
         completed.append("M6_VISUAL_EVIDENCE")
         phase('M6_OBSERVED_AND_VISUAL')
         plans = rank_plans(observed, propose_plans(
-            observed, reject_invalid_options=quality_mode in {'contour', 'combined'}))
+            observed, reject_invalid_options=quality_mode in {'contour', 'combined', 'design-colors', 'design-cleanup'}))
         phase('M7_PROPOSE_VALIDATE_SCORE')
         quality_comparison = None
         if seam_strategy != 'baseline':
@@ -433,7 +442,9 @@ def main():
     parser.add_argument("--mask", type=Path)
     parser.add_argument("--whole-image-foreground", action="store_true")
     parser.add_argument("--select-layer", action="append")
-    parser.add_argument('--quality-mode', choices=['baseline','selection','contour','combined'], default='baseline')
+    parser.add_argument('--quality-mode', choices=['baseline','selection','contour','combined','design-colors','design-cleanup'], default='baseline')
+    parser.add_argument('--design-palette', help='Explicit JSON RGB array, e.g. [[0,0,0],[255,200,0]]; omitted means automatic')
+    parser.add_argument('--palette-provenance', help='Required source for an explicit reference palette')
     parser.add_argument('--foreground-cleanup', action='store_true', help='Unconfirmed experimental foreground proposal; never overwrites original alpha')
     parser.add_argument('--seam-strategy', choices=['baseline','compare','visual-proxy'], default='baseline')
     args = parser.parse_args()
@@ -442,6 +453,8 @@ def main():
                            mode="external-mask" if args.mask else "embedded-alpha",
                            whole_image_foreground=args.whole_image_foreground, selected_layer_ids=args.select_layer,
                            quality_mode=args.quality_mode, foreground_cleanup=args.foreground_cleanup,
+                           design_palette=json.loads(args.design_palette) if args.design_palette is not None else None,
+                           palette_provenance=args.palette_provenance,
                            seam_strategy=args.seam_strategy)
     print(json.dumps({"status": report["status"], "resultSha256": report["resultSha256"]}))
 

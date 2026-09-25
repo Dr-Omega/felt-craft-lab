@@ -427,6 +427,7 @@ def _run_runtime(
     output_root: Path,
     quality_mode: str = 'baseline',
     foreground_cleanup: bool = False,
+    design_color_request: dict | None = None,
 ) -> dict[str, Any]:
     if not runtime_id or runtime_id.startswith("FLD-"):
         raise M4RuntimeError("runtime ID must be non-empty and separate from the frozen FLD fixture ID space")
@@ -460,13 +461,23 @@ def _run_runtime(
                 rgba, proposal.structural_label_map, 'RC-A', color_config, proposal.pixel_label_map)
             baseline_analysis = (proposal.structural_label_map.copy(), proposal.pixel_label_map.copy(),
                                  baseline_purified, baseline_metadata)
-            rgba, cleanup = timed('experimentalForegroundProposal', lambda: propose_foreground_cleanup(
-                original_rgba, enabled=foreground_cleanup))
+            design_mode = quality_mode in {'design-colors', 'design-cleanup'}
+            if design_mode:
+                from design_color_regions import cleanup_foreground, rebuild_regions
+                rgba, cleanup = timed('experimentalForegroundProposal', lambda: cleanup_foreground(
+                    original_rgba, color_config, design_color_request, enabled=foreground_cleanup))
+            else:
+                rgba, cleanup = timed('experimentalForegroundProposal', lambda: propose_foreground_cleanup(
+                    original_rgba, enabled=foreground_cleanup))
             if not np.array_equal(rgba, original_rgba):
                 proposal = timed('derivedForegroundCpB', lambda: get_candidate('CP-B').propose(rgba, color_config))
-            structural, pixels, refinement = timed('experimentalSelection', lambda: refine_selection(
-                rgba, proposal.structural_label_map, proposal.pixel_label_map, color_config,
-                enabled=quality_mode in {'selection', 'combined'}))
+            if quality_mode == 'design-colors':
+                structural, pixels, refinement = timed('experimentalSelection', lambda: rebuild_regions(
+                    rgba, proposal.structural_label_map, proposal.pixel_label_map, color_config, design_color_request))
+            else:
+                structural, pixels, refinement = timed('experimentalSelection', lambda: refine_selection(
+                    rgba, proposal.structural_label_map, proposal.pixel_label_map, color_config,
+                    enabled=quality_mode in {'selection', 'combined'}))
             proposal = SimpleNamespace(structural_label_map=structural, pixel_label_map=pixels)
             quality = {'schemaVersion': 'application-quality-design/1', 'mode': quality_mode,
                        'foregroundCleanupEnabled': foreground_cleanup, 'cleanup': cleanup,
@@ -474,6 +485,8 @@ def _run_runtime(
                        'originalEffectiveRgbaSha256': _sha256_bytes(original_rgba.tobytes()),
                        'derivedEffectiveRgbaSha256': _sha256_bytes(rgba.tobytes()),
                        'humanConfirmation': 'PENDING_REVIEW', 'frozenEvidence': False}
+            if design_mode:
+                quality['designColorRequest'] = design_color_request
         purified, metadata = timed(
             "rcARepresentativeAssignment",
             lambda: apply_representatives(rgba, proposal.structural_label_map, "RC-A", color_config, proposal.pixel_label_map),
@@ -541,6 +554,16 @@ def _run_runtime(
             'sourceToDesignChangedRgbPixels': int(np.count_nonzero(np.any(original_rgba[..., :3] != purified[..., :3], axis=2) & (original_rgba[..., 3] > 0))),
         })
         (output_root / 'experimental-design.json').write_bytes(_canonical_json(quality))
+        if quality_mode in {'design-colors', 'design-cleanup'}:
+            # Full-resolution changes, separate from untouched original A.
+            changed_alpha = original_rgba[..., 3] != rgba[..., 3]
+            changed_labels = old_structural != proposal.structural_label_map
+            np.savez_compressed(output_root / 'design-change-maps.npz',
+                                alpha_changed=changed_alpha, labels_changed=changed_labels)
+            change_preview = np.zeros((*changed_alpha.shape, 4), np.uint8)
+            change_preview[changed_labels] = [255, 180, 0, 255]
+            change_preview[changed_alpha] = [255, 0, 255, 255]
+            _save_png(output_root / 'design-changes.png', change_preview)
     _save_png(output_root / "input-foreground.png", rgba)
     _save_png(output_root / "purified.png", purified)
     _save_png(output_root / "region-labels.png", _numbered_preview(proposal.structural_label_map, components=False))
@@ -630,6 +653,9 @@ def _run_runtime(
             'mode': quality_mode, 'foregroundCleanupEnabled': foreground_cleanup,
             'frozenEvidence': False, 'humanConfirmation': 'PENDING_REVIEW'}
         report['configuration']['experimentalDesign'] = report['experimentalDesign']
+        if design_color_request is not None:
+            report['experimentalDesign']['designColorRequest'] = design_color_request
+            report['configuration']['designColorRequest'] = design_color_request
         report['configuration']['baselineFitToleranceSourcePixels'] = 0.5
         report['configuration']['vectorToleranceSourcePixels'] = vector_result.get('tolerancePx')
         report['contracts']['geometryTruth'] = 'experimental design B structural labels and explicitly selected shared contours'
@@ -665,6 +691,8 @@ def run_runtime(
     whole_image_foreground: bool = False,
     quality_mode: str = 'baseline',
     foreground_cleanup: bool = False,
+    design_palette: list[list[int]] | None = None,
+    palette_provenance: str | None = None,
 ) -> dict[str, Any]:
     """Run the complete M4 chain through its single public processing API.
 
@@ -673,10 +701,19 @@ def run_runtime(
     prevents reusable service callers from accidentally bypassing the same
     protected-path, non-empty-directory, and overlap gates used by the CLI.
     """
-    if quality_mode not in {'baseline', 'selection', 'contour', 'combined'}:
+    if quality_mode not in {'baseline', 'selection', 'contour', 'combined', 'design-colors', 'design-cleanup'}:
         raise M4RuntimeError('invalid experimental quality mode')
     if type(foreground_cleanup) is not bool or (foreground_cleanup and quality_mode == 'baseline'):
         raise M4RuntimeError('foreground cleanup requires an explicit experimental quality mode')
+    design_request = None
+    if quality_mode in {'design-colors', 'design-cleanup'}:
+        quality_root = str(BENCHMARK_ROOT / 'algorithm-v1')
+        if quality_root not in sys.path:
+            sys.path.insert(0, quality_root)
+        from design_color_regions import validate_request
+        design_request = validate_request(design_palette, palette_provenance)
+    elif design_palette is not None or palette_provenance is not None:
+        raise M4RuntimeError('design palette is only accepted by the explicit design-colour path')
     foreground = load_foreground(
         image_path,
         mode=mode,
@@ -689,6 +726,8 @@ def run_runtime(
     validated_output = validate_output_root(output_root, input_paths)
     try:
         options = {} if quality_mode == 'baseline' else {'quality_mode': quality_mode, 'foreground_cleanup': foreground_cleanup}
+        if design_request is not None:
+            options['design_color_request'] = design_request
         return _run_runtime(foreground, runtime_id=runtime_id, profile=profile, output_root=validated_output, **options)
     except Exception as error:
         if validated_output.exists() and not (validated_output / 'failure.json').exists():
