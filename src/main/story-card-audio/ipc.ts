@@ -6,9 +6,11 @@ import { isTrustedIpcEvent } from '../security/ipc-guard'
 import {
   deleteTemporaryStoryCardAudio,
   promoteTemporaryStoryCardAudio,
+  readTemporaryStoryCardAudio,
   saveTemporaryStoryCardAudio,
   type TemporaryStoryCardAudioDeleteResult,
   type TemporaryStoryCardAudioPromoteResult,
+  type TemporaryStoryCardAudioReadResult,
   type TemporaryStoryCardAudioSaveResult
 } from './write'
 
@@ -33,6 +35,21 @@ export function registerStoryCardAudioIpc(roots: ResourceRoots): void {
         ok: false,
         error: toSharedError(
           { code: 'UNKNOWN', message: '临时录音写入暂时无法完成，请稍后重试。', retryable: true },
+          'UNKNOWN'
+        )
+      }
+    }
+  })
+
+  ipcMain.handle(IPC_CHANNELS.STORY_CARD_AUDIO_READ, async (event, rawRef: unknown): Promise<TemporaryStoryCardAudioReadResult> => {
+    try {
+      if (!isTrustedIpcEvent(event)) return denied()
+      return readTemporaryStoryCardAudio(rawRef, roots)
+    } catch {
+      return {
+        ok: false,
+        error: toSharedError(
+          { code: 'UNKNOWN', message: '临时录音读取暂时无法完成，请稍后重试。', retryable: true },
           'UNKNOWN'
         )
       }

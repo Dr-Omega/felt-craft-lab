@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import {
   deleteTemporaryStoryCardAudio,
   promoteTemporaryStoryCardAudio,
+  readTemporaryStoryCardAudio,
   saveTemporaryStoryCardAudio
 } from '../../src/main/story-card-audio/write'
 import { resolveFeltResourcePath } from '../../src/shared/resource/resolve-path'
@@ -63,6 +64,21 @@ describe('saveTemporaryStoryCardAudio', () => {
     expect(resolveFeltResourcePath(saved.ref, roots, { requireExists: false })).toMatchObject({ ok: true, exists: false })
     expect(deleteTemporaryStoryCardAudio('felt-resource://audio/dynamic/tts.mp3', roots).ok).toBe(false)
     expect(deleteTemporaryStoryCardAudio('felt-resource://audio/keep.mp3', roots).ok).toBe(false)
+  })
+
+  it('reads only a bounded temporary recording for the protected ASR bridge', () => {
+    const roots = makeRoots()
+    const bytes = new Uint8Array([0x1a, 0x45, 0xdf, 0xa3])
+    const saved = saveTemporaryStoryCardAudio(bytes, 'audio/webm', roots)
+    expect(saved.ok).toBe(true)
+    if (!saved.ok) return
+
+    expect(readTemporaryStoryCardAudio(saved.ref, roots)).toEqual({
+      ok: true,
+      audioBase64: Buffer.from(bytes).toString('base64'),
+      mimeType: 'audio/webm'
+    })
+    expect(readTemporaryStoryCardAudio('felt-resource://audio/dynamic/tts/example.mp3', roots).ok).toBe(false)
   })
 
   it('moves full recordings to the protected confirmed namespace before formal binding', () => {

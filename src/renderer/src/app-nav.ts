@@ -1,6 +1,6 @@
 import type { SceneDocument } from '@shared/contracts'
 
-export type AppView = 'library' | 'editor' | 'status'
+export type AppView = 'library' | 'editor' | 'status' | 'story-card-test'
 
 export type EditorLaunchMode = 'new' | 'draft' | 'project'
 
@@ -27,6 +27,7 @@ export function getEditorLaunch(): EditorLaunchContext | undefined {
   return launch
 }
 
+
 export function subscribeAppNav(listener: () => void): () => void {
   listeners.add(listener)
   return () => listeners.delete(listener)
@@ -39,6 +40,10 @@ export function openLibrary(): void {
 
 export function openStatus(): void {
   currentView = 'status'
+  notify()
+}
+export function openStoryCardTest(): void {
+  currentView = 'story-card-test'
   notify()
 }
 

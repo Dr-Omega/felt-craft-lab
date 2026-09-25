@@ -1,4 +1,7 @@
 import { net, protocol } from 'electron'
+import { createReadStream, statSync } from 'node:fs'
+import { extname } from 'node:path'
+import { Readable } from 'node:stream'
 import { pathToFileURL } from 'node:url'
 import { FELT_RESOURCE_SCHEME } from '@shared/resource'
 import { resolveFeltResourcePath } from '@shared/resource/resolve-path'
@@ -8,6 +11,7 @@ import {
   isFeltResourceMethodAllowed,
   methodNotAllowedResponse
 } from './methods'
+import { parseFeltResourceByteRange } from './range'
 
 export { isFeltResourceMethodAllowed, methodNotAllowedResponse } from './methods'
 
@@ -54,6 +58,48 @@ async function toCorsResponse(upstream: Response): Promise<Response> {
   })
 }
 
+function contentTypeFor(path: string): string {
+  switch (extname(path).toLowerCase()) {
+    case '.webm': return 'audio/webm'
+    case '.mp3': return 'audio/mpeg'
+    case '.wav': return 'audio/wav'
+    case '.png': return 'image/png'
+    case '.jpg':
+    case '.jpeg': return 'image/jpeg'
+    default: return 'application/octet-stream'
+  }
+}
+
+function rangeNotSatisfiableResponse(fileSize: number): Response {
+  return new Response(null, {
+    status: 416,
+    headers: corsHeaders({
+      'Accept-Ranges': 'bytes',
+      'Content-Range': `bytes */${fileSize}`
+    })
+  })
+}
+
+function partialFileResponse(
+  absolutePath: string,
+  method: string,
+  start: number,
+  end: number,
+  fileSize: number
+): Response {
+  const contentLength = end - start + 1
+  const headers = corsHeaders({
+    'Accept-Ranges': 'bytes',
+    'Content-Length': String(contentLength),
+    'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+    'Content-Type': contentTypeFor(absolutePath)
+  })
+  if (method === 'HEAD') return new Response(null, { status: 206, headers })
+
+  const stream = Readable.toWeb(createReadStream(absolutePath, { start, end })) as ReadableStream<Uint8Array>
+  return new Response(stream, { status: 206, headers })
+}
+
 /**
  * Production request handler used by protocol.handle and Electron smoke.
  */
@@ -80,6 +126,13 @@ export async function handleFeltResourceRequest(
       status: resolved.error.code === 'ASSET_NOT_FOUND' ? 404 : 400,
       headers: corsHeaders({ 'content-type': 'text/plain; charset=utf-8' })
     })
+  }
+
+  const fileSize = statSync(resolved.absolutePath).size
+  const range = parseFeltResourceByteRange(request.headers.get('range'), fileSize)
+  if (range === null) return rangeNotSatisfiableResponse(fileSize)
+  if (range !== undefined) {
+    return partialFileResponse(resolved.absolutePath, method, range.start, range.end, fileSize)
   }
 
   try {
