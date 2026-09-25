@@ -165,7 +165,9 @@ async function toggleFavorite(assetId: string): Promise<void> {
   await refreshLists()
 }
 
-const allowTestUnlock = import.meta.env.DEV
+const testUnlockRequested = new URLSearchParams(window.location.search).get('testUnlock') === '1'
+const localPreviewHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+const allowTestUnlock = import.meta.env.DEV || (localPreviewHost && testUnlockRequested)
 
 async function unlockForTest(assetId: string): Promise<void> {
   if (!allowTestUnlock) return

@@ -1,6 +1,6 @@
 import type { SceneDocument, StoryCardWorkContext } from '@shared/contracts'
 
-export type AppView = 'library' | 'editor' | 'status' | 'story-card-test'
+export type AppView = 'library' | 'editor' | 'status' | 'story-card-test' | 'learning-zone-test'
 
 export type EditorLaunchMode = 'new' | 'draft' | 'project'
 
@@ -49,6 +49,11 @@ export function openStatus(): void {
 export function openStoryCardTest(context?: StoryCardWorkContext): void {
   storyCardTestContext = context
   currentView = 'story-card-test'
+  notify()
+}
+
+export function openLearningZoneTest(): void {
+  currentView = 'learning-zone-test'
   notify()
 }
 
