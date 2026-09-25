@@ -152,6 +152,28 @@ class DesignColorTests(unittest.TestCase):
         one=rebuild(rgba);two=rebuild(rgba)
         self.assertEqual(one[2],two[2]);json.dumps(one[2],allow_nan=False)
         np.testing.assert_array_equal(one[0],two[0]);np.testing.assert_array_equal(rgba,original)
+    def test_close_design_inks_thin_border_true_hole_and_independent_decoration(self):
+        palette=[[8,8,8],[182,44,48],[204,59,61],[254,249,200]]
+        truth=np.zeros((64,80),np.int32)
+        truth[5:59,5:75]=1  # one-pixel intentional black frame
+        truth[6:58,6:74]=2;truth[6:58,40:74]=3  # close but abrupt design inks
+        truth[20:30,15:25]=4;truth[1:3,15:17]=4  # disconnected small decoration
+        truth[12:45,35]=1  # one-pixel internal line
+        truth[35:40,50:55]=0  # a genuine hole, not a colour island
+        rgba=np.full((*truth.shape,4),255,np.uint8);rgba[...,3]=np.where(truth>0,255,0)
+        for index,rgb in enumerate(palette,1):rgba[truth==index,:3]=rgb
+        for reference in (None,palette):
+            with self.subTest(mode='AUTO' if reference is None else 'REFERENCE'):
+                labels,_,report=rebuild(rgba,reference)
+                self.assertEqual(report['actualUsedColorCount'],4)
+                mapped=[]
+                for tid in range(1,5):
+                    assigned=np.unique(labels[truth==tid]);self.assertEqual(len(assigned),1)
+                    mapped.append(int(assigned[0]))
+                self.assertEqual(len(set(mapped)),4)
+                np.testing.assert_array_equal(labels>0,truth>0)
+                self.assertEqual(_summary(labels)['components'],_summary(truth)['components'])
+                self.assertTrue(np.all(labels[35:40,50:55]==0))
     def test_invalid_labels_and_fringe_rejected(self):
         rgba,truth,palette=control()
         with self.assertRaises(ValueError): rebuild(rgba,palette,truth.astype(float))

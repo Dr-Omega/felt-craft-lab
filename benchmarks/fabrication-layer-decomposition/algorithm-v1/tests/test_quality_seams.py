@@ -7,6 +7,7 @@ from unittest.mock import patch
 
 import numpy as np
 from shapely.geometry import box
+from shapely.affinity import scale as scale_geometry
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from quality_seams import compare_quality_plans, rank_quality_plans, render_plan_preview
@@ -111,23 +112,36 @@ class QualitySeamsTest(unittest.TestCase):
             source(box(13, 13, 69, 69).difference(box(25, 25, 57, 57)), "middle"),
             source(box(25, 25, 57, 57).difference(box(37, 37, 45, 45)), "inner", cream),
         ]
+        # Keep the hole centre away from the fixed-size numbered text overlay;
+        # this regression checks polygon compositing, not glyph placement.
+        for item in observed:
+            item['polygon'] = scale_geometry(item['polygon'], xfact=3, yfact=3, origin=(0, 0))
         observed[0]["colorSlotId"] = observed[2]["colorSlotId"] = "cream"
         plans = propose_plans(observed)
         before = copy.deepcopy(plans)
+        sources_before = copy.deepcopy(observed)
         # MultiPolygon iteration order is not a drawing priority. Exercise both
         # valid orders returned by the geometry library, without changing any
         # polygon, plan, hard check, or rasterizer.
         for plan in plans:
-            for scale, reverse in ((1, False), (1, True), (3, False), (3, True)):
-                with self.subTest(plan=plan['id'], scale=scale, reverse=reverse):
-                    with patch('quality_seams._parts', side_effect=lambda geometry:
-                               list(reversed(_parts(geometry))) if reverse else _parts(geometry)):
-                        preview = render_plan_preview(plan, observed, (84, 84), scale=scale)
-                    self.assertEqual(preview.getpixel((30, 30)), cream+(255,))
-                    self.assertEqual(preview.getpixel((7, 7)), cream+(255,))
-                    self.assertEqual(preview.getpixel((19, 19)), (180, 90, 20, 255))
-                    self.assertEqual(preview.getpixel((41, 41))[3], 0)
+            for scale in (1, 3):
+                for options in ({}, {'seams': True}, {'numbered': True}):
+                    images = []
+                    for reverse in (False, True):
+                        with self.subTest(plan=plan['id'], scale=scale, options=options, reverse=reverse):
+                            with patch('quality_seams._parts', side_effect=lambda geometry:
+                                       list(reversed(_parts(geometry))) if reverse else _parts(geometry)):
+                                preview = render_plan_preview(plan, observed, (252, 252), scale=scale, **options)
+                            images.append(np.asarray(preview))
+                            self.assertEqual(preview.getpixel((90, 90))[3], 255)
+                            self.assertEqual(preview.getpixel((123, 123))[3], 0)
+                            if not options:
+                                self.assertEqual(preview.getpixel((90, 90)), cream+(255,))
+                                self.assertEqual(preview.getpixel((21, 21)), cream+(255,))
+                                self.assertEqual(preview.getpixel((57, 57)), (180, 90, 20, 255))
+                    np.testing.assert_array_equal(images[0], images[1])
         self.assertEqual(plans, before, "Rendering must not mutate actual geometry or declarations")
+        self.assertEqual(observed, sources_before, "All preview modes must preserve observed domains")
 
     def test_no_number_appearance_distinguished_from_visible_seam_overlay(self):
         observed = [source(box(1, 1, 31, 25).difference(box(10, 8, 22, 18)))]

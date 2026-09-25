@@ -95,6 +95,9 @@ A part clears only its own holes: its drawing order cannot erase a valid nested
 same-colour part. This changes diagnostic PNG rendering, not persisted geometry,
 true alpha holes, M7 checks, candidate selection, or seam records. Regression
 tests exercise both part orders and retain a real empty central hole.
+The same nested-domain regression exercises appearance, physical-seam and
+numbered-reference preview options at native and supersampled scales, with
+exact order-invariance and unchanged input-domain/plan declarations.
 
 `design-colour-regions/2` also reconciles a previously unsupported ownership case.
 After existing assignment, a complete connected colour component may change
@@ -113,6 +116,10 @@ to show that the decision is not small-area deletion. Each accepted change
 records every changed coordinate, both design identities and its unconfirmed
 status. Persisted reread regenerates these declarations from the input; even a
 coherently rehashed false ownership claim is rejected.
+An additional automatic/reference counterexample keeps two supported close
+design inks distinct, a one-pixel black frame and internal line, an intentional
+disconnected small decoration, and a genuine hole. Automatic mode receives only
+RGBA; its test truth and reference palette are never passed to that call.
 
 An intentionally ambiguous mark satisfying all these conditions can still be
 reassigned. Therefore the new design remains a proposal requiring A-to-B visual
