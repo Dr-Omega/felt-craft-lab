@@ -189,7 +189,7 @@ def _sources(observed):
     return result, foreground
 
 
-def decompose_solid(polygon, axis="x"):
+def decompose_solid(polygon, axis="x", *, clip_numeric_parts=False):
     """Cut through actual holes, then merge adjacent cells into solid polygons.
 
     Axis cuts are positive-length partitions, not zero-width slit geometries.
@@ -197,6 +197,8 @@ def decompose_solid(polygon, axis="x"):
     original domain and cannot merge unrelated equal-color components.
     """
     _require_polygon(polygon, "split source")
+    if type(clip_numeric_parts) is not bool:
+        raise SolidPlanError("clip_numeric_parts must be a boolean")
     if axis not in ("x", "y"):
         raise SolidPlanError("axis must be x or y")
     if not polygon.interiors:
@@ -235,6 +237,25 @@ def decompose_solid(polygon, axis="x"):
             break
         _, _, i, j, merged = min(merges)
         completed = _sort([p for k, p in enumerate(completed) if k not in (i, j)] + [merged])
+    if clip_numeric_parts:
+        # Construction only, never validation-time repair of a supplied plan.
+        # Floating axis intersections can leave a minute part outside its
+        # original domain even when the source polygons have zero overlap.
+        # Re-intersect with that actual domain, using existing conservation and
+        # inherited-boundary limits. Source membership still uses strict area
+        # > 0 downstream, and all seams are derived from these actual parts.
+        contained = []
+        for part in completed:
+            if part.difference(polygon).area > 0:
+                clipped = part.intersection(polygon)
+                _require_polygon(clipped, "parent-clipped split piece", solid=True)
+                if (part.symmetric_difference(clipped).area > _tolerance(polygon)
+                        or _boundary_distance(part, clipped) > _boundary_tolerance(polygon)
+                        or clipped.difference(polygon).area > 0):
+                    raise SolidPlanError("constructed split cannot be contained in its actual parent without changing its boundary")
+                part = clipped
+            contained.append(part)
+        completed = _sort(contained)
     for part in completed:
         _require_polygon(part, "split piece", solid=True)
     reconstructed = unary_union(completed)
@@ -264,16 +285,16 @@ def _group_seams(pieces, group_id):
     return seams
 
 
-def _local_plan(sources, body, body_index, slot, axis, split_cache=None):
+def _local_plan(sources, body, body_index, slot, axis, split_cache=None, *, clip_numeric_parts=False):
     pieces, exposures, groups = [], [], []
 
     def add_domain(domain, role, color, source_items, name):
         if split_cache is None:
-            parts = decompose_solid(domain, axis)
+            parts = decompose_solid(domain, axis, clip_numeric_parts=clip_numeric_parts)
         else:
-            key = (domain.wkb, axis)
+            key = (domain.wkb, axis, clip_numeric_parts)
             if key not in split_cache:
-                split_cache[key] = tuple(decompose_solid(domain, axis))
+                split_cache[key] = tuple(decompose_solid(domain, axis, clip_numeric_parts=clip_numeric_parts))
             parts = split_cache[key]
         group_id = f"{name}-split" if len(parts) > 1 else None
         members = []
@@ -574,7 +595,7 @@ def validate_plan(observed, plan, *, geometry_cache=None):
             "areaVerificationTolerance": tolerance}
 
 
-def propose_plans(observed, *, reject_invalid_options=False):
+def propose_plans(observed, *, reject_invalid_options=False, clip_numeric_parts=False):
     """Search exact Base colors and two deterministic hole-cut directions.
 
     Every disconnected body receives a separate Base. Finite global proposals
@@ -583,6 +604,8 @@ def propose_plans(observed, *, reject_invalid_options=False):
     """
     if type(reject_invalid_options) is not bool:
         raise SolidPlanError("reject_invalid_options must be a boolean")
+    if type(clip_numeric_parts) is not bool:
+        raise SolidPlanError("clip_numeric_parts must be a boolean")
     sources, foreground = _sources(observed)
     body_options, rejected = [], []
     # Immutable Shapely polygons, cache lifetime limited to this one search.
@@ -596,7 +619,8 @@ def propose_plans(observed, *, reject_invalid_options=False):
         for slot in sorted({s["colorSlotId"] for s in members}):
             for axis in ("x", "y"):
                 try:
-                    option = _local_plan(members, body, body_index, slot, axis, split_cache)
+                    option = _local_plan(members, body, body_index, slot, axis, split_cache,
+                                         clip_numeric_parts=clip_numeric_parts)
                 except SolidPlanError as exc:
                     rejected.append({"bodyId": f"body-{body_index}", "colorSlotId": slot,
                                      "splitAxis": axis, "reason": str(exc)})

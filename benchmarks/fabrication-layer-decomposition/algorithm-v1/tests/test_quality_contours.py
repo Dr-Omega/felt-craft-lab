@@ -31,6 +31,19 @@ def baseline(labels):
 
 
 class QualityContourTests(unittest.TestCase):
+    def test_pinched_source_holes_are_reported_not_silently_filled(self):
+        labels = np.zeros((20, 20), np.int32)
+        labels[2:18, 2:18] = 1
+        labels[7, 7] = labels[8, 8] = 0
+        graph, original = baseline(labels)
+        self.assertTrue(original['hardGate']['pass'])
+        selected, report = refine_contours(graph, original, labels, CONFIG)
+        self.assertEqual(report['status'], 'BLOCKED_SOURCE_POLYGON_MATERIALIZATION')
+        self.assertEqual(selected, original)
+        self.assertEqual(report['trials'], [])
+        self.assertFalse(report['sourcePolygonMaterialization']['pass'])
+        self.assertIn('Self-intersection', report['sourcePolygonMaterialization']['error'])
+
     def test_actual_arc_improves_with_declared_budget_and_hard_gates(self):
         labels = circle()
         graph, original = baseline(labels)
@@ -48,6 +61,20 @@ class QualityContourTests(unittest.TestCase):
         self.assertTrue(any(s["type"] == "CUBIC" for e in selected["geometry"] for s in e["segments"]))
         json.dumps(report, allow_nan=False)
         self.assertNotEqual(report["selectedVectorSha256"], report["inputVectorSha256"])
+
+    def test_opt_in_exact_cycles_do_not_fill_pinched_true_holes(self):
+        labels=np.zeros((20,20),np.int32);labels[2:18,2:18]=1
+        labels[7,7]=labels[8,8]=0
+        graph, original=baseline(labels);snapshot=copy.deepcopy((graph,original))
+        selected, report=refine_contours(graph,original,labels,CONFIG,point_touch_cycles=True)
+        self.assertEqual((graph,original),snapshot)
+        self.assertTrue(report['sourcePolygonMaterialization']['pass'])
+        self.assertGreater(report['sourcePolygonMaterialization']['pointTouchMaterializedCount'],0)
+        geometries={e['edgeId']:e['segments'] for e in selected['geometry']}
+        check=validate_embedding(graph,labels,geometries,CONFIG['bezier']['validationFlatnessPx'])
+        self.assertTrue(check['pass'])
+        self.assertEqual(int(check['raster'][7,7]),0)
+        self.assertEqual(int(check['raster'][8,8]),0)
 
     def test_disabled_preserves_original_and_is_deterministic(self):
         labels = circle()

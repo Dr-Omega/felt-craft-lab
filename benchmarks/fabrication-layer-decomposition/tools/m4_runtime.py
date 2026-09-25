@@ -504,12 +504,18 @@ def _run_runtime(
             from quality_contours import refine_contours
             vector_result, quality['contours'] = timed('experimentalSharedContours', lambda: refine_contours(
                 graph, vector_result, proposal.structural_label_map, vector_config,
-                enabled=quality_mode in {'contour', 'combined'}))
+                enabled=quality_mode in {'contour', 'combined', 'design-colors'},
+                point_touch_cycles=quality_mode == 'design-colors'))
             # This is a new selected geometry, not a claim to frozen P0-04C evidence.
             attempted = list(dict.fromkeys([vector_result['route'], *attempted]))
         candidates = timed("observedCandidateDerivation", lambda: _observed_candidates(runtime_id, graph, vector_result, regions, attempted))
         geometry_objects = timed('selectedGeometryValidation', lambda: candidate_polygons(
-            candidates, graph, vector_result, float(vector_config['bezier']['validationFlatnessPx'])))
+            candidates, graph, vector_result, float(vector_config['bezier']['validationFlatnessPx']),
+            point_touch_cycles=quality_mode == 'design-colors'))
+        if quality_mode == 'design-colors':
+            quality['pointTouchMaterialization'] = [
+                {'candidateId': item['id'], **item['boundaryProvenance']['pointTouchMaterialization']}
+                for item in geometry_objects if 'pointTouchMaterialization' in item['boundaryProvenance']]
         metrics = timed('diagnosticMetrics', lambda: metrics_for_run(rgba, proposal.structural_label_map, purified, color_config, None, pixel_label_map=proposal.pixel_label_map, regions=metadata))
     except Exception as error:
         failure = {
@@ -522,6 +528,31 @@ def _run_runtime(
             "downstreamStopped": True,
         }
         (output_root / "failure.json").write_bytes(_canonical_json(failure))
+        if quality is not None and current_stage == 'selectedGeometryValidation':
+            # Failed design evidence, never a completed runtime or accepted
+            # Piece plan. Keep actual computed labels/geometry for inspection.
+            diagnostics = output_root / 'failure-diagnostics'
+            try:
+                diagnostics.mkdir(exist_ok=False)
+                _save_png(diagnostics / 'input-foreground.png', rgba)
+                _save_png(diagnostics / 'purified.png', purified)
+                _save_png(diagnostics / 'baseline-purified.png', baseline_analysis[2])
+                _save_png(diagnostics / 'vector-overlay.png', _vector_overlay(
+                    purified, vector_result, float(vector_config['bezier']['validationFlatnessPx'])))
+                np.savez_compressed(diagnostics / 'structural_label_map.npz',
+                                    labels=proposal.structural_label_map.astype(np.int32))
+                for name, value in [('boundary-graph.json', serialize_graph(graph)),
+                                    ('vector-result.json', vector_result),
+                                    ('experimental-design.json', quality), ('regions.json', regions)]:
+                    (diagnostics / name).write_bytes(_canonical_json(value))
+                (diagnostics / 'diagnostics.json').write_bytes(_canonical_json({
+                    'status': 'FAILED_NOT_ACCEPTED_GEOMETRY', 'failure': failure,
+                    'source': foreground.provenance, 'humanVisualAcceptance': 'PENDING',
+                    'downstreamPiecesExist': False, 'productionExportEligible': False}))
+            except Exception as diagnostic_error:
+                # Preserve the original contract failure as well as a separate
+                # diagnostic write error; never replace either with COMPLETE.
+                raise M4RuntimeError(f'{error}; failed diagnostic write at {diagnostics}: {diagnostic_error}') from error
         raise
 
     # Keep actual completed computation stages if any subsequent artifact or
@@ -648,6 +679,9 @@ def _run_runtime(
         },
     }
     if quality is not None:
+        if quality_mode == 'design-colors':
+            report['topology']['materializedSinglePolygonHoleCount'] = sum(len(o['polygon'].interiors) for o in geometry_objects)
+            report['topology']['pointTouchMaterializedComponentCount'] = len(quality['pointTouchMaterialization'])
         report['experimentalDesign'] = {'artifact': 'experimental-design.json',
             'sha256': _sha256_file(output_root / 'experimental-design.json'),
             'mode': quality_mode, 'foregroundCleanupEnabled': foreground_cleanup,

@@ -16,7 +16,7 @@ import cv2
 from skimage.morphology import skeletonize
 
 
-STRATEGY_VERSION = "shared-contour-refit/1"
+STRATEGY_VERSION = "shared-contour-refit/3"
 DESIGN_BUDGETS_PX = (0.5, 0.75, 1.0)
 FIT_BUDGET_FRACTION = 0.75
 LOCAL_BRANCH_RADIUS_PX = 2.0
@@ -30,6 +30,29 @@ def _sha(value):
 
 def _complexity(geometries):
     return sum(len(value) for value in geometries.values())
+
+
+def _polygon_materialization(graph, vector, flatness, point_touch_cycles=False):
+    """Use the actual downstream ring/provenance gate, not a repaired polygon.
+
+    Synthetic colours here are irrelevant to geometry and are never returned
+    as design identities. The selected runtime's true colours are checked again
+    when materializing its actual observed candidates.
+    """
+    from m4_checks import candidate_polygons
+    from m4_runtime import _observed_candidates
+    regions = [{**region, 'representativeColorRgb': [0, 0, 0],
+                'representativeColorLab': [0, 0, 0]} for region in graph['regions']]
+    candidates = _observed_candidates('contour-materialization-check', graph, vector,
+                                      regions, [vector['route']])
+    try:
+        polygons = candidate_polygons(candidates, graph, vector, flatness,
+                                      point_touch_cycles=point_touch_cycles)
+    except ValueError as error:
+        return {'pass': False, 'error': str(error), 'repairApplied': False}
+    return {'pass': True, 'error': None, 'repairApplied': False,
+            'pointTouchMaterializedCount': sum('pointTouchMaterialization' in p['boundaryProvenance']
+                                               for p in polygons)}
 
 
 def _fit_protected_chain(kernel, edge, tolerance, config, protected_indices):
@@ -71,7 +94,7 @@ def _fit_protected_chain(kernel, edge, tolerance, config, protected_indices):
 
 def refine_contours(graph: dict[str, Any], vector_result: dict[str, Any],
                     labels: np.ndarray, vector_config: dict[str, Any], *,
-                    enabled: bool = True) -> tuple[dict[str, Any], dict[str, Any]]:
+                    enabled: bool = True, point_touch_cycles: bool = False) -> tuple[dict[str, Any], dict[str, Any]]:
     """Return an independently checked selected vector and locatable audit.
 
     No mutation, file I/O, plan-ID cache, per-piece smoothing or frozen writes.
@@ -179,11 +202,18 @@ def refine_contours(graph: dict[str, Any], vector_result: dict[str, Any],
                                   "regions": branch_records, "edgeVertexIndices": branch_vertices},
         "trials": [], "changedEdges": [], "status": "DISABLED" if not enabled else "NO_LEGAL_IMPROVEMENT",
         "baselineSegmentCount": _complexity(baseline),
+        "pointTouchCyclesEnabled": point_touch_cycles,
         "baselineFallbacks": {item["edgeId"]: item["fallback"] for item in vector_result["geometry"] if item.get("fallback")},
     }
     selected = copy.deepcopy(vector_result)
     selected_geometries = baseline
-    if enabled:
+    source_polygons = _polygon_materialization(graph, vector_result, flatness, point_touch_cycles) if enabled else None
+    report['sourcePolygonMaterialization'] = source_polygons
+    if enabled and not source_polygons['pass']:
+        # A point-touching raw ring is not made into a valid solid Piece by
+        # reporting the frozen embedding check alone. Do not fill/buffer it.
+        report['status'] = 'BLOCKED_SOURCE_POLYGON_MATERIALIZATION'
+    if enabled and source_polygons['pass']:
         for budget in DESIGN_BUDGETS_PX:
             proposed = copy.deepcopy(baseline)
             diagnostics, reasons = {}, {}
@@ -224,7 +254,8 @@ def refine_contours(graph: dict[str, Any], vector_result: dict[str, Any],
                 vector_result["caseId"], vector_result["profile"], kernel.ROUTE_V2,
                 effective_budget, vector_result["inputSha256"], graph, labels,
                 proposed, diagnostics, reasons, copy.deepcopy(validation), flatness, deviation)
-            legal = bool(result["hardGate"]["pass"])
+            materialization = _polygon_materialization(graph, result, flatness, point_touch_cycles)
+            legal = bool(result["hardGate"]["pass"] and materialization['pass'])
             count = _complexity(proposed)
             report["trials"].append({"designBudgetPx": budget, "effectiveMaxBudgetPx": effective_budget,
                                      "fitTolerancePx": budget * FIT_BUDGET_FRACTION,
@@ -232,6 +263,7 @@ def refine_contours(graph: dict[str, Any], vector_result: dict[str, Any],
                                      "baselineRasterIdentical": bool(np.array_equal(raster, baseline_raster)),
                                      "changedRasterPixelCount": int(np.count_nonzero(raster != baseline_raster)),
                                      "hardGate": result["hardGate"], "edgeReasons": reasons,
+                                     "polygonMaterialization": materialization,
                                      "symmetricMaxBoundaryDeviation": deviation["symmetricMaxBoundaryDeviation"]})
             if legal and count < _complexity(selected_geometries):
                 selected, selected_geometries = result, proposed

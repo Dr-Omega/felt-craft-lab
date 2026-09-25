@@ -135,7 +135,9 @@ def verify_quality_design(root):
     if replay_regions != regions:
         raise ValueError('experimental Region/Component derivation mismatch')
     graph, baseline_vector,_ = kernel._vectorize(labels,effective[...,3],report['runtimeId'],config['runtimeProfileId'],vector_config)
-    selected,contours = refine_contours(graph,baseline_vector,labels,vector_config,enabled=record['mode'] in {'contour','combined'})
+    selected,contours = refine_contours(graph,baseline_vector,labels,vector_config,
+        enabled=record['mode'] in {'contour','combined','design-colors'},
+        point_touch_cycles=record['mode']=='design-colors')
     public_graph = {k:v for k,v in graph.items() if not k.startswith('_')}
     # The frozen result contains numeric Region-map keys in memory. JSON turns
     # these into strings; sorting 1,2,10 is not sorting "1","10","2". Normalize
@@ -143,5 +145,13 @@ def verify_quality_design(root):
     if any(json.loads(canonical_bytes(a)) != b for a,b in ((public_graph,read('boundary-graph.json')),
             (selected,read('vector-result.json')),(contours,record['contours']))):
         raise ValueError('experimental shared contour geometry/mapping/budget mismatch')
+    if record['mode']=='design-colors':
+        candidates=kernel._observed_candidates(report['runtimeId'],graph,selected,replay_regions,[selected['route']])
+        objects=kernel.candidate_polygons(candidates,graph,selected,
+            float(vector_config['bezier']['validationFlatnessPx']),point_touch_cycles=True)
+        materialized=[{'candidateId':item['id'],**item['boundaryProvenance']['pointTouchMaterialization']}
+                      for item in objects if 'pointTouchMaterialization' in item['boundaryProvenance']]
+        if materialized!=record.get('pointTouchMaterialization'):
+            raise ValueError('experimental point-touch materialization declaration mismatch')
     return {'status':'PASS','designSha256':report['experimentalDesign']['sha256'],'freshPersistedRead':True,
             'validation':'SOURCE_SNAPSHOT_CP_B_RC_A_SELECTION_SHARED_GEOMETRY_REPLAY_NO_PASS_CACHE'}

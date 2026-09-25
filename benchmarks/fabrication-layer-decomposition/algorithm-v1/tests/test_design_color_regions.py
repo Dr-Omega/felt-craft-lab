@@ -20,6 +20,23 @@ def rebuild(rgba,reference=None,labels=None):
     return rebuild_regions(rgba,labels,pixels,CONFIG,request)
 
 class DesignColorTests(unittest.TestCase):
+    def test_repeated_exact_ink_details_survive_old_majority_coherence(self):
+        body = [146, 76, 38]
+        ink = [108, 48, 18]
+        rgba = np.zeros((50, 90, 4), np.uint8)
+        rgba[3:47, 3:87] = [*body, 255]
+        marks = np.zeros(rgba.shape[:2], bool)
+        for x in (12, 26, 40, 54, 68):
+            marks[14:24, x:x+3] = True
+        rgba[marks] = [*ink, 255]
+        old = (rgba[..., 3] > 0).astype(np.int32)
+        for reference in (None, [body, ink]):
+            with self.subTest(reference=reference is not None):
+                labels, _, report = rebuild(rgba, reference, old)
+                self.assertNotEqual(labels[15,12], labels[15,20])
+                self.assertTrue(np.all(labels[marks] != labels[15,20]))
+                self.assertEqual(report['after']['components'], 6)
+
     def test_variable_count_and_reference_paths(self):
         for count in (5,6,9):
             rgba,truth,palette=control(count)

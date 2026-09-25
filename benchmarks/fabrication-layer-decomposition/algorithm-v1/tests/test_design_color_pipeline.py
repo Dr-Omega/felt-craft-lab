@@ -6,6 +6,7 @@ import shutil
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 import numpy as np
 from PIL import Image
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
@@ -51,6 +52,12 @@ class DesignPipelineTests(unittest.TestCase):
         out=self.clone('palette');record=json.loads((out/'experimental-design.json').read_text())
         record['selection']['paletteProposal'][0]['rgb']=[110,100,90];self.rehash(out,record)
         with self.assertRaises(ValueError): verify_quality_design(out)
+    def test_rehashed_point_touch_materialization_lie_rejected(self):
+        out=self.clone('point-touch');record=json.loads((out/'experimental-design.json').read_text())
+        record['pointTouchMaterialization']=[{'candidateId':'invented','materializedHoleCount':0}]
+        self.rehash(out,record)
+        with self.assertRaisesRegex(ValueError,'point-touch materialization'):
+            verify_quality_design(out)
     def test_rehashed_change_map_cannot_hide_cleanup(self):
         out=self.clone('change');record=json.loads((out/'experimental-design.json').read_text())
         with np.load(out/'design-change-maps.npz') as a: labels=a['labels_changed'].copy();alpha=a['alpha_changed'].copy()
@@ -65,6 +72,16 @@ class DesignPipelineTests(unittest.TestCase):
             'pixels':1,'manualConfirmation':'NOT_CONFIRMED'})
         self.rehash(out,record)
         with self.assertRaisesRegex(ValueError,'selection mapping'): verify_quality_design(out)
+    def test_design_color_entry_really_runs_shared_contour_trials(self):
+        for key, (out, _) in self.runs.items():
+            record = json.loads((out/'m4/experimental-design.json').read_text())
+            contours = record['contours']
+            if key.startswith('design-colors'):
+                self.assertTrue(contours['enabled'])
+                self.assertEqual(len(contours['trials']), 3)
+                self.assertNotEqual(contours['status'], 'DISABLED')
+            else:
+                self.assertFalse(contours['enabled'])
     def test_direct_api_protection_and_reference_validation_before_write(self):
         out=self.root/'occupied';out.mkdir();(out/'keep.txt').write_bytes(b'keep')
         protected=REPOSITORY_ROOT/'benchmarks/background-removal/design-test-must-not-exist'
@@ -75,3 +92,19 @@ class DesignPipelineTests(unittest.TestCase):
         target=self.root/'invalid-reference'
         with self.assertRaises(ValueError): run_algorithm(image_path=self.source,output_root=target,foreground_source='SYNTHETIC',quality_mode='design-colors',design_palette=[[1,2,3]])
         self.assertFalse(target.exists())
+
+    def test_failed_geometry_retains_explicitly_unaccepted_design_diagnostics(self):
+        out = self.root/'injected-geometry-failure'
+        with patch('m4_runtime.candidate_polygons', side_effect=ValueError('injected geometry rejection')):
+            with self.assertRaisesRegex(ValueError, 'injected geometry rejection'):
+                run_algorithm(image_path=self.source, output_root=out, foreground_source='SYNTHETIC',
+                              quality_mode='design-colors', foreground_cleanup=True)
+        diagnostics = out/'m4/failure-diagnostics'
+        self.assertTrue((diagnostics/'purified.png').exists())
+        record = json.loads((diagnostics/'diagnostics.json').read_text())
+        self.assertEqual(record['status'], 'FAILED_NOT_ACCEPTED_GEOMETRY')
+        self.assertTrue((diagnostics/'structural_label_map.npz').exists())
+        self.assertFalse((out/'m4/report.json').exists())
+        self.assertFalse((out/'report.json').exists())
+        self.assertFalse((out/'pieces.geojson').exists())
+        self.assertEqual(self.source.read_bytes(), self.source_bytes)

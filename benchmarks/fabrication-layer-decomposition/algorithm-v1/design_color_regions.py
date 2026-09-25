@@ -6,6 +6,7 @@ input. Exterior residue is a separate, explicitly unconfirmed hypothesis.
 """
 from __future__ import annotations
 
+import copy
 import hashlib
 
 import cv2
@@ -14,8 +15,11 @@ from scipy import ndimage
 
 from quality_fragments import _components, _exterior, _rgba, _summary
 
-VERSION = 'design-colour-regions/2'
+VERSION = 'design-colour-regions/3'
 PARAMETERS = {
+    'transparentRgbPolicy': 'IGNORE; VISIBLE_NEAREST_EXTENSION_FOR_PALETTE_STATISTICS_ONLY',
+    'exteriorMattePolicy': 'UNCONFIRMED_NEUTRAL_LIGHT_MATTE_HYPOTHESIS_NOT_OBSERVED_RGB',
+    'exteriorMatteHypothesisRgb': [255, 255, 255],
     'histogramRgbBinWidth': 4,
     'paletteLabRadius': 5.0,
     'textureModeLabRadius': 12.0,
@@ -75,6 +79,24 @@ def _lab(rgb):
     return cv2.cvtColor(a.reshape(-1, 1, 3) / 255.0, cv2.COLOR_RGB2LAB).reshape(a.shape)
 
 
+def _visible_neighbourhood_rgb(rgba):
+    """Fill *statistical* neighborhoods from visible samples, never from alpha=0.
+
+    A one-pixel colored line has no eroded core. Median filtering unobservable
+    background RGB used to turn its palette seed black or white depending on
+    PNG storage. Nearest extension leaves every visible sample untouched and
+    cannot add foreground, join selections or alter the source image.
+    """
+    visible = rgba[..., 3] > 0
+    rgb = rgba[..., :3].copy()
+    if not visible.any():
+        raise ValueError('design-colour proposal needs visible foreground')
+    if not visible.all():
+        nearest = ndimage.distance_transform_edt(~visible, return_distances=False, return_indices=True)
+        rgb[~visible] = rgb[nearest[0][~visible], nearest[1][~visible]]
+    return rgb
+
+
 def _major(rgba):
     count, labels, stats, _ = _components(rgba[..., 3] > 0)
     largest = int(stats[1:, cv2.CC_STAT_AREA].max()) if count > 1 else 0
@@ -123,7 +145,7 @@ def estimate_palette(rgba, config, request):
         return [{'rgb': c, 'supportPixels': None, 'evidence': 'CALLER_REFERENCE'} for c in request['referencePalette']]
     labels, _, major = _major(rgba)
     bodies = np.isin(labels, major)
-    rgb = rgba[..., :3]
+    rgb = _visible_neighbourhood_rgb(rgba)
     local_range = cv2.dilate(rgb, np.ones((3, 3), np.uint8)).astype(np.int16) - cv2.erode(rgb, np.ones((3, 3), np.uint8))
     depth = ndimage.distance_transform_edt(np.pad(active, 1))[1:-1, 1:-1]
     stable = active & (local_range.max(axis=2) <= PARAMETERS['coreNeighbourhoodRangeRgb'])
@@ -237,7 +259,10 @@ def cleanup_foreground(rgba, config, request, *, enabled):
         x, y, w, h, area = [int(v) for v in stats[cid]]
         rgb = np.median(rgba[mask, :3], axis=0)
         ring = cv2.dilate(mask.astype(np.uint8), CROSS).astype(bool) & exterior
-        outside = np.median(rgba[ring, :3], axis=0) if ring.any() else rgb
+        # Alpha-zero RGB is not evidence of a physical background/matte. Keep
+        # the existing conservative light-residue *hypothesis* explicit; no
+        # source samples, including hidden PNG RGB, confirm this assumption.
+        outside = np.asarray(p['exteriorMatteHypothesisRgb'], dtype=float)
         points = np.argwhere(mask); pos = points[np.argmin(distance[mask])]
         near_rgb = rgba[near[0, pos[0], pos[1]], near[1, pos[0], pos[1]], :3].astype(float)
         # Use the inferred design colour nearest the adjacent body's actual
@@ -271,13 +296,15 @@ def cleanup_foreground(rgba, config, request, *, enabled):
         if remove: derived[mask,3] = 0
         records.append({'inputIslandId':cid, 'bbox':[x,y,w,h], 'areaPx':area, 'medianRgb':rgb.tolist(),
                         'nearestMajorDistancePx':float(distance[mask].min()), 'adjacentBodyDesignRgb':base.tolist(),
-                        'exteriorRgb':outside.tolist(), 'blendFraction':mix, 'blendResidualRgb':residual,
+                        'exteriorMatteHypothesisRgb':outside.tolist(),
+                        'matteEvidence':'ASSUMED_NOT_OBSERVED_OR_CONFIRMED',
+                        'blendFraction':mix, 'blendResidualRgb':residual,
                         'paletteLabDistance':palette_distance, 'reasons':reasons or ['UNSUPPORTED_COMPACT_EXTERIOR_BLEND'],
                         'action':'REMOVED_IN_DERIVED_CANDIDATE' if remove else 'PRESERVED',
                         'proposal':'KEEP' if reasons else 'REMOVE_UNCONFIRMED',
                         'changedPixelsXY':points[:,::-1].tolist() if remove else []})
     changed = np.argwhere(derived[...,3] != rgba[...,3])
-    return derived, {'strategyVersion':VERSION+'/cleanup','effectiveParameters':dict(p),'enabled':enabled,
+    return derived, {'strategyVersion':VERSION+'/cleanup','effectiveParameters':copy.deepcopy(p),'enabled':enabled,
                      'paletteEvidence':palette,'request':request,'records':records,'manualConfirmation':'NOT_CONFIRMED',
                      'sourceModified':False,'removedIslandCount':sum(x['action']=='REMOVED_IN_DERIVED_CANDIDATE' for x in records),
                      'changedAlphaPixelCount':len(changed),'changedPixelsXY':changed[:,::-1].tolist(),
@@ -300,12 +327,11 @@ def rebuild_regions(rgba, old_labels, old_pixels, config, request):
     # A local exterior compositing model separates transition pixels from
     # actual design colours. Interior colours cannot be merged by this rule.
     foreground = rgba[...,3]>0
-    depth, outside_index = ndimage.distance_transform_edt(foreground,return_indices=True)
-    # Reject contaminated immediate exterior samples by using a local exterior
-    # envelope, never a blurred preview pasted back into the actual geometry.
-    outside_samples=np.where((~foreground)[...,None],rgb,0).astype(np.uint8)
-    outside_samples=cv2.dilate(outside_samples,np.ones((5,5),np.uint8))
-    outside_rgb = outside_samples[outside_index[0],outside_index[1]].astype(np.float32)
+    depth = ndimage.distance_transform_edt(foreground)
+    # A bounded, unconfirmed neutral-light mixing hypothesis, not a sample of
+    # invisible RGB. Exact inks and locally supported details remain protected.
+    outside_rgb = np.broadcast_to(np.asarray(PARAMETERS['exteriorMatteHypothesisRgb'],
+                                             dtype=np.float32), rgb.shape)
     edge = active & (depth <= PARAMETERS['boundaryModelDistancePx']) & bool((~foreground).any())
     radius = PARAMETERS['localSupportRadiusPx']; size = 2*radius+1
     best = np.full(active.shape,np.inf); mixed = chosen.copy(); local_support=[]
@@ -360,7 +386,10 @@ def rebuild_regions(rgba, old_labels, old_pixels, config, request):
                         weak |= mask & (chosen==alternate)
                 else:
                     weak |= mask & (chosen==alternate)
-            different=weak & (chosen!=owner)
+            # Repeated disconnected design marks can each have a low fraction
+            # of the total competing support. Old-region majority is not
+            # permission to erase an actual match to an already inferred ink.
+            different=weak & (chosen!=owner) & ~exact_detail
             if different.any():
                 reownership.append({'oldRegionId':int(rid),'oldComponentIndex':cid,
                     'newDesignLabel':owner+1,'pixels':int(different.sum()),
@@ -419,7 +448,7 @@ def rebuild_regions(rgba, old_labels, old_pixels, config, request):
                              'reason':'GLOBAL_DESIGN_IDENTITY_REASSIGNED_THEN_SPATIAL_COMPONENTS_REBUILT'})
     # Label numbers themselves have no old/new identity correspondence.
     changed=np.argwhere(labels!=old_labels)
-    return labels,pixels,{'strategyVersion':VERSION,'request':request,'effectiveParameters':dict(PARAMETERS),
+    return labels,pixels,{'strategyVersion':VERSION,'request':request,'effectiveParameters':copy.deepcopy(PARAMETERS),
                           'paletteProposal':palette,'automaticUsesReferenceAnswer':False,
                           'paletteColorCount':len(palette),'actualUsedColorCount':len(np.unique(labels[labels>0])),
                           'spatialReownership':reownership,

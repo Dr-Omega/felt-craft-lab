@@ -50,10 +50,64 @@ def validate_labels(rgba, purified, structural, pixels, metadata, config):
             'fringePixels': int(fringe.sum()), 'orphanFringePixels': int((pixels == -1).sum())}
 
 
-def candidate_polygons(candidates, graph, vector, flatness):
+def _point_touch_polygon(rings):
+    """Re-encode exact repeated-vertex walks, never repair coordinates/coverage.
+
+    A boundary walk can trace a shell and a tangent hole, or two tangent holes,
+    through the same vertex. Extracting its directed simple cycles changes no
+    segment. Multiple shells, spikes, actual crossings/overlaps and invalid
+    resulting Polygon domains still reject. No snapping, buffer or tolerance.
+    """
+    from collections import Counter
+    from shapely.geometry import Polygon
+    cycles = []
+    for ring in rings:
+        stack, positions = [], {}
+        for point in map(tuple, ring):
+            if point not in positions:
+                positions[point] = len(stack)
+                stack.append(point)
+                continue
+            start = positions[point]
+            cycle = stack[start:] + [point]
+            if len(cycle) < 4:
+                raise ValueError('point-touch cycle contains a spike/zero-area walk')
+            area = sum(a[0]*b[1]-b[0]*a[1] for a,b in zip(cycle,cycle[1:])) / 2
+            if area == 0:
+                raise ValueError('point-touch cycle has zero signed area')
+            # Stable rotation, without reversing directed provenance.
+            vertices = cycle[:-1]
+            first = min(range(len(vertices)), key=vertices.__getitem__)
+            vertices = vertices[first:] + vertices[:first]
+            cycles.append((area, vertices + [vertices[0]]))
+            for removed in stack[start+1:]:
+                del positions[removed]
+            stack = stack[:start+1]
+        if len(stack) != 1:
+            raise ValueError('point-touch source is not a closed walk')
+    shells = [ring for area,ring in cycles if area < 0]
+    holes = sorted(ring for area,ring in cycles if area > 0)
+    if len(shells) != 1:
+        raise ValueError('point-touch cycles require multiple shells; single Component contract unchanged')
+    before = Counter((tuple(a),tuple(b)) for ring in rings for a,b in zip(ring,ring[1:]))
+    after = Counter((a,b) for _,ring in cycles for a,b in zip(ring,ring[1:]))
+    if before != after:
+        raise ValueError('point-touch directed boundary segment multiset changed')
+    polygon = Polygon(shells[0], holes)
+    if not polygon.is_valid or polygon.area <= 0:
+        raise ValueError('point-touch cycles do not form a valid positive single Polygon')
+    return polygon, {'strategy': 'EXACT_REPEATED_VERTEX_CYCLES/1',
+                     'directedSegmentsPreserved': True, 'coordinatesMoved': False,
+                     'originalRingWalkCount': len(rings), 'materializedShellCount': 1,
+                     'materializedHoleCount': len(holes), 'repairApplied': False}
+
+
+def candidate_polygons(candidates, graph, vector, flatness, *, point_touch_cycles=False):
     """Dereference selected LINE/CUBIC edges with the P0-04C flattening rule."""
     from bezier_fit import flatten_segments
     from shapely.geometry import Polygon
+    if type(point_touch_cycles) is not bool:
+        raise ValueError('point-touch materialization selection must be boolean')
     edges = {x['edgeId']: x for x in vector['geometry']}
     if len(edges) != len(vector['geometry']):
         raise ValueError('duplicate vector edge identity')
@@ -99,21 +153,37 @@ def candidate_polygons(candidates, graph, vector, flatness):
                 raise ValueError('candidate ring direction/hole orientation mismatch')
             rings.append(points)
         polygon = Polygon(rings[0], rings[1:])
+        materialization = None
+        if not polygon.is_valid and point_touch_cycles:
+            try:
+                polygon, materialization = _point_touch_polygon(rings)
+            except ValueError as error:
+                raise ValueError('invalid selected-vector candidate polygon: '
+                                 + candidate['candidateId'] + '; ' + str(error)) from error
         if not polygon.is_valid or polygon.area <= 0:
-            raise ValueError('invalid selected-vector candidate polygon')
+            from shapely.validation import explain_validity
+            raise ValueError('invalid selected-vector candidate polygon: '
+                             + candidate['candidateId'] + ': ' + explain_validity(polygon))
+        provenance = {'vectorRoute': vector['route'], 'edgeIds': geometry['edgeIds'],
+                      'rings': geometry, 'flatteningSourcePixels': flatness}
+        if materialization is not None:
+            provenance['pointTouchMaterialization'] = materialization
         result.append({'id': candidate['candidateId'], 'componentId': key[1],
                        'regionId': f'R{key[0]:05d}', 'rgb': candidate['representativeColor']['rgb'],
-                       'polygon': polygon, 'boundaryProvenance': {'vectorRoute': vector['route'],
-                       'edgeIds': geometry['edgeIds'], 'rings': geometry,
-                       'flatteningSourcePixels': flatness}})
+                       'polygon': polygon, 'boundaryProvenance': provenance})
     if seen != set(graph_components):
         raise ValueError('missing source component in candidates')
     return result
 
 
 def render_polygons(objects, shape, *, numbered=False):
-    """Pixel-center sampling from actual polygons, including inner rings."""
-    from shapely import contains_xy
+    """Closed-domain pixel-center preview, matching independent Piece replay.
+
+    A center exactly on an internal split belongs to the domain, not a hole.
+    Shared-boundary color ties use the declared paint order. Hole interiors
+    remain empty; this does not buffer, dilate or change any geometry.
+    """
+    from shapely import intersects_xy
     canvas = np.zeros((*shape, 4), np.uint8)
     for obj in objects:
         polygon = obj['polygon']
@@ -121,7 +191,7 @@ def render_polygons(objects, shape, *, numbered=False):
         left,top = max(0,int(np.floor(x0))),max(0,int(np.floor(y0)))
         right,bottom = min(shape[1],int(np.ceil(x1))),min(shape[0],int(np.ceil(y1)))
         yy,xx = np.mgrid[top:bottom,left:right]
-        mask = contains_xy(polygon, xx+0.5, yy+0.5)
+        mask = intersects_xy(polygon, xx+0.5, yy+0.5)
         canvas[top:bottom,left:right][mask] = [*obj['rgb'],255]
     if numbered:
         image = Image.fromarray(canvas)

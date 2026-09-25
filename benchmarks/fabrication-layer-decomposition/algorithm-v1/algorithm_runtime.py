@@ -224,6 +224,8 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
         design_options = {'design_palette':design_palette, 'palette_provenance':palette_provenance}
     elif design_palette is not None or palette_provenance is not None:
         raise ValueError('design palette requires the explicit design-colour path')
+    if quality_mode == 'design-colors':
+        quality_settings['solidConstructionPolicy'] = 'PARENT_INTERSECTION_FOR_FLOATING_CUT_RESIDUE/1'
     if not foreground_source.strip():
         raise ValueError("foreground_source must locate actual caller/development evidence")
     if manual_confirmation not in {"CONFIRMED", "PENDING_REVIEW"}:
@@ -281,7 +283,8 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
         observed = candidate_polygons(_read(output / "m4/observed-candidates.json"),
                                       _read(output / "m4/boundary-graph.json"),
                                       _read(output / "m4/vector-result.json"),
-                                      m4["configuration"]["effectiveVectorConfig"]["bezier"]["validationFlatnessPx"])
+                                      m4["configuration"]["effectiveVectorConfig"]["bezier"]["validationFlatnessPx"],
+                                      point_touch_cycles=quality_mode == 'design-colors')
         slots = {o["id"]: o["colorSlotId"] for o in input_object["observedRegions"]}
         for obj in observed:
             obj["colorSlotId"] = slots[obj["regionId"]]
@@ -289,7 +292,8 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
         completed.append("M6_VISUAL_EVIDENCE")
         phase('M6_OBSERVED_AND_VISUAL')
         plans = rank_plans(observed, propose_plans(
-            observed, reject_invalid_options=quality_mode in {'contour', 'combined', 'design-colors', 'design-cleanup'}))
+            observed, reject_invalid_options=quality_mode in {'contour', 'combined', 'design-colors', 'design-cleanup'},
+            clip_numeric_parts=quality_mode == 'design-colors'))
         phase('M7_PROPOSE_VALIDATE_SCORE')
         quality_comparison = None
         if seam_strategy != 'baseline':
