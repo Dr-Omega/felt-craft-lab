@@ -1,16 +1,26 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
 import { APP_DISPLAY_NAME } from '@shared/constants/app'
-import { getAppView, openLibrary, openStatus, openStoryCardTest, subscribeAppNav, type AppView } from './app-nav'
+import {
+  getAppView,
+  getStoryCardTestContext,
+  openLibrary,
+  openStatus,
+  openStoryCardTest,
+  subscribeAppNav,
+  type AppView
+} from './app-nav'
 import LibraryPage from './pages/LibraryPage.vue'
 import EditorPage from './pages/EditorPage.vue'
 import StatusPage from './pages/StatusPage.vue'
 import StoryCardTestPage from './pages/StoryCardTestPage.vue'
 
 const view = ref<AppView>(getAppView())
+const storyCardTestContext = ref(getStoryCardTestContext())
 
 function syncView(): void {
   view.value = getAppView()
+  storyCardTestContext.value = getStoryCardTestContext()
 }
 
 let unsubscribe = subscribeAppNav(syncView)
@@ -33,7 +43,7 @@ onUnmounted(() => {
       </div>
       <nav class="nav">
         <button type="button" :class="{ active: view === 'library' }" @click="openLibrary">素材库</button>
-        <button type="button" :class="{ active: view === 'story-card-test' }" @click="openStoryCardTest">故事卡测试</button>
+        <button type="button" :class="{ active: view === 'story-card-test' }" @click="() => openStoryCardTest()">故事卡测试</button>
         <button type="button" :class="{ active: view === 'status' }" @click="openStatus">运行状态</button>
       </nav>
     </header>
@@ -41,7 +51,7 @@ onUnmounted(() => {
     <main class="content">
       <LibraryPage v-if="view === 'library'" />
       <EditorPage v-else-if="view === 'editor'" />
-      <StoryCardTestPage v-else-if="view === 'story-card-test'" />
+      <StoryCardTestPage v-else-if="view === 'story-card-test'" :work-context="storyCardTestContext" />
       <StatusPage v-else />
     </main>
   </div>

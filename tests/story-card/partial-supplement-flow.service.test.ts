@@ -1,53 +1,19 @@
 import { describe, expect, it, vi } from 'vitest'
-import type {
-  StoryCard,
-  StoryCardDraft,
-  StoryCardRepository,
-  StoryCardWorkContext,
-  TemporaryPartialSupplementInput
-} from '../../src/shared/contracts'
+import type { StoryCardDraft, TemporaryPartialSupplementInput } from '../../src/shared/contracts'
 import {
   confirmPartialSupplement,
   processPartialSupplement,
   type PartialSupplementStoryProcessor
 } from '../../src/renderer/src/story-card/partial-supplement-flow.service'
+import { confirmedStoryCard, storyCardRepository, storyCardWorkContext } from './fixtures'
 
-const context: StoryCardWorkContext = {
-  workId: 'work-001',
-  completionStatus: 'completed',
-  artworkImageRef: 'felt-resource://preview/latest-work-001.png',
-  background: { name: '月夜花园' },
-  subject: { name: '小兔子' },
-  stickers: []
-}
+const context = storyCardWorkContext()
 
 const supplement: TemporaryPartialSupplementInput = {
   workId: 'work-001',
   kind: 'partial_supplement',
   audioRef: 'felt-resource://audio/dynamic/story-card/temp/partial-supplement.webm',
   durationMs: 3_000
-}
-
-function formalCard(): StoryCard {
-  return {
-    workId: 'work-001',
-    artworkImageRef: 'felt-resource://preview/previous-work-001.png',
-    title: '旧故事标题',
-    storyText: '这是之前确认的故事。',
-    originalAudioRef: 'felt-resource://audio/dynamic/story-card/confirmed/original-full-recording.webm',
-    confirmedAt: '2026-09-21T00:00:00.000Z'
-  }
-}
-
-function repository(existing: StoryCard | undefined): StoryCardRepository & {
-  create: ReturnType<typeof vi.fn>
-  replace: ReturnType<typeof vi.fn>
-} {
-  return {
-    create: vi.fn(async (card: StoryCard) => card),
-    getByWorkId: vi.fn(async () => existing),
-    replace: vi.fn(async (card: StoryCard) => card)
-  }
 }
 
 function processor(draft: StoryCardDraft): PartialSupplementStoryProcessor & {
@@ -58,7 +24,7 @@ function processor(draft: StoryCardDraft): PartialSupplementStoryProcessor & {
 
 describe('partial supplement flow', () => {
   it('processes a partial supplement into a candidate without changing the formal card', async () => {
-    const store = repository(formalCard())
+    const store = storyCardRepository(confirmedStoryCard())
     const draft: StoryCardDraft = {
       workId: 'work-001',
       status: 'ready_for_review',
@@ -74,8 +40,10 @@ describe('partial supplement flow', () => {
   })
 
   it('updates text after confirmation while preserving the existing original full recording', async () => {
-    const original = formalCard()
-    const store = repository(original)
+    const original = confirmedStoryCard({
+      originalAudioRef: 'felt-resource://audio/dynamic/story-card/confirmed/original-full-recording.webm'
+    })
+    const store = storyCardRepository(original)
 
     await expect(
       confirmPartialSupplement(
@@ -113,13 +81,13 @@ describe('partial supplement flow', () => {
   it('rejects missing cards, mismatched works, and non-partial inputs without processing or writing', async () => {
     const storyProcessor = processor({ workId: 'work-001', status: 'processing' })
 
-    await expect(processPartialSupplement({ supplement, context }, repository(undefined), storyProcessor)).rejects.toMatchObject({
+    await expect(processPartialSupplement({ supplement, context }, storyCardRepository(undefined), storyProcessor)).rejects.toMatchObject({
       shared: { code: 'STORY_CARD_NOT_FOUND', retryable: false }
     })
     await expect(
       processPartialSupplement(
         { supplement: { ...supplement, workId: 'work-002' }, context },
-        repository(formalCard()),
+        storyCardRepository(confirmedStoryCard()),
         storyProcessor
       )
     ).rejects.toMatchObject({ shared: { code: 'INVALID_ARGUMENT', retryable: false } })
@@ -131,7 +99,7 @@ describe('partial supplement flow', () => {
           confirmedAt: '2026-09-22T00:00:00.000Z',
           supplement: { ...supplement, kind: 'full_rerecording' } as unknown as TemporaryPartialSupplementInput
         },
-        repository(formalCard())
+        storyCardRepository(confirmedStoryCard())
       )
     ).rejects.toMatchObject({ shared: { code: 'INVALID_ARGUMENT', retryable: false } })
     expect(storyProcessor.process).not.toHaveBeenCalled()

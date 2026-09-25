@@ -1,53 +1,19 @@
 import { describe, expect, it, vi } from 'vitest'
-import type {
-  StoryCard,
-  StoryCardDraft,
-  StoryCardRepository,
-  StoryCardWorkContext,
-  TemporaryFullRecordingInput
-} from '../../src/shared/contracts'
+import type { StoryCardDraft, TemporaryFullRecordingInput } from '../../src/shared/contracts'
 import {
   processFullRerecording,
   type FullRerecordingStoryProcessor
 } from '../../src/renderer/src/story-card/full-rerecording-flow.service'
 import { confirmStoryCard } from '../../src/renderer/src/story-card/story-card-confirmation.service'
+import { confirmedStoryCard, storyCardRepository, storyCardWorkContext } from './fixtures'
 
-const context: StoryCardWorkContext = {
-  workId: 'work-001',
-  completionStatus: 'completed',
-  artworkImageRef: 'felt-resource://preview/latest-work-001.png',
-  background: { name: '月夜花园' },
-  subject: { name: '小兔子' },
-  stickers: []
-}
+const context = storyCardWorkContext()
 
 const rerecording: TemporaryFullRecordingInput = {
   workId: 'work-001',
   kind: 'full_rerecording',
   audioRef: 'felt-resource://audio/dynamic/story-card/temp/rerecording.webm',
   durationMs: 10_000
-}
-
-function formalCard(): StoryCard {
-  return {
-    workId: 'work-001',
-    artworkImageRef: 'felt-resource://preview/previous-work-001.png',
-    title: '旧故事标题',
-    storyText: '这是之前确认的故事。',
-    originalAudioRef: 'felt-resource://audio/dynamic/story-card/confirmed/previous.webm',
-    confirmedAt: '2026-09-21T00:00:00.000Z'
-  }
-}
-
-function repository(existing: StoryCard | undefined): StoryCardRepository & {
-  create: ReturnType<typeof vi.fn>
-  replace: ReturnType<typeof vi.fn>
-} {
-  return {
-    create: vi.fn(async (card: StoryCard) => card),
-    getByWorkId: vi.fn(async () => existing),
-    replace: vi.fn(async (card: StoryCard) => card)
-  }
 }
 
 function processor(draft: StoryCardDraft): FullRerecordingStoryProcessor & {
@@ -58,7 +24,7 @@ function processor(draft: StoryCardDraft): FullRerecordingStoryProcessor & {
 
 describe('processFullRerecording', () => {
   it('sends a new complete recording through processing without replacing the formal card', async () => {
-    const store = repository(formalCard())
+    const store = storyCardRepository(confirmedStoryCard())
     const draft: StoryCardDraft = {
       workId: 'work-001',
       status: 'ready_for_review',
@@ -75,7 +41,7 @@ describe('processFullRerecording', () => {
 
   it('requires an existing formal card and a matching complete re-recording before processing', async () => {
     const storyProcessor = processor({ workId: 'work-001', status: 'processing' })
-    const noCardStore = repository(undefined)
+    const noCardStore = storyCardRepository(undefined)
 
     await expect(processFullRerecording({ recording: rerecording, context }, noCardStore, storyProcessor)).rejects.toMatchObject({
       shared: { code: 'STORY_CARD_NOT_FOUND', retryable: false }
@@ -83,14 +49,14 @@ describe('processFullRerecording', () => {
     await expect(
       processFullRerecording(
         { recording: { ...rerecording, kind: 'initial_full_recording' }, context },
-        repository(formalCard()),
+        storyCardRepository(confirmedStoryCard()),
         storyProcessor
       )
     ).rejects.toMatchObject({ shared: { code: 'INVALID_ARGUMENT', retryable: false } })
     await expect(
       processFullRerecording(
         { recording: rerecording, context: { ...context, workId: 'work-002' } },
-        repository(formalCard()),
+        storyCardRepository(confirmedStoryCard()),
         storyProcessor
       )
     ).rejects.toMatchObject({ shared: { code: 'INVALID_ARGUMENT', retryable: false } })
@@ -98,7 +64,7 @@ describe('processFullRerecording', () => {
   })
 
   it('replaces the old audio and story only after the re-recorded candidate is explicitly confirmed', async () => {
-    const store = repository(formalCard())
+    const store = storyCardRepository(confirmedStoryCard())
     const draft: StoryCardDraft = {
       workId: 'work-001',
       status: 'ready_for_review',

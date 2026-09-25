@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue'
-import type { AssetAccessState, AssetRecord } from '@shared/contracts'
+import type { AssetAccessState, AssetRecord, ProjectRecord } from '@shared/contracts'
 import {
   EditorSessionService,
   FabricEditorAdapter,
@@ -20,7 +20,7 @@ import {
   isAcceptanceUnlockAllAssetsEnabled,
   seedAcceptanceUnlockedAccess
 } from '../catalog/acceptance-access'
-import { getEditorLaunch, openLibrary } from '../app-nav'
+import { getEditorLaunch, openLibrary, openStoryCardTest } from '../app-nav'
 import {
   AssetAccessStore,
   ProjectStore,
@@ -38,6 +38,7 @@ import ObjectQuickTools from '../components/editor/ObjectQuickTools.vue'
 import RemoveToast from '../components/editor/RemoveToast.vue'
 import ImageUploadControl from '../components/editor/ImageUploadControl.vue'
 import { audioService } from '../services/audio.service'
+import { enterStoryCardAfterWorkCompleted } from '../story-card/story-card-entry.service'
 
 const launch = getEditorLaunch()
 if (!launch) openLibrary()
@@ -401,16 +402,24 @@ async function finish(): Promise<void> {
   busy.value = true
   try {
     const prepared = await session.value.prepareProjectSave()
+    let savedProject: ProjectRecord
     if (projectId) {
       const existing = await new ProjectStore(getFeltCraftDatabase()).get(projectId)
       if (!existing) throw new Error('这件作品暂时找不到啦。')
-      await updateExistingProject(existing, prepared)
+      savedProject = await updateExistingProject(existing, prepared)
     } else {
-      const saved = await saveNewProject(prepared)
-      projectId = saved.projectId
+      savedProject = await saveNewProject(prepared)
+      projectId = savedProject.projectId
     }
     session.value.markSaved()
-    showFeedback('作品收好啦！', 'success')
+    const projectStore = new ProjectStore(getFeltCraftDatabase())
+    const context = await enterStoryCardAfterWorkCompleted(savedProject.projectId, {
+      workReader: projectStore,
+      assetReader: {
+        listBySnapshot: (snapshotId) => resolveEditorCatalogForSnapshot(snapshotId).assets
+      }
+    })
+    openStoryCardTest(context)
   } catch (error) {
     showFeedback(friendlyError(error), 'error')
   } finally {
