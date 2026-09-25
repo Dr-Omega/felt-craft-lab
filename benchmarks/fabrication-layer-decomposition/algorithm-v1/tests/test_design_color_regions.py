@@ -98,6 +98,55 @@ class DesignColorTests(unittest.TestCase):
         labels,_,_=rebuild(rgba,[brown,cream])
         self.assertEqual(labels[5,20],labels[18,20])
         self.assertNotEqual(labels[5,20],labels[5,19])
+    def test_uncertain_exterior_band_does_not_leave_unsupported_interior_islands(self):
+        brown=[229,180,124];cream=[254,249,200]
+        rgba=np.full((40,48,4),255,np.uint8);rgba[...,3]=0
+        rgba[5:36,5:43]=[*brown,255];rgba[18:30,14:34]=[*cream,255]
+        # Three-pixel transition, including a ringing sample. These do not
+        # match either design ink. The third row lies beyond the old 2.5px
+        # edge rule; topology/evidence, not a larger cutoff, must own it.
+        rgba[5:8,10:14,:3]=np.array([[251,244,216],[244,235,204],[237,219,181]])[:,None,:]
+        old=np.where(rgba[...,3]>0,1,0).astype(np.int32)
+        old[18:30,14:34]=2;old[5:8,10:14]=3
+        for reference in (None,[brown,cream]):
+            labels,_,_=rebuild(rgba,reference,old)
+            self.assertTrue(np.all(labels[5:8,10:14]==labels[12,10]))
+            np.testing.assert_array_equal(labels>0,rgba[...,3]>0)
+
+    def test_same_weak_color_interior_mark_and_exact_boundary_mark_are_preserved(self):
+        brown=[229,180,124];cream=[254,249,200]
+        rgba=np.full((40,48,4),255,np.uint8);rgba[...,3]=0
+        rgba[5:36,5:43]=[*brown,255];rgba[18:30,14:34]=[*cream,255]
+        rgba[7,12,:3]=cream  # one-pixel true ink, near the exterior
+        rgba[12,12,:3]=[237,219,181]  # same ambiguous RGB, no exterior transition path
+        rgba[11:14,37:40,3]=0  # real alpha hole must not be filled
+        old=np.where(rgba[...,3]>0,1,0).astype(np.int32)
+        old[18:30,14:34]=2;old[7,12]=3;old[12,12]=4
+        labels,_,_=rebuild(rgba,[brown,cream],old)
+        self.assertEqual(labels[7,12],labels[20,20])
+        self.assertEqual(labels[12,12],labels[20,20])
+        self.assertTrue(np.all(labels[11:14,37:40]==0))
+    def test_supported_ink_in_transition_component_protects_whole_detail(self):
+        brown=[229,180,124];cream=[254,249,200]
+        rgba=np.full((40,48,4),255,np.uint8);rgba[...,3]=0
+        rgba[5:36,5:43]=[*brown,255];rgba[18:30,14:34]=[*cream,255]
+        rgba[5:8,10:14,:3]=np.array([[251,244,216],[244,235,204],[237,219,181]])[:,None,:]
+        rgba[7,11,:3]=cream
+        old=np.where(rgba[...,3]>0,1,0).astype(np.int32)
+        old[18:30,14:34]=2;old[5:8,10:14]=3
+        labels,_,_=rebuild(rgba,[brown,cream],old)
+        self.assertTrue(np.all(labels[7,10:14]==labels[20,20]))
+
+    def test_transition_reownership_is_not_limited_by_small_area_cutoff(self):
+        brown=[229,180,124];cream=[254,249,200]
+        rgba=np.full((40,60,4),255,np.uint8);rgba[...,3]=0
+        rgba[5:36,5:55]=[*brown,255];rgba[18:30,14:34]=[*cream,255]
+        rgba[5:8,10:34,:3]=np.array([[251,244,216],[244,235,204],[237,219,181]])[:,None,:]
+        old=np.where(rgba[...,3]>0,1,0).astype(np.int32)
+        old[18:30,14:34]=2;old[5:8,10:34]=3
+        labels,_,report=rebuild(rgba,[brown,cream],old)
+        self.assertTrue(np.all(labels[5:8,10:34]==labels[12,10]))
+        self.assertGreater(report['exteriorTransitionReownedPixelCount'],16)
     def test_reproducible_no_input_mutation_and_serializable(self):
         rgba,_,_=control();original=rgba.copy()
         one=rebuild(rgba);two=rebuild(rgba)

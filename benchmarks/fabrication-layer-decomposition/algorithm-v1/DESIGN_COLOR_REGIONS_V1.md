@@ -82,8 +82,40 @@ The failing small-image regression and its exact-edge-detail counterexample
 are in `test_design_color_regions.py`. Prototype failures remain separate from
 final candidate runs in the evidence package. Remaining mooncake small
 Components are not automatically declared intentional or visually approved.
-The current proposal retains 11 small light edge Components (at most 16 pixels),
+The initial `556459b` proposal retained 11 small light edge Components (at most 16 pixels),
 including a one-pixel selection at (477, 207). These are located observations,
 not algorithm inputs or a claim that all fragmentation is solved. Known-design
 colour representatives also retain a maximum five-level RGB channel offset on
 the tint perturbation: correct selections do not imply exact original-ink recovery.
+
+## Follow-up to the artifact review of 556459b
+
+The preview renderer now unions independent Polygon-part masks for each colour.
+A part clears only its own holes: its drawing order cannot erase a valid nested
+same-colour part. This changes diagnostic PNG rendering, not persisted geometry,
+true alpha holes, M7 checks, candidate selection, or seam records. Regression
+tests exercise both part orders and retain a real empty central hole.
+
+`design-colour-regions/2` also reconciles a previously unsupported ownership case.
+After existing assignment, a complete connected colour component may change
+owner only when all its pixels lack an exact palette-ink match, lie in the
+exterior-connected uncertainty band, lack their own local colour-core support,
+and have exactly one surrounding design identity with local core support.
+The band is bounded by the existing local-support radius; neither existing
+numeric thresholds nor an area cutoff are increased. Decisions use a snapshot,
+not a cascade in which earlier changes become evidence for later ones.
+
+This is label reownership, not foreground deletion or hole filling. Exact tiny
+marks, components containing supported competing ink, weak interior details
+without an exterior transition path, and true alpha holes are counterexamples
+in the regression suite. A larger uncertain boundary component is also tested
+to show that the decision is not small-area deletion. Each accepted change
+records every changed coordinate, both design identities and its unconfirmed
+status. Persisted reread regenerates these declarations from the input; even a
+coherently rehashed false ownership claim is rejected.
+
+An intentionally ambiguous mark satisfying all these conditions can still be
+reassigned. Therefore the new design remains a proposal requiring A-to-B visual
+review. B-to-C coverage, physical seams and independent rerender are checked
+without relaxing existing geometry gates. Three real sources and perturbations
+of three synthetic designs do not establish general real-multicolour quality.

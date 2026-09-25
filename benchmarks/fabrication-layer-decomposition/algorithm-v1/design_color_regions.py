@@ -14,7 +14,7 @@ from scipy import ndimage
 
 from quality_fragments import _components, _exterior, _rgba, _summary
 
-VERSION = 'design-colour-regions/1'
+VERSION = 'design-colour-regions/2'
 PARAMETERS = {
     'histogramRgbBinWidth': 4,
     'paletteLabRadius': 5.0,
@@ -366,6 +366,44 @@ def rebuild_regions(rgba, old_labels, old_pixels, config, request):
                     'newDesignLabel':owner+1,'pixels':int(different.sum()),
                     'reason':'ROBUST_SPATIAL_SUPPORT_FOR_SAMPLES_WITHOUT_DESIGN_CORE_MATCH'})
                 chosen[different]=owner
+    # Reconcile unsupported colour islands in the connected exterior
+    # uncertainty band. A fixed per-pixel edge cutoff can leave isolated
+    # assignments just behind that cutoff, which become real holes and seams.
+    # This is NOT small-region deletion: there is no area threshold, and every
+    # pixel must lack an ink match, be connected to the exterior through other
+    # uncertain samples, have one surrounding design owner, and have that
+    # owner's local core support without support for its current identity.
+    # Exact tiny marks, coherent competing inks, interior details and true
+    # alpha holes cannot satisfy these conditions.
+    uncertain = active & ~exact_detail & (depth <= radius)
+    exterior = _exterior(foreground)
+    entrance = uncertain & cv2.dilate(exterior.astype(np.uint8), CROSS).astype(bool)
+    transition_band = ndimage.binary_propagation(entrance, structure=CROSS, mask=uncertain)
+    reconciled = chosen.copy()
+    transition_records = []
+    for index in range(len(palette)):
+        count, components, stats, _ = _components(active & (chosen == index))
+        for cid in range(1, count):
+            mask = components == cid
+            if not np.all(transition_band[mask]) or np.any(supported[index][mask]):
+                continue
+            ring = cv2.dilate(mask.astype(np.uint8), CROSS).astype(bool) & active & ~mask
+            neighbors = np.unique(chosen[ring])
+            if len(neighbors) != 1 or neighbors[0] == index:
+                continue
+            owner = int(neighbors[0])
+            if not np.all(supported[owner][mask]):
+                continue
+            reconciled[mask] = owner
+            transition_records.append({
+                'fromDesignLabel': index+1, 'toDesignLabel': owner+1,
+                'bbox': [int(v) for v in stats[cid,:4]], 'pixels': int(mask.sum()),
+                'changedPixelsXY': np.argwhere(mask)[:,::-1].tolist(),
+                'reason': 'EXTERIOR_CONNECTED_UNCERTAINTY_WITH_SINGLE_SUPPORTED_SURROUND',
+                'ownCoreSupport': False, 'exactInkMatch': False,
+                'alphaChanged': False, 'manualConfirmation': 'NOT_CONFIRMED',
+            })
+    chosen = reconciled
     labels = np.where(active,chosen+1,0).astype(np.int32)
     # Same design identity reuses one label. Region Core derives each actual
     # 4-connected Component separately; no dilation, bridge or same-colour union
@@ -385,6 +423,8 @@ def rebuild_regions(rgba, old_labels, old_pixels, config, request):
                           'paletteProposal':palette,'automaticUsesReferenceAnswer':False,
                           'paletteColorCount':len(palette),'actualUsedColorCount':len(np.unique(labels[labels>0])),
                           'spatialReownership':reownership,
+                          'exteriorTransitionReownership':transition_records,
+                          'exteriorTransitionReownedPixelCount':sum(r['pixels'] for r in transition_records),
                           'before':_summary(old_labels),'after':_summary(labels),'componentMappings':mappings,
                           'labelDifferencePixelCount':len(changed),
                           'changedPixelsXYSample':changed[::max(1,(len(changed)+2047)//2048),::-1].tolist(),

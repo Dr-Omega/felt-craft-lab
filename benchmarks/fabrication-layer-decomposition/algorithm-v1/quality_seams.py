@@ -8,7 +8,7 @@ from __future__ import annotations
 import copy
 import math
 
-from PIL import Image, ImageDraw
+from PIL import Image, ImageChops, ImageDraw
 from shapely.ops import unary_union
 
 from solid_plans import _lines, _parts, _sources, rank_plans, validate_plan
@@ -142,11 +142,16 @@ def _render(plan, sources, shape, scale, seams, numbered):
         projected[base["colorSlotId"]].append(base["polygon"].intersection(exposure["polygon"]))
     for slot in sorted(projected):
         mask = Image.new("L", image.size, 0)
-        draw = ImageDraw.Draw(mask)
         for polygon in _parts(unary_union(projected[slot])):
+            # A hole belongs only to this Polygon. Clearing it in a shared
+            # mask could erase an already drawn, same-colour nested island.
+            # Union independent part masks; true unoccupied holes remain zero.
+            part_mask = Image.new("L", image.size, 0)
+            draw = ImageDraw.Draw(part_mask)
             draw.polygon([(x*scale, y*scale) for x, y in polygon.exterior.coords], fill=255)
             for ring in polygon.interiors:
                 draw.polygon([(x*scale, y*scale) for x, y in ring.coords], fill=0)
+            mask = ImageChops.lighter(mask, part_mask)
         image.paste(palette[slot], mask=mask)
     draw = ImageDraw.Draw(image)
     if seams:

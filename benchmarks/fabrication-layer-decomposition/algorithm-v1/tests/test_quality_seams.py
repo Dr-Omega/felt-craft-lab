@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 import sys
 import unittest
+from unittest.mock import patch
 
 import numpy as np
 from shapely.geometry import box
@@ -10,6 +11,7 @@ from shapely.geometry import box
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from quality_seams import compare_quality_plans, rank_quality_plans, render_plan_preview
 from solid_plans import SolidPlanError, propose_plans, rank_plans
+from solid_plans import _parts
 
 
 def source(polygon, component="ring", rgb=(180, 90, 20)):
@@ -101,6 +103,31 @@ class QualitySeamsTest(unittest.TestCase):
         self.assertTrue(report["missingAlternatives"])
         for label in ("A", "B"):
             self.assertEqual(images[label+"-appearance"].getpixel((16, 13))[3], 0)
+
+    def test_nested_same_color_parts_union_without_erasing_islands_or_true_holes(self):
+        cream = (254, 249, 200)
+        observed = [
+            source(box(1, 1, 81, 81).difference(box(13, 13, 69, 69)), "outer", cream),
+            source(box(13, 13, 69, 69).difference(box(25, 25, 57, 57)), "middle"),
+            source(box(25, 25, 57, 57).difference(box(37, 37, 45, 45)), "inner", cream),
+        ]
+        observed[0]["colorSlotId"] = observed[2]["colorSlotId"] = "cream"
+        plans = propose_plans(observed)
+        before = copy.deepcopy(plans)
+        # MultiPolygon iteration order is not a drawing priority. Exercise both
+        # valid orders returned by the geometry library, without changing any
+        # polygon, plan, hard check, or rasterizer.
+        for plan in plans:
+            for scale, reverse in ((1, False), (1, True), (3, False), (3, True)):
+                with self.subTest(plan=plan['id'], scale=scale, reverse=reverse):
+                    with patch('quality_seams._parts', side_effect=lambda geometry:
+                               list(reversed(_parts(geometry))) if reverse else _parts(geometry)):
+                        preview = render_plan_preview(plan, observed, (84, 84), scale=scale)
+                    self.assertEqual(preview.getpixel((30, 30)), cream+(255,))
+                    self.assertEqual(preview.getpixel((7, 7)), cream+(255,))
+                    self.assertEqual(preview.getpixel((19, 19)), (180, 90, 20, 255))
+                    self.assertEqual(preview.getpixel((41, 41))[3], 0)
+        self.assertEqual(plans, before, "Rendering must not mutate actual geometry or declarations")
 
     def test_no_number_appearance_distinguished_from_visible_seam_overlay(self):
         observed = [source(box(1, 1, 31, 25).difference(box(10, 8, 22, 18)))]

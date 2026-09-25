@@ -57,6 +57,14 @@ class DesignPipelineTests(unittest.TestCase):
         alpha[:]=False;np.savez_compressed(out/'design-change-maps.npz',alpha_changed=alpha,labels_changed=labels)
         self.rehash(out,record)
         with self.assertRaisesRegex(ValueError,'change map'): verify_quality_design(out)
+    def test_rehashed_transition_reownership_claim_is_replayed_not_trusted(self):
+        out=self.clone('transition-claim');record=json.loads((out/'experimental-design.json').read_text())
+        record['selection']['exteriorTransitionReownedPixelCount']+=1
+        record['selection']['exteriorTransitionReownership'].append({
+            'fromDesignLabel':2,'toDesignLabel':1,'changedPixelsXY':[[15,15]],
+            'pixels':1,'manualConfirmation':'NOT_CONFIRMED'})
+        self.rehash(out,record)
+        with self.assertRaisesRegex(ValueError,'selection mapping'): verify_quality_design(out)
     def test_direct_api_protection_and_reference_validation_before_write(self):
         out=self.root/'occupied';out.mkdir();(out/'keep.txt').write_bytes(b'keep')
         protected=REPOSITORY_ROOT/'benchmarks/background-removal/design-test-must-not-exist'
