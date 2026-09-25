@@ -11,13 +11,15 @@ import { contentProjection, resolveContentVersion } from '../../src/renderer/src
 
 const registryPath = resolve('assets/generated/snapshot-registry.json')
 const snapA = 'snapshot_ywn_20260805_112922'
+const latestSnap = 'snapshot_ywn_20260925_latest'
 
 describe('historical snapshot registry + resolver', () => {
   it('loads registry and exposes latest-only Library catalog', () => {
     const registry = loadSnapshotRegistry(JSON.parse(readFileSync(registryPath, 'utf8')))
-    expect(registry.latestSnapshotId).toBe(snapA)
+    expect(registry.latestSnapshotId).toBe(latestSnap)
     expect(YWN_SNAPSHOT_ID).toBe(registry.latestSnapshotId)
-    expect(CATALOG_ASSETS).toHaveLength(17)
+    expect(CATALOG_ASSETS).toHaveLength(71)
+    expect(YWN_SNAPSHOT_CONTEXT.snapshots[latestSnap]).toHaveLength(71)
     expect(YWN_SNAPSHOT_CONTEXT.snapshots[snapA]).toHaveLength(17)
   })
 

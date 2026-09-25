@@ -1,9 +1,13 @@
 {
-  "latestSnapshotId": "snapshot_ywn_20260805_112922",
+  "latestSnapshotId": "snapshot_ywn_20260925_latest",
   "snapshots": {
     "snapshot_ywn_20260805_112922": {
       "manifest": "assets/generated/snapshots/snapshot_ywn_20260805_112922/assets.manifest.json",
       "generatedAt": "2026-08-05T11:29:22.063Z"
+    },
+    "snapshot_ywn_20260925_latest": {
+      "manifest": "assets/generated/snapshots/snapshot_ywn_20260925_latest/assets.manifest.json",
+      "generatedAt": "2026-09-25T10:02:02.289Z"
     }
   }
 }

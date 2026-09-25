@@ -1,8 +1,8 @@
 {
-  "updatedAt": "2026-08-05T11:29:22.063Z",
+  "updatedAt": "2026-09-25T10:02:02.289Z",
   "assets": {
     "background_lantern_street_001": {
-      "contentVersion": 1,
+      "contentVersion": 2,
       "projection": {
         "type": "background",
         "themeId": "lantern_festival",
@@ -11,7 +11,7 @@
         ],
         "nameZh": "灯会街道夜色",
         "nameEn": "Lantern Festival Street",
-        "introZh": "农历正月十五是元宵节。月亮又圆，街上灯火亮亮的。人们常出门赏灯、吃汤圆，盼望团圆平安。",
+        "introZh": "元宵节是我国传统节日，在每年农历正月十五。正月是新年第一个月圆的夜晚，所以这个节日又叫上元节。古时候人们会举行祭祀祈福的活动，慢慢形成赏花灯、猜灯谜、吃元宵的习俗。圆月代表团圆，到了这天，人们出门游玩，欢度新年的第一个月圆之日。",
         "keywords": [
           "元宵",
           "灯会",
@@ -21,11 +21,11 @@
         ],
         "image": {
           "logicalName": "background_lantern_street_001.png",
-          "sha256": "14f4814ec10a9b8285bd5d4161eb8bfde7db29b7ee46178ae4d75e5c469014ed"
+          "sha256": "034cd5cde29620d8dd517a6bb7d202188ac31180c6e17cac85811692cd67b7c0"
         },
         "thumbnail": {
           "logicalName": "background_lantern_street_001_thumb.png",
-          "sha256": "528f511d5cf1a067fc4484447375c57e19acbd5174c4a946ec3dc0a3639f2034"
+          "sha256": "a81ded7def54540a5a19571d9a2d5db9ce843eb8de0782ff824eb6e0e0d6c240"
         },
         "preSplit": {
           "logicalName": "",
@@ -34,15 +34,15 @@
         "audio": {
           "nameZh": {
             "logicalName": "background_lantern_street_001_name_zh.mp3",
-            "sha256": "d9f7843807d7aee777c1bef7d2ec6301f8057e300bf47630edc7163ea8a42c96"
+            "sha256": "29bbd1d5068d07b409d5d8fcc8856c16b557f05c3a2f37485cec8158f5c22230"
           },
           "nameEn": {
             "logicalName": "background_lantern_street_001_name_en.mp3",
-            "sha256": "c1a703c177c637c4f98a2d620d22345d889b341b84b34826980a85d23f99ae9d"
+            "sha256": "f145e97f41583d3a3ce6bd1289b3afd571e6ddb1b576ec8514a01b54fcb50e36"
           },
           "introZh": {
             "logicalName": "background_lantern_street_001_intro_zh.mp3",
-            "sha256": "6444913a46970686d37f7f24efdbd832a66b86a6425c14c845cd98d979121f25"
+            "sha256": "0c50e5a1ace9263095b578b7ca29c0eaf02c7dc0a1f2077acfc80e0842e43a25"
           }
         },
         "source": "Midjourney生成 + 后期",
@@ -50,7 +50,7 @@
       }
     },
     "background_river_lantern_001": {
-      "contentVersion": 1,
+      "contentVersion": 2,
       "projection": {
         "type": "background",
         "themeId": "lantern_festival",
@@ -59,7 +59,7 @@
         ],
         "nameZh": "河面上漂着河灯",
         "nameEn": "River Lanterns Float on The Water Surface.",
-        "introZh": "农历正月十五是元宵节。月亮又圆，街上灯火亮亮的。人们常出门赏灯、吃汤圆，盼望团圆平安。",
+        "introZh": "元宵节是我国传统节日，在每年农历正月十五。正月是新年第一个月圆的夜晚，所以这个节日又叫上元节。古时候人们会举行祭祀祈福的活动，慢慢形成赏花灯、猜灯谜、吃元宵的习俗。圆月代表团圆，到了这天，人们出门游玩，欢度新年的第一个月圆之日。",
         "keywords": [
           "元宵",
           "河灯",
@@ -68,11 +68,11 @@
         ],
         "image": {
           "logicalName": "background_river_lantern_001.png",
-          "sha256": "734500581a02ef8c5057e2ab4e8e281712ea117e8d3ae52f1f64d296d92d68c7"
+          "sha256": "1aa29787129cc39423b3323179e0742d3edc8d635a1df717e6743f4e099e0841"
         },
         "thumbnail": {
           "logicalName": "background_river_lantern_001_thumb.png",
-          "sha256": "9a0526e5a79f2d1e4201cf3d3352224ffe75402c1f9470a566ecf3b12fd74a41"
+          "sha256": "2eabb17ed2e48acf5b1a4521f611ae5a166fc461da9edef7e2f5a0e7d2a827ba"
         },
         "preSplit": {
           "logicalName": "",
@@ -81,15 +81,15 @@
         "audio": {
           "nameZh": {
             "logicalName": "background_river_lantern_001_name_zh.mp3",
-            "sha256": "f8380e4735959d39a896720c523c2e9bc79d07317de136afd639f63b81b0997a"
+            "sha256": "11af574893e78e82abefb6ecad1643e5d4b9da8fc0aa380a67eac6122692e6a4"
           },
           "nameEn": {
             "logicalName": "background_river_lantern_001_name_en.mp3",
-            "sha256": "0213c1d948d38f593683707c058926841e1d4db2b326a978df936d30faa08162"
+            "sha256": "e1bd38229dfb5e479fc14993e88230fc967e375064ed271c727165a2949109e9"
           },
           "introZh": {
             "logicalName": "background_river_lantern_001_intro_zh.mp3",
-            "sha256": "6444913a46970686d37f7f24efdbd832a66b86a6425c14c845cd98d979121f25"
+            "sha256": "0c50e5a1ace9263095b578b7ca29c0eaf02c7dc0a1f2077acfc80e0842e43a25"
           }
         },
         "source": "Midjourney生成 + 后期",
@@ -97,16 +97,16 @@
       }
     },
     "sticker_flower_lantern_001": {
-      "contentVersion": 1,
+      "contentVersion": 2,
       "projection": {
         "type": "sticker",
         "themeId": "lantern_festival",
         "categoryIds": [
           "festival_decoration"
         ],
-        "nameZh": "莲花河灯",
+        "nameZh": "荷花花灯",
         "nameEn": "Lotus River Lantern",
-        "introZh": "花灯是元宵节常见的灯饰。有的做成荷花样子，轻轻放进河里漂走。人们放河灯，寄托心愿，盼望事事顺利。",
+        "introZh": "《长安杂兴效竹枝体》【清·庞垲】（节选）\n   小儿竞把清荷叶，万点银花散火城。\n  诗句小讲解：这里把荷花灯比作清香的荷叶，孩童争相举着荷花灯游玩，点点灯火就像无数银花洒落在城中。诗句生动写出孩子们手提荷花灯嬉戏的画面，荷花灯造型像盛开的莲花，寄托人们平安美好的心愿。",
         "keywords": [
           "元宵",
           "荷花灯",
@@ -115,11 +115,11 @@
         ],
         "image": {
           "logicalName": "sticker_flower_lantern_001.png",
-          "sha256": "84991c54800da573985072149fe667048e059aaad1d42bfc2923a27859f90d28"
+          "sha256": "89287204d9020442c68565ff300790305933ad6a7e0b9fce813e482b8bd383f3"
         },
         "thumbnail": {
           "logicalName": "sticker_flower_lantern_001_thumb.png",
-          "sha256": "2468bc8d9ab987e4975a5dfd1f3a426e318eb11736557ad2b89847f284d9ba2c"
+          "sha256": "cc6023f86c0004575ba4b0fae2d2694a4fe3efad46087f2c50f9404532b757ce"
         },
         "preSplit": {
           "logicalName": "",
@@ -128,15 +128,15 @@
         "audio": {
           "nameZh": {
             "logicalName": "sticker_flower_lantern_001_name_zh.mp3",
-            "sha256": "f7efbb38a11dc2509252e2243ada3908824e30d3746fd8ceb5f5b1f4f19645b0"
+            "sha256": "75d925f887bb6679121aa8de7cb112e4715548c81e0be7856a3a07ab09aae364"
           },
           "nameEn": {
             "logicalName": "sticker_flower_lantern_001_name_en.mp3",
-            "sha256": "899a8dc0f1001de39df929a7771221f5819e8e23b5bc90b1bccfed1188502988"
+            "sha256": "27e02053eafe7a4f1b19a86b46ba22936f9f5f52bb5c5eb8731a89f9f32f1dde"
           },
           "introZh": {
             "logicalName": "sticker_flower_lantern_001_intro_zh.mp3",
-            "sha256": "f2191214766731259c7d023ec2036d135e5a2e380e0f00697679f9b69f5f92cd"
+            "sha256": "b0bc500307e249a020f9ba9168cf7f3639b3da0ecbe07b21cbfbe4673e6f8252"
           }
         },
         "source": "Midjourney生成 + 后期",
@@ -144,7 +144,7 @@
       }
     },
     "sticker_tangyuan_001": {
-      "contentVersion": 1,
+      "contentVersion": 2,
       "projection": {
         "type": "sticker",
         "themeId": "lantern_festival",
@@ -153,7 +153,7 @@
         ],
         "nameZh": "汤圆",
         "nameEn": "Tangyuan",
-        "introZh": "汤圆是圆圆的糯米小球。煮在锅里白白的，像一颗颗小珍珠。“汤圆”谐音“团圆”，象征一家人团团圆圆。",
+        "introZh": "《上元竹枝词》【清·符曾】（节选）\n   桂花香馅裹胡桃，江米如珠井水淘。\n  诗句小讲解：诗句描写制作汤圆的场景，香甜桂花馅料裹着核桃仁，糯米米粒像珍珠一般，用井水淘洗干净。诗句写出古时制作汤圆的细节，圆圆的汤圆象征团圆，是元宵节必不可少的美食。",
         "keywords": [
           "元宵",
           "汤圆",
@@ -162,11 +162,11 @@
         ],
         "image": {
           "logicalName": "sticker_tangyuan_001.png",
-          "sha256": "da1900b93ffc2e5004b2aa3f5731c96594423bb33dbfedfa56974c39400b354f"
+          "sha256": "8a0a04ead59f1a6fdaece2be8bb5dbd1e4ddde662a5a5becbd12d6622b9fccfd"
         },
         "thumbnail": {
           "logicalName": "sticker_tangyuan_001_thumb.png",
-          "sha256": "54989151a31cd6f50f8d18b51df2dc24218487b0b81014269ea18227d8c75984"
+          "sha256": "69bcfbce0fb020521bf7cf198bcdb0bc2197c9eaa144e738eaadd6a5ecfe1479"
         },
         "preSplit": {
           "logicalName": "",
@@ -175,15 +175,15 @@
         "audio": {
           "nameZh": {
             "logicalName": "sticker_tangyuan_001_name_zh.mp3",
-            "sha256": "2c78764135eca3d0c8aa251d4af6aecd891c2bec82e37aa5fdda8b761778f513"
+            "sha256": "a35cc82ba510d284e78e6e810e31d8e51797271263cbae62381affc400f72cb6"
           },
           "nameEn": {
             "logicalName": "sticker_tangyuan_001_name_en.mp3",
-            "sha256": "2971ccd9893d04cdc32c67da7d5c6e6e1240e8fca19a8ec4144140145ae60d45"
+            "sha256": "2e43929e43dc8a9bb53ca617ee41aa8a35d1a46a3385ff20507be96ed6f1b741"
           },
           "introZh": {
             "logicalName": "sticker_tangyuan_001_intro_zh.mp3",
-            "sha256": "2d3c54fce3bd1f8e1592f6ba0d3716f8f44fea340abbb8ec3abee3c513416a31"
+            "sha256": "60941e157642c4ecb3ef78dcab723fc7358707805fb92a6f56be27e98c5a3633"
           }
         },
         "source": "Midjourney生成 + 后期",
@@ -191,7 +191,7 @@
       }
     },
     "background_lake_moon_001": {
-      "contentVersion": 1,
+      "contentVersion": 2,
       "projection": {
         "type": "background",
         "themeId": "mid_autumn_festival",
@@ -200,7 +200,7 @@
         ],
         "nameZh": "湖面上的小船与圆月",
         "nameEn": "Lake Boat and Full Moon",
-        "introZh": "每年农历八月十五是中秋节。月亮又圆又亮，一家人常一起赏月、吃月饼，盼望团团圆圆、平平安安。",
+        "introZh": "中秋节是我国传统节日，在每年农历八月十五。农历八月处于秋季正中，当晚月亮又格外圆满，因此得名中秋。古人会在这天祭月，渐渐形成赏月、吃月饼的习俗。圆月象征团圆，中秋节也成为阖家相聚的节日。",
         "keywords": [
           "中秋",
           "圆月",
@@ -210,11 +210,11 @@
         ],
         "image": {
           "logicalName": "background_lake_moon_001.png",
-          "sha256": "8c5a85562950393523f4d2d0a9f673e5bdce169c5b7f9c5fd82db0283449449c"
+          "sha256": "9d259803b03980186cd5eb2593861287fde0fed50e2a34944a9322eceb1d6438"
         },
         "thumbnail": {
           "logicalName": "background_lake_moon_001_thumb.png",
-          "sha256": "a7845f7b9a642141671af877e5eac67a103e76c503c6608624eb55d1543cd1f3"
+          "sha256": "eeea0ad3ab6423aab881523f385a6b7ecf5824b7818ec3e84e905c3c65c92fbb"
         },
         "preSplit": {
           "logicalName": "",
@@ -223,15 +223,15 @@
         "audio": {
           "nameZh": {
             "logicalName": "background_lake_moon_001_name_zh.mp3",
-            "sha256": "e4076fd810c3760c0d80bcbd5d9dda218038e9d2224be1637cefa6e130cf87ef"
+            "sha256": "ec68bee19fbdfd0b91e0552819928c4f3381791588774c16c264d61e58727cca"
           },
           "nameEn": {
             "logicalName": "background_lake_moon_001_name_en.mp3",
-            "sha256": "ac4f87e21f73b70c62e1c770261753f2f6c5fab6c5cb6b39e007a6d293fa2439"
+            "sha256": "b377659bd011d1b9b533db3f984dd74eb202e5c3bd713f5e8283dcb3be383b4e"
           },
           "introZh": {
             "logicalName": "background_lake_moon_001_intro_zh.mp3",
-            "sha256": "9537b2d82a408bcae5de1684273b5a484ac0769f3fbd3f88d3384fd363b8687b"
+            "sha256": "5e7a0f0048c99fa80d3baf82d251d7c7a67ea60234d347cbd54132bacd4e6764"
           }
         },
         "source": "Midjourney + 豆包后期",
@@ -239,7 +239,7 @@
       }
     },
     "background_osmanthus_moon_001": {
-      "contentVersion": 1,
+      "contentVersion": 2,
       "projection": {
         "type": "background",
         "themeId": "mid_autumn_festival",
@@ -248,7 +248,7 @@
         ],
         "nameZh": "夜空桂树与满月",
         "nameEn": "Osmanthus Tree and Full Moon",
-        "introZh": "每年农历八月十五是中秋节。月亮又圆又亮，一家人常一起赏月、吃月饼，盼望团团圆圆、平平安安。",
+        "introZh": "中秋节是我国传统节日，在每年农历八月十五。农历八月处于秋季正中，当晚月亮又格外圆满，因此得名中秋。古人会在这天祭月，渐渐形成赏月、吃月饼的习俗。圆月象征团圆，中秋节也成为阖家相聚的节日。",
         "keywords": [
           "中秋",
           "满月",
@@ -258,11 +258,11 @@
         ],
         "image": {
           "logicalName": "background_osmanthus_moon_001.png",
-          "sha256": "49a5f75cb3ceca99209e709073847587c0c784668ecf3625e67c9890213b714a"
+          "sha256": "76e93b24c5b68d43d0d95986a2afcdccbc9bdf4b2451d9dffe47d6266bc1d558"
         },
         "thumbnail": {
           "logicalName": "background_osmanthus_moon_001_thumb.png",
-          "sha256": "d8acb4f9fb274e0aa1df23c7dc6ad5ebebdaa433195ae1e6965603e47f56288d"
+          "sha256": "60b239f0d13a75f3ad3c8d30546b5d344352ebd2a36f6e337ae971ce7c29cf83"
         },
         "preSplit": {
           "logicalName": "",
@@ -271,15 +271,15 @@
         "audio": {
           "nameZh": {
             "logicalName": "background_osmanthus_moon_001_name_zh.mp3",
-            "sha256": "7ea456d4e1e6c6ac56cd6387037ec43f1ba4ac1a5a9e82e3d73a6cf7a7555c4d"
+            "sha256": "cf8b1927d5ee4ace516b0f497837babb938a06309b48496f3e41728dc55c82f0"
           },
           "nameEn": {
             "logicalName": "background_osmanthus_moon_001_name_en.mp3",
-            "sha256": "b8abf77b7a20f8291cd39a2eae086b9efaf254101033499db8d89e5a62727e13"
+            "sha256": "7faf6725b3de5611b170f186c6f3c95f05798e76fb96311e46110343ffec5090"
           },
           "introZh": {
             "logicalName": "background_osmanthus_moon_001_intro_zh.mp3",
-            "sha256": "9537b2d82a408bcae5de1684273b5a484ac0769f3fbd3f88d3384fd363b8687b"
+            "sha256": "5e7a0f0048c99fa80d3baf82d251d7c7a67ea60234d347cbd54132bacd4e6764"
           }
         },
         "source": "Midjourney + 后期",
@@ -287,7 +287,7 @@
       }
     },
     "sticker_mooncake_001": {
-      "contentVersion": 1,
+      "contentVersion": 2,
       "projection": {
         "type": "sticker",
         "themeId": "mid_autumn_festival",
@@ -296,7 +296,7 @@
         ],
         "nameZh": "月饼",
         "nameEn": "Mooncake",
-        "introZh": "月饼是中秋节常吃的圆饼。饼面常有花纹，外形圆圆的，吃起来香香的。大家常在赏月时一起品尝，盼望团圆。",
+        "introZh": "月饼是中秋节的特色食物。古代人们祭拜月亮时，会拿圆形的面饼当作供品，之后慢慢演变成现在的月饼。月饼大多做成圆形，用来代表团圆。月饼里面会包上不同馅料，口味有很多种，到了中秋，家人会分食月饼，以此寄托对阖家团圆的美好期许。",
         "keywords": [
           "中秋",
           "月饼",
@@ -305,11 +305,11 @@
         ],
         "image": {
           "logicalName": "sticker_mooncake_001.png",
-          "sha256": "215571f797076dd34e42df2c9786178010f0495b5e06bfdf2023c0e1ff99881c"
+          "sha256": "173d7027691a0ca113e7be081a16dc732ef075490bbefae1ddcbdd6b67c88c10"
         },
         "thumbnail": {
           "logicalName": "sticker_mooncake_001_thumb.png",
-          "sha256": "a0c090b8c6220f0373e15af5512b3af3015da4616cff2c343ff9d519ff78f9cf"
+          "sha256": "b2f52722b5e661e087431dcaa8bddbc55a29937b50be2ec34b1cd343288bac0f"
         },
         "preSplit": {
           "logicalName": "",
@@ -318,15 +318,15 @@
         "audio": {
           "nameZh": {
             "logicalName": "sticker_mooncake_001_name_zh.mp3",
-            "sha256": "2051c04e5e57d8115e78df00151efeb22317eeaed61a871f62e13f7d65d8fe97"
+            "sha256": "ed81c6c00ffc53d7c19c090c43f9dab9173dc0dba87973700fc8e06b94b2b353"
           },
           "nameEn": {
             "logicalName": "sticker_mooncake_001_name_en.mp3",
-            "sha256": "63bf32e8be7d96d1e625f95ea3a60dc9267c23f337042a769e9e81904b033416"
+            "sha256": "b1f4cf9f3dfdba5ae48a38b9a106961d753e2ea3a06b86529a0a1b64a98edf7b"
           },
           "introZh": {
             "logicalName": "sticker_mooncake_001_intro_zh.mp3",
-            "sha256": "0c2641e9cf2549eb3f03bf298551295c617eb76583d03297189b0e6e0d9d2e33"
+            "sha256": "9b6eaf437fce386f2f80a984dfcefe53ab21743661ae2be2823b1c130f518bb4"
           }
         },
         "source": "Midjourney + 豆包后期",
@@ -334,7 +334,7 @@
       }
     },
     "sticker_rabbit_001": {
-      "contentVersion": 1,
+      "contentVersion": 2,
       "projection": {
         "type": "sticker",
         "themeId": "mid_autumn_festival",
@@ -343,7 +343,7 @@
         ],
         "nameZh": "玉兔",
         "nameEn": "Jade Rabbit",
-        "introZh": "玉兔是中秋传说里的小兔子。传说它住在月亮上，白白的毛、长长的耳朵。赏月时，大家常会想起这个可爱的故事。",
+        "introZh": "嫦娥奔月:相传远古时候，后羿射日后得到长生仙药。妻子嫦娥误食仙药，飞向月宫独居广寒宫。玉兔心疼嫦娥，飞上月宫相伴，日夜持玉杵捣药，盼望能炼成灵药，助嫦娥重返人间。",
         "keywords": [
           "中秋",
           "玉兔",
@@ -352,11 +352,11 @@
         ],
         "image": {
           "logicalName": "sticker_rabbit_001.png",
-          "sha256": "8d4c5a735d1b21b55c8b3e6569616c3e0928d8e88ff0766bb24d2846e97ecc8f"
+          "sha256": "34ceaae04cdd51935391f169591778b3704f314087aaa3ed16b12f38af70a1d0"
         },
         "thumbnail": {
           "logicalName": "sticker_rabbit_001_thumb.png",
-          "sha256": "8f34ce13ffddeab034e6c15b87ca0e12e9c7fb902a5bc1078e3485b64b27a63d"
+          "sha256": "ede6c59f6b70dbbfbaf88bcb7b48ba0e8ad862c3a98c7c4821b54ff0b41ccfa8"
         },
         "preSplit": {
           "logicalName": "",
@@ -365,15 +365,15 @@
         "audio": {
           "nameZh": {
             "logicalName": "sticker_rabbit_001_name_zh.mp3",
-            "sha256": "42dc4d5c36c91bbf4c417dc5225675cf77d407bcbe5df8277ecd8790aa067045"
+            "sha256": "8f96c8b9fc746b273a3d91c8bc2af8f7c57a9abee6c48015e938d37ae342e61b"
           },
           "nameEn": {
             "logicalName": "sticker_rabbit_001_name_en.mp3",
-            "sha256": "25265c8d341e0aafda5c15aa3c8d431bc255eebd8f6b668e57ab58a107b8254d"
+            "sha256": "21eb44916681a1463fc91b641198c7c9c10b1103468df999674ef7e55d57278f"
           },
           "introZh": {
             "logicalName": "sticker_rabbit_001_intro_zh.mp3",
-            "sha256": "b69eab8b6b307267b1ab746c8756675594fe54071f6998ac21863c7324bf3691"
+            "sha256": "32b7ee92b961ecb29443a4d30f9d785c55feb4fbefca8cc60ab97171a34ff773"
           }
         },
         "source": "Midjourney + 豆包后期",
@@ -429,7 +429,7 @@
       }
     },
     "background_couplet_gate_001": {
-      "contentVersion": 1,
+      "contentVersion": 2,
       "projection": {
         "type": "background",
         "themeId": "spring_festival",
@@ -438,7 +438,7 @@
         ],
         "nameZh": "贴春联的院落大门",
         "nameEn": "Courtyard Gate with Couplets",
-        "introZh": "春节是一年的开始，也叫过年。人们会贴春联、挂灯笼、吃团圆饭，盼望新年红红火火、团团圆圆。",
+        "introZh": "春节是我国重要的传统节日，时间在每年农历正月初一。农历正月是一年的开端，因此这个节日象征新一年的开启。古时候人们会举行辞旧迎新的相关活动，之后慢慢形成贴春联、守岁、拜年的习俗。春节代表迎新祈福，每到这时，家人们都会团聚在一起，共同迎接新的年岁。",
         "keywords": [
           "春节",
           "大门",
@@ -448,11 +448,11 @@
         ],
         "image": {
           "logicalName": "background_couplet_gate_001.png",
-          "sha256": "62fca057040fda034ab5b7a02493afedd129967f9afbbab2080ce2ef330204e6"
+          "sha256": "bfe30d4f8b7e05190b987c897a3111533a51610b28f081631c5ce3aaf6e52623"
         },
         "thumbnail": {
           "logicalName": "background_couplet_gate_001_thumb.png",
-          "sha256": "e9c4f544648617476f9a7171cf40c703e222d925bace9bd3b29870206f949790"
+          "sha256": "cd0c63b3ba51eb97d36c33b61cf56551a33801790064efa0b2ce19a07416a80e"
         },
         "preSplit": {
           "logicalName": "",
@@ -461,15 +461,15 @@
         "audio": {
           "nameZh": {
             "logicalName": "background_couplet_gate_001_name_zh.mp3",
-            "sha256": "446873e000320464a7906bf9021a7304f94bb6004687bc3edc1d7e40fbd54f18"
+            "sha256": "8bb4abbf6ea126790238f14780601f29a8809ab86bb5ffc18431da20673b2ebe"
           },
           "nameEn": {
             "logicalName": "background_couplet_gate_001_name_en.mp3",
-            "sha256": "91d27eac50c5d031610e789ae9ee59fe6559e62883963de3d659d6ce2cf639c1"
+            "sha256": "9a107ee76c3e1d596eae216c1a57ef601545a08554e9ef5233691a44ae654eb9"
           },
           "introZh": {
             "logicalName": "background_couplet_gate_001_intro_zh.mp3",
-            "sha256": "5267e623ee966b1e29aa12d50152c70222fcdabdfd9d1c1785dab7cdaf4a77d2"
+            "sha256": "e3ad9c6f689a770dfca991384c1401d04d7bb3a8eef2299982ffe9bc6120b668"
           }
         },
         "source": "Midjourney／豆包生成 + 后期",
@@ -477,7 +477,7 @@
       }
     },
     "background_snow_window_001": {
-      "contentVersion": 1,
+      "contentVersion": 2,
       "projection": {
         "type": "background",
         "themeId": "spring_festival",
@@ -486,7 +486,7 @@
         ],
         "nameZh": "窗花映雪的窗边",
         "nameEn": "Snowy Window with Paper Cut",
-        "introZh": "春节是一年的开始，也叫过年。人们会贴春联、挂灯笼、吃团圆饭，盼望新年红红火火、团团圆圆。",
+        "introZh": "春节是我国重要的传统节日，时间在每年农历正月初一。农历正月是一年的开端，因此这个节日象征新一年的开启。古时候人们会举行辞旧迎新的相关活动，之后慢慢形成贴春联、守岁、拜年的习俗。春节代表迎新祈福，每到这时，家人们都会团聚在一起，共同迎接新的年岁。",
         "keywords": [
           "春节",
           "窗花",
@@ -496,11 +496,11 @@
         ],
         "image": {
           "logicalName": "background_snow_window_001.png",
-          "sha256": "da696a94dfd241e07d57e84426e336954c5a50703699a0dcbd9fb6dad2253b9e"
+          "sha256": "27610a9f4533c7c095088b6ef704b01a12887ebdd4361d927f053cadcb6eb958"
         },
         "thumbnail": {
           "logicalName": "background_snow_window_001_thumb.png",
-          "sha256": "e8c8871f95d5cbca28adc9e7917c73123baba31b5f1193cef0d2f78a34cd377a"
+          "sha256": "31f289e18b421ee440b77e3cc5178f0ba29bd818839a21923bcfebbc83462615"
         },
         "preSplit": {
           "logicalName": "",
@@ -509,15 +509,15 @@
         "audio": {
           "nameZh": {
             "logicalName": "background_snow_window_001_name_zh.mp3",
-            "sha256": "3f86998f75c725d82280d39b006b99cbe21d111aa146c8ef30e96b279a58ac9b"
+            "sha256": "1c7a5ff3dc85c1823156c22e6aa2091e8262dbf25dba28d9785b069671e3ac9d"
           },
           "nameEn": {
             "logicalName": "background_snow_window_001_name_en.mp3",
-            "sha256": "ab586435e5a92453fe9f312002a6c21aeac72ce1d8f40db2161a48912a273a1a"
+            "sha256": "1766648e6efb25b9d2cfe583db8d16f51c5a204e3027f7b716fcf794821ff116"
           },
           "introZh": {
             "logicalName": "background_snow_window_001_intro_zh.mp3",
-            "sha256": "5267e623ee966b1e29aa12d50152c70222fcdabdfd9d1c1785dab7cdaf4a77d2"
+            "sha256": "e3ad9c6f689a770dfca991384c1401d04d7bb3a8eef2299982ffe9bc6120b668"
           }
         },
         "source": "Midjourney生成 + 后期",
@@ -525,7 +525,7 @@
       }
     },
     "sticker_window_flower_001": {
-      "contentVersion": 1,
+      "contentVersion": 2,
       "projection": {
         "type": "sticker",
         "themeId": "spring_festival",
@@ -534,7 +534,7 @@
         ],
         "nameZh": "窗花",
         "nameEn": "Window Paper-cut",
-        "introZh": "窗花是流传千年的民间剪纸艺术。新春来临，人们剪出红色花形窗花粘贴在窗上。红色花朵寓意花开富贵，为家中增添喜庆氛围。",
+        "introZh": "窗花是春节的传统装饰。古时候，人们会把剪好的纸片贴在窗户上，用来避开不好的事物，慢慢就形成了窗花。人们会剪出各种各样的图案，这些图案都带着吉祥的意思。每到春节，家家户户都会贴上窗花，以此盼望日子过得平安美好。",
         "keywords": [
           "春节",
           "窗花",
@@ -543,11 +543,11 @@
         ],
         "image": {
           "logicalName": "sticker_window_flower_001.png",
-          "sha256": "c084ebe62e6fa12ec99dbfe02e0a4cc05ed9588485b1fe9a35b288280a103ef2"
+          "sha256": "c27be895bd4dd57bf5b2ea2b2106eea34f86b555c7bc9933305483e9ab260dbf"
         },
         "thumbnail": {
           "logicalName": "sticker_window_flower_001_thumb.png",
-          "sha256": "d9f5abdc6645fc48911498c5c9b38dd77b156f86f308ff572dfb99fcb0c06280"
+          "sha256": "70d37853372e6ca79337d2d3ccc06dfb1dd2b0dc53bff1205c5f2e0458a64715"
         },
         "preSplit": {
           "logicalName": "",
@@ -556,15 +556,15 @@
         "audio": {
           "nameZh": {
             "logicalName": "sticker_window_flower_001_name_zh.mp3",
-            "sha256": "5c546cdcdf1ad0d4e5a085b125f5bc26f5590606e6d050600bbee4e50c140820"
+            "sha256": "8d47b71db63539cdf3c53f4119412c538f89ac0326e60c7378cfa10775289903"
           },
           "nameEn": {
             "logicalName": "sticker_window_flower_001_name_en.mp3",
-            "sha256": "b5471400689a1b1c12eeb7f1e18bb62cffca6027de0a3527c7327adbba2cfa2a"
+            "sha256": "e06d118c6bea4974f4416f2ed82b811aba5b667b4f6b3a3de1a36d23ca47eb7e"
           },
           "introZh": {
             "logicalName": "sticker_window_flower_001_intro_zh.mp3",
-            "sha256": "fc21923cc87c64b8815d32f175f757b308051e4d82c09cfaa44e69d9292c256f"
+            "sha256": "6c1d7aa0f661a7ddcce66d394412b86b57694a15431241e0b1b04a8f24bae037"
           }
         },
         "source": "Midjourney生成 + 后期",
@@ -572,7 +572,7 @@
       }
     },
     "sticker_fu_001": {
-      "contentVersion": 1,
+      "contentVersion": 2,
       "projection": {
         "type": "sticker",
         "themeId": "spring_festival",
@@ -581,7 +581,7 @@
         ],
         "nameZh": "福字",
         "nameEn": "Fu Character",
-        "introZh": "福字是春节常见的吉祥字。人们常把它倒着贴，盼望“福到了”。看到红红的福字，就想起新年要顺顺利利。",
+        "introZh": "福字是春节常见的传统文字装饰。古时候人们书写福字，用来表达对福气的期盼。后来慢慢出现把福字倒着贴的做法，借“倒”的读音寓意福气“到”来。人们会把写好的福字贴在门上，以此盼望家里吉祥如意。",
         "keywords": [
           "春节",
           "福字",
@@ -590,11 +590,11 @@
         ],
         "image": {
           "logicalName": "sticker_fu_001.png",
-          "sha256": "585d9958717ae70c1dc04d2589a97e1b640ad41a9e02cad402e623911a14292c"
+          "sha256": "bd096d4e7a60326197bc8ad502683c9f065414119443d3df2fee6a2698a69d94"
         },
         "thumbnail": {
           "logicalName": "sticker_fu_001_thumb.png",
-          "sha256": "4bf1203e1957a21dce864aad945146ee8f55315c31458572b58be9c57e92f477"
+          "sha256": "52b8e3466e478e90a8327db50d9cd74beb92a6de44549b9f3d5f457711bd6bd7"
         },
         "preSplit": {
           "logicalName": "",
@@ -603,15 +603,15 @@
         "audio": {
           "nameZh": {
             "logicalName": "sticker_fu_001_name_zh.mp3",
-            "sha256": "d7e20321fb49212f828f82a22e0462f60613b0cbd4abb0ae44b0b4344ba91b94"
+            "sha256": "a5c14b57d516760d7fbf6a16f48edb4bb6a54d7880621bac9e51d7fcfc3618c7"
           },
           "nameEn": {
             "logicalName": "sticker_fu_001_name_en.mp3",
-            "sha256": "0b29bbdd478b574463c64fdd3f9182152b93d26c9257341493587e85f0f3462c"
+            "sha256": "c9b0ee8a34c04becef2be19e3a46773dca6412b819015de377c9ea65b9a38276"
           },
           "introZh": {
             "logicalName": "sticker_fu_001_intro_zh.mp3",
-            "sha256": "a1a00015ec92c1b4f3ecac9cb63be0652a2c9d7a26f8c5409a9b416a9a63245b"
+            "sha256": "c89eff5e3375eebc7dcc8263c1d618ffcc026f18c1a71e2a798775d8c2b44038"
           }
         },
         "source": "Midjourney生成 + 后期",
@@ -619,7 +619,7 @@
       }
     },
     "sticker_red_envelope_001": {
-      "contentVersion": 1,
+      "contentVersion": 2,
       "projection": {
         "type": "sticker",
         "themeId": "spring_festival",
@@ -628,7 +628,7 @@
         ],
         "nameZh": "红包",
         "nameEn": "Red Envelope",
-        "introZh": "红包是装着心意的小红袋。过年时长辈常发给孩子。收到红包时，大家都会觉得开心，也感受到祝福。",
+        "introZh": "红包是春节的传统习俗物品。古时候长辈会给孩子分发钱币，希望帮孩子远离灾祸，慢慢就形成发红包的习惯。现在人们把钱装进红色封套里，红色代表吉利。春节期间长辈给晚辈送上红包，以此寄托平安顺遂的祝愿。",
         "keywords": [
           "春节",
           "红包",
@@ -637,11 +637,11 @@
         ],
         "image": {
           "logicalName": "sticker_red_envelope_001.png",
-          "sha256": "6d3e9aca43654da4e630e4e72d236eccefac439f0c4f498e1e264b2575c3e3ab"
+          "sha256": "8c9842a1d9756d8bcb675ad360ba39f88ca260a980eb47bead95bbf8de114753"
         },
         "thumbnail": {
           "logicalName": "sticker_red_envelope_001_thumb.png",
-          "sha256": "5e87de8dbff47f0f0af3d22d7fc643c0d052be531fb76f9089714ae100e57023"
+          "sha256": "a60e9d8a68f657db6eabdaea5521505f03eb968ad4256c80f92e2cf117b29291"
         },
         "preSplit": {
           "logicalName": "",
@@ -650,15 +650,15 @@
         "audio": {
           "nameZh": {
             "logicalName": "sticker_red_envelope_001_name_zh.mp3",
-            "sha256": "3ae036167db192ab83282748ae88b5668abe639a29138099fc0ddd9512fbbe5f"
+            "sha256": "3f7c77f9b8b31fbb9f41e938d32a05eff31174838412f7b5129f48f6eac0fb6d"
           },
           "nameEn": {
             "logicalName": "sticker_red_envelope_001_name_en.mp3",
-            "sha256": "a8b0a7d7e5051aca6d5a4d384553713cc75a10d29be931d59bb714dc7a0a5d98"
+            "sha256": "d49210611d4243bb872758e67433a80f51e178e1fe83fb1b24ed6e08ca104f5f"
           },
           "introZh": {
             "logicalName": "sticker_red_envelope_001_intro_zh.mp3",
-            "sha256": "644667a2d6c63eda42ae9ca7d871ee6a578869d6dc87fcddd22e3ea7367c6ff2"
+            "sha256": "10fac81a9632f8e1c5cd7f19f2553fbdea5665ef4211509d7db3363fff89eb1b"
           }
         },
         "source": "Midjourney生成 + 后期",
@@ -666,7 +666,7 @@
       }
     },
     "sticker_lantern_001": {
-      "contentVersion": 1,
+      "contentVersion": 2,
       "projection": {
         "type": "sticker",
         "themeId": "spring_festival",
@@ -675,7 +675,7 @@
         ],
         "nameZh": "灯笼",
         "nameEn": "Lantern",
-        "introZh": "灯笼是中国传统的节日装饰。红红的灯笼又亮又喜庆，挂起来特别好看。春节时人们常挂起灯笼，盼望新年红火。",
+        "introZh": "《正月十五夜》【唐·苏味道】（节选）\n   火树银花合，星桥铁锁开。\n  诗句小讲解：树上挂满各色灯笼，光亮的灯火被比作银花，树木看上去如同燃烧的火树。夜色里灯火连成一片，城门放开宵禁，人们出门游玩，写出古时节日挂满灯笼，灯火辉煌的热闹过节景象。",
         "keywords": [
           "春节",
           "灯笼",
@@ -684,11 +684,11 @@
         ],
         "image": {
           "logicalName": "sticker_lantern_001.png",
-          "sha256": "19a2c17f5e6a6ca6457412cef84a97f021b0063741b3212cd13bbccbadec5289"
+          "sha256": "f87f2681ffaed12072f058cb53807cb36b055e2a71b94f07ae1bed2d41985544"
         },
         "thumbnail": {
           "logicalName": "sticker_lantern_001_thumb.png",
-          "sha256": "9f6cbe58f884f8cc70c2edade59aa24d524bee985658ebab7764f36208979304"
+          "sha256": "1cb24e4dcc78385a2cb120e9542adae125a43908b871a495eee33883be7ad0bd"
         },
         "preSplit": {
           "logicalName": "",
@@ -697,15 +697,15 @@
         "audio": {
           "nameZh": {
             "logicalName": "sticker_lantern_001_name_zh.mp3",
-            "sha256": "632f0b292787613b0d4a094e295cf3accbe8b8ed6fa80a8eb7f60617a45cdeb7"
+            "sha256": "ff67fd4774f03e18cecf24720326b5af1c13605623dd2d3aabe7a190daac6ae6"
           },
           "nameEn": {
             "logicalName": "sticker_lantern_001_name_en.mp3",
-            "sha256": "1d97c47572d139912398fcbcd38871b4d35f38444c95ac5e3c9cd1c7777f5ca0"
+            "sha256": "be9bf6920d51278a0f27b20997c11b06a010568902c7c876b27eb095c3898b06"
           },
           "introZh": {
             "logicalName": "sticker_lantern_001_intro_zh.mp3",
-            "sha256": "ca2e29e7e3c8be45b059ecf7911cb8c6e882c285ffe7f3bab00c490d67407f8c"
+            "sha256": "f4d771b847ab184d5209859facf52faa89312975b98922718d2597cfeb8ef0f2"
           }
         },
         "source": "Midjourney生成 + 后期",
@@ -713,7 +713,7 @@
       }
     },
     "sticker_firecracker_001": {
-      "contentVersion": 1,
+      "contentVersion": 2,
       "projection": {
         "type": "sticker",
         "themeId": "spring_festival",
@@ -722,7 +722,7 @@
         ],
         "nameZh": "鞭炮",
         "nameEn": "Firecracker",
-        "introZh": "鞭炮是过年常见的喜庆物件。红红的一串，点燃后噼啪作响。人们放鞭炮增添热闹，迎接崭新的一年。",
+        "introZh": "《元日》【宋·王安石】（节选）\n爆竹声中一岁除，春风送暖入屠苏。\n诗句小讲解：传说古时候人们燃放爆竹，靠响亮的声响驱赶怪兽年兽。诗句中爆竹轰鸣代表告别旧的一年，暖暖的春风到来，人们喝屠苏酒迎接新年，写出春节燃放鞭炮辞旧迎新的热闹节日场景。",
         "keywords": [
           "春节",
           "鞭炮",
@@ -730,11 +730,11 @@
         ],
         "image": {
           "logicalName": "sticker_firecracker_001.png",
-          "sha256": "242da16c54c59e0c764e5eb00d52f2b276d0130f596b57fac1c0d08a5b868ad0"
+          "sha256": "0bfd13ea2a1bf8748b9236b301768a7d9cf92f4eced687291e2b71e96dd2030c"
         },
         "thumbnail": {
           "logicalName": "sticker_firecracker_001_thumb.png",
-          "sha256": "89582877627d59007fe12d3386b9423670b3c6395dbccfc3a5bd40f20eb28b2c"
+          "sha256": "ad40d615e20a1b0093118ee44f127b028e6636408a7809c9fd2b8aba2d38b4f3"
         },
         "preSplit": {
           "logicalName": "",
@@ -743,15 +743,15 @@
         "audio": {
           "nameZh": {
             "logicalName": "sticker_firecracker_001_name_zh.mp3",
-            "sha256": "c65b7b44106d01ffd2cf3d264024f9162bdee9a8d0d4b937668454926ac78b22"
+            "sha256": "ad7e30d078f608fafb2e3c1ec1d1f06090121021fc98f9c0727c7f41c7fa2b53"
           },
           "nameEn": {
             "logicalName": "sticker_firecracker_001_name_en.mp3",
-            "sha256": "d3dd52a2df1977f545f4120d69e8d2d43ed67eee68bc35502ff29ed01304d643"
+            "sha256": "8a217b992cdad3854458329c013dc30a3551cbea8c05aef2f3f1cb73636e94d3"
           },
           "introZh": {
             "logicalName": "sticker_firecracker_001_intro_zh.mp3",
-            "sha256": "d4b24dd2795cb3794b26a51ab7bc150c4f9961869d36f41b3e5799a881d6e7be"
+            "sha256": "3c25e52c7f7c8f916e80a236c643e7967d75a6b98f6b86e3a6af475d7ab0706c"
           }
         },
         "source": "Midjourney生成 + 后期",
@@ -759,7 +759,7 @@
       }
     },
     "sticker_dumpling_001": {
-      "contentVersion": 1,
+      "contentVersion": 2,
       "projection": {
         "type": "sticker",
         "themeId": "spring_festival",
@@ -768,7 +768,7 @@
         ],
         "nameZh": "饺子",
         "nameEn": "Dumpling",
-        "introZh": "饺子是春节常见的团圆食物。皮薄馅多，形状像小元宝，吃起来热乎乎的。家人一起包饺子、吃饺子，迎接新年。",
+        "introZh": "饺子是春节的传统食物。古时候饺子最初作为岁时的吃食，它的外形很像古代的元宝。过年的时候家家户户会包饺子，一家人围坐在一起食用饺子。人们借饺子的模样，寄托招财纳福、全家团圆的美好心愿。",
         "keywords": [
           "春节",
           "饺子",
@@ -777,11 +777,11 @@
         ],
         "image": {
           "logicalName": "sticker_dumpling_001.png",
-          "sha256": "b4fa7ca19c85934eba5adfcf77e9bc3b70b5f058393579f990e969cf5fce492c"
+          "sha256": "78f2ec170a41b37ca41d7c4f1f6e6c68977890dc7b9e69fd8d91797070fcde43"
         },
         "thumbnail": {
           "logicalName": "sticker_dumpling_001_thumb.png",
-          "sha256": "e3cf0569b1a16fa631216140ec810c154d55b58be308d03147cd772c900b496b"
+          "sha256": "31e41b18abf6148864ab1493065fc011ab4419a2c7b212bf0f61e07c7d0ef851"
         },
         "preSplit": {
           "logicalName": "",
@@ -790,19 +790,2581 @@
         "audio": {
           "nameZh": {
             "logicalName": "sticker_dumpling_001_name_zh.mp3",
-            "sha256": "5572da8dd0b5643a0d6191eec3be31d36766020c5ae07ff6f0d38c70e2f0d22e"
+            "sha256": "84a3c3f59d1a699cdbd23447466755969b9febda012b76916497bf99791abc44"
           },
           "nameEn": {
             "logicalName": "sticker_dumpling_001_name_en.mp3",
-            "sha256": "7cef69d3e3229836d73b61f30cf76c24ea7c4a569404818610b5ea45703856a5"
+            "sha256": "eef245239f056cec441d479f9434a3f95bdf3ab5c0efa99e4f7c000aecdbae48"
           },
           "introZh": {
             "logicalName": "sticker_dumpling_001_intro_zh.mp3",
-            "sha256": "37852d733409e89ce7c8a636730c9997398336c91719e8dd815fa680d18f54bc"
+            "sha256": "57127a2438ce8f707c638197b448e75d63e2f5eff89e6424d80879569f44e914"
           }
         },
         "source": "Midjourney生成 + 后期",
         "license": "生成平台条款；组内按MJ主口径确认"
+      }
+    },
+    "sticker_moon_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "sticker",
+        "themeId": "mid_autumn_festival",
+        "categoryIds": [
+          "festival_poetry"
+        ],
+        "nameZh": "月亮",
+        "nameEn": "Moon",
+        "introZh": "（1）《静夜思》【唐·李白】\n床前明月光，疑是地上霜。\n举头望明月，低头思故乡。\n诗句小讲解：皎洁的月光照在床前，白白亮亮的，就像地上铺了一层霜。诗人抬头看着圆圆的明月，不由得低头思念起自己的家乡和亲人。这首诗告诉我们，月亮是人们寄托思念、想念家人和家乡的美好信物。\n（2）《水调歌头·明月几时有》（节选）【宋·苏轼】\n但愿人长久，千里共婵娟。\n诗句小讲解：“婵娟” 指的就是中秋圆月。意思是哪怕亲人相隔千里，只要大家都平安健康，就能共同欣赏这一轮美丽的月亮，也是中秋节最核心的团圆祝愿。",
+        "keywords": [
+          "中秋",
+          "月亮",
+          "古诗",
+          "静夜思",
+          "水调歌头"
+        ],
+        "image": {
+          "logicalName": "sticker_moon_001.png",
+          "sha256": "db815e2139c22507a3f3ef578076a6825f006d37665032cc14326967b583b829"
+        },
+        "thumbnail": {
+          "logicalName": "sticker_moon_001_thumb.png",
+          "sha256": "a765c1a1d59f568fa83db953769df73df6f099c64d22ff5eaaa2596b91a9c0e1"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "sticker_moon_001_name_zh.mp3",
+            "sha256": "1f614e64569351d95fb2e06f4452e7fea2251d92198a673af04c076949ba2dc5"
+          },
+          "nameEn": {
+            "logicalName": "sticker_moon_001_name_en.mp3",
+            "sha256": "9175fdfb7f7d34ff809661d54ba86cb12da1d9223cb8b3a6bdf888cb98cf8462"
+          },
+          "introZh": {
+            "logicalName": "sticker_moon_001_intro_zh.mp3",
+            "sha256": "e4bd19f1ce975825f9c4bc298110021a4d4a417128d82b527b8af99379fa62f4"
+          }
+        },
+        "source": "Midjourney + 后期",
+        "license": "生成平台条款；组内按MJ主口径确认"
+      }
+    },
+    "background_dragon_boat_race_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "background",
+        "themeId": "dragon_boat_festival",
+        "categoryIds": [
+          "festival_scene"
+        ],
+        "nameZh": "江面赛龙舟",
+        "nameEn": "Dragon Boat Race",
+        "introZh": "端午节是我国重要的传统节日，时间为农历五月初五。这时正值初夏，蚊虫容易滋生。古人会借助习俗祈求身体健康，后来又融入纪念屈原的故事，渐渐形成吃粽子、赛龙舟、挂艾草的习俗。人们开展这些过节活动，祝愿全家平安健康。",
+        "keywords": [
+          "端午",
+          "龙舟",
+          "江面",
+          "比赛"
+        ],
+        "image": {
+          "logicalName": "background_dragon_boat_race_001.png",
+          "sha256": "1df85de90d89304e73b261c6a0d8b8da6daa6a05ac980482a816493721d6bc82"
+        },
+        "thumbnail": {
+          "logicalName": "background_dragon_boat_race_001_thumb.png",
+          "sha256": "c5651313c036bb094ba33435210e069a2d8f0ee3588a78a04828a4ddf4811aba"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "background_dragon_boat_race_001_name_zh.mp3",
+            "sha256": "b1e9e5a69ff5ba410b6326585f4b2317cbcd22fe39c8ca27c1454d57598efa6d"
+          },
+          "nameEn": {
+            "logicalName": "background_dragon_boat_race_001_name_en.mp3",
+            "sha256": "b9ab6ee46b523453b2388e953f59e8d674ad3624fb1ed508564decdcdae4cbdb"
+          },
+          "introZh": {
+            "logicalName": "background_dragon_boat_race_001_intro_zh.mp3",
+            "sha256": "68debd8fdbfaff727062c1124c7d1e3f5effc128d206b24299560caf20b71222"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "sticker_zongzi_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "sticker",
+        "themeId": "dragon_boat_festival",
+        "categoryIds": [
+          "festival_food"
+        ],
+        "nameZh": "粽子",
+        "nameEn": "Zongzi",
+        "introZh": "粽子是端午节的传统食物。古时候人们用竹叶包裹糯米做成吃食，慢慢演变成粽子。粽子有甜、咸多种口味，相传最初是人们投进江中，纪念屈原。每到端午节，家家户户食用粽子，以此寄托缅怀先贤、祈求平安的心愿。",
+        "keywords": [
+          "端午",
+          "粽子",
+          "食物",
+          "习俗"
+        ],
+        "image": {
+          "logicalName": "sticker_zongzi_001.png",
+          "sha256": "21ffdcd73d5e3c7ca0d0165669b0653ad7138314ab060032a7badea25dc53158"
+        },
+        "thumbnail": {
+          "logicalName": "sticker_zongzi_001_thumb.png",
+          "sha256": "b4d14091aab824c04b4313fdb10bb1e47559415d4b9f390c2adbacfa4067b092"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "sticker_zongzi_001_name_zh.mp3",
+            "sha256": "e22e2d429524f301076bb9828aab90d0aba40797770885946ffd726dbd9b3e53"
+          },
+          "nameEn": {
+            "logicalName": "sticker_zongzi_001_name_en.mp3",
+            "sha256": "fedf745734f93869b7d5ade78fb69b221fe59e00b00e8e4f8084351202f4518c"
+          },
+          "introZh": {
+            "logicalName": "sticker_zongzi_001_intro_zh.mp3",
+            "sha256": "dde512e01ea5f9f7aeb7f3be99dfa32d50959499efc0f3fc4a6d1b5ee425f7b8"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "sticker_mugwort_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "sticker",
+        "themeId": "dragon_boat_festival",
+        "categoryIds": [
+          "festival_custom"
+        ],
+        "nameZh": "艾草",
+        "nameEn": "Mugwort",
+        "introZh": "《端午即事》【宋·文天祥】（节选）\n   五月五日午，赠我一枝艾。\n  诗句小讲解：端午时节人们互赠艾草、佩戴香囊。古时香囊会装入艾草等香草。诗句写出端午互送香草物件的习俗，香囊装满香草，借草木清香，祈求远离蚊虫，保佑身体平安。",
+        "keywords": [
+          "端午",
+          "艾草",
+          "挂门",
+          "平安"
+        ],
+        "image": {
+          "logicalName": "sticker_mugwort_001.png",
+          "sha256": "59028af720c00bbb5592e99839c4dc41fbb24426304bffcc3ff27b1c81a2c279"
+        },
+        "thumbnail": {
+          "logicalName": "sticker_mugwort_001_thumb.png",
+          "sha256": "9e8ae58a4f4e99987f9dc150df618a77991f9f766ffc341c9f230aa46da010bc"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "sticker_mugwort_001_name_zh.mp3",
+            "sha256": "2cb58a65d31e059c6498b2aeb2c6c3d4d51e54ae917018cc33db109a870144d4"
+          },
+          "nameEn": {
+            "logicalName": "sticker_mugwort_001_name_en.mp3",
+            "sha256": "af23b9113218a89cb869d925083481405667194bf2eda2b21c54c64794663ac3"
+          },
+          "introZh": {
+            "logicalName": "sticker_mugwort_001_intro_zh.mp3",
+            "sha256": "d48a2ebbfee70bb8a1419c895372ee57035bb9a01acde86dec3a61ab449ffc3e"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "sticker_sachet_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "sticker",
+        "themeId": "dragon_boat_festival",
+        "categoryIds": [
+          "festival_custom"
+        ],
+        "nameZh": "香囊",
+        "nameEn": "Sachet",
+        "introZh": "香囊是端午节的传统随身饰物。古人把晒干的香草装进布袋子里，制作成香囊。香囊里面会放多种草药，气味清香。端午的时候人们佩戴香囊，希望远离蚊虫。人们随身佩戴香囊，以此祈求身体安康。",
+        "keywords": [
+          "端午",
+          "香囊",
+          "佩戴",
+          "安康"
+        ],
+        "image": {
+          "logicalName": "sticker_sachet_001.png",
+          "sha256": "537a5e9dba8b101625c894c107954d7a0d9738164404d0514cdbe1d214c1fbce"
+        },
+        "thumbnail": {
+          "logicalName": "sticker_sachet_001_thumb.png",
+          "sha256": "043fdfc271ee0af9caedffa7432aadcbfc8424539d1e73a2f8327f291c401f6b"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "sticker_sachet_001_name_zh.mp3",
+            "sha256": "b8cb20a5889df103216ed201a80422fb5dd7e28d7f3e36ede37d2211de9aa4bf"
+          },
+          "nameEn": {
+            "logicalName": "sticker_sachet_001_name_en.mp3",
+            "sha256": "1d3517688f5e47bca8b1a25ba57e97a9f25b5a60ddc26967c45fc00523574d83"
+          },
+          "introZh": {
+            "logicalName": "sticker_sachet_001_intro_zh.mp3",
+            "sha256": "9cb36c56f93ee5b8cdc6d4fea99d6aab66884b3e7465478636c848694aeea476"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "background_willow_riverbank_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "background",
+        "themeId": "qingming_festival",
+        "categoryIds": [
+          "festival_scene"
+        ],
+        "nameZh": "柳絮飞的河岸",
+        "nameEn": "Weeping willow by the river",
+        "introZh": "清明节是我国的传统节日，时间为农历清明前后。此时大地回春，草木慢慢发芽生长。古时候人们会在这天扫墓祭祖，怀念逝去的亲人，也会出门踏青游玩。慢慢形成扫墓、插柳的习俗，人们借此寄托对先人的思念，也感受春日的美好。",
+        "keywords": [
+          "清明",
+          "柳絮",
+          "河岸",
+          "踏青"
+        ],
+        "image": {
+          "logicalName": "background_willow_riverbank_001.png",
+          "sha256": "67cf366a655b2597d557b81c5982873f8bb7ed63ce299a804261db001cfc0b0f"
+        },
+        "thumbnail": {
+          "logicalName": "background_willow_riverbank_001_thumb.png",
+          "sha256": "b1cd80ff5041661cad4056de76e559519907b8ccb2b8aa4892904d4ba4f3344b"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "background_willow_riverbank_001_name_zh.mp3",
+            "sha256": "b62ff0895080194114e686ca7f2abe1ea24e0ca456e2f33ed7c3bedd7439b39a"
+          },
+          "nameEn": {
+            "logicalName": "background_willow_riverbank_001_name_en.mp3",
+            "sha256": "88a92ef0014e9c7fa55fc9068e0800817be0f74d8c260c402b72ded43191c84f"
+          },
+          "introZh": {
+            "logicalName": "background_willow_riverbank_001_intro_zh.mp3",
+            "sha256": "fa9edca0f512115f263c51e11e1fb7a4aba3cf9868e4706bfac4bfc21e298210"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "background_kite_meadow_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "background",
+        "themeId": "qingming_festival",
+        "categoryIds": [
+          "festival_scene"
+        ],
+        "nameZh": "郊野放风筝",
+        "nameEn": "Flying kites in the countryside",
+        "introZh": "清明节是我国的传统节日，时间为农历清明前后。此时大地回春，草木慢慢发芽生长。古时候人们会在这天扫墓祭祖，怀念逝去的亲人，也会出门踏青游玩。慢慢形成扫墓、插柳的习俗，人们借此寄托对先人的思念，也感受春日的美好。",
+        "keywords": [
+          "清明",
+          "草地",
+          "风筝",
+          "踏青"
+        ],
+        "image": {
+          "logicalName": "background_kite_meadow_001.png",
+          "sha256": "8adae2b7f9124bab6de3a310991249e37d19e8f4e6e78ee0d8f365365a349a9f"
+        },
+        "thumbnail": {
+          "logicalName": "background_kite_meadow_001_thumb.png",
+          "sha256": "95beb213b50e38b3fcdcba9c4ca65ef3c72c2bc1320dbaa7b7ecd42298360e47"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "background_kite_meadow_001_name_zh.mp3",
+            "sha256": "65fb503ba62b368d6776cfca56c9789035043b9265c0a09bd89f7a3ebfdbf651"
+          },
+          "nameEn": {
+            "logicalName": "background_kite_meadow_001_name_en.mp3",
+            "sha256": "ec1015c7ef9445ce15adc6c208ef97d03bd9b1f11824585d9dfa9353858d2eef"
+          },
+          "introZh": {
+            "logicalName": "background_kite_meadow_001_intro_zh.mp3",
+            "sha256": "fa9edca0f512115f263c51e11e1fb7a4aba3cf9868e4706bfac4bfc21e298210"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "sticker_kite_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "sticker",
+        "themeId": "qingming_festival",
+        "categoryIds": [
+          "festival_custom"
+        ],
+        "nameZh": "风筝",
+        "nameEn": "Kite",
+        "introZh": "《村居》【清·高鼎】\n   草长莺飞二月天，拂堤杨柳醉春烟。\n   儿童散学归来早，忙趁东风放纸鸢。\n  诗句小讲解：诗里的纸鸢就是古代的风筝。二月春天草木生长，黄莺飞舞。孩子们放学早早回到家中，急忙趁着春风放飞风筝。诗句描绘孩童在春日开心放风筝的生动画面，展现出清明前后春日户外嬉戏的美好景象。",
+        "keywords": [
+          "清明",
+          "风筝",
+          "春天",
+          "踏青"
+        ],
+        "image": {
+          "logicalName": "sticker_kite_001.png",
+          "sha256": "a85b1fdda8a925b4657721e0d5f5d146938cce11000d3987a7336b9b08fb9b09"
+        },
+        "thumbnail": {
+          "logicalName": "sticker_kite_001_thumb.png",
+          "sha256": "69e06562dcea69390795075e11b9c532ab5e001a268ef539b54bf3351d360bf2"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "sticker_kite_001_name_zh.mp3",
+            "sha256": "6c82f4deeab8d6d501c3699f7e426f2bc2aa8acc8dc6d1dce55446cfb64a752b"
+          },
+          "nameEn": {
+            "logicalName": "sticker_kite_001_name_en.mp3",
+            "sha256": "c98a8ae5e5a7add820aa32577ed64f25b91c61526ea178e8f88d695388d5c132"
+          },
+          "introZh": {
+            "logicalName": "sticker_kite_001_intro_zh.mp3",
+            "sha256": "b164accac066115cdc861887a7177bc7b9ec4e4e0c389239cdf239c5231cde63"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "sticker_willow_leaf_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "sticker",
+        "themeId": "qingming_festival",
+        "categoryIds": [
+          "festival_nature"
+        ],
+        "nameZh": "柳叶",
+        "nameEn": "Willow Leaf",
+        "introZh": "《咏柳》【唐·贺知章】\n  碧玉妆成一树高，万条垂下绿丝绦。\n  不知细叶谁裁出，二月春风似剪刀。\n  诗句小讲解：把柳树的嫩叶比作碧绿玉石，万千柳枝如同柔软的绿丝带。诗人又把春风比作剪刀，仿佛是春风裁剪出一片片细小柳叶，赞美初春柳树清新秀丽的模样，描绘春日柳叶抽芽的动人画面。",
+        "keywords": [
+          "清明",
+          "柳叶",
+          "春天",
+          "踏青"
+        ],
+        "image": {
+          "logicalName": "sticker_willow_leaf_001.png",
+          "sha256": "8e5f0fd9aa64656104c385bd7e62dd20ba070b09c658ecefd37e8184bfb45a5a"
+        },
+        "thumbnail": {
+          "logicalName": "sticker_willow_leaf_001_thumb.png",
+          "sha256": "ba88830ae4b6a2c2b8da9e7533cb44228fcc897ec9ff9a8ea7d0d4da4a9dc9c0"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "sticker_willow_leaf_001_name_zh.mp3",
+            "sha256": "931946228256c1c4893ba983756988a47b0cd076c726cb6639e2d71d06aa5d09"
+          },
+          "nameEn": {
+            "logicalName": "sticker_willow_leaf_001_name_en.mp3",
+            "sha256": "c3e5f717e868182282f91819d12ca6bf778500defbd751b2143bba4cf1c2cb49"
+          },
+          "introZh": {
+            "logicalName": "sticker_willow_leaf_001_intro_zh.mp3",
+            "sha256": "f6330b4caf0390900e24f2dd6a4880eb77e0e3ca3fc809e5c2a04cd933bc93cc"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "sticker_swallow_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "sticker",
+        "themeId": "qingming_festival",
+        "categoryIds": [
+          "festival_nature"
+        ],
+        "nameZh": "燕子",
+        "nameEn": "Swallow",
+        "introZh": "《钱塘湖春行》【唐·白居易】（节选）\n几处早莺争暖树，谁家新燕啄春泥。\n诗句小讲解：这里描写早春归来的燕子。燕子飞来飞去，衔取泥土搭建自己的巢穴。诗句通过燕子衔泥筑巢的画面，生动表现春天到来万物复苏的景象，展现春日生机勃勃的画面。",
+        "keywords": [
+          "清明",
+          "燕子",
+          "春天",
+          "飞鸟"
+        ],
+        "image": {
+          "logicalName": "sticker_swallow_001.png",
+          "sha256": "0ccf068dcdc503efa463a50910b43659abc097a42333fb52e4f12d7636169193"
+        },
+        "thumbnail": {
+          "logicalName": "sticker_swallow_001_thumb.png",
+          "sha256": "60aaeede774fec28c58beb5a2816164212274879023a7e2bae7316daa8d75cdc"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "sticker_swallow_001_name_zh.mp3",
+            "sha256": "829eac2f373b27043a72bf47e2cf9c96837f3d29023400b8dfabe4855bc1f2c2"
+          },
+          "nameEn": {
+            "logicalName": "sticker_swallow_001_name_en.mp3",
+            "sha256": "9e1fa9db104d803d6a0319932a8b9a222719373fab9b653b2226e4cd8192c49f"
+          },
+          "introZh": {
+            "logicalName": "sticker_swallow_001_intro_zh.mp3",
+            "sha256": "9fe72e4fdacba4206bfd53a0622900a6c1df6704be129d76b6167912bcd12294"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "sticker_qingtuan_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "sticker",
+        "themeId": "qingming_festival",
+        "categoryIds": [
+          "festival_food"
+        ],
+        "nameZh": "青团",
+        "nameEn": "Qingtuan",
+        "introZh": "青团是清明节的传统食物。人们采摘鲜嫩艾草，捣出青绿色汁水，和糯米混合制作青团。青团包裹各式各样的馅料，清明的时候大家会吃青团。人们食用青团，寄托缅怀先人、期盼平安顺遂的心愿。",
+        "keywords": [
+          "清明",
+          "青团",
+          "食物",
+          "春天"
+        ],
+        "image": {
+          "logicalName": "sticker_qingtuan_001.png",
+          "sha256": "3a52d63f1f2a332e4671812f1075e47e86c9308b45516550ea017c8a1ec30f37"
+        },
+        "thumbnail": {
+          "logicalName": "sticker_qingtuan_001_thumb.png",
+          "sha256": "a1daee16d92a699c83352b6729b32a2466e86f864f5990e474f4cf545fd92438"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "sticker_qingtuan_001_name_zh.mp3",
+            "sha256": "e24ae5b8670b5939f60ccced30aaac9003af6432e5f25c0e88b3b6bc80a11e02"
+          },
+          "nameEn": {
+            "logicalName": "sticker_qingtuan_001_name_en.mp3",
+            "sha256": "a54e507340c343622e914bbc794d609d322959843ad174c1bad2ced637ef9a7e"
+          },
+          "introZh": {
+            "logicalName": "sticker_qingtuan_001_intro_zh.mp3",
+            "sha256": "baab2a216586c746d7e0069f4676589be6697dbc8e1575a098185ac647dee2cf"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "sticker_oil_paper_umbrella_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "sticker",
+        "themeId": "qingming_festival",
+        "categoryIds": [
+          "festival_decoration"
+        ],
+        "nameZh": "油纸伞",
+        "nameEn": "Oil-paper Umbrella",
+        "introZh": "油纸伞是旧时很常用的雨具，也是清明的传统物件。人们把油纸糊在伞骨上，做成油纸伞，可以遮挡雨水。清明时节春雨绵绵，人们出门踏青时会撑上油纸伞。一把把油纸伞装点春日街巷，烘托出清明雨中出游的独特氛围。",
+        "keywords": [
+          "清明",
+          "油纸伞",
+          "春天",
+          "踏青"
+        ],
+        "image": {
+          "logicalName": "sticker_oil_paper_umbrella_001.png",
+          "sha256": "ea07349c87a327435b2e2e78c0f873703d03cea55682ed17d5acb88c17062847"
+        },
+        "thumbnail": {
+          "logicalName": "sticker_oil_paper_umbrella_001_thumb.png",
+          "sha256": "8c6b13a0eaffef07be5554827a219dc86b80c738f444a9d9e15ce57d2a7771ef"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "sticker_oil_paper_umbrella_001_name_zh.mp3",
+            "sha256": "e01cee8c84dc4273bcd5748751b8c2bd7df883a676186b54f57e1ecce22ecd0b"
+          },
+          "nameEn": {
+            "logicalName": "sticker_oil_paper_umbrella_001_name_en.mp3",
+            "sha256": "6cb23945e145fb12444b05a4a3145cd5081445f5d74ee815d2d95df1de1595e8"
+          },
+          "introZh": {
+            "logicalName": "sticker_oil_paper_umbrella_001_intro_zh.mp3",
+            "sha256": "fd17f94e487cbac012ec2339f5a08b8739062717e1528d0faf772c46b6545808"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "background_spring_meadow_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "background",
+        "themeId": "spring",
+        "categoryIds": [
+          "season_scene"
+        ],
+        "nameZh": "草地",
+        "nameEn": "Spring Meadow",
+        "introZh": "春回大地，万物复苏，冰雪消融、花草萌发。古代诗人喜爱春日踏青出游，写下大量春日诗篇。有的描绘繁花、杨柳等明媚景色，抒发看见春光的喜悦；有的感叹春光短暂，生出惜春之情；还有人借春日景象寄托思念、向往自由的心情。",
+        "keywords": [
+          "春天",
+          "草地",
+          "绿野",
+          "踏青"
+        ],
+        "image": {
+          "logicalName": "background_spring_meadow_001.png",
+          "sha256": "20eb9e920db375077f9b20f916db49f6abe6375520f591b5730e2e3ea8b1e76f"
+        },
+        "thumbnail": {
+          "logicalName": "background_spring_meadow_001_thumb.png",
+          "sha256": "4e984d91f1901405b59604681c537ee7c5c14a46487e203f33f360b24c8146fb"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "background_spring_meadow_001_name_zh.mp3",
+            "sha256": "7c3772105b588ef5c4c1f9fe4140fd5a7a37bc72fc480896cfe510088089c17d"
+          },
+          "nameEn": {
+            "logicalName": "background_spring_meadow_001_name_en.mp3",
+            "sha256": "5ac82067205c6db0c3b47dad07c94a9681d751aaf931722f31ca9a64f1d5d6df"
+          },
+          "introZh": {
+            "logicalName": "background_spring_meadow_001_intro_zh.mp3",
+            "sha256": "dee5425dfdac586c4dda52a655a207c91b63763c1abd0e83120f0812f61f2282"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "sticker_peach_blossom_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "sticker",
+        "themeId": "spring",
+        "categoryIds": [
+          "season_nature"
+        ],
+        "nameZh": "桃花",
+        "nameEn": "Peach Blossom",
+        "introZh": "《大林寺桃花》【唐・白居易】 \n人间四月芳菲尽，山寺桃花始盛开。 \n长恨春归无觅处，不知转入此中来。\n诗句小讲解：四月山下春花已经落尽，高山古寺中的桃花才刚刚绽放。诗人原本以为春光已经消逝，却意外遇见山间桃花盛开的美景，惊喜地发现春天并未离去，表达出对春日美景的喜爱和偶遇春光的欣喜之情。",
+        "keywords": [
+          "春天",
+          "桃花",
+          "花朵",
+          "桃红"
+        ],
+        "image": {
+          "logicalName": "sticker_peach_blossom_001.png",
+          "sha256": "bd33e5ee6f98954375e693cfaebbcce92dea8d23ccfcfa67207955fe558d71cb"
+        },
+        "thumbnail": {
+          "logicalName": "sticker_peach_blossom_001_thumb.png",
+          "sha256": "dcb417cfea7512b1fe1ce2ec0c4fb2b137affd3477995bbf2cb3a2ccb8225374"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "sticker_peach_blossom_001_name_zh.mp3",
+            "sha256": "149a23898f87832c003e12158493a1d8736afe32c391152435874295bae6db3c"
+          },
+          "nameEn": {
+            "logicalName": "sticker_peach_blossom_001_name_en.mp3",
+            "sha256": "f71d3586de46f30b304005e6cc1c47e84ee012d874961f9ae26c8d5308789110"
+          },
+          "introZh": {
+            "logicalName": "sticker_peach_blossom_001_intro_zh.mp3",
+            "sha256": "3ad98c77379eb61a1df5c0472cc93898bae475cc442ac500654b3e9df3a28cec"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "sticker_willow_branch_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "sticker",
+        "themeId": "spring",
+        "categoryIds": [
+          "season_nature"
+        ],
+        "nameZh": "柳枝",
+        "nameEn": "Willow Branch",
+        "introZh": "《咏柳》【唐・贺知章】 \n碧玉妆成一树高，万条垂下绿丝绦。 \n不知细叶谁裁出，二月春风似剪刀。\n诗句小讲解：高高的柳树长满嫩绿新叶，万千柳条像轻柔的绿丝带随风飘荡。诗人将春风比作剪刀，生动写出春风催生出柳叶、装点大地的灵动画面，赞美初春柳树清新秀丽的姿态，抒发对美好春光的喜爱与赞美。",
+        "keywords": [
+          "春天",
+          "柳枝",
+          "柳绿",
+          "植物"
+        ],
+        "image": {
+          "logicalName": "sticker_willow_branch_001.png",
+          "sha256": "66207031ce488c53215b5fed37d249442276fbd1419fb1254dd13ed40ddb1c5c"
+        },
+        "thumbnail": {
+          "logicalName": "sticker_willow_branch_001_thumb.png",
+          "sha256": "b4c67269481b371693ae066116042d9ce10b33686ac6daefe846e0bbfbff3392"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "sticker_willow_branch_001_name_zh.mp3",
+            "sha256": "3c44ba293c722e0de1ccda13124d008ceea401811d711a4fde025cb37fd6ad4e"
+          },
+          "nameEn": {
+            "logicalName": "sticker_willow_branch_001_name_en.mp3",
+            "sha256": "642a64f899596403df45593dbfb3b08507f684899926d98f20bd169e9b568158"
+          },
+          "introZh": {
+            "logicalName": "sticker_willow_branch_001_intro_zh.mp3",
+            "sha256": "a79cc5bcd07cc7f1f3bc8d33663eac677a2eef8336375ff503100be0168c2eca"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "background_summer_lotus_pond_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "background",
+        "themeId": "summer",
+        "categoryIds": [
+          "season_scene"
+        ],
+        "nameZh": "荷塘",
+        "nameEn": "Lotus Pond",
+        "introZh": "夏天草木茂盛、荷花盛开，景色热闹又清新。古人喜欢在夏天乘凉、泛舟游玩，写下了很多优美的夏日古诗。诗人用荷塘、小船等夏日景物，描写夏天的美丽景色，表达悠闲自在的心情。",
+        "keywords": [
+          "夏天",
+          "荷塘",
+          "荷叶",
+          "夏日"
+        ],
+        "image": {
+          "logicalName": "background_summer_lotus_pond_001.png",
+          "sha256": "74a2d3384deb9540073f179dc012654dee892f15f53eba3e0b74038bb4ee4d76"
+        },
+        "thumbnail": {
+          "logicalName": "background_summer_lotus_pond_001_thumb.png",
+          "sha256": "2e246b2d16768c9c24d2a0a4c4b53a3059ac8a6aba62f1dfb9c12fbaa6e687fb"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "background_summer_lotus_pond_001_name_zh.mp3",
+            "sha256": "580d1bdd4d5427e51b4fe9cda2b8c257936eead61493f75d45b7ab11a24858f8"
+          },
+          "nameEn": {
+            "logicalName": "background_summer_lotus_pond_001_name_en.mp3",
+            "sha256": "2f8453361e5db8425b0eda6bd27e395e317333c929d540223e5fa72fcd4e1eed"
+          },
+          "introZh": {
+            "logicalName": "background_summer_lotus_pond_001_intro_zh.mp3",
+            "sha256": "c35e96c03c5477ad01f14b15b611f48b1b7c8edb78e52c1a0b0838ffec0162db"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "background_summer_courtyard_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "background",
+        "themeId": "summer",
+        "categoryIds": [
+          "season_scene"
+        ],
+        "nameZh": "庭院一角",
+        "nameEn": "Courtyard Corner",
+        "introZh": "夏天草木茂盛、荷花盛开，景色热闹又清新。古人喜欢在夏天乘凉、泛舟游玩，写下了很多优美的夏日古诗。诗人用荷塘、小船等夏日景物，描写夏天的美丽景色，表达悠闲自在的心情。",
+        "keywords": [
+          "夏天",
+          "庭院",
+          "纳凉",
+          "树荫"
+        ],
+        "image": {
+          "logicalName": "background_summer_courtyard_001.png",
+          "sha256": "2c5a1013199bc95f4e86c85158c4682b567795d8467cc1e1f15f6b0674ac6cae"
+        },
+        "thumbnail": {
+          "logicalName": "background_summer_courtyard_001_thumb.png",
+          "sha256": "3f5a68896ddb52bdd0a0dd8343b8126ffe55a65b48b8e4d3a3e888182a41a7fe"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "background_summer_courtyard_001_name_zh.mp3",
+            "sha256": "a7742b80d63461f11ad08a8d7f64331c3c3ef7edbbfd47e1e50ebaa21ecfe301"
+          },
+          "nameEn": {
+            "logicalName": "background_summer_courtyard_001_name_en.mp3",
+            "sha256": "33959deb58eef965d45e5a97c40e9978ccc2f81b100a5d85821234c17899c492"
+          },
+          "introZh": {
+            "logicalName": "background_summer_courtyard_001_intro_zh.mp3",
+            "sha256": "c35e96c03c5477ad01f14b15b611f48b1b7c8edb78e52c1a0b0838ffec0162db"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "sticker_lotus_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "sticker",
+        "themeId": "summer",
+        "categoryIds": [
+          "season_nature"
+        ],
+        "nameZh": "荷花荷叶",
+        "nameEn": "Lotus And Leaves",
+        "introZh": "《晓出净慈寺送林子方》【宋・杨万里】 \n毕竟西湖六月中，风光不与四时同。 \n接天莲叶无穷碧，映日荷花别样红。 \n诗句小讲解：到底是六月的西湖，景色和别的时节大不一样。一望无际的荷叶铺满水面，仿佛和蓝天相连；阳光照耀下，荷花显得格外红艳。诗人描绘盛大优美的荷塘风光，由衷赞美夏日西湖独特动人的美景。",
+        "keywords": [
+          "夏天",
+          "荷花",
+          "荷叶",
+          "荷塘"
+        ],
+        "image": {
+          "logicalName": "sticker_lotus_001.png",
+          "sha256": "1e340c7794704770361a53da727e597b4177177701ef4a6a5e250d54a95cdb5a"
+        },
+        "thumbnail": {
+          "logicalName": "sticker_lotus_001_thumb.png",
+          "sha256": "0d25ee5a2291b720a89650f1710b6093bdb8f6b36c1f768ba4f8e06a394f3072"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "sticker_lotus_001_name_zh.mp3",
+            "sha256": "7e14f64e766f6867ce88c1e492ef820d19e8ff9609e9918c3ab0bab148c3b1ac"
+          },
+          "nameEn": {
+            "logicalName": "sticker_lotus_001_name_en.mp3",
+            "sha256": "a3116a1a351bcec8f7f6624f172272e40b97a2882b62bfffd88148ab127896b2"
+          },
+          "introZh": {
+            "logicalName": "sticker_lotus_001_intro_zh.mp3",
+            "sha256": "29b15fabe5296f233bda05a83a04083e018a6fffa10530e0de62301628a0ebe3"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "sticker_palm_fan_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "sticker",
+        "themeId": "summer",
+        "categoryIds": [
+          "season_object"
+        ],
+        "nameZh": "蒲扇",
+        "nameEn": "Palm Fan",
+        "introZh": "蒲扇是古老的传统纳凉工具，历史十分悠久。古时候没有电风扇，人们全靠蒲扇解暑乘凉。直到现在，爷爷奶奶依旧喜欢用蒲扇，轻轻摇扇既能带来凉风，也藏着温暖的童年回忆，是充满烟火气的夏日物件。",
+        "keywords": [
+          "夏天",
+          "蒲扇",
+          "纳凉",
+          "扇子"
+        ],
+        "image": {
+          "logicalName": "sticker_palm_fan_001.png",
+          "sha256": "51962f2d7bd82f8b4509731a6f6491981e323b4683ecbbe36e42a860524db88a"
+        },
+        "thumbnail": {
+          "logicalName": "sticker_palm_fan_001_thumb.png",
+          "sha256": "bdb5c42c5f373f57ab4792ec5b267d81e9b7eb4ff1be823e4ebe87eb158f1253"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "sticker_palm_fan_001_name_zh.mp3",
+            "sha256": "db179ff4ca7f3cb9ad1228923b494e8ae6bff8e6d0c992425cc41e1c1975155b"
+          },
+          "nameEn": {
+            "logicalName": "sticker_palm_fan_001_name_en.mp3",
+            "sha256": "1dfbe2882bf6f26816946b593fccff664d102d9b0574413382c29aee229e3d1c"
+          },
+          "introZh": {
+            "logicalName": "sticker_palm_fan_001_intro_zh.mp3",
+            "sha256": "e570fccd80ac282e00994c8761b5691321a035f365d690a1806acb88b275408a"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "sticker_small_boat_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "sticker",
+        "themeId": "summer",
+        "categoryIds": [
+          "season_object"
+        ],
+        "nameZh": "小船",
+        "nameEn": "Small Boat",
+        "introZh": "《池上》【唐·白居易】\n小娃撑小艇，偷采白莲回。\n不解藏踪迹，浮萍一道开。\n诗句小讲解：小孩子偷偷撑着小船，去湖里采摘白莲。他天真可爱，不会隐藏自己的踪迹，小船划过水面，分开浮萍，留下一道浅浅的水痕。整首诗生动写出夏日孩童玩耍的可爱模样，充满悠闲的夏日童趣。",
+        "keywords": [
+          "夏天",
+          "小船",
+          "荷塘",
+          "游玩"
+        ],
+        "image": {
+          "logicalName": "sticker_small_boat_001.png",
+          "sha256": "aeb1a53810efa028a50e42c217d62732545930e4400a91f9f67eb11f163e8f4c"
+        },
+        "thumbnail": {
+          "logicalName": "sticker_small_boat_001_thumb.png",
+          "sha256": "23ccf6a68caa8ddc1db56a14185d83006f29ceab0edeaab024b118dfbc606b73"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "sticker_small_boat_001_name_zh.mp3",
+            "sha256": "bdb84749e37a0eed4c68f661e9663e4f1967d873e27ef4fa910d6286dab8250d"
+          },
+          "nameEn": {
+            "logicalName": "sticker_small_boat_001_name_en.mp3",
+            "sha256": "82aeece84bb282c550aa29f112354fc53001da35faadfa03a30b12a29bcac8fa"
+          },
+          "introZh": {
+            "logicalName": "sticker_small_boat_001_intro_zh.mp3",
+            "sha256": "b0e95ea8c9a42321dc3c8e34696fb3b650f77a68490a49e1557ae67c1df279c8"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "sticker_watermelon_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "sticker",
+        "themeId": "summer",
+        "categoryIds": [
+          "season_food"
+        ],
+        "nameZh": "西瓜",
+        "nameEn": "Watermelon",
+        "introZh": "西瓜是夏天最清甜解暑的水果。我们现在能吃到皮薄、多汁、又甜又便宜的优质西瓜，离不开中国女科学家吴明珠奶奶的毕生付出。她几十年专心培育西瓜品种，改良出甜度高、口感好、产量高的优质瓜种，改变了我国西瓜口感差、品质低的状况，让我们普通人都能轻松实现“吃瓜自由”，是非常值得我们敬佩的农业科学家。",
+        "keywords": [
+          "夏天",
+          "西瓜",
+          "水果",
+          "解暑"
+        ],
+        "image": {
+          "logicalName": "sticker_watermelon_001.png",
+          "sha256": "39e7e8c8c6ca2ba70945c0a1a28338843ad0ecf1f067f940cac25778d62ab190"
+        },
+        "thumbnail": {
+          "logicalName": "sticker_watermelon_001_thumb.png",
+          "sha256": "1a44e084f87c458c5321d5d1a23ed97fce0836d9be11ea1dfe2146b88076200d"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "sticker_watermelon_001_name_zh.mp3",
+            "sha256": "a12fcac4a691ae40672d146259b4b9084f13783d35fe71e035d95f5391d52e3b"
+          },
+          "nameEn": {
+            "logicalName": "sticker_watermelon_001_name_en.mp3",
+            "sha256": "fc686bd030c90a872863f4d87adc5c6de55f5a47d3fd69c9f9ad2db111be5f15"
+          },
+          "introZh": {
+            "logicalName": "sticker_watermelon_001_intro_zh.mp3",
+            "sha256": "f71bce02e54780589f2c8adf274fc22bd3348710028ae21b565684594eea53e4"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "background_autumn_ginkgo_path_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "background",
+        "themeId": "autumn",
+        "categoryIds": [
+          "season_scene"
+        ],
+        "nameZh": "银杏落叶小路",
+        "nameEn": "Ginkgo Leaf Path",
+        "introZh": "秋天天高气爽、层林渐变，是色彩最美的季节。古人喜欢赏秋观景，写下许多秋日古诗。诗人常借落叶、红枫、硕果等秋日景物，描绘秋天的优美景色，抒发对秋天的喜爱，也会借秋景表达淡淡的思念与感慨。",
+        "keywords": [
+          "秋天",
+          "银杏",
+          "落叶",
+          "小路"
+        ],
+        "image": {
+          "logicalName": "background_autumn_ginkgo_path_001.png",
+          "sha256": "4913bc50d692e02225f6c1faf703e2dc14437f775f41295b8e6eac841f098e16"
+        },
+        "thumbnail": {
+          "logicalName": "background_autumn_ginkgo_path_001_thumb.png",
+          "sha256": "d27d31502790cd34489c096c1591f2e43172db0b7f392489008c317bf28f0bee"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "background_autumn_ginkgo_path_001_name_zh.mp3",
+            "sha256": "9f8999ea7e5323616d50d9c082168245c20678a9b437468d24aecee04d71c9c4"
+          },
+          "nameEn": {
+            "logicalName": "background_autumn_ginkgo_path_001_name_en.mp3",
+            "sha256": "b5762a412843b9fd56bca9237c60e53d2905ae943f193984f48f0ca4a8d53db8"
+          },
+          "introZh": {
+            "logicalName": "background_autumn_ginkgo_path_001_intro_zh.mp3",
+            "sha256": "a0b37e395e3de1da5420ec54f2d81cec023668b174f9d7d3aef24f4a88fe6d50"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "background_autumn_field_dusk_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "background",
+        "themeId": "autumn",
+        "categoryIds": [
+          "season_scene"
+        ],
+        "nameZh": "田野黄昏",
+        "nameEn": "Field At Dusk",
+        "introZh": "秋天天高气爽、层林渐变，是色彩最美的季节。古人喜欢赏秋观景，写下许多秋日古诗。诗人常借落叶、红枫、硕果等秋日景物，描绘秋天的优美景色，抒发对秋天的喜爱，也会借秋景表达淡淡的思念与感慨。",
+        "keywords": [
+          "秋天",
+          "田野",
+          "黄昏",
+          "丰收"
+        ],
+        "image": {
+          "logicalName": "background_autumn_field_dusk_001.png",
+          "sha256": "a99706445cecfd9564b8c79f743cc83502bf21673b07ba512a6fb77a31642ed0"
+        },
+        "thumbnail": {
+          "logicalName": "background_autumn_field_dusk_001_thumb.png",
+          "sha256": "17e315f5f67ef2379046828ad4765745431a8a4fe65ea3cc3bd72a8798a7fbd6"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "background_autumn_field_dusk_001_name_zh.mp3",
+            "sha256": "d7aebcd3e2cd5bad32da3eafeb478c2bf6e8e0adc77e133504ebd86f75355792"
+          },
+          "nameEn": {
+            "logicalName": "background_autumn_field_dusk_001_name_en.mp3",
+            "sha256": "237d86b1207c5d09cfa2dd7700fc4b6c8c3ce689fc36832e4665edd0901945c3"
+          },
+          "introZh": {
+            "logicalName": "background_autumn_field_dusk_001_intro_zh.mp3",
+            "sha256": "a0b37e395e3de1da5420ec54f2d81cec023668b174f9d7d3aef24f4a88fe6d50"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "sticker_fallen_leaf_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "sticker",
+        "themeId": "autumn",
+        "categoryIds": [
+          "season_nature"
+        ],
+        "nameZh": "落叶",
+        "nameEn": "Fallen Leaf",
+        "introZh": "《秋风引》【唐·刘禹锡】\n何处秋风至？萧萧送雁群。\n朝来入庭树，孤客最先闻。\n诗句小讲解：秋风不知从哪里吹来，萧萧的风声送走了南飞的大雁。清晨秋风吹过庭院的树木，吹落片片树叶，孤单的旅人最先察觉到秋的到来。诗歌借秋风、落叶的秋日景象，写出秋天的清冷，也藏着淡淡的思乡之情。",
+        "keywords": [
+          "秋天",
+          "落叶",
+          "黄叶",
+          "自然"
+        ],
+        "image": {
+          "logicalName": "sticker_fallen_leaf_001.png",
+          "sha256": "dc8db0f5b0dea6ad220465f182dbad0ced816c06281f047bae028849dab89ef7"
+        },
+        "thumbnail": {
+          "logicalName": "sticker_fallen_leaf_001_thumb.png",
+          "sha256": "43a995a3a68922027b52ec85b5237a771305223c3d400b5eeb1aeab27d9abd7c"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "sticker_fallen_leaf_001_name_zh.mp3",
+            "sha256": "bd3644c83092121818d5dd04f81d7fcd8d08a4aa47b699efd86d891a5d46164e"
+          },
+          "nameEn": {
+            "logicalName": "sticker_fallen_leaf_001_name_en.mp3",
+            "sha256": "38c50b975ff2ff4bcc42ec92ed7a8665e6dbabea06578701077a2879dfac82fa"
+          },
+          "introZh": {
+            "logicalName": "sticker_fallen_leaf_001_intro_zh.mp3",
+            "sha256": "459cd5117129c2978506d4ee08c804b91f6bfa9f39499513b8fc402dc45b48c3"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "sticker_maple_leaf_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "sticker",
+        "themeId": "autumn",
+        "categoryIds": [
+          "season_nature"
+        ],
+        "nameZh": "枫叶",
+        "nameEn": "Maple Leaf",
+        "introZh": "《山行》【唐·杜牧】\n远上寒山石径斜，白云生处有人家。\n停车坐爱枫林晚，霜叶红于二月花。\n诗句小讲解：深秋的山间，山路曲折，白云深处隐隐有农家坐落。诗人特意停下车，只为欣赏傍晚时分枫林的美景，秋天的枫叶比春天的鲜花还要红艳动人。全诗赞美了绚烂独特的秋日枫叶美景，表达出对深秋山林秋色的喜爱。",
+        "keywords": [
+          "秋天",
+          "枫叶",
+          "红叶",
+          "植物"
+        ],
+        "image": {
+          "logicalName": "sticker_maple_leaf_001.png",
+          "sha256": "7af1e96691e191d7e0a257b6e83d9eb6c89eaa58679445013bd1c526ff61b09a"
+        },
+        "thumbnail": {
+          "logicalName": "sticker_maple_leaf_001_thumb.png",
+          "sha256": "ef034a629c87229ee70fc40bb6b6c99ae018e5b7d039e96858330eccc63e4255"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "sticker_maple_leaf_001_name_zh.mp3",
+            "sha256": "f97ff15b9234d3c4b8004c95c2bc66e232b5183238a46de6aceaca049694543b"
+          },
+          "nameEn": {
+            "logicalName": "sticker_maple_leaf_001_name_en.mp3",
+            "sha256": "44cd68e209a6a263b9f6a385e8fe845e5a37c87e511288bd1feb819bf10527ec"
+          },
+          "introZh": {
+            "logicalName": "sticker_maple_leaf_001_intro_zh.mp3",
+            "sha256": "6647353dda315a272210a9b19d4d78e9c1cff0ef14d031b8892d2fd6e23b62a5"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "sticker_persimmon_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "sticker",
+        "themeId": "autumn",
+        "categoryIds": [
+          "season_food"
+        ],
+        "nameZh": "柿子",
+        "nameEn": "Persimmon",
+        "introZh": "秋天是丰收的季节，红彤彤的柿子挂满枝头，饱满又喜庆。柿子是秋日专属的丰收景物，谐音“事事如意（柿柿如意）”，寓意美好，代表丰收美满、吉祥顺遂。",
+        "keywords": [
+          "秋天",
+          "柿子",
+          "水果",
+          "丰收"
+        ],
+        "image": {
+          "logicalName": "sticker_persimmon_001.png",
+          "sha256": "b0c066a12833194cf1ad1465c3d517ea3c23c9bf4839c5af4083ddb9b0642755"
+        },
+        "thumbnail": {
+          "logicalName": "sticker_persimmon_001_thumb.png",
+          "sha256": "7cc5264f37aef4ec527a72549411755133daea8ee3dcd151b184fdac9f3712ff"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "sticker_persimmon_001_name_zh.mp3",
+            "sha256": "3727c51b9324447d01759ecff0c0129ad889c8425ce15ebd1a06479a31290c56"
+          },
+          "nameEn": {
+            "logicalName": "sticker_persimmon_001_name_en.mp3",
+            "sha256": "aa2480d1abc129cec2236592781239bb36e0da366bc3f45d5a81ffb8decbb95b"
+          },
+          "introZh": {
+            "logicalName": "sticker_persimmon_001_intro_zh.mp3",
+            "sha256": "b1d62d1d6e8141b3d71fd9e32fa4857af69bb3c93a9d59eec796d5fcd6ce44aa"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "background_winter_snowman_field_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "background",
+        "themeId": "winter",
+        "categoryIds": [
+          "season_scene"
+        ],
+        "nameZh": "堆有雪人的雪地",
+        "nameEn": "Snowman Field",
+        "introZh": "冬天银装素裹、静谧清冷，是干净又雅致的季节。古人常观赏冬景、踏雪寻梅，写下很多冬日古诗。诗人多借雪花、梅花描写冬日风光，赞美冬日独特的美景与坚韧的冬日景物。",
+        "keywords": [
+          "冬天",
+          "雪地",
+          "雪人",
+          "雪景"
+        ],
+        "image": {
+          "logicalName": "background_winter_snowman_field_001.png",
+          "sha256": "bcbff2c779ef6e9ba3d23b0a75b0600c8a75a6f823a5b39bce05625fe5acec83"
+        },
+        "thumbnail": {
+          "logicalName": "background_winter_snowman_field_001_thumb.png",
+          "sha256": "29b9409c53abd41f8e34874985f9f5a24bf78875413c6488d2728fef26241a7c"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "background_winter_snowman_field_001_name_zh.mp3",
+            "sha256": "a98c839b81ce8d09bd6a91e8b66e882167c52dab01880b7c472852c2f0477f70"
+          },
+          "nameEn": {
+            "logicalName": "background_winter_snowman_field_001_name_en.mp3",
+            "sha256": "57b61378e3dc73b5ecaeabc4fcaf01bb725b734dde8d83e33cbb0a582500f440"
+          },
+          "introZh": {
+            "logicalName": "background_winter_snowman_field_001_intro_zh.mp3",
+            "sha256": "128b957f52f63528b7fbaf2150ba6a698708fe799d211b5bf1111b33ee7aaa43"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "sticker_snowflake_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "sticker",
+        "themeId": "winter",
+        "categoryIds": [
+          "season_nature"
+        ],
+        "nameZh": "雪花",
+        "nameEn": "Snowflake",
+        "introZh": "《沁园春・雪》（节选）【毛泽东】 \n北国风光，千里冰封，万里雪飘。 \n望长城内外，惟余莽莽；\n大河上下，顿失滔滔。 \n诗句小讲解：北方冬日风光壮丽辽阔，千万里大地被冰雪封住，雪花漫天飞舞。长城内外一片白茫茫，黄河也冻结起来，诗人描绘出雄浑壮阔的北国雪景，赞美祖国大好河山。",
+        "keywords": [
+          "冬天",
+          "雪花",
+          "下雪",
+          "自然"
+        ],
+        "image": {
+          "logicalName": "sticker_snowflake_001.png",
+          "sha256": "5e4517a3fe07646752974d62ccb8dbe35006e1a4407293b170986e159ea6bba9"
+        },
+        "thumbnail": {
+          "logicalName": "sticker_snowflake_001_thumb.png",
+          "sha256": "ff03f55190ad3727366220f355f831e9130075513863345d97af1a95b68e1dc3"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "sticker_snowflake_001_name_zh.mp3",
+            "sha256": "40fb181cba1e659fee8d832c77b4cec78b263d179a9dde8aa2e60334e14ff91e"
+          },
+          "nameEn": {
+            "logicalName": "sticker_snowflake_001_name_en.mp3",
+            "sha256": "bba35da34fa4742963bc16cf018bb24627077e1582db87ee8e91d153ad21cf9f"
+          },
+          "introZh": {
+            "logicalName": "sticker_snowflake_001_intro_zh.mp3",
+            "sha256": "2b475f6cdc1f39ee75425da8981ddc7bdf18ac3cc8e1538acd91dfed8653fc07"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "sticker_plum_blossom_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "sticker",
+        "themeId": "winter",
+        "categoryIds": [
+          "season_nature"
+        ],
+        "nameZh": "梅花",
+        "nameEn": "Plum Blossom",
+        "introZh": "《梅花》【宋・王安石】\n墙角数枝梅，凌寒独自开。 \n遥知不是雪，为有暗香来。 \n诗句小讲解：寒冬墙角的几枝梅花，冒着严寒独自绽放。远远看去洁白似雪，却能闻到淡淡的清香。赞美了梅花不畏寒冷、坚韧高洁的美好品格。",
+        "keywords": [
+          "冬天",
+          "梅花",
+          "花朵",
+          "耐寒"
+        ],
+        "image": {
+          "logicalName": "sticker_plum_blossom_001.png",
+          "sha256": "594f689f43873cfaa4dccbbcda50b992562b2052af5205c9416907b2ba27ed4e"
+        },
+        "thumbnail": {
+          "logicalName": "sticker_plum_blossom_001_thumb.png",
+          "sha256": "0072b843bca62187cc03c530a370c97200acf2c971ed47297b6ff51d190f5673"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "sticker_plum_blossom_001_name_zh.mp3",
+            "sha256": "dd1c137dbd14db455bb4e268df6357e7ae0da737eae3001b1fbd557fecf6d0d4"
+          },
+          "nameEn": {
+            "logicalName": "sticker_plum_blossom_001_name_en.mp3",
+            "sha256": "d3df9341e060a74ecaa91bdada4ee4230351385baa05e0ac2530fe35c3a6c814"
+          },
+          "introZh": {
+            "logicalName": "sticker_plum_blossom_001_intro_zh.mp3",
+            "sha256": "f3f2ebcb24f22ed0617682d3394f6a4a4ffd01a392f5332e38a6cce72f7465fc"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "background_elegant_hall_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "background",
+        "themeId": "traditional_folk_music",
+        "categoryIds": [
+          "culture_scene"
+        ],
+        "nameZh": "雅集厅堂",
+        "nameEn": "Elegant Gathering Hall",
+        "introZh": "中国拥有多种多样古老乐器，大多以丝、竹、木材打造，能够演奏出婉转悠扬、独具东方韵味的乐曲。春秋时期琴师俞伯牙善抚琴，他与钟子期 “高山流水遇知音” 的故事，也成为千古传颂的音乐佳话。",
+        "keywords": [
+          "雅集",
+          "厅堂"
+        ],
+        "image": {
+          "logicalName": "background_elegant_hall_001.png",
+          "sha256": "d968bffb978409a9009b8fe9e47d0ac207b9950ff07e6303fb143d10327fb5f3"
+        },
+        "thumbnail": {
+          "logicalName": "background_elegant_hall_001_thumb.png",
+          "sha256": "f7f3fef4d2134746a51bd5ec133e76f37ab3ac8b04aae8b69696ecf260ed0e4e"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "background_elegant_hall_001_name_zh.mp3",
+            "sha256": "351165e23bf9c79a2c0508434e0061cbf1f544527b7e011be7f19b86d9112875"
+          },
+          "nameEn": {
+            "logicalName": "background_elegant_hall_001_name_en.mp3",
+            "sha256": "a9d55ca70dfca1351177ce01c93dfcbd3d1ed492cc50d12caea7bd255f7ff0a3"
+          },
+          "introZh": {
+            "logicalName": "background_elegant_hall_001_intro_zh.mp3",
+            "sha256": "3242bd9b77b1c5b7dec2808faff7fdedccf20f15e53cb21e7c1f9c49dce035ec"
+          }
+        },
+        "source": "AI生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "sticker_bamboo_flute_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "sticker",
+        "themeId": "traditional_folk_music",
+        "categoryIds": [
+          "folk_instrument"
+        ],
+        "nameZh": "竹笛",
+        "nameEn": "Bamboo Flute",
+        "introZh": "竹笛是经典的中国传统乐器，历史十分悠久，以竹子制成，音色清脆动听，经常用于戏曲、民乐表演，可以演绎各种情绪，流传千年。",
+        "keywords": [
+          "竹笛",
+          "民乐"
+        ],
+        "image": {
+          "logicalName": "sticker_bamboo_flute_001.png",
+          "sha256": "92edacc327e7b3ec49246648344556cc2dd0743a98c561574fdca9058eee8954"
+        },
+        "thumbnail": {
+          "logicalName": "sticker_bamboo_flute_001_thumb.png",
+          "sha256": "4584d1a3664b62d9dddb94948ee5e6aaed1e966c7c5ef3d3f5f647f3cc104db1"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "sticker_bamboo_flute_001_name_zh.mp3",
+            "sha256": "a1bd5f0ce6e94ba92310d3a9334a4b2c2af8d0e5367b85824c55afc3d67dffb1"
+          },
+          "nameEn": {
+            "logicalName": "sticker_bamboo_flute_001_name_en.mp3",
+            "sha256": "fc1014092b25887b68d206348b5750d1be474480b2f096daf32a58376b9be1dc"
+          },
+          "introZh": {
+            "logicalName": "sticker_bamboo_flute_001_intro_zh.mp3",
+            "sha256": "8dfa39621eedf8c815161319f19f1821be0fa08e6ac89921482dd3b0d826b4db"
+          }
+        },
+        "source": "AI生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "sticker_guzheng_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "sticker",
+        "themeId": "traditional_folk_music",
+        "categoryIds": [
+          "folk_instrument"
+        ],
+        "nameZh": "古筝",
+        "nameEn": "Guzheng",
+        "introZh": "古筝又称秦筝，诞生于战国秦国，属于弹拨乐器。弦数固定，依靠琴弦振动发声，历史上常用于独奏、歌舞伴奏，大量古典乐曲依托古筝流传下来。",
+        "keywords": [
+          "古筝",
+          "民乐"
+        ],
+        "image": {
+          "logicalName": "sticker_guzheng_001.png",
+          "sha256": "55ff2a9561e9a3c2e4966bd74d7175a1f8f2fe46e1386c3793df2561f2e3440a"
+        },
+        "thumbnail": {
+          "logicalName": "sticker_guzheng_001_thumb.png",
+          "sha256": "43acf7aa4312e3c733eff3338314923321efac4f0bf600d1c3114a4b75afdb84"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "sticker_guzheng_001_name_zh.mp3",
+            "sha256": "bc96e9517caf8fa2f796769d3378a3bb7793c81109dd04f5dc63194bf145063c"
+          },
+          "nameEn": {
+            "logicalName": "sticker_guzheng_001_name_en.mp3",
+            "sha256": "699a82962fe3593ace83c484ab35563bc97fe97656e86e0a442d07f8aa7908c4"
+          },
+          "introZh": {
+            "logicalName": "sticker_guzheng_001_intro_zh.mp3",
+            "sha256": "38f0a093551251f35da7c93367afc5c21d6b8ad4a7b18e080b9f58ecb7db4e7c"
+          }
+        },
+        "source": "AI生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "sticker_wooden_fish_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "sticker",
+        "themeId": "traditional_folk_music",
+        "categoryIds": [
+          "folk_instrument"
+        ],
+        "nameZh": "木鱼",
+        "nameEn": "Wooden Fish",
+        "introZh": "木鱼为木质打击乐器，外形模仿鱼形。演奏时敲击外壁发声，早期多用于宗教仪式，后来融入民间器乐，用来稳定乐曲节奏。",
+        "keywords": [
+          "木鱼",
+          "打击乐"
+        ],
+        "image": {
+          "logicalName": "sticker_wooden_fish_001.png",
+          "sha256": "96b96236ba8677a036dc08e373ad66eeeeca0e39cb411f59a319a6127ee56ec5"
+        },
+        "thumbnail": {
+          "logicalName": "sticker_wooden_fish_001_thumb.png",
+          "sha256": "9ea836ccf7d901526189f0ac6856147e4494fda1349fad847529410a15618759"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "sticker_wooden_fish_001_name_zh.mp3",
+            "sha256": "d76a97a4d9ef960789994eef126b47197b10b675649fab70783f1a8fa603487f"
+          },
+          "nameEn": {
+            "logicalName": "sticker_wooden_fish_001_name_en.mp3",
+            "sha256": "4dbb1a33ae12ab4595df780c802f396ab32d47db01568e5c16a11b293d6df2e0"
+          },
+          "introZh": {
+            "logicalName": "sticker_wooden_fish_001_intro_zh.mp3",
+            "sha256": "d7d75e12326553f4f14d3a420f6910fd6e6fea3717fa1c6e26d4a5229066c035"
+          }
+        },
+        "source": "AI生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "background_study_desk_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "background",
+        "themeId": "brush_ink_painting",
+        "categoryIds": [
+          "culture_scene"
+        ],
+        "nameZh": "书斋画案",
+        "nameEn": "Study Desk",
+        "introZh": "笔墨书画是中国人独特的艺术。东晋的王羲之是著名书法家，被称为 “书圣”。到了唐宋时期，书法和国画迎来发展高峰，人们使用毛笔、墨汁在纸上写字、画画，用优美线条描绘风景，抒发心中想法。",
+        "keywords": [
+          "书斋",
+          "画案",
+          "宣纸"
+        ],
+        "image": {
+          "logicalName": "background_study_desk_001.png",
+          "sha256": "e4314da541dfe5d30a2bdb586f76cb481812eeebf5286e6a5ba51f055c052cb3"
+        },
+        "thumbnail": {
+          "logicalName": "background_study_desk_001_thumb.png",
+          "sha256": "afe6191e1a62555a1901ed7c30b8ddc2dd060f81cfd0645c673818e56256ddca"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "background_study_desk_001_name_zh.mp3",
+            "sha256": "7d33630e5067b9c3b2b954c1a708846b2d6db65c3f0c6d5bdde72f528de11ab7"
+          },
+          "nameEn": {
+            "logicalName": "background_study_desk_001_name_en.mp3",
+            "sha256": "5760f1a512a7c0ee041c05fd58496cc72cbd5195ec8dc157f688b3bcf5251a05"
+          },
+          "introZh": {
+            "logicalName": "background_study_desk_001_intro_zh.mp3",
+            "sha256": "6bb8446e5da32c366de86c2a8857c8d26a254fab779ad213848d5071904177fd"
+          }
+        },
+        "source": "AI生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "sticker_calligraphy_brush_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "sticker",
+        "themeId": "brush_ink_painting",
+        "categoryIds": [
+          "calligraphy_tool"
+        ],
+        "nameZh": "毛笔",
+        "nameEn": "Calligraphy Brush",
+        "introZh": "毛笔作为传统书写绘画工具，笔头以各类动物毛发制作而成，狼毫、羊毫都十分常见，毛料软硬不一。软硬不同的毛笔适配不同创作风格，有的适宜书写书法，有的更适合绘制国画。",
+        "keywords": [
+          "毛笔",
+          "书法"
+        ],
+        "image": {
+          "logicalName": "sticker_calligraphy_brush_001.png",
+          "sha256": "48dbebc67dc38910bf8f60d8ad7b7740b96a306ccbd081afeffec9ed495f10a7"
+        },
+        "thumbnail": {
+          "logicalName": "sticker_calligraphy_brush_001_thumb.png",
+          "sha256": "334c43d9ae7b481b4ce46d0eb96f99ff55189e613d29be79ddb5834ad1b5d1f2"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "sticker_calligraphy_brush_001_name_zh.mp3",
+            "sha256": "afc3af0162d4a45810bfe1e342332a16e3b1461655ec317a0d8b88cdc0df8994"
+          },
+          "nameEn": {
+            "logicalName": "sticker_calligraphy_brush_001_name_en.mp3",
+            "sha256": "499103d53e54260006852cef597ac468b2009b2da865d2e37e1f4f752344e291"
+          },
+          "introZh": {
+            "logicalName": "sticker_calligraphy_brush_001_intro_zh.mp3",
+            "sha256": "0bd3e1497e5f7febdfb5f85732a6def1c4b23bdfe3a57d269cfb404d985c9bf6"
+          }
+        },
+        "source": "AI生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "sticker_inkstone_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "sticker",
+        "themeId": "brush_ink_painting",
+        "categoryIds": [
+          "calligraphy_tool"
+        ],
+        "nameZh": "砚台",
+        "nameEn": "Inkstone",
+        "introZh": "砚台是研磨墨锭的器具，往砚中加入清水再缓缓研磨墨锭，便能得到书写、作画所用的墨汁。在古代，晚辈常为师长研墨，代表敬重。",
+        "keywords": [
+          "砚台",
+          "研墨"
+        ],
+        "image": {
+          "logicalName": "sticker_inkstone_001.png",
+          "sha256": "5ec879683a25f799f70f25aea3fdf7caa90edf31723463c62057197ba544b647"
+        },
+        "thumbnail": {
+          "logicalName": "sticker_inkstone_001_thumb.png",
+          "sha256": "ea8dca8316768b909faab014b2ca2c2b06a9e368ae2fb18129f014d247cf7c7a"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "sticker_inkstone_001_name_zh.mp3",
+            "sha256": "feae0281e621fa4469373de9f40e0d74e2bec80acc298b3af7182c0ae66cc621"
+          },
+          "nameEn": {
+            "logicalName": "sticker_inkstone_001_name_en.mp3",
+            "sha256": "1939147a4ce7c2d99630dc29ae2bb36fc0d60ee9210675f22605215e51e1777b"
+          },
+          "introZh": {
+            "logicalName": "sticker_inkstone_001_intro_zh.mp3",
+            "sha256": "65cc4655e3820170bee1ec47e81ab2a7194b215dfa0b192d76e57c1a703cca15"
+          }
+        },
+        "source": "AI生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "background_ancient_opera_stage_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "background",
+        "themeId": "traditional_opera",
+        "categoryIds": [
+          "culture_scene"
+        ],
+        "nameZh": "古戏台",
+        "nameEn": "Ancient Opera Stage",
+        "introZh": "戏曲是我国独有的传统舞台艺术，起源于上古歌舞，在宋元时期发展成熟。诞生了《窦娥冤》《西厢记》《牡丹亭》等众多经典剧目。演员穿上特色戏服，画上精致脸谱，伴着乐曲唱歌、表演故事，承载着许许多多古老传说。",
+        "keywords": [
+          "戏台",
+          "戏曲"
+        ],
+        "image": {
+          "logicalName": "background_ancient_opera_stage_001.png",
+          "sha256": "d268f46538af1e4044a5f0f52b065f8a28c11324aa523390e40e6a2702b9af92"
+        },
+        "thumbnail": {
+          "logicalName": "background_ancient_opera_stage_001_thumb.png",
+          "sha256": "cc333fafeeffae9d8a8ddbba3672debcffc2fc3ea4840f1d406ef2e97c96f86c"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "background_ancient_opera_stage_001_name_zh.mp3",
+            "sha256": "75e9fe0cbe95e0e46a043e28ea420d6df945ca2cd21ce92bc37a34ece7c2d35f"
+          },
+          "nameEn": {
+            "logicalName": "background_ancient_opera_stage_001_name_en.mp3",
+            "sha256": "d47396ba2c751e915ac2d066a11f2f4e9dc4992a9780e70f33031e817266c0c5"
+          },
+          "introZh": {
+            "logicalName": "background_ancient_opera_stage_001_intro_zh.mp3",
+            "sha256": "4de659f1c274de6bde9334af2a54ea7844c21f4b21ddf4cd4c4db4600fceb3a3"
+          }
+        },
+        "source": "AI生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "sticker_folding_fan_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "sticker",
+        "themeId": "traditional_opera",
+        "categoryIds": [
+          "opera_prop"
+        ],
+        "nameZh": "折扇",
+        "nameEn": "Folding Fan",
+        "introZh": "戏曲里演员常常手持折扇，扇子一开一合，配合动作，能够表达人物开心、害羞、思考等不同心情，是戏曲重要的表演道具。",
+        "keywords": [
+          "折扇",
+          "戏曲道具"
+        ],
+        "image": {
+          "logicalName": "sticker_folding_fan_001.png",
+          "sha256": "d3c76a097c9cfea847472e44c47e9ce2eec09b937308bd18868b0775ddc5af8f"
+        },
+        "thumbnail": {
+          "logicalName": "sticker_folding_fan_001_thumb.png",
+          "sha256": "7f45d63c90a488d83130076e0d9da2eea5824046112c7276d2da9df668a95da7"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "sticker_folding_fan_001_name_zh.mp3",
+            "sha256": "01616a24ccce4614b0e24aacdeb20d556178b9d4290a405c56f0b56b1977de5c"
+          },
+          "nameEn": {
+            "logicalName": "sticker_folding_fan_001_name_en.mp3",
+            "sha256": "f8ad2955d485f94ebbcd2e6a1ddc9d61b8641d76587866ef71e3dbfee7f06d15"
+          },
+          "introZh": {
+            "logicalName": "sticker_folding_fan_001_intro_zh.mp3",
+            "sha256": "79c35def47a1c8d63acb85242660a442822cfa05f3380a481a3b2c757047df99"
+          }
+        },
+        "source": "AI生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "sticker_small_drum_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "sticker",
+        "themeId": "traditional_opera",
+        "categoryIds": [
+          "opera_instrument"
+        ],
+        "nameZh": "小鼓",
+        "nameEn": "Small Drum",
+        "introZh": "小鼓是戏曲演奏里的重要乐器，乐师敲打小鼓，把控表演快慢节奏，带动整场演出的气氛。",
+        "keywords": [
+          "小鼓",
+          "戏曲"
+        ],
+        "image": {
+          "logicalName": "sticker_small_drum_001.png",
+          "sha256": "2876b92efee082c0c0f23ad6ccf43bb50d26ffaf96362c79b9468ab90111cdb5"
+        },
+        "thumbnail": {
+          "logicalName": "sticker_small_drum_001_thumb.png",
+          "sha256": "a6453fd1bb1cfe163af10f846c534f58ef551bca135941388fc2ca83e251ca65"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "sticker_small_drum_001_name_zh.mp3",
+            "sha256": "ce4f4f716b7992a826a618df884649cbff284f50abcb2dbe24083ddc5c7b3bee"
+          },
+          "nameEn": {
+            "logicalName": "sticker_small_drum_001_name_en.mp3",
+            "sha256": "294d81511fbf2162fda9707835cde034c12eb1efcfc63f41e90367b9a1b91299"
+          },
+          "introZh": {
+            "logicalName": "sticker_small_drum_001_intro_zh.mp3",
+            "sha256": "8bff294accad1f037b928cb3de349f96baaed9de3780da72e31a8ddc79bdc09a"
+          }
+        },
+        "source": "AI生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "background_classical_tea_room_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "background",
+        "themeId": "chinese_tea_culture",
+        "categoryIds": [
+          "culture_scene"
+        ],
+        "nameZh": "古典茶室",
+        "nameEn": "Classical Tea Room",
+        "introZh": "茶文化在中国有着几千年的历史，在唐代走向兴盛，唐代的陆羽写下了世界上第一部茶叶著作《茶经》，被后人尊称为 “茶圣”。到了宋代，品茶成为一种悠闲文雅的生活方式，人们围坐喝茶、闲谈读书，感受安静美好的时光。",
+        "keywords": [
+          "茶室",
+          "茶席",
+          "木桌"
+        ],
+        "image": {
+          "logicalName": "background_classical_tea_room_001.png",
+          "sha256": "3711515026a8e923f1f4e2ff2690089aa52d93b1f7181c64f43620d5e3ae1a21"
+        },
+        "thumbnail": {
+          "logicalName": "background_classical_tea_room_001_thumb.png",
+          "sha256": "b0ee989725b4cf8ff8e99b7fc580b5ec70f0720b5ff36013de616605a02ad009"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "background_classical_tea_room_001_name_zh.mp3",
+            "sha256": "6280cfc04aa9c804483a4052de85939e9d08124695986d89387e0d4235c45b59"
+          },
+          "nameEn": {
+            "logicalName": "background_classical_tea_room_001_name_en.mp3",
+            "sha256": "fde86689de4edd8158e985747b699a45d9f9db00986c68df82b2b42334181abe"
+          },
+          "introZh": {
+            "logicalName": "background_classical_tea_room_001_intro_zh.mp3",
+            "sha256": "bda94fe862de202bd93817548cf74159be2306c0dbc187722fd514aa9ecdf569"
+          }
+        },
+        "source": "AI生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "sticker_teapot_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "sticker",
+        "themeId": "chinese_tea_culture",
+        "categoryIds": [
+          "tea_ware"
+        ],
+        "nameZh": "茶壶",
+        "nameEn": "Teapot",
+        "introZh": "茶壶是我国传统泡茶用具，由壶身、壶嘴、壶把、壶盖构成。茶壶藏着科学小知识，通过连通器原理，使得壶嘴和壶身的水面高度保持相同。茶壶大多用陶瓷、紫砂制作。人们用茶壶泡茶待客，小小的茶壶承载着中国悠久的茶文化。",
+        "keywords": [
+          "茶壶",
+          "泡茶"
+        ],
+        "image": {
+          "logicalName": "sticker_teapot_001.png",
+          "sha256": "48fc7dbfcc42fcee75036d4416c21a4c9896c64fd3d2c0149af634dbacb6820c"
+        },
+        "thumbnail": {
+          "logicalName": "sticker_teapot_001_thumb.png",
+          "sha256": "f84d84f7bb20018c33a6dd6b8fe2b2d5e5af09be1a494153abc4747fc65ca480"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "sticker_teapot_001_name_zh.mp3",
+            "sha256": "98e4526d2980e4578531665316b76f7df8206b54e900f107fa60f880818ca6f8"
+          },
+          "nameEn": {
+            "logicalName": "sticker_teapot_001_name_en.mp3",
+            "sha256": "65b73c773b505cd75b563cbeaf44cbe49146104dbe68399135bb26580e45719a"
+          },
+          "introZh": {
+            "logicalName": "sticker_teapot_001_intro_zh.mp3",
+            "sha256": "f67a8c6b36569965c804d6892cc4080d33c15f232f0d8bd8b51acf278fbec359"
+          }
+        },
+        "source": "AI生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "sticker_teacup_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "sticker",
+        "themeId": "chinese_tea_culture",
+        "categoryIds": [
+          "tea_ware"
+        ],
+        "nameZh": "茶杯",
+        "nameEn": "Teacup",
+        "introZh": "茶杯用来盛放茶水，一杯清茶，方便人们慢慢品尝茶香。古人相聚品茶，小小的茶杯承载着彼此的情谊。",
+        "keywords": [
+          "茶杯",
+          "品茶"
+        ],
+        "image": {
+          "logicalName": "sticker_teacup_001.png",
+          "sha256": "b1465911e18db7a6d822aa5cf4724301effe20748631acbf82394ee971e8bb88"
+        },
+        "thumbnail": {
+          "logicalName": "sticker_teacup_001_thumb.png",
+          "sha256": "267a54f35aef7847e520b44d9f5384b8354e4046569c69d87446261b59c3b1fa"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "sticker_teacup_001_name_zh.mp3",
+            "sha256": "0956d31f0273732d0517276b616abe440ec688dfa2b47168020f9678da0c8a75"
+          },
+          "nameEn": {
+            "logicalName": "sticker_teacup_001_name_en.mp3",
+            "sha256": "83b8a56fc41a108fa3f258ad82b180716f6dd8300edda130a64a154016c8d488"
+          },
+          "introZh": {
+            "logicalName": "sticker_teacup_001_intro_zh.mp3",
+            "sha256": "dd65121d37b6f3922aaceee0c46ed539f713f66b44f67f7424459eaefe350450"
+          }
+        },
+        "source": "AI生成 + 后期",
+        "license": "生成平台条款；组内确认"
+      }
+    },
+    "background_pastoral_courtyard_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "background",
+        "themeId": "plants",
+        "categoryIds": [
+          "plant_scene"
+        ],
+        "nameZh": "田园庭院",
+        "nameEn": "Pastoral Courtyard",
+        "introZh": "古代诗人常常借助花草树木寄托志向与情感，不同的植物被赋予特定的象征意义。学习植物类诗词意象，能够帮助我们理解诗歌主旨，体会诗人蕴藏在景物之中的思想情感。",
+        "keywords": [
+          "古诗词",
+          "植物意象",
+          "田园",
+          "庭院"
+        ],
+        "image": {
+          "logicalName": "background_pastoral_courtyard_001.png",
+          "sha256": "fd3ba2b024b962e1be78ee0af895f8fb81e2c5facc41eb3489044cb3c773ab84"
+        },
+        "thumbnail": {
+          "logicalName": "background_pastoral_courtyard_001_thumb.png",
+          "sha256": "197dbe3e85c1dfe2620c86d34f804f26009cf399ee81ea7cfcac79ca01daf8ca"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "background_pastoral_courtyard_001_name_zh.mp3",
+            "sha256": "b9739164ade9a72dff322799aa2bd356734ddf4d6050de47029f376fc02fb894"
+          },
+          "nameEn": {
+            "logicalName": "background_pastoral_courtyard_001_name_en.mp3",
+            "sha256": "170c4784b608fabbac7a6a9fd3263aad2550c3a90d73826fe7345b9b5f0df75f"
+          },
+          "introZh": {
+            "logicalName": "background_pastoral_courtyard_001_intro_zh.mp3",
+            "sha256": "743a100bd6bc5fe7dc6a4a7a93945d326f767e4dd4508d38faddb3fae9ca808b"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "组内确认"
+      }
+    },
+    "sticker_plant_lotus_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "sticker",
+        "themeId": "plants",
+        "categoryIds": [
+          "plant"
+        ],
+        "nameZh": "荷花",
+        "nameEn": "Lotus",
+        "introZh": "荷花象征洁身自好、品性高雅，不与世俗同流合污；荷花也可用来描绘江南水乡清丽风光。相关诗句：小荷才露尖尖角，早有蜻蜓立上头。（杨万里《小池》）",
+        "keywords": [
+          "古诗词",
+          "荷花",
+          "芙蓉",
+          "莲花"
+        ],
+        "image": {
+          "logicalName": "sticker_plant_lotus_001.png",
+          "sha256": "6f13b90922d7a901c6d3e03e37f9b1c9eb2e362d0638520b7640437d74fc64da"
+        },
+        "thumbnail": {
+          "logicalName": "sticker_plant_lotus_001_thumb.png",
+          "sha256": "0910940ad1eaf884ce2139d2b905bf1b312eef793aaeb47c621c905c2a10e2b4"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "sticker_plant_lotus_001_name_zh.mp3",
+            "sha256": "d1bc9743f24d0661defe615cea5c2d69d05b58db6d9b8495046cd0a97cc67713"
+          },
+          "nameEn": {
+            "logicalName": "sticker_plant_lotus_001_name_en.mp3",
+            "sha256": "65f4e8e60dec518c66ac86f8668ee3475a103d242786a4defc84d656ff183618"
+          },
+          "introZh": {
+            "logicalName": "sticker_plant_lotus_001_intro_zh.mp3",
+            "sha256": "a692af9f89409b5335ebaec0371c33585332fe696b3abdeac74ac8a4e97afd17"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "组内确认"
+      }
+    },
+    "sticker_chrysanthemum_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "sticker",
+        "themeId": "plants",
+        "categoryIds": [
+          "plant"
+        ],
+        "nameZh": "菊花",
+        "nameEn": "Chrysanthemum",
+        "introZh": "菊花凌霜开放，菊花象征淡泊隐逸、清高不屈，拥有坚守本心的君子品格。相关诗句：待到秋来九月八，我花开后百花杀。（黄巢《不第后赋菊》）",
+        "keywords": [
+          "古诗词",
+          "菊花",
+          "黄花",
+          "隐逸"
+        ],
+        "image": {
+          "logicalName": "sticker_chrysanthemum_001.png",
+          "sha256": "5af975e043496d4ebfda0c694d1666a28768763007002b39ec4fb2a995de9099"
+        },
+        "thumbnail": {
+          "logicalName": "sticker_chrysanthemum_001_thumb.png",
+          "sha256": "eedd6afee2919892a093bdcb75c57e57970f0292286d26c00d46ef1f8bb3c43c"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "sticker_chrysanthemum_001_name_zh.mp3",
+            "sha256": "f7cd587aa80e3ae6661e58f7d4cb2ae1608da8a5e58860375595e07b0e25d1f6"
+          },
+          "nameEn": {
+            "logicalName": "sticker_chrysanthemum_001_name_en.mp3",
+            "sha256": "4606ea2a36dc1b1101ac6de23c23f38797e0abe0a2128fbee4c32a9d7276beb0"
+          },
+          "introZh": {
+            "logicalName": "sticker_chrysanthemum_001_intro_zh.mp3",
+            "sha256": "5dd8772e9ace4998f1d01a1704354a206adc66fc94b05a32788d171b1a305d86"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "组内确认"
+      }
+    },
+    "sticker_osmanthus_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "sticker",
+        "themeId": "plants",
+        "categoryIds": [
+          "plant"
+        ],
+        "nameZh": "桂花",
+        "nameEn": "Osmanthus",
+        "introZh": "桂花香气清幽，桂花常营造清幽静谧、空灵皎洁的月夜意境，暗含恬静悠远之感。相关诗句：人闲桂花落，夜静春山空。（王维《鸟鸣涧》）",
+        "keywords": [
+          "古诗词",
+          "桂花",
+          "月夜",
+          "清幽"
+        ],
+        "image": {
+          "logicalName": "sticker_osmanthus_001.png",
+          "sha256": "25cf79ce6c4b1b06f66efbb951aed60a73eebec9f83dbb4844752b9fa09c4cb8"
+        },
+        "thumbnail": {
+          "logicalName": "sticker_osmanthus_001_thumb.png",
+          "sha256": "7c992a79d12902d871a2c235465336005d84f246758f0a1488ec93280aec712a"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "sticker_osmanthus_001_name_zh.mp3",
+            "sha256": "361c7a5de94d23e8347c933780662c1742ff3e6812544201870ad0a967b7904d"
+          },
+          "nameEn": {
+            "logicalName": "sticker_osmanthus_001_name_en.mp3",
+            "sha256": "a1df8452eef08edbfc3d36e34ed5791abedecc6ccd1cbf09b6ee4ffd691f6665"
+          },
+          "introZh": {
+            "logicalName": "sticker_osmanthus_001_intro_zh.mp3",
+            "sha256": "e00a1cb2f951e2d615da97ce78458c5048caae37d336ecc67d8dd18bbbfbd53f"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "组内确认"
+      }
+    },
+    "sticker_wutong_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "sticker",
+        "themeId": "plants",
+        "categoryIds": [
+          "plant"
+        ],
+        "nameZh": "梧桐",
+        "nameEn": "Wutong",
+        "introZh": "梧桐常与秋雨搭配出现，梧桐象征孤寂忧愁，用来寄托悲伤、绵长的思念之情。相关诗句：无言独上西楼，月如钩。寂寞梧桐深院锁清秋。（李煜《相见欢》）",
+        "keywords": [
+          "古诗词",
+          "梧桐",
+          "秋雨",
+          "忧愁"
+        ],
+        "image": {
+          "logicalName": "sticker_wutong_001.png",
+          "sha256": "56f1515be2916ed9c90f0db2f5c6cc28024f05ffbc3417eb4b83fc08dfc936ee"
+        },
+        "thumbnail": {
+          "logicalName": "sticker_wutong_001_thumb.png",
+          "sha256": "04ff5bd1f059634943bb0d396a810e6f8bcf56e9215524123327c60fe09995df"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "sticker_wutong_001_name_zh.mp3",
+            "sha256": "86b81f3c5d7059025b74b519063db5288615725edb8d5c504910fa1397c621de"
+          },
+          "nameEn": {
+            "logicalName": "sticker_wutong_001_name_en.mp3",
+            "sha256": "916b1387f4e27c40e4632c431c5712d8804e164e8e311182c959bcc232208beb"
+          },
+          "introZh": {
+            "logicalName": "sticker_wutong_001_intro_zh.mp3",
+            "sha256": "2859f4efbd13057413caf1b9627a8e4c635e5fd73190fca693bfd056b2638211"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "组内确认"
+      }
+    },
+    "sticker_pine_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "sticker",
+        "themeId": "plants",
+        "categoryIds": [
+          "plant"
+        ],
+        "nameZh": "松树",
+        "nameEn": "Pine",
+        "introZh": "松树寒冬常青，松树象征坚韧顽强、忠贞不屈、高洁自持的品格。相关诗句：大雪压青松，青松挺且直。（陈毅《青松》）",
+        "keywords": [
+          "古诗词",
+          "松树",
+          "坚韧",
+          "高洁"
+        ],
+        "image": {
+          "logicalName": "sticker_pine_001.png",
+          "sha256": "1aba8bb1609ce30ea1c2ddde21a6b2fe219d27f7781938e53f04ded29084a30a"
+        },
+        "thumbnail": {
+          "logicalName": "sticker_pine_001_thumb.png",
+          "sha256": "4ecaf055df140803f085dfb0e25ec21c6207ae362677a745365aa9e2b1817d90"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "sticker_pine_001_name_zh.mp3",
+            "sha256": "4730a2b33978174789a7f4f1e5f06ff774678cbb0f0e7164442d432b83d033bb"
+          },
+          "nameEn": {
+            "logicalName": "sticker_pine_001_name_en.mp3",
+            "sha256": "93e61a8b2fefbac2d07630c17f32eb25c5a94705088e7cc7305592c82ea84d9f"
+          },
+          "introZh": {
+            "logicalName": "sticker_pine_001_intro_zh.mp3",
+            "sha256": "6785f3271fceb37fae3079b6bce85235663fdb1e467d4a78c78abfc4da50ee77"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "组内确认"
+      }
+    },
+    "sticker_bamboo_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "sticker",
+        "themeId": "plants",
+        "categoryIds": [
+          "plant"
+        ],
+        "nameZh": "竹子",
+        "nameEn": "Bamboo",
+        "introZh": "竹子挺拔中空，竹子象征谦逊正直、清雅有节、不慕荣华的志向。相关诗句：千磨万击还坚劲，任尔东西南北风。（郑燮《竹石》）",
+        "keywords": [
+          "古诗词",
+          "竹子",
+          "正直",
+          "清雅"
+        ],
+        "image": {
+          "logicalName": "sticker_bamboo_001.png",
+          "sha256": "9c4b1ae5638357542b54660f7a142bd7c00ba33a8d05bd6aa33aa9fa59529fb5"
+        },
+        "thumbnail": {
+          "logicalName": "sticker_bamboo_001_thumb.png",
+          "sha256": "81f53420d30e9c76835e39c9cebc69e10bcf5fdb5dcf558958e1e83d910fcc2d"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "sticker_bamboo_001_name_zh.mp3",
+            "sha256": "0b89b3b66a0cd7a2a669dff56b1ab1036194c89efb80192cc638e82a7a50fb85"
+          },
+          "nameEn": {
+            "logicalName": "sticker_bamboo_001_name_en.mp3",
+            "sha256": "1d9e8fefe46af9d4f0a93a2096fd50c59686d9efd9b4d428e15884dc44e7fd82"
+          },
+          "introZh": {
+            "logicalName": "sticker_bamboo_001_intro_zh.mp3",
+            "sha256": "2b314bde445a188cc8fbc50f79e2d3089ca50d61caec33ea7afbd90b82b290bf"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "组内确认"
+      }
+    },
+    "sticker_plant_plum_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "sticker",
+        "themeId": "plants",
+        "categoryIds": [
+          "plant"
+        ],
+        "nameZh": "梅花",
+        "nameEn": "Plum Blossom",
+        "introZh": "梅花寒冬傲雪绽放，梅花象征不畏艰难、坚贞高洁、不屈不挠的精神。相关诗句：墙角数枝梅，凌寒独自开。（王安石《梅花》）",
+        "keywords": [
+          "古诗词",
+          "梅花",
+          "坚贞",
+          "凌寒"
+        ],
+        "image": {
+          "logicalName": "sticker_plant_plum_001.png",
+          "sha256": "14bf3d4d93ef3fc36d2a7458396a3f9cf7c56171021949bd8258bd514a37325c"
+        },
+        "thumbnail": {
+          "logicalName": "sticker_plant_plum_001_thumb.png",
+          "sha256": "c5728f71e8945141eef289d7069f06d12945bbad440cdaa5152a73ffa9a4f3c7"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "sticker_plant_plum_001_name_zh.mp3",
+            "sha256": "dd1c137dbd14db455bb4e268df6357e7ae0da737eae3001b1fbd557fecf6d0d4"
+          },
+          "nameEn": {
+            "logicalName": "sticker_plant_plum_001_name_en.mp3",
+            "sha256": "d3df9341e060a74ecaa91bdada4ee4230351385baa05e0ac2530fe35c3a6c814"
+          },
+          "introZh": {
+            "logicalName": "sticker_plant_plum_001_intro_zh.mp3",
+            "sha256": "823f59a9b643a0aed5f7221a51b3fa739cfcbe6d87bdf39706d04174b0a71fc7"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "组内确认"
+      }
+    },
+    "background_animal_riverbank_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "background",
+        "themeId": "animals",
+        "categoryIds": [
+          "animal_scene"
+        ],
+        "nameZh": "江畔水岸",
+        "nameEn": "Riverbank",
+        "introZh": "在古典诗词中，诗人常常借飞鸟走兽表达内心情绪，各类动物形成相对固定的意象内涵。掌握动物意象的寓意，有助于准确把握诗歌情感，提升古诗词赏析能力。",
+        "keywords": [
+          "古诗词",
+          "动物意象",
+          "江岸",
+          "流水"
+        ],
+        "image": {
+          "logicalName": "background_animal_riverbank_001.png",
+          "sha256": "c40998578326d839b7258ac88ae90aaea729bf812f615a5a0f4036413d874201"
+        },
+        "thumbnail": {
+          "logicalName": "background_animal_riverbank_001_thumb.png",
+          "sha256": "9368d4bfcd88e2b230184db4344a0cdf79db22f1b5c0d11f4f85494f120f0059"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "background_animal_riverbank_001_name_zh.mp3",
+            "sha256": "b3d22e99de409e8652479579668aad3d4575a730854ead86f8ab96445f307668"
+          },
+          "nameEn": {
+            "logicalName": "background_animal_riverbank_001_name_en.mp3",
+            "sha256": "6a5cdd3c74c649f8b0621a323c5712042affbec77db7ff11f399af2cf5051332"
+          },
+          "introZh": {
+            "logicalName": "background_animal_riverbank_001_intro_zh.mp3",
+            "sha256": "3c41dd44976396fe0f7c6886b3fee3a4cd41e94a33b211288eeb8ba679e6c9a2"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "组内确认"
+      }
+    },
+    "sticker_ape_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "sticker",
+        "themeId": "animals",
+        "categoryIds": [
+          "animal"
+        ],
+        "nameZh": "猿猴",
+        "nameEn": "Ape",
+        "introZh": "猿啼凄厉哀婉，猿象征悲凉萧瑟，烘托游子漂泊他乡的愁苦心境。相关诗句：两岸猿声啼不住，轻舟已过万重山。（李白《早发白帝城》）",
+        "keywords": [
+          "古诗词",
+          "猿猴",
+          "猿啼",
+          "思乡"
+        ],
+        "image": {
+          "logicalName": "sticker_ape_001.png",
+          "sha256": "58709381a5a95e5632900febeda5d019e22f605bcd63d7ec52c7d60dad195f1d"
+        },
+        "thumbnail": {
+          "logicalName": "sticker_ape_001_thumb.png",
+          "sha256": "db34039ae220210accd9d00cb49e3b328682931e4794e9528f1e87b41f891a19"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "sticker_ape_001_name_zh.mp3",
+            "sha256": "68ba7c729463e55e411807bf911bd55cd3b49b650bd631cad6ed59967c282335"
+          },
+          "nameEn": {
+            "logicalName": "sticker_ape_001_name_en.mp3",
+            "sha256": "23b7d95b2f3ebe8302749164938b6340b65c491a75c3b6d5d486c2de6ca8bf1b"
+          },
+          "introZh": {
+            "logicalName": "sticker_ape_001_intro_zh.mp3",
+            "sha256": "f3501f971bae323e4bdd1ca514e66b1a7a9ad55dd0b7d2163d728b3b0e3938b1"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "组内确认"
+      }
+    },
+    "sticker_wild_goose_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "sticker",
+        "themeId": "animals",
+        "categoryIds": [
+          "animal"
+        ],
+        "nameZh": "大雁",
+        "nameEn": "Wild Goose",
+        "introZh": "秋季大雁向南归巢，大雁象征游子思乡；古人认为鸿雁能够传递书信，寄托绵长思念。相关诗句：乡书何处达？归雁洛阳边。（王湾《次北固山下》）",
+        "keywords": [
+          "古诗词",
+          "大雁",
+          "鸿雁",
+          "思乡"
+        ],
+        "image": {
+          "logicalName": "sticker_wild_goose_001.png",
+          "sha256": "65d4bc2d792092d12eabe6846e9fca7b6f27a787336dfe7f822637ce42de156d"
+        },
+        "thumbnail": {
+          "logicalName": "sticker_wild_goose_001_thumb.png",
+          "sha256": "3b4c308c48a1142c19dccee6d28b7b92ab2a8e1fff7dea8d23bdea8465c33278"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "sticker_wild_goose_001_name_zh.mp3",
+            "sha256": "c2998397109a323f93523c1a21f2cb38d5e7d120aab8b91edcf6220de836a4c5"
+          },
+          "nameEn": {
+            "logicalName": "sticker_wild_goose_001_name_en.mp3",
+            "sha256": "15ec20c4daaad9eb85deb9e35c6b2b7201fbc0d503949982bda3ac988e03d3e0"
+          },
+          "introZh": {
+            "logicalName": "sticker_wild_goose_001_intro_zh.mp3",
+            "sha256": "f6896a9494c81843e9988c58958fdf7f5a07ca092e7f269e793130f79ccf2290"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "组内确认"
+      }
+    },
+    "sticker_cuckoo_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "sticker",
+        "themeId": "animals",
+        "categoryIds": [
+          "animal"
+        ],
+        "nameZh": "杜鹃",
+        "nameEn": "Cuckoo",
+        "introZh": "杜鹃啼声凄苦，杜鹃象征哀伤悲凉，常用来寄托离愁、思念与心中忧思。相关诗句：杨花落尽子规啼，闻道龙标过五溪。（李白《闻王昌龄左迁龙标遥有此寄》）",
+        "keywords": [
+          "古诗词",
+          "杜鹃",
+          "子规",
+          "离愁"
+        ],
+        "image": {
+          "logicalName": "sticker_cuckoo_001.png",
+          "sha256": "dc9e750fe651651ab0c61cd366b6d720997970055023afc0ae591749fa704525"
+        },
+        "thumbnail": {
+          "logicalName": "sticker_cuckoo_001_thumb.png",
+          "sha256": "2e07f6d45264d8aef656ff899213cae002123fdc7214e419c0579d8968dc3746"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "sticker_cuckoo_001_name_zh.mp3",
+            "sha256": "3d02818a72db90a2e5d01df0e0e2eaf5628284c692e0bef6504424f92a5ec072"
+          },
+          "nameEn": {
+            "logicalName": "sticker_cuckoo_001_name_en.mp3",
+            "sha256": "114b1a0469c1a936244df5cf548b61d42d010c521b626ed4de26bf38e1dbc482"
+          },
+          "introZh": {
+            "logicalName": "sticker_cuckoo_001_intro_zh.mp3",
+            "sha256": "8cb7a1f95632c4c6b52d680e2e0aa9e8a9aa4e917802087016d3a4072f34c105"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "组内确认"
+      }
+    },
+    "sticker_animal_swallow_001": {
+      "contentVersion": 1,
+      "projection": {
+        "type": "sticker",
+        "themeId": "animals",
+        "categoryIds": [
+          "animal"
+        ],
+        "nameZh": "燕子",
+        "nameEn": "Swallow",
+        "introZh": "燕子年年归返旧巢，燕子象征世事变迁，抒发物是人非的感慨；双燕也象征美好爱情。相关诗句：旧时王谢堂前燕，飞入寻常百姓家。（刘禹锡《乌衣巷》）",
+        "keywords": [
+          "古诗词",
+          "燕子",
+          "变迁",
+          "爱情"
+        ],
+        "image": {
+          "logicalName": "sticker_animal_swallow_001.png",
+          "sha256": "15a41b020b18c95df8dfb73da2d475b7ccd4b392dd7a64b8043bb9af0c158903"
+        },
+        "thumbnail": {
+          "logicalName": "sticker_animal_swallow_001_thumb.png",
+          "sha256": "8b35febdd9dfd2e4bad5a364ba474e445a203b8047f4dc9c3639c13b1dc09cf7"
+        },
+        "preSplit": {
+          "logicalName": "",
+          "sha256": ""
+        },
+        "audio": {
+          "nameZh": {
+            "logicalName": "sticker_animal_swallow_001_name_zh.mp3",
+            "sha256": "829eac2f373b27043a72bf47e2cf9c96837f3d29023400b8dfabe4855bc1f2c2"
+          },
+          "nameEn": {
+            "logicalName": "sticker_animal_swallow_001_name_en.mp3",
+            "sha256": "9e1fa9db104d803d6a0319932a8b9a222719373fab9b653b2226e4cd8192c49f"
+          },
+          "introZh": {
+            "logicalName": "sticker_animal_swallow_001_intro_zh.mp3",
+            "sha256": "77f77d8f5887fc1b36067e0b0c1d2488f64645588aed5273192f6ee3d1fb160e"
+          }
+        },
+        "source": "Midjourney生成 + 后期",
+        "license": "组内确认"
       }
     }
   }
