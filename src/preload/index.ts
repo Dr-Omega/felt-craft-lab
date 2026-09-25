@@ -8,6 +8,9 @@ type PreviewDeleteIpcResult = { ok: true } | { ok: false; error: SharedError }
 type StoryCardAudioSaveIpcResult = { ok: true; ref: ResourceRef } | { ok: false; error: SharedError }
 type StoryCardAudioPromoteIpcResult = { ok: true; ref: ResourceRef } | { ok: false; error: SharedError }
 type StoryCardAudioDeleteIpcResult = { ok: true } | { ok: false; error: SharedError }
+type StoryCardAudioReadIpcResult =
+  | { ok: true; audioBase64: string; mimeType: 'audio/webm' }
+  | { ok: false; error: SharedError }
 
 async function invokePreviewSave(pngBytes: ArrayBuffer | Uint8Array): Promise<ResourceRef> {
   const result = (await ipcRenderer.invoke(IPC_CHANNELS.PREVIEW_SAVE, pngBytes)) as PreviewSaveIpcResult
@@ -47,6 +50,18 @@ async function invokeStoryCardAudioSave(audioBytes: ArrayBuffer | Uint8Array, mi
     }
   }
   return result.ref
+}
+
+async function invokeStoryCardAudioRead(audioRef: string): Promise<{ audioBase64: string; mimeType: 'audio/webm' }> {
+  const result = (await ipcRenderer.invoke(IPC_CHANNELS.STORY_CARD_AUDIO_READ, audioRef)) as StoryCardAudioReadIpcResult
+  if (!result?.ok) {
+    throw result?.error ?? {
+      code: 'UNKNOWN' as const,
+      message: '临时录音读取失败。',
+      retryable: true
+    }
+  }
+  return { audioBase64: result.audioBase64, mimeType: result.mimeType }
 }
 
 async function invokeStoryCardAudioDelete(audioRef: string): Promise<void> {
@@ -93,6 +108,8 @@ const electronAPI = {
   /** Saves an unconfirmed full recording and returns a renderer-safe audio ResourceRef. */
   saveTemporaryStoryCardAudio: (audioBytes: ArrayBuffer | Uint8Array, mimeType: string): Promise<ResourceRef> =>
     invokeStoryCardAudioSave(audioBytes, mimeType),
+  readTemporaryStoryCardAudio: (audioRef: string): Promise<{ audioBase64: string; mimeType: 'audio/webm' }> =>
+    invokeStoryCardAudioRead(audioRef),
   promoteTemporaryStoryCardAudio: (audioRef: string): Promise<ResourceRef> => invokeStoryCardAudioPromote(audioRef),
   deleteTemporaryStoryCardAudio: (audioRef: string): Promise<void> => invokeStoryCardAudioDelete(audioRef),
   uploadImage: (input: {
@@ -113,6 +130,11 @@ const electronAPI = {
       sessionId?: string
       provider?: string
     }): Promise<unknown> => ipcRenderer.invoke(IPC_CHANNELS.AI_ASR_TRANSCRIBE, input),
+    storyRewrite: (input: {
+      workId: string
+      text: string
+      context: Record<string, unknown>
+    }): Promise<unknown> => ipcRenderer.invoke(IPC_CHANNELS.AI_STORY_REWRITE, input),
     qaAsk: (input: {
       question: string
       asset?: Record<string, unknown>

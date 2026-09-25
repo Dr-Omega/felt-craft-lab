@@ -9,6 +9,7 @@ import {
   gatewayImageUpload,
   gatewayJson,
   gatewayQaAsk,
+  gatewayStoryRewrite,
   gatewayTtsSynthesize,
   type GatewayAuth,
   type GatewayJsonResult
@@ -17,6 +18,7 @@ import {
   validateAsrIpcInput,
   validateImageUploadIpcInput,
   validateQaIpcInput,
+  validateStoryRewriteIpcInput,
   validateTtsIpcInput,
   withValidatedIpcInput
 } from './input-guards'
@@ -25,6 +27,7 @@ import {
   normalizeAsrEnvelope,
   normalizeGatewayFailure,
   normalizeQaEnvelope,
+  normalizeStoryRewriteEnvelope,
   normalizeTtsResult
 } from './normalize-envelope'
 import { getValidSessionToken } from './session-token'
@@ -137,6 +140,22 @@ export function registerAiIpc(): void {
             auth
           }),
         (body) => normalizeAsrEnvelope(body)
+      )
+    )
+  })
+
+  ipcMain.handle(IPC_CHANNELS.AI_STORY_REWRITE, async (event, raw: unknown) => {
+    if (!isTrustedIpcEvent(event)) return deny()
+    const input = asRecord(raw)
+    const workId = typeof input.workId === 'string' ? input.workId.trim() : ''
+    const text = typeof input.text === 'string' ? input.text.trim() : ''
+    const context = asRecord(input.context)
+    const guarded = validateStoryRewriteIpcInput({ workId, text, context })
+    return withValidatedIpcInput(guarded, () =>
+      withPaidAuth(
+        packaged,
+        (auth) => gatewayStoryRewrite({ workId, text, context, isPackaged: packaged, auth }),
+        (body) => normalizeStoryRewriteEnvelope(body, workId)
       )
     )
   })

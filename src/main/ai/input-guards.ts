@@ -5,6 +5,7 @@ export const MAX_ASR_AUDIO_BYTES = 5 * 1024 * 1024
 export const MAX_ASR_AUDIO_BASE64_CHARS = Math.ceil((MAX_ASR_AUDIO_BYTES * 4) / 3) + 8
 export const MAX_QA_CHARS = 500
 export const MAX_TTS_CHARS = 500
+export const MAX_STORY_REWRITE_CHARS = 3000
 export const MAX_IMAGE_BYTES = 10 * 1024 * 1024
 export const MAX_IMAGE_BASE64_CHARS = Math.ceil((MAX_IMAGE_BYTES * 4) / 3) + 8
 
@@ -68,6 +69,29 @@ export function validateQaIpcInput(question: string): IpcGuardResult {
   const text = question || ''
   if (!text.trim()) return invalid('问题不能为空。')
   if (text.length > MAX_QA_CHARS) return invalid('文本过长。')
+  return { ok: true }
+}
+
+export function validateStoryRewriteIpcInput(input: {
+  workId: string
+  text: string
+  context: Record<string, unknown>
+}): IpcGuardResult {
+  if (!input.workId.trim() || input.workId.length > 128) return invalid('故事整理作品标识无效。')
+  if (!input.text.trim() || input.text.length > MAX_STORY_REWRITE_CHARS) return invalid('故事整理文本无效。')
+  const context = input.context
+  const subject = context.subject
+  const subjectName = subject && typeof subject === 'object'
+    ? (subject as Record<string, unknown>).name
+    : undefined
+  if (
+    context.workId !== input.workId ||
+    context.completionStatus !== 'completed' ||
+    typeof subjectName !== 'string' ||
+    !subjectName.trim()
+  ) {
+    return invalid('故事整理必须使用当前已完成作品的上下文。')
+  }
   return { ok: true }
 }
 

@@ -2,6 +2,7 @@ import mockDataset from '../../docs/story-card/phase-0/测试数据/SC-00-07_故
 import { describe, expect, it } from 'vitest'
 import type { StoryCardDraft, StoryCardWorkContext } from '../../src/shared/contracts'
 import {
+  GatewayStoryRewriteAdapter,
   MockStoryRewriteAdapter,
   type MockStoryRewriteFixture,
   type StoryRewriteInput
@@ -67,6 +68,67 @@ describe('MockStoryRewriteAdapter', () => {
       workId: ready.input.workId,
       status: 'failed',
       error: { code: 'QA_TIMEOUT', retryable: true }
+    })
+  })
+})
+
+describe('GatewayStoryRewriteAdapter', () => {
+  it('matches the Mock adapter domain draft and retryable failure shape', async () => {
+    const ready = caseById('zh-ready')
+    const failed = caseById('story-rewrite-failed')
+    const failureError = (failed.expected as Extract<StoryCardDraft, { status: 'failed' }>).error
+    const mock = new MockStoryRewriteAdapter(fixtures)
+    const gateway = new GatewayStoryRewriteAdapter({
+      storyRewrite: async (input) => input.text === ready.input.text
+        ? { ok: true, result: { workId: ready.input.workId, ...ready.expected } }
+        : { ok: false, error: failureError }
+    })
+
+    await expect(gateway.rewrite(rewriteInput(ready))).resolves.toEqual(
+      await mock.rewrite(rewriteInput(ready))
+    )
+    await expect(gateway.rewrite(rewriteInput(failed))).resolves.toEqual(
+      await mock.rewrite(rewriteInput(failed))
+    )
+  })
+
+  it('keeps real candidate drafts inside the existing rewrite and visual validation boundary', async () => {
+    const ready = caseById('zh-ready')
+    const adapter = new GatewayStoryRewriteAdapter({
+      storyRewrite: async () => ({ ok: true, result: { workId: ready.input.workId, ...ready.expected } })
+    })
+
+    await expect(adapter.rewrite(rewriteInput(ready))).resolves.toEqual({ workId: ready.input.workId, ...ready.expected })
+  })
+
+  it('maps gateway failures and malformed candidates into temporary failed drafts', async () => {
+    const ready = caseById('zh-ready')
+    await expect(new GatewayStoryRewriteAdapter({
+      storyRewrite: async () => ({ ok: false, error: { code: 'QA_TIMEOUT', message: '请稍后重试。', retryable: true } })
+    }).rewrite(rewriteInput(ready))).resolves.toMatchObject({ status: 'failed', error: { code: 'QA_TIMEOUT' } })
+
+    await expect(new GatewayStoryRewriteAdapter({
+      storyRewrite: async () => ({ ok: true, result: { workId: ready.input.workId, status: 'ready_for_review' } })
+    }).rewrite(rewriteInput(ready))).resolves.toMatchObject({ status: 'failed', error: { code: 'UNKNOWN', retryable: true } })
+  })
+
+  it('keeps a conservative semantic insufficiency result inside the existing candidate-draft contract', async () => {
+    const ready = caseById('zh-ready')
+    const adapter = new GatewayStoryRewriteAdapter({
+      storyRewrite: async () => ({
+        ok: true,
+        result: {
+          workId: ready.input.workId,
+          status: 'needs_more_input',
+          followUpQuestions: ['小兔子在做什么呢？', '后来发生了什么呢？']
+        }
+      })
+    })
+
+    await expect(adapter.rewrite(rewriteInput(ready))).resolves.toEqual({
+      workId: ready.input.workId,
+      status: 'needs_more_input',
+      followUpQuestions: ['小兔子在做什么呢？', '后来发生了什么呢？']
     })
   })
 })

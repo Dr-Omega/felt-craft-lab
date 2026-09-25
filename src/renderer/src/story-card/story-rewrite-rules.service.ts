@@ -5,7 +5,16 @@ const FILLER_WORD = /(?:^|[\s，,])(?:嗯|呃|那个|就是|um|uh)(?=[\s，,。.
 const ENGLISH_WORD = /[A-Za-z]+/g
 
 function childFriendlyText(text: string): string {
-  return text.replaceAll('笨蛋', '').replaceAll('坏', '调皮')
+  return text
+    .replaceAll('笨蛋', '小迷糊')
+    .replaceAll('傻瓜', '小迷糊')
+    .replaceAll('坏蛋', '不太友好的家伙')
+    .replaceAll('讨厌鬼', '不太友好的小伙伴')
+    .replace(/(你|他|她|它)(?:很|真|太|有点)?坏/gu, '$1调皮')
+    .replace(/坏(?=小(?:兔子|猫|狗|熊)|朋友|家伙|人)/gu, '调皮的')
+    .replace(/我(?:很|真|太|有点)?讨厌(?=你|他|她|它|这位|那位|这个|那个)/gu, '我不喜欢')
+    .replace(/讨厌(?=你|他|她|它|这位|那位|这个|那个)/gu, '不喜欢')
+    .replace(/(你|他|她|它)(?:很|真|太|有点)?讨厌/gu, '$1不太友好')
 }
 
 function failed(workId: string, message: string): StoryCardDraft {

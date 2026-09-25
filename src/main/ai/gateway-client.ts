@@ -281,6 +281,24 @@ export async function gatewayQaAsk(input: {
   })
 }
 
+export async function gatewayStoryRewrite(input: {
+  workId: string
+  text: string
+  context: Record<string, unknown>
+  signal?: AbortSignal
+  isPackaged?: boolean
+  auth?: GatewayAuth
+}): Promise<GatewayJsonResult> {
+  return gatewayJson('/api/story/rewrite', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ workId: input.workId, text: input.text, context: input.context }),
+    signal: input.signal,
+    isPackaged: input.isPackaged,
+    auth: input.auth
+  })
+}
+
 export async function gatewayTtsSynthesize(input: {
   text: string
   voicePurpose?: string

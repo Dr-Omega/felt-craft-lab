@@ -21,6 +21,14 @@ export interface MockSpeechRecognitionFixture {
   error?: SharedError
 }
 
+export interface TemporaryStoryCardAudioReader {
+  readTemporaryStoryCardAudio(audioRef: ResourceRef): Promise<{ audioBase64: string; mimeType: 'audio/webm' }>
+}
+
+export interface GatewayAsrClient {
+  asrTranscribe(input: { audioBase64: string; mimeType: string; language?: string }): Promise<unknown>
+}
+
 /** Fixed Phase 3 fixtures cover Chinese, English, mixed-language, and timeout recognition paths. */
 export const DEFAULT_SPEECH_RECOGNITION_FIXTURES: readonly MockSpeechRecognitionFixture[] = [
   {
@@ -81,5 +89,55 @@ export class MockSpeechRecognitionAdapter implements SpeechRecognitionAdapter {
     }
 
     return { ok: true, transcript: { workId: input.workId.trim(), text } }
+  }
+}
+
+function asGatewayResult(value: unknown):
+  | { ok: true; result: { transcript: string } }
+  | { ok: false; error: SharedError }
+  | undefined {
+  if (!value || typeof value !== 'object') return undefined
+  const envelope = value as { ok?: unknown; result?: unknown; error?: unknown }
+  if (envelope.ok === false) return { ok: false, error: toSharedError(envelope.error, 'UNKNOWN') }
+  if (!envelope.ok || !envelope.result || typeof envelope.result !== 'object') return undefined
+  const transcript = (envelope.result as { transcript?: unknown }).transcript
+  return typeof transcript === 'string' ? { ok: true, result: { transcript } } : undefined
+}
+
+/**
+ * Real service adapter. It accepts only an existing temporary recording and
+ * returns an intermediate transcript; it never stores a transcript or a draft.
+ */
+export class GatewaySpeechRecognitionAdapter implements SpeechRecognitionAdapter {
+  constructor(
+    private readonly audioReader: TemporaryStoryCardAudioReader,
+    private readonly asrClient: GatewayAsrClient
+  ) {}
+
+  async transcribe(input: StoryCardAudioInputRequest): Promise<SpeechRecognitionResult> {
+    if (!isAudioInput(input)) return invalid('语音识别必须接收有效的故事卡音频输入。')
+
+    try {
+      const audio = await this.audioReader.readTemporaryStoryCardAudio(input.audioRef)
+      const response = asGatewayResult(await this.asrClient.asrTranscribe({
+        audioBase64: audio.audioBase64,
+        mimeType: audio.mimeType
+      }))
+      if (!response) {
+        return { ok: false, error: toSharedError({ code: 'UNKNOWN', message: '语音识别结果无效，请稍后重试。', retryable: true }) }
+      }
+      if (!response.ok) return response
+
+      const text = response.result.transcript.trim()
+      if (!text) {
+        return {
+          ok: false,
+          error: toSharedError({ code: 'ASR_EMPTY_TRANSCRIPT', message: '没有识别到清楚的语音内容，请重新录制。', retryable: false }, 'ASR_EMPTY_TRANSCRIPT')
+        }
+      }
+      return { ok: true, transcript: { workId: input.workId.trim(), text } }
+    } catch (error) {
+      return { ok: false, error: toSharedError(error, 'UNKNOWN') }
+    }
   }
 }

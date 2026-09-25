@@ -77,6 +77,20 @@ describe('StoryProcessingService', () => {
     expect(storyRewrite.rewrite).toHaveBeenCalledWith({ workId: 'work-001', text: manualInput.text, context })
   })
 
+  it('processes a temporary transcript without transcribing again, so a later supplement can reuse it', async () => {
+    const { speechRecognition, storyRewrite, service } = services({
+      ok: true,
+      transcript: { workId: 'work-001', text: '不应再次转写。' }
+    })
+    const combinedText = '小兔子在月夜花园里找朋友。\n它还想告诉朋友，灯笼像星星一样亮。'
+
+    await expect(service.processTranscript({ workId: 'work-001', text: combinedText, context })).resolves.toEqual(
+      draft('work-001', combinedText)
+    )
+    expect(speechRecognition.transcribe).not.toHaveBeenCalled()
+    expect(storyRewrite.rewrite).toHaveBeenCalledWith({ workId: 'work-001', text: combinedText, context })
+  })
+
   it('returns needs-more-input before story rewrite when the text is too short', async () => {
     const { speechRecognition, storyRewrite, service } = services({
       ok: true,

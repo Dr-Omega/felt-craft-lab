@@ -19,6 +19,10 @@ export interface MockStoryRewriteFixture {
   draft: StoryCardDraft
 }
 
+export interface GatewayStoryRewriteClient {
+  storyRewrite(input: { workId: string; text: string; context: Record<string, unknown> }): Promise<unknown>
+}
+
 function failed(workId: string, error: SharedError): StoryCardDraft {
   return { workId, status: 'failed', error: toSharedError(error, 'UNKNOWN') }
 }
@@ -89,5 +93,65 @@ export class MockStoryRewriteAdapter implements StoryRewriteAdapter {
       input.context,
       this.ruleValidator.validate(input.text, normalizeDraft(workId, fixture.draft))
     )
+  }
+}
+
+function asGatewayDraft(value: unknown): StoryCardDraft | undefined {
+  if (!value || typeof value !== 'object') return undefined
+  const envelope = value as { ok?: unknown; result?: unknown }
+  if (envelope.ok !== true || !envelope.result || typeof envelope.result !== 'object') return undefined
+  const draft = envelope.result as Record<string, unknown>
+  if (typeof draft.workId !== 'string') return undefined
+  if (draft.status === 'needs_more_input') {
+    if (!Array.isArray(draft.followUpQuestions) || draft.followUpQuestions.length < 2 || !draft.followUpQuestions.every((question) => typeof question === 'string')) {
+      return undefined
+    }
+    return {
+      workId: draft.workId,
+      status: 'needs_more_input',
+      followUpQuestions: [...draft.followUpQuestions] as [string, string, ...string[]]
+    }
+  }
+  if (draft.status !== 'ready_for_review' || typeof draft.suggestedTitle !== 'string' || typeof draft.suggestedStoryText !== 'string') {
+    return undefined
+  }
+  return { workId: draft.workId, status: 'ready_for_review', suggestedTitle: draft.suggestedTitle, suggestedStoryText: draft.suggestedStoryText }
+}
+
+/**
+ * Real service adapter. The gateway returns only a temporary candidate draft;
+ * the existing content and visual validators remain the final client boundary.
+ */
+export class GatewayStoryRewriteAdapter implements StoryRewriteAdapter {
+  constructor(
+    private readonly client: GatewayStoryRewriteClient,
+    private readonly ruleValidator = new StoryRewriteRuleValidator(),
+    private readonly visualBoundaryValidator = new StoryVisualBoundaryValidator()
+  ) {}
+
+  async rewrite(input: StoryRewriteInput): Promise<StoryCardDraft> {
+    const workId = typeof input?.workId === 'string' ? input.workId.trim() : ''
+    if (!isValidInput(input)) return invalid(workId)
+    try {
+      const response = await this.client.storyRewrite({
+        workId,
+        text: input.text.trim(),
+        context: input.context as unknown as Record<string, unknown>
+      })
+      if (response && typeof response === 'object' && (response as { ok?: unknown }).ok === false) {
+        return failed(workId, (response as { error?: unknown }).error as SharedError)
+      }
+      const draft = asGatewayDraft(response)
+      if (!draft || draft.workId !== workId) {
+        return failed(workId, { code: 'UNKNOWN', message: '故事整理结果无效，请稍后重试。', retryable: true })
+      }
+      return this.visualBoundaryValidator.validate(
+        input.text,
+        input.context,
+        this.ruleValidator.validate(input.text, normalizeDraft(workId, draft))
+      )
+    } catch (error) {
+      return failed(workId, toSharedError(error, 'UNKNOWN'))
+    }
   }
 }

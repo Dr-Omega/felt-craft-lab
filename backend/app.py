@@ -52,6 +52,7 @@ from services.session_auth import (
     verify_session_token,
 )
 from services.shared_error_map import fail
+from services.story_rewrite_service import rewrite_story
 from services.tts_cache import prune_tts_cache
 from services.tts_service import TtsService, UnknownTtsProvider
 from services.tts_types import TTS_ERROR_CODES
@@ -472,6 +473,30 @@ def qa_contract():
             "errorCodes": QA_ERROR_CODES,
         }
     )
+
+
+@app.post("/api/story/rewrite")
+def story_rewrite():
+    """受保护的故事卡候选稿整理入口；只返回临时 Draft，不保存正式故事卡。"""
+    claims, err = _require_session(apply_install_rate=False)
+    if err:
+        return err
+    data = request.get_json(silent=True) or {}
+    if not rate_limit_ok(f"story-rewrite:{_client_bucket()}"):
+        return _json_fail("RATE_LIMITED", 429)
+    try:
+        with InflightGuard():
+            fuse_err = _consume_paid_fuse(claims.installation_id)
+            if fuse_err:
+                return fuse_err
+            result = rewrite_story(
+                work_id=data.get("workId"),
+                text=data.get("text"),
+                context=data.get("context"),
+            )
+            return jsonify(result), (200 if result.get("ok") else 502)
+    except TimeoutError:
+        return _json_fail("RATE_LIMITED", 429)
 
 
 @app.post("/api/tts/synthesize")

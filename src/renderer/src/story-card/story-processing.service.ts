@@ -9,6 +9,12 @@ export interface StoryProcessingRequest {
   context: StoryCardWorkContext
 }
 
+export interface StoryTranscriptProcessingRequest {
+  workId: string
+  text: string
+  context: StoryCardWorkContext
+}
+
 function failed(workId: string, error: SharedError): StoryCardDraft {
   return { workId, status: 'failed', error: toSharedError(error, 'UNKNOWN') }
 }
@@ -21,11 +27,11 @@ function invalid(workId: string): StoryCardDraft {
   })
 }
 
-function isMatchingCompletedWork(input: StoryCardInputRequest, context: StoryCardWorkContext): boolean {
+function isMatchingCompletedWork(workId: unknown, context: StoryCardWorkContext): boolean {
   return (
-    typeof input.workId === 'string' &&
-    input.workId.trim().length > 0 &&
-    input.workId.trim() === context?.workId &&
+    typeof workId === 'string' &&
+    workId.trim().length > 0 &&
+    workId.trim() === context?.workId &&
     context.completionStatus === 'completed'
   )
 }
@@ -47,7 +53,7 @@ export class StoryProcessingService {
 
   async process(request: StoryProcessingRequest): Promise<StoryCardDraft> {
     const workId = typeof request?.input?.workId === 'string' ? request.input.workId.trim() : ''
-    if (!request?.input || !request.context || !isMatchingCompletedWork(request.input, request.context)) return invalid(workId)
+    if (!request?.input || !request.context || !isMatchingCompletedWork(workId, request.context)) return invalid(workId)
 
     if (isManualTextInput(request.input)) {
       return this.processText(workId, request.input.text, request.context)
@@ -63,6 +69,13 @@ export class StoryProcessingService {
     if (recognition.transcript.workId !== workId) return invalid(workId)
 
     return this.processText(workId, recognition.transcript.text, request.context)
+  }
+
+  /** Processes an already-recognized temporary transcript without calling ASR again. */
+  async processTranscript(request: StoryTranscriptProcessingRequest): Promise<StoryCardDraft> {
+    const workId = typeof request?.workId === 'string' ? request.workId.trim() : ''
+    if (!request?.context || !isMatchingCompletedWork(workId, request.context)) return invalid(workId)
+    return this.processText(workId, request.text, request.context)
   }
 
   private async processText(workId: string, text: string, context: StoryCardWorkContext): Promise<StoryCardDraft> {

@@ -41,21 +41,37 @@ describe('StoryRewriteRuleValidator', () => {
     ).toMatchObject({ status: 'failed', error: { code: 'QA_BLOCKED', retryable: false } })
   })
 
-  it('replaces the confirmed inappropriate wording without adding new story facts', () => {
+  it('replaces the confirmed child-unfriendly person labels without adding new story facts', () => {
     const validator = new StoryRewriteRuleValidator()
 
     expect(
-      validator.validate('这个笨蛋小兔子在花园里找朋友，它有点坏。', {
+      validator.validate('这个笨蛋、傻瓜小兔子遇到了坏蛋和讨厌鬼，它有点坏，也讨厌他。', {
         workId: 'work-child-friendly',
         status: 'ready_for_review',
         suggestedTitle: '笨蛋小兔子的故事',
-        suggestedStoryText: '这个笨蛋小兔子在花园里找朋友。它有点坏。'
+        suggestedStoryText: '这个笨蛋、傻瓜小兔子遇到了坏蛋和讨厌鬼，它有点坏，也讨厌他。'
       })
     ).toEqual({
       workId: 'work-child-friendly',
       status: 'ready_for_review',
-      suggestedTitle: '小兔子的故事',
-      suggestedStoryText: '这个小兔子在花园里找朋友。它有点调皮。'
+      suggestedTitle: '小迷糊小兔子的故事',
+      suggestedStoryText: '这个小迷糊、小迷糊小兔子遇到了不太友好的家伙和不太友好的小伙伴，它调皮，也不喜欢他。'
+    })
+  })
+
+  it('does not change non-person facts that happen to use the selected words', () => {
+    expect(
+      new StoryRewriteRuleValidator().validate('小兔子发现玩具坏了，也不喜欢下雨。', {
+        workId: 'work-facts-stay',
+        status: 'ready_for_review',
+        suggestedTitle: '小兔子的发现',
+        suggestedStoryText: '小兔子发现玩具坏了，也不喜欢下雨。'
+      })
+    ).toEqual({
+      workId: 'work-facts-stay',
+      status: 'ready_for_review',
+      suggestedTitle: '小兔子的发现',
+      suggestedStoryText: '小兔子发现玩具坏了，也不喜欢下雨。'
     })
   })
 })

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { normalizeStoryRewriteEnvelope } from '../../src/main/ai/normalize-envelope'
 import { validateAsrResult, validateQaResult, validateSharedError, validateTtsResult } from '../../src/shared/contracts/validation'
 import { FELT_RESOURCE_REF_POLICY } from '../../src/shared/resource/constants'
 
@@ -53,5 +54,30 @@ describe('AI gateway envelopes align with frozen contracts', () => {
       FELT_RESOURCE_REF_POLICY
     )
     expect(r.ok).toBe(true)
+  })
+
+  it('preserves a valid story-rewrite needs-more-input result', () => {
+    expect(normalizeStoryRewriteEnvelope({
+      ok: true,
+      result: {
+        workId: 'work-001',
+        status: 'needs_more_input',
+        followUpQuestions: ['小兔子在做什么呢？', '后来发生了什么呢？']
+      }
+    }, 'work-001')).toEqual({
+      ok: true,
+      result: {
+        workId: 'work-001',
+        status: 'needs_more_input',
+        followUpQuestions: ['小兔子在做什么呢？', '后来发生了什么呢？']
+      }
+    })
+  })
+
+  it('rejects an incomplete story-rewrite needs-more-input result', () => {
+    expect(normalizeStoryRewriteEnvelope({
+      ok: true,
+      result: { workId: 'work-001', status: 'needs_more_input', followUpQuestions: ['请再说一点。'] }
+    }, 'work-001')).toMatchObject({ ok: false, error: { code: 'UNKNOWN' } })
   })
 })
