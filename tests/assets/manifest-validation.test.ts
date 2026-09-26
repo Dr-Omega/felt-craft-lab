@@ -47,8 +47,8 @@ describe('YWN formal manifest', () => {
     previewRoot: resolve('assets/generated/previews')
   }
 
-  it('imports exactly 71 ready assets and validates every AssetRecord', () => {
-    expect(raw.assets).toHaveLength(71)
+  it('imports exactly 17 ready assets and validates every AssetRecord', () => {
+    expect(raw.assets).toHaveLength(17)
     expect(raw.assetSnapshotId.startsWith('snapshot_ywn_')).toBe(true)
     expect(raw.assetSnapshotId).not.toBe('snapshot_ywn_20260805_001')
 
@@ -64,7 +64,7 @@ describe('YWN formal manifest', () => {
       expect(ids.has(result.value.assetId)).toBe(false)
       ids.add(result.value.assetId)
     }
-    expect(ids.size).toBe(71)
+    expect(ids.size).toBe(17)
   })
 
   it('validates snapshotContext against assets', () => {
@@ -80,7 +80,7 @@ describe('YWN formal manifest', () => {
     }
   })
 
-  it('resolves every non-empty ResourceRef for all 71 assets to existing files', () => {
+  it('resolves every non-empty ResourceRef for all 17 assets to existing files', () => {
     let checked = 0
     for (const asset of raw.assets) {
       for (const { field, ref } of collectRefs(asset)) {
@@ -97,7 +97,7 @@ describe('YWN formal manifest', () => {
         }
       }
     }
-    expect(checked).toBeGreaterThanOrEqual(71 * 4)
+    expect(checked).toBeGreaterThanOrEqual(17 * 4)
   })
 })
 

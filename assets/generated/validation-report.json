@@ -1,39 +1,15 @@
 {
-  "generatedAt": "2026-09-25T10:02:02.289Z",
-  "readyRowsSeen": 71,
-  "imported": 71,
+  "generatedAt": "2026-08-05T11:29:22.063Z",
+  "readyRowsSeen": 17,
+  "imported": 17,
   "failed": 0,
-  "assetSnapshotId": "snapshot_ywn_20260925_latest",
+  "assetSnapshotId": "snapshot_ywn_20260805_112922",
   "issues": [],
-  "copiedFiles": 355,
-  "published": true,
+  "copiedFiles": 0,
   "notes": [
-    "owner is kept only in build report workflow, not AssetRecord",
-    "contentVersion continues from content-versions.json using logical media identity + sha256",
-    "ResourceRef includes snapshotId; contentVersion identity does not",
-    "historical content-versions entries are retained when assetId absent from current ready batch",
-    "licenseStatus must equal approved (empty fails)",
-    "status=ready AND licenseStatus=approved required for formal import",
-    "imageFileName stem must equal assetId",
-    "preSplitFileName allowed for stickers only",
-    "fail-closed: formal artifacts written only after whole-batch success",
-    "snapshots/<snapshotId>/ is immutable; duplicate snapshotId refuses publish",
-    "felt-resource resolver allows [A-Za-z0-9._/-]; underscore is a naming preference only"
+    "Republished existing ready pack under new immutable snapshotId (source xlsx not required).",
+    "contentVersion continued from prior AssetRecord values via content-versions.json",
+    "previousSnapshotId=snapshot_ywn_20260805_001"
   ],
-  "failedDetails": [],
-  "projectionKeys": [
-    "type",
-    "themeId",
-    "categoryIds",
-    "nameZh",
-    "nameEn",
-    "introZh",
-    "keywords",
-    "image",
-    "thumbnail",
-    "preSplit",
-    "audio",
-    "source",
-    "license"
-  ]
+  "failedDetails": []
 }
