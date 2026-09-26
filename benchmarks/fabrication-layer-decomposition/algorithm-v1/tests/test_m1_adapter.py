@@ -6,6 +6,7 @@ import tempfile
 import unittest
 
 from PIL import Image
+import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from m1_adapter import build_input, canonical_bytes, run_shared_validation
@@ -15,14 +16,29 @@ class M1AdapterTests(unittest.TestCase):
     def make_runtime(self, root):
         for name in ('source-snapshot.png', 'input-foreground.png', 'purified.png'):
             Image.new('RGBA', (4, 4), (231, 40, 11, 255)).save(root / name)
-        component = {'componentId': 'R00001-C001', 'outerRing': {'edgeReferences': [{'edgeId': 'E001', 'direction': 1}]}, 'innerRings': []}
+        component = {'componentId': 'R00001-C001', 'outerRing': {'regionId': 1, 'edgeReferences': [{'edgeId': 'E001', 'direction': 1}]}, 'innerRings': []}
         for name, data in {
-            'regions.json': [{'regionId': 1, 'representativeColorRgb': [231, 40, 11], 'colorGroupId': 999, 'components': [{'componentId': 'R00001-C001'}]}],
-            'boundary-graph.json': {'width': 4, 'height': 4, 'regions': [{'regionId': 1, 'components': [component]}]},
+            'regions.json': [{'regionId': 1, 'representativeColorRgb': [231, 40, 11], 'representativeColorLab': [50,60,40], 'colorGroupId': 999, 'components': [{'componentId': 'R00001-C001'}]}],
+            'boundary-graph.json': {'width': 4, 'height': 4, 'edges': [{'edgeId':'E001','geometry':[[0,0],[0,4],[4,4],[4,0],[0,0]]}], 'regions': [{'regionId': 1, 'components': [component]}]},
             'vector-result.json': {'route': 'V0', 'geometry': [{'edgeId': 'E001', 'segments': [{'type': 'L', 'p0': [0, 0], 'p1': [4, 0]}]}]},
             'report.json': {'input': {'sourceImage': {'sha256': hashlib.sha256((root / 'source-snapshot.png').read_bytes()).hexdigest()}, 'foregroundMode': 'embedded-alpha', 'foregroundInterpretation': 'DECODED_EMBEDDED_ALPHA', 'manualConfirmation': 'PENDING_REVIEW'}},
         }.items():
             (root / name).write_bytes(canonical_bytes(data))
+        from component_binding import bind_components, SCHEMA
+        from m4_runtime import _observed_candidates
+        labels=np.ones((4,4),np.int32)
+        np.savez_compressed(root/'structural_label_map.npz',labels=labels)
+        read=lambda name:json.loads((root/name).read_text())
+        regions,proof=bind_components(labels,read('boundary-graph.json'),read('regions.json'))
+        (root/'regions.json').write_bytes(canonical_bytes(regions))
+        (root/'component-binding.json').write_bytes(canonical_bytes(proof))
+        report=read('report.json')
+        report.update(runtimeId='test',selectedVector={'attemptedRoutes':['V0']},
+                      componentBinding={'artifact':'component-binding.json','schemaVersion':SCHEMA,
+                                        'sha256':hashlib.sha256((root/'component-binding.json').read_bytes()).hexdigest()})
+        (root/'report.json').write_bytes(canonical_bytes(report))
+        (root/'observed-candidates.json').write_bytes(canonical_bytes(_observed_candidates(
+            'test',read('boundary-graph.json'),read('vector-result.json'),regions,['V0'])))
 
     def test_real_standalone_bridge_and_artifact_reference_identity(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -50,7 +66,7 @@ class M1AdapterTests(unittest.TestCase):
             root = Path(temp)
             self.make_runtime(root)
             (root / 'vector-result.json').write_bytes(canonical_bytes({'route': 'V0', 'geometry': []}))
-            with self.assertRaisesRegex(ValueError, 'missing selected vector'):
+            with self.assertRaisesRegex(ValueError, 'missing (selected )?vector'):
                 build_input(root)
             self.assertFalse((root / 'm1-palette.json').exists())
 

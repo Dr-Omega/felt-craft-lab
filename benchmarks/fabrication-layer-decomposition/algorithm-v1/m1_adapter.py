@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import tempfile
 from typing import Any
 
@@ -15,6 +16,7 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[3]
 HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE.parent / 'tools'))
 
 
 def canonical_bytes(value: Any) -> bytes:
@@ -46,6 +48,8 @@ def build_input(runtime_dir: Path, layered_evidence: dict | None = None) -> dict
     absolute paths, durations and timestamps.
     """
     root = runtime_dir.resolve()
+    from component_binding import verify_persisted_binding
+    binding = verify_persisted_binding(root)
     regions = json.loads((root / "regions.json").read_text("utf-8"))
     graph = json.loads((root / "boundary-graph.json").read_text("utf-8"))
     vector = json.loads((root / "vector-result.json").read_text("utf-8"))
@@ -81,8 +85,10 @@ def build_input(runtime_dir: Path, layered_evidence: dict | None = None) -> dict
         entry["sourceRegionIds"].append(region_id)
         components = graph_regions[int(region["regionId"])]["components"]
         component_ids = [item["componentId"] for item in region["components"]]
-        if component_ids != [item["componentId"] for item in components]:
+        graph_ids = [item['componentId'] for item in components]
+        if len(set(component_ids)) != len(component_ids) or set(component_ids) != set(graph_ids):
             raise ValueError("Runtime and graph component references differ")
+        component_ids = graph_ids
         refs = sorted({ref["edgeId"] for component in components
                        for ring in [component["outerRing"], *component.get("innerRings", [])]
                        for ref in ring["edgeReferences"]})
@@ -92,7 +98,7 @@ def build_input(runtime_dir: Path, layered_evidence: dict | None = None) -> dict
                               "selectedEdges": [vector_edges[key] for key in refs]}
         observed.append({"id": region_id, "componentIds": component_ids, "colorSlotId": color_id,
                          "geometry": {"artifactId": "m1-geometry.json", "objectId": region_id, "frameId": "canonical"}})
-    provenance = {"sourceSha256": source["sha256"], "dimensions": [width, height],
+    provenance = {"sourceSha256": source["sha256"], 'componentBinding': binding, "dimensions": [width, height],
                   "normalization": "Explicit foreground preserves source raster dimensions and top-left pixel-cell coordinates",
                   "vectorCoordinates": "Selected P0-04C segments already use source-pixel boundaries; canonical unit equals one source pixel",
                   "foregroundMode": report["input"]["foregroundMode"],
@@ -133,12 +139,13 @@ def build_input(runtime_dir: Path, layered_evidence: dict | None = None) -> dict
         provenance["mappedNativeBoundsInAnalysis"] = mapped
         provenance["normalization"] = "M5 parser native canvas/viewBox is mapped to its actual normalized foreground raster; no inferred layers or scaling"
     identities = [source, *[artifact(root / name) for name in
-                  ("input-foreground.png", "purified.png", "regions.json", "boundary-graph.json", "vector-result.json")]]
+                  ("input-foreground.png", "purified.png", "regions.json", "boundary-graph.json", "vector-result.json",
+                   'component-binding.json', 'structural_label_map.npz', 'observed-candidates.json')]]
     if design is not None:
         identities.extend(artifact(root / name, media_type='application/x-npz' if name.endswith('.npz') else None)
                           for name in ('experimental-design.json', 'baseline-analysis.npz', 'baseline-regions.json',
                                        'original-effective-foreground.png', 'baseline-purified.png',
-                                       'structural_label_map.npz', 'pixel_label_map.npz'))
+                                       'pixel_label_map.npz'))
     if (root / "external-mask-snapshot.png").exists():
         mask_artifact = artifact(root / "external-mask-snapshot.png")
         if mask_artifact["sha256"] != report["input"]["externalMask"]["sha256"]:

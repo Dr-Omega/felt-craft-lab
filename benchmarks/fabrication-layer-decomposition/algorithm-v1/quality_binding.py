@@ -132,9 +132,12 @@ def verify_quality_design(root):
         raise ValueError('experimental RC-A palette/purified RGB mismatch')
     kernel.validate_labels(effective,purified,labels,pixels,metadata,color)
     replay_regions,_ = kernel._runtime_regions(labels,metadata)
+    graph, baseline_vector,_ = kernel._vectorize(labels,effective[...,3],report['runtimeId'],config['runtimeProfileId'],vector_config)
+    from component_binding import bind_components, verify_persisted_binding
+    replay_regions, _ = bind_components(labels, graph, replay_regions)
     if replay_regions != regions:
         raise ValueError('experimental Region/Component derivation mismatch')
-    graph, baseline_vector,_ = kernel._vectorize(labels,effective[...,3],report['runtimeId'],config['runtimeProfileId'],vector_config)
+    verify_persisted_binding(root)
     selected,contours = refine_contours(graph,baseline_vector,labels,vector_config,
         enabled=record['mode'] in {'contour','combined','design-colors'},
         point_touch_cycles=record['mode']=='design-colors')

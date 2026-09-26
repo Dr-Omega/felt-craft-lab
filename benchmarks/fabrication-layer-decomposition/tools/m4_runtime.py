@@ -305,8 +305,12 @@ def _observed_candidates(runtime_id: str, graph: dict[str, Any], vector_result: 
         runtime_components = region_by_id[region_id]["components"]
         if len(runtime_components) != len(graph_region["components"]):
             raise M4RuntimeError(f"Region {region_id} component identity differs between Region Core and boundary graph")
-        for component, runtime_component in zip(graph_region["components"], runtime_components, strict=True):
-            if component["componentId"] != runtime_component["componentId"]:
+        by_component = {c['componentId']: c for c in runtime_components}
+        if len(by_component) != len(runtime_components):
+            raise M4RuntimeError('duplicate runtime Component identity')
+        for component in graph_region["components"]:
+            runtime_component = by_component.get(component['componentId'])
+            if runtime_component is None or 'pixelDomainSha256' not in runtime_component:
                 raise M4RuntimeError(f"Region {region_id} component reference mismatch")
             rings = [component["outerRing"], *component.get("innerRings", [])]
             edge_ids = sorted({ref["edgeId"] for ring in rings for ref in ring["edgeReferences"]})
@@ -317,6 +321,7 @@ def _observed_candidates(runtime_id: str, graph: dict[str, Any], vector_result: 
                 "identitySemantics": "OBSERVED_COMPONENT_CANDIDATE_NOT_FORMAL_PIECE",
                 "sourceRegionId": region_id,
                 "sourceComponentId": component["componentId"],
+                "sourcePixelDomainSha256": runtime_component['pixelDomainSha256'],
                 "sourceComponentKey": {"runtimeId": runtime_id, "regionId": region_id, "componentId": component["componentId"]},
                 "coordinateSystem": "source-pixel boundary grid",
                 "unit": "source_pixel",
@@ -360,7 +365,11 @@ def _numbered_preview(structural: np.ndarray, *, components: bool, regions=None)
             if len(actual) != len(masks):
                 raise M4RuntimeError('preview Component count differs from actual records')
             items = []
-            for record, mask in zip(actual, masks, strict=True):
+            ordinals = [r['rasterScanOrdinal'] for r in actual]
+            if sorted(ordinals) != list(range(1, len(masks)+1)):
+                raise M4RuntimeError('preview Component raster mapping is not bijective')
+            for record in actual:
+                mask = masks[record['rasterScanOrdinal']-1]
                 ys, xs = np.where(mask)
                 bbox = [int(xs.min()), int(ys.min()), int(xs.max()-xs.min()+1), int(ys.max()-ys.min()+1)]
                 if bbox != record['bbox'] or int(mask.sum()) != record['area']:
@@ -500,6 +509,9 @@ def _run_runtime(
             "boundaryAndVectorDerivation",
             lambda: _vectorize(proposal.structural_label_map, rgba[..., 3], runtime_id, PROFILE_TO_RUNTIME_ID[profile], vector_config),
         )
+        from component_binding import bind_components
+        regions, component_binding = timed('componentDomainBinding', lambda: bind_components(
+            proposal.structural_label_map, graph, regions))
         if quality is not None:
             from quality_contours import refine_contours
             vector_result, quality['contours'] = timed('experimentalSharedContours', lambda: refine_contours(
@@ -607,6 +619,7 @@ def _run_runtime(
     (output_root / "boundary-graph.json").write_bytes(_canonical_json(serialize_graph(graph)))
     (output_root / "vector-result.json").write_bytes(_canonical_json(vector_result))
     (output_root / "regions.json").write_bytes(_canonical_json(regions))
+    (output_root / 'component-binding.json').write_bytes(_canonical_json(component_binding))
     (output_root / "observed-candidates.json").write_bytes(_canonical_json(candidates))
     (output_root / "metrics.json").write_bytes(_canonical_json(metrics))
     alpha_equal = bool(np.array_equal(rgba[..., 3], purified[..., 3]))
@@ -621,6 +634,8 @@ def _run_runtime(
         "schemaVersion": "m4-runtime-1.0.0",
         "runtimeId": runtime_id,
         "status": "COMPLETE_PENDING_MANUAL_QUALITY_REVIEW",
+        'componentBinding': {'artifact': 'component-binding.json', 'schemaVersion': component_binding['schemaVersion'],
+                             'sha256': _sha256_file(output_root / 'component-binding.json')},
         "input": foreground.provenance,
         "configuration": {
             'effectiveColorConfig': color_config,
@@ -699,7 +714,8 @@ def _run_runtime(
               'maskSha256': (foreground.provenance['externalMask'] or {}).get('sha256'),
               'effectiveRgbaSha256': _sha256_bytes(rgba.tobytes()),
               'configuration': report['configuration'],
-              'implementation': {p.name: _sha256_bytes(p.read_bytes().replace(b'\r\n', b'\n')) for p in (Path(__file__), Path(__file__).with_name('m4_checks.py'))},
+              'implementation': {p.name: _sha256_bytes(p.read_bytes().replace(b'\r\n', b'\n')) for p in (Path(__file__), Path(__file__).with_name('m4_checks.py'), Path(__file__).with_name('component_binding.py'))},
+              'componentBinding': report['componentBinding'],
               'structuralLabelsSha256': _sha256_bytes(proposal.structural_label_map.astype('<i4').tobytes()),
               'pixelLabelsSha256': _sha256_bytes(proposal.pixel_label_map.astype('<i4').tobytes()),
               'purifiedRgbaSha256': _sha256_bytes(purified.tobytes()),

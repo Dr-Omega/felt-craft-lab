@@ -40,11 +40,18 @@ def _polygon_materialization(graph, vector, flatness, point_touch_cycles=False):
     when materializing its actual observed candidates.
     """
     from m4_checks import candidate_polygons
-    from m4_runtime import _observed_candidates
-    regions = [{**region, 'representativeColorRgb': [0, 0, 0],
-                'representativeColorLab': [0, 0, 0]} for region in graph['regions']]
-    candidates = _observed_candidates('contour-materialization-check', graph, vector,
-                                      regions, [vector['route']])
+    # These trial-only objects test polygon representability, not runtime
+    # source identity. Do not fabricate raster statistics or binding proofs.
+    candidates = []
+    for region in graph['regions']:
+        for component in region['components']:
+            rings = [component['outerRing'], *component.get('innerRings', [])]
+            candidates.append({'candidateId': 'OC-contour-materialization-check-'+component['componentId'],
+                'sourceRegionId': region['regionId'], 'sourceComponentId': component['componentId'],
+                'vectorRoute': vector['route'], 'representativeColor': {'rgb': [0,0,0]},
+                'observedGeometry': {'outerRing': component['outerRing'],
+                    'innerRings': component.get('innerRings', []),
+                    'edgeIds': sorted({ref['edgeId'] for ring in rings for ref in ring['edgeReferences']})}})
     try:
         polygons = candidate_polygons(candidates, graph, vector, flatness,
                                       point_touch_cycles=point_touch_cycles)

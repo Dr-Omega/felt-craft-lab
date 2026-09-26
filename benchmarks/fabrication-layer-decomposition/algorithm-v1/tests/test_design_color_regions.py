@@ -104,6 +104,8 @@ class DesignColorTests(unittest.TestCase):
         regions,_=kernel._runtime_regions(labels,metadata)
         vector_config=kernel.load_profile('aggressive')[1]
         graph,vector,attempted=kernel._vectorize(labels,rgba[...,3],'boundary-regression','aggressive',vector_config)
+        from component_binding import bind_components
+        regions,_=bind_components(labels,graph,regions)
         candidates=kernel._observed_candidates('boundary-regression',graph,vector,regions,attempted)
         polygons=kernel.candidate_polygons(candidates,graph,vector,float(vector_config['bezier']['validationFlatnessPx']))
         self.assertTrue(all(item['polygon'].is_valid for item in polygons))

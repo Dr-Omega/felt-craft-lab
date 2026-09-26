@@ -46,7 +46,7 @@ def _png(path, rgba):
 
 def _recipe(m4, quality_settings=None):
     sources = [*sorted(HERE.glob('*.py')), HERE / 'validate_contract.ts', HERE / 'requirements.txt',
-               HERE.parent / 'tools/m4_runtime.py', HERE.parent / 'tools/m4_checks.py']
+               HERE.parent / 'tools/m4_runtime.py', HERE.parent / 'tools/m4_checks.py', HERE.parent / 'tools/component_binding.py']
     recipe = {'recipe': 'm4-m7-conservative-solid-plan/1',
             'effectiveConfiguration': m4['configuration'],
             'implementationLfUtf8Sha256': {str(p.relative_to(HERE.parent)).replace('\\', '/'):
@@ -73,9 +73,15 @@ def _verify_artifacts(output, result_input, portable):
         if measured != record:
             raise ValueError('Persisted artifact bytes differ from result identity: ' + identifier)
         locations[identifier] = str(path.relative_to(output)).replace('\\', '/')
-    if (output / 'm4/experimental-design.json').exists():
-        from quality_binding import verify_quality_design
-        verify_quality_design(output / 'm4')
+    # Reconstruct source identities from persisted labels and raw boundaries.
+    # Hash agreement alone cannot establish Component-to-domain identity.
+    expected_input = build_input(output / 'm4', portable)
+    for key, value in expected_input.items():
+        if key == 'artifacts':
+            if any(record not in result_input['artifacts'] for record in value):
+                raise ValueError('Persisted M1 artifacts differ from independently rebound source')
+        elif value != result_input.get(key):
+            raise ValueError('Persisted M1 source binding differs: ' + key)
     _write(output / 'artifact-locations.json', locations)
 
 
