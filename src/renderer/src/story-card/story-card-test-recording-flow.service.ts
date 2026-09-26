@@ -33,6 +33,11 @@ export class StoryCardTestRecordingFlow {
     return this.currentRecording
   }
 
+  /** Removes a recording after it has been promoted, so a later rerecord does not delete the formal audio. */
+  releaseConfirmedRecording(audioRef: ResourceRef): void {
+    if (this.currentRecording?.audioRef === audioRef) this.currentRecording = undefined
+  }
+
   dispatch(action: RecordingSessionAction): RecordingSessionState {
     const state = this.session.dispatch(action)
     if (action === 'rerecord') this.nextRecordingKind = 'full_rerecording'

@@ -19,7 +19,10 @@ import {
 import {
   STORY_CARD_TEST_INSUFFICIENT_TEXT,
   STORY_CARD_TEST_READY_TEXT,
-  createStoryCardTestProcessor
+  createStoryCardTestProcessor,
+  processTestRuleExample,
+  type StoryCardTestRuleExampleId,
+  processTestManualTextWithFullRecording
 } from '../story-card/story-card-test-processing-flow.service'
 import {
   createTestFullRerecordingInput,
@@ -30,7 +33,7 @@ import { confirmStoryCard } from '../story-card/story-card-confirmation.service'
 import { getStoryCardDetail } from '../story-card/story-card-detail.service'
 import { prepareStoryCardEditing } from '../story-card/story-card-editing.service'
 import { processFullRerecording } from '../story-card/full-rerecording-flow.service'
-import { processPartialSupplement } from '../story-card/partial-supplement-flow.service'
+import { confirmPartialSupplement, processPartialSupplement } from '../story-card/partial-supplement-flow.service'
 import {
   decideStoryCardContentUpdate,
   type StoryCardContentUpdateChoice
@@ -90,6 +93,11 @@ const audioDuration = ref(0)
 const isAudioPlaying = ref(false)
 const updateChoicesVisible = ref(false)
 const updateDraft = ref<StoryCardDraft>()
+const updateChoice = ref<Exclude<StoryCardContentUpdateChoice, 'keep_current_story'>>()
+const updateEditingTitle = ref('')
+const updateEditingStoryText = ref('')
+const ruleExampleDraft = ref<StoryCardDraft>()
+const activeRuleExampleId = ref<StoryCardTestRuleExampleId>()
 
 let recorder: MediaRecorder | undefined
 let stream: MediaStream | undefined
@@ -111,6 +119,7 @@ const confirmedDateLabel = computed(() => {
 })
 const currentAudioTimeLabel = computed(() => formatStoryCardAudioTime(currentAudioTime.value))
 const audioDurationLabel = computed(() => formatStoryCardAudioTime(audioDuration.value))
+const canConfirmFullRerecording = computed(() => fullRecording.value?.kind === 'full_rerecording')
 
 function syncRecordingState(): void {
   recordingState.value = recordingFlow.state
@@ -401,31 +410,49 @@ function submitManualText(): void {
 
 function useCandidateExample(): void {
   manualText.value = STORY_CARD_TEST_READY_TEXT
-  statusMessage.value = '已填入候选故事 Mock 示例。请先提交文字补充测试，再处理为候选故事。'
+  statusMessage.value = '已填入候选故事 Mock 示例。固定 Mock 不会识别本次录音，只会返回预设结果。'
 }
 
 function useInsufficientExample(): void {
   manualText.value = STORY_CARD_TEST_INSUFFICIENT_TEXT
-  statusMessage.value = '已填入内容不足 Mock 示例。请先提交文字补充测试，再处理为候选故事。'
+  statusMessage.value = '已填入内容不足 Mock 示例。固定 Mock 不会识别本次录音，只会返回预设结果。'
+}
+
+async function showRuleExample(id: StoryCardTestRuleExampleId): Promise<void> {
+  busy.value = true
+  errorMessage.value = ''
+  try {
+    activeRuleExampleId.value = id
+    ruleExampleDraft.value = await processTestRuleExample(workContext, id)
+    statusMessage.value = '已生成故事整理规则 Mock 示例；此结果仅供验收查看，不会保存为故事卡。'
+  } catch (error) {
+    errorMessage.value = messageFor(error)
+  } finally {
+    busy.value = false
+  }
 }
 
 async function processManualText(): Promise<void> {
-  if (!pendingManualTextRequest.value) return
+  const input = pendingManualTextRequest.value
+  const recording = fullRecording.value
+  if (!input || !recording) return
 
   busy.value = true
   errorMessage.value = ''
   try {
-    storyDraft.value = await storyProcessor.process({
-      input: pendingManualTextRequest.value,
-      context: workContext
-    })
-    if (storyDraft.value.status === 'ready_for_review') {
-      const editing = prepareStoryCardEditing(storyDraft.value)
+    const draft = await processTestManualTextWithFullRecording(
+      workContext,
+      recording,
+      input
+    )
+    storyDraft.value = draft
+    if (draft.status === 'ready_for_review') {
+      const editing = prepareStoryCardEditing(draft)
       if (!editing.ok) throw new Error(editing.error.message)
       editingTitle.value = editing.payload.title
       editingStoryText.value = editing.payload.storyText
     }
-    statusMessage.value = storyDraft.value.status === 'needs_more_input'
+    statusMessage.value = draft.status === 'needs_more_input'
       ? '内容还不够完整，请回答下方问题后再次整理。'
       : '已生成临时候选故事，尚未确认或保存。'
   } catch (error) {
@@ -545,6 +572,8 @@ async function confirmEditedStoryCard(): Promise<void> {
       { promoteTemporaryFullRecording: confirmTemporaryFullStoryCardRecording }
     )
     confirmedCard.value = await getStoryCardDetail(savedCard.workId, storyCardStore)
+    recordingFlow.releaseConfirmedRecording(fullRecording.value.audioRef)
+    fullRecording.value = undefined
     resetAudioPlayback()
     statusMessage.value = '已确认这就是我的故事，并写入本地测试故事卡。'
   } catch (error) {
@@ -578,6 +607,7 @@ async function simulateArtworkUpdate(): Promise<void> {
     confirmedCard.value = await getStoryCardDetail(workContext.workId, storyCardStore)
     updateChoicesVisible.value = true
     updateDraft.value = undefined
+    updateChoice.value = undefined
     audioElement.value?.pause()
     currentAudioTime.value = 0
     isAudioPlaying.value = false
@@ -595,6 +625,7 @@ async function chooseStoryContentUpdate(choice: StoryCardContentUpdateChoice): P
   busy.value = true
   errorMessage.value = ''
   updateDraft.value = undefined
+  updateChoice.value = undefined
   try {
     const action = decideStoryCardContentUpdate(workContext.workId, choice)
     if (action.type === 'keep_current_story') {
@@ -619,14 +650,79 @@ async function chooseStoryContentUpdate(choice: StoryCardContentUpdateChoice): P
         storyCardStore,
         storyProcessor
       )
+    if (updateDraft.value.status === 'ready_for_review') {
+      const editing = prepareStoryCardEditing(updateDraft.value)
+      if (!editing.ok) throw new Error(editing.error.message)
+      updateEditingTitle.value = editing.payload.title
+      updateEditingStoryText.value = editing.payload.storyText
+      updateChoice.value = action.type === 'start_full_rerecording' ? 'full_rerecording' : 'partial_supplement'
+    }
     statusMessage.value = action.type === 'start_full_rerecording'
-      ? '已生成完整重录的临时候选稿；本任务不会确认或覆盖正式故事卡。'
-      : '已生成局部补录的临时候选稿；本任务不会确认或覆盖正式故事卡。'
+      ? '已生成完整重录的临时候选稿。请在上方重新录音后，再确认覆盖正式故事卡。'
+      : '已生成局部补录的临时候选稿。确认后只会更新故事文字，原完整音频保持不变。'
   } catch (error) {
     errorMessage.value = messageFor(error)
   } finally {
     busy.value = false
   }
+}
+
+async function confirmUpdatedStoryCard(): Promise<void> {
+  if (updateDraft.value?.status !== 'ready_for_review' || !updateChoice.value) return
+
+  busy.value = true
+  errorMessage.value = ''
+  try {
+    const savedCard = updateChoice.value === 'full_rerecording'
+      ? await confirmFullRerecording()
+      : await confirmPartialSupplement(
+        {
+          editPayload: {
+            workId: workContext.workId,
+            title: updateEditingTitle.value,
+            storyText: updateEditingStoryText.value
+          },
+          workContext: updatedWorkContext,
+          confirmedAt: new Date().toISOString(),
+          supplement: createTestPartialSupplementInput(workContext.workId)
+        },
+        storyCardStore
+      )
+    confirmedCard.value = await getStoryCardDetail(savedCard.workId, storyCardStore)
+    updateDraft.value = undefined
+    updateChoice.value = undefined
+    resetAudioPlayback()
+    statusMessage.value = '已确认更新后的故事卡，并重新读取正式详情。'
+  } catch (error) {
+    errorMessage.value = messageFor(error)
+  } finally {
+    busy.value = false
+  }
+}
+
+async function confirmFullRerecording(): Promise<StoryCard> {
+  const recording = fullRecording.value
+  if (!recording || recording.kind !== 'full_rerecording') {
+    throw new Error('请先在上方点击“重新录音”，录制并结束一段新的完整录音。')
+  }
+
+  const savedCard = await confirmStoryCard(
+    {
+      editPayload: {
+        workId: workContext.workId,
+        title: updateEditingTitle.value,
+        storyText: updateEditingStoryText.value
+      },
+      workContext: updatedWorkContext,
+      confirmedAt: new Date().toISOString(),
+      recording
+    },
+    storyCardStore,
+    { promoteTemporaryFullRecording: confirmTemporaryFullStoryCardRecording }
+  )
+  recordingFlow.releaseConfirmedRecording(recording.audioRef)
+  fullRecording.value = undefined
+  return savedCard
 }
 
 onMounted(() => {
@@ -689,9 +785,9 @@ onUnmounted(() => {
 
     <section v-if="entered" class="test-section" aria-labelledby="candidate-title">
       <h3 id="candidate-title">候选故事与补充流程测试</h3>
-      <p>本区域使用固定 Mock 整理结果；候选稿在确认前不会保存为正式故事卡。</p>
+      <p>本区域使用固定 Mock 的预设整理结果；不会识别或转写你本次录音。候选稿在确认前不会保存为正式故事卡。</p>
       <div class="controls">
-        <button type="button" :disabled="!fullRecording || busy" @click="useCandidateExample">填入候选故事示例</button>
+        <button type="button" :disabled="!fullRecording || busy" @click="useCandidateExample">填入文字补充示例</button>
         <button type="button" :disabled="!fullRecording || busy" @click="useInsufficientExample">填入内容不足示例</button>
         <button type="button" class="primary" :disabled="!pendingManualTextRequest || busy" @click="processManualText">处理为候选故事</button>
         <button type="button" :disabled="busy" @click="loadConfirmedStoryCardDetail">读取已确认故事卡详情</button>
@@ -699,9 +795,27 @@ onUnmounted(() => {
 
       <p v-if="!pendingManualTextRequest" class="hint">先在上方提交文字补充测试，再处理为候选故事。</p>
 
+      <section class="rule-example-test" aria-labelledby="rule-example-title">
+        <h4 id="rule-example-title">故事整理规则 Mock 示例</h4>
+        <p class="hint">以下固定样例仅用于 AC-05 至 AC-07 的人工查看，不关联录音，也不会保存故事卡。</p>
+        <div class="controls">
+          <button type="button" :disabled="busy" @click="showRuleExample('language-chinese')">验证中文语言结构</button>
+          <button type="button" :disabled="busy" @click="showRuleExample('language-english')">验证英文语言结构</button>
+          <button type="button" :disabled="busy" @click="showRuleExample('language-mixed')">验证中英混合结构</button>
+          <button type="button" :disabled="busy" @click="showRuleExample('visual-boundary')">验证画面信息边界</button>
+          <button type="button" :disabled="busy" @click="showRuleExample('child-friendly')">验证儿童友好措辞</button>
+        </div>
+        <article v-if="ruleExampleDraft?.status === 'ready_for_review'" class="draft-result">
+          <p class="result-label">规则示例结果（未保存）</p>
+          <h4>{{ ruleExampleDraft.suggestedTitle }}</h4>
+          <p>{{ ruleExampleDraft.suggestedStoryText }}</p>
+          <p class="hint">当前示例：{{ activeRuleExampleId }}</p>
+        </article>
+      </section>
+
       <section class="real-service-test" aria-labelledby="real-service-title">
         <h4 id="real-service-title">真实服务联调（会使用本机 AI 服务）</h4>
-        <p class="hint">只有点击下方按钮才会发起真实调用；生成的仍是未确认候选稿，不会自动保存故事卡。</p>
+        <p class="hint">只有这里会读取当前临时完整录音并发起真实 AI 调用，用于验证实际录音的转写和语义保留；生成的仍是未确认候选稿，不会自动保存故事卡。</p>
         <div class="controls">
           <button type="button" class="primary" :disabled="!fullRecording || busy" @click="processFullRecordingWithRealServices">使用真实服务处理完整录音</button>
           <button type="button" class="primary" :disabled="!pendingManualTextRequest || !realFullTranscript || busy" @click="processManualTextWithRealServices">使用真实服务处理文字补充</button>
@@ -766,12 +880,13 @@ onUnmounted(() => {
             aria-label="原始音频播放进度"
             @input="seekAudio"
           />
+          <p class="reference">原始完整录音引用：{{ confirmedCard.originalAudioRef }}</p>
         </section>
       </article>
 
       <section v-if="confirmedCard" class="test-section" aria-labelledby="content-update-title">
         <h3 id="content-update-title">作品修改后的故事卡更新测试</h3>
-        <p>使用固定 Mock 模拟作品图片更新；完整重录和局部补录只展示临时候选稿，不会确认或覆盖正式故事卡。</p>
+        <p>使用固定 Mock 模拟作品图片更新；候选稿需由操作者再次确认后才会覆盖正式故事卡。</p>
         <div class="controls">
           <button type="button" class="primary" :disabled="busy" @click="simulateArtworkUpdate">模拟作品图片更新</button>
         </div>
@@ -782,8 +897,14 @@ onUnmounted(() => {
         </div>
         <article v-if="updateDraft?.status === 'ready_for_review'" class="draft-result">
           <p class="result-label">更新临时候选故事（未确认）</p>
-          <h4>{{ updateDraft.suggestedTitle }}</h4>
-          <p>{{ updateDraft.suggestedStoryText }}</p>
+          <label for="update-story-title">故事标题</label>
+          <input id="update-story-title" v-model="updateEditingTitle" :disabled="busy" />
+          <label for="update-story-text">故事正文</label>
+          <textarea id="update-story-text" v-model="updateEditingStoryText" :disabled="busy" rows="6" />
+          <p v-if="updateChoice === 'full_rerecording'" class="hint">完整重录需要先在上方点击“重新录音”，录制并结束新的完整录音。</p>
+          <button type="button" class="primary" :disabled="busy || (updateChoice === 'full_rerecording' && !canConfirmFullRerecording)" @click="confirmUpdatedStoryCard">
+            {{ updateChoice === 'full_rerecording' ? '确认完整重录并覆盖故事卡' : '确认局部补录并更新故事卡' }}
+          </button>
         </article>
         <p v-else-if="updateDraft?.status === 'needs_more_input'" class="hint">此次 Mock 输入仍需补充信息。</p>
         <p v-else-if="updateDraft?.status === 'failed'" class="error" role="alert">{{ updateDraft.error.message }}</p>
@@ -898,6 +1019,16 @@ input {
   margin: 0 0 8px;
 }
 
+.rule-example-test {
+  margin-top: 20px;
+  padding: 16px;
+  border: 1px dashed var(--line);
+}
+
+.rule-example-test h4 {
+  margin: 0 0 8px;
+}
+
 .draft-result h4 {
   margin: 4px 0 8px;
 }
@@ -914,7 +1045,7 @@ input {
 
 .artwork-image {
   display: block;
-  width: 100%;
+  width: min(100%, 400px);
   aspect-ratio: 902 / 516;
   margin: 12px 0;
   border: 1px solid var(--line);
@@ -926,14 +1057,15 @@ input {
 }
 
 .story-text-scroll {
-  max-height: 36px;
+  height: 160px;
   overflow-y: auto;
   white-space: pre-wrap;
 }
 
 .audio-player {
-  margin-top: 16px;
-  padding-top: 12px;
+  max-width: 320px;
+  margin-top: 12px;
+  padding-top: 8px;
   border-top: 1px solid var(--line);
 }
 

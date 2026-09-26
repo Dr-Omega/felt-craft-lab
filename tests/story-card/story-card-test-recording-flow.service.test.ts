@@ -50,6 +50,19 @@ describe('StoryCardTestRecordingFlow', () => {
     })
   })
 
+  it('does not later delete a recording that has already been promoted to the formal card', () => {
+    const flow = new StoryCardTestRecordingFlow('story-card-mock-work-001')
+    flow.dispatch('start')
+    flow.dispatch('end')
+    flow.completeFullRecording(firstAudioRef, 1_000)
+    flow.releaseConfirmedRecording(firstAudioRef)
+
+    flow.dispatch('rerecord')
+    flow.dispatch('end')
+
+    expect(flow.completeFullRecording(secondAudioRef, 2_000).supersededAudioRef).toBeUndefined()
+  })
+
   it('ends the recording session when its accumulated duration reaches five minutes', () => {
     const flow = new StoryCardTestRecordingFlow('story-card-mock-work-001')
     flow.dispatch('start')
