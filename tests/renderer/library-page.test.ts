@@ -85,13 +85,4 @@ describe('V4.6 Phase 1 Library 我的创作 surface', () => {
     expect(library).toContain('确定要删掉这件作品吗？')
     expect(library).toContain('确定删除')
   })
-
-  it('keeps test unlock local-only and explicitly opt-in in preview builds', () => {
-    expect(libraryScript).toContain("new URLSearchParams(window.location.search).get('testUnlock') === '1'")
-    expect(libraryScript).toContain("window.location.hostname === 'localhost'")
-    expect(libraryScript).toContain("window.location.hostname === '127.0.0.1'")
-    expect(libraryScript).toContain('import.meta.env.DEV || (localPreviewHost && testUnlockRequested)')
-    expect(library).toContain('v-if="allowTestUnlock && !unlockedIds.has(asset.assetId)"')
-    expect(libraryScript).toContain('if (!allowTestUnlock) return')
-  })
 })

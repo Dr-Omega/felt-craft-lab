@@ -5,7 +5,6 @@ import {
   getAppView,
   getStoryCardTestContext,
   openLibrary,
-  openLearningZoneTest,
   openStatus,
   openStoryCardTest,
   subscribeAppNav,
@@ -15,7 +14,6 @@ import LibraryPage from './pages/LibraryPage.vue'
 import EditorPage from './pages/EditorPage.vue'
 import StatusPage from './pages/StatusPage.vue'
 import StoryCardTestPage from './pages/StoryCardTestPage.vue'
-import LearningZoneTestPage from './pages/LearningZoneTestPage.vue'
 
 const view = ref<AppView>(getAppView())
 const storyCardTestContext = ref(getStoryCardTestContext())
@@ -45,7 +43,6 @@ onUnmounted(() => {
       </div>
       <nav class="nav">
         <button type="button" :class="{ active: view === 'library' }" @click="openLibrary">素材库</button>
-        <button type="button" :class="{ active: view === 'learning-zone-test' }" @click="openLearningZoneTest">学习区测试</button>
         <button type="button" :class="{ active: view === 'story-card-test' }" @click="() => openStoryCardTest()">故事卡测试</button>
         <button type="button" :class="{ active: view === 'status' }" @click="openStatus">运行状态</button>
       </nav>
@@ -54,7 +51,6 @@ onUnmounted(() => {
     <main class="content">
       <LibraryPage v-if="view === 'library'" />
       <EditorPage v-else-if="view === 'editor'" />
-      <LearningZoneTestPage v-else-if="view === 'learning-zone-test'" />
       <StoryCardTestPage v-else-if="view === 'story-card-test'" :work-context="storyCardTestContext" />
       <StatusPage v-else />
     </main>
