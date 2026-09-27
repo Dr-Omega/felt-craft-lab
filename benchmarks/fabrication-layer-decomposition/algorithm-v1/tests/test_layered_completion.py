@@ -2,6 +2,7 @@ import copy
 from pathlib import Path
 import sys
 import unittest
+from unittest.mock import patch
 
 from shapely.geometry import box, Polygon
 from shapely.ops import unary_union
@@ -9,7 +10,7 @@ from shapely.ops import unary_union
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from layered_completion import (LayeredPlanError, propose_layered_plans,
                                 rank_layered_plans, validate_layered_plan,
-                                _hidden_domain)
+                                _hidden_domain, _group, _materialize)
 
 
 def observed(polygon, name, color):
@@ -26,7 +27,54 @@ def nested(colors):
                      "c"+str(i), color) for i, color in enumerate(colors)]
 
 
+def fractional_nested():
+    outer = Polygon([(.2, 1.7), (9.3, .4), (11.6, 8.9), (6.7, 11.2), (1.1, 9.8)])
+    middle = Polygon([(2.23, 3.18), (7.47, 1.91), (9.37, 7.86), (5.13, 8.73)])
+    upper = Polygon([(4.39, 4.67), (6.23, 3.41), (7.59, 6.17), (5.11, 7.03)])
+    return [observed(outer.difference(middle), 'outer', 'red'),
+            observed(middle.difference(upper), 'middle', 'white'),
+            observed(upper, 'upper', 'black')]
+
+
 class LayeredCompletionTests(unittest.TestCase):
+    def test_public_rank_rejects_fractional_invalid_candidates_not_only_best_plan(self):
+        sources = fractional_nested()
+        for axis in ('x', 'y'):
+            with self.subTest(axis=axis):
+                # Fault injection creates the formerly accepted candidate;
+                # actual public ranking below executes the real complete gate.
+                with patch('layered_completion.validate_layered_plan', return_value={'injected': True}):
+                    bad = _materialize([_group(s) for s in sources], sources, axis, 'observed-solid-partition')
+                with self.assertRaises(LayeredPlanError):
+                    rank_layered_plans(sources, [bad])
+        valid = propose_layered_plans(sources)
+        self.assertEqual(valid[0]['score']['pieceCount'], 3)
+        self.assertEqual(valid[0]['score']['layerDepth'], 3)
+        self.assertTrue(all(p['proposal']['mode'] != 'observed-solid-partition' for p in valid))
+        rejected = [trial for trial in valid[0]['proposalSearch']
+                    if trial['mode'] == 'observed-solid-partition']
+        self.assertEqual(len(rejected), 2)
+        self.assertTrue(all(trial['status'] == 'REJECTED' for trial in rejected))
+
+    def test_tiny_union_hidden_without_real_occluder_cannot_gain_forged_hypothesis(self):
+        sources = fractional_nested()
+        with patch('layered_completion.validate_layered_plan', return_value={'injected': True}):
+            bad = _materialize([_group(s) for s in sources], sources, 'x', 'observed-solid-partition')
+        suspect = [p for p in bad['pieces'] if p['hiddenPolygon'].area > 0 and not p['occluderIds']]
+        self.assertTrue(suspect)
+        for p in suspect:
+            p['completionEvidence'] = [{'method': 'forged-hypothesis', 'inferredHiddenGeometry': True}]
+        with self.assertRaisesRegex(LayeredPlanError, 'actual positive-area occluder'):
+            rank_layered_plans(sources, [bad])
+
+    def test_hidden_material_requires_explicit_hypothesis_in_public_rank(self):
+        sources = nested(['red', 'white', 'black'])
+        plan = copy.deepcopy(propose_layered_plans(sources)[0])
+        piece = next(p for p in plan['pieces'] if p['hiddenPolygon'].area > 0)
+        piece['completionEvidence'] = [{'method': 'observed-domain', 'inferredHiddenGeometry': False}]
+        with self.assertRaisesRegex(LayeredPlanError, 'hypothesis'):
+            rank_layered_plans(sources, [plan])
+
     def test_nonorthogonal_hidden_intersection_does_not_cancel_remote_boundary(self):
         # Independently generated convex polygon / rotated rectangle (seed 319),
         # not coordinates or a shape extracted from any material-library image.

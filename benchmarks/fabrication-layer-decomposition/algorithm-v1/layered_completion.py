@@ -264,6 +264,7 @@ def validate_layered_plan(observed, plan):
         raise LayeredPlanError("missing or duplicate piece order")
     by_id = {p["id"]: p for p in pieces}
     actual_visible, actual_edges = [], []
+    collected = {s["componentId"]: [] for s in sources}
     source_tree = STRtree([s["polygon"] for s in sources])
     above = GeometryCollection()
     for index in range(len(order)-1, -1, -1):
@@ -283,6 +284,15 @@ def validate_layered_plan(observed, plan):
             raise LayeredPlanError("declared visible or hidden geometry differs from real ordered coverage")
         if p.get("occluderIds") != sorted(occluders):
             raise LayeredPlanError("missing or incorrect actual occluder identity")
+        evidence = p.get("completionEvidence")
+        if (not isinstance(evidence, list) or not evidence
+                or any(not isinstance(e, dict) or not isinstance(e.get("method"), str)
+                       or not e["method"] or type(e.get("inferredHiddenGeometry")) is not bool
+                       for e in evidence)
+                or (hidden.area > 0 and not any(e["inferredHiddenGeometry"] for e in evidence))):
+            raise LayeredPlanError("hidden material requires explicit completion hypothesis evidence")
+        if hidden.area > 0 and not occluders:
+            raise LayeredPlanError("hidden material lacks an actual positive-area occluder")
         actual_edges.extend({"belowPieceId": identifier, "abovePieceId": other} for other in occluders)
         matching = []
         for source_index in source_tree.query(visible):
@@ -292,16 +302,21 @@ def validate_layered_plan(observed, plan):
             if p["colorSlotId"] != source["colorSlotId"] or list(p["rgb"]) != list(source["rgb"]):
                 raise LayeredPlanError("actual visible piece changes exact source color")
             matching.append(source)
+            collected[source["componentId"]].append(visible.intersection(source["polygon"]))
         if (p.get("sourceComponentIds") != sorted(s["componentId"] for s in matching)
                 or p.get("sourceRegionIds") != sorted({s["regionId"] for s in matching})):
             raise LayeredPlanError("visible source Component/Region membership mismatch")
-        expected = unary_union([s["polygon"] for s in matching]).intersection(full)
-        if visible.symmetric_difference(expected).area > tolerance:
+        expected = unary_union([s["polygon"].intersection(full) for s in matching])
+        if not _same_domain(visible, expected, tolerance):
             raise LayeredPlanError("piece visible geometry no longer matches original complete source domain")
         actual_visible.append(visible)
         above = unary_union([above, full])
-    if unary_union(actual_visible).symmetric_difference(foreground).area > tolerance:
-        raise LayeredPlanError("final visible construction loses source coverage")
+    if not _same_domain(above, foreground, tolerance):
+        raise LayeredPlanError("final foreground full domain/boundary differs")
+    for source in sources:
+        reconstructed = unary_union(collected[source["componentId"]])
+        if not _same_domain(reconstructed, source["polygon"], tolerance):
+            raise LayeredPlanError("complete source domain/boundary differs: " + source["componentId"])
     if plan.get("occlusionEdges") != sorted(actual_edges, key=lambda e: (e["belowPieceId"], e["abovePieceId"])):
         raise LayeredPlanError("piece-level occlusion graph differs from actual overlaps")
     actual_seams = _seams(pieces)
