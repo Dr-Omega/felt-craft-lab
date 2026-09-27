@@ -45,7 +45,7 @@ def _png(path, rgba):
 
 
 def _recipe(m4, quality_settings=None):
-    sources = [*sorted(HERE.glob('*.py')), HERE / 'validate_contract.ts', HERE / 'requirements.txt',
+    sources = [*sorted(HERE.glob('*.py')), *sorted(HERE.glob('*.ts')), HERE / 'requirements.txt',
                HERE.parent / 'tools/m4_runtime.py', HERE.parent / 'tools/m4_checks.py', HERE.parent / 'tools/component_binding.py']
     recipe = {'recipe': 'm4-m7-conservative-solid-plan/1',
             'effectiveConfiguration': m4['configuration'],
@@ -203,7 +203,8 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
                   whole_image_foreground: bool = False, selected_layer_ids: list[str] | None = None,
                   quality_mode: str = 'baseline', foreground_cleanup: bool = False,
                   seam_strategy: str = 'baseline', design_palette: list[list[int]] | None = None,
-                  palette_provenance: str | None = None) -> dict:
+                  palette_provenance: str | None = None,
+                  completion_strategy: str = 'legacy') -> dict:
     """Run finite supported input → actual Base/Piece candidates, safely.
 
     All output protection runs here before *any* write (including failure files).
@@ -213,24 +214,30 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
     image_path = Path(image_path).resolve()
     mask_path = Path(mask_path).resolve() if mask_path is not None else None
     output = validate_output_root(Path(output_root), [p for p in (image_path, mask_path) if p is not None])
-    if quality_mode not in {'baseline', 'selection', 'contour', 'combined', 'design-colors', 'design-cleanup'} or seam_strategy not in {'baseline', 'compare', 'visual-proxy'}:
+    if quality_mode not in {'baseline', 'selection', 'contour', 'combined', 'design-colors', 'design-cleanup', 'layered-selection'} or seam_strategy not in {'baseline', 'compare', 'visual-proxy'}:
         raise ValueError('invalid experimental quality/seam strategy')
+    if completion_strategy not in {'legacy', 'layered-v1'}:
+        raise ValueError('invalid completion strategy')
+    if completion_strategy != 'legacy' and seam_strategy != 'baseline':
+        raise ValueError('legacy seam ranking is not a layered result contract')
     if type(foreground_cleanup) is not bool or (foreground_cleanup and quality_mode == 'baseline'):
         raise ValueError('foreground cleanup requires an explicit experimental design mode')
     if quality_mode != 'baseline' and image_path.suffix.lower() != '.png':
         raise ValueError('experimental design V1 supports explicit PNG foreground; layered baseline remains available')
-    experimental = quality_mode != 'baseline' or seam_strategy != 'baseline'
+    experimental = quality_mode != 'baseline' or seam_strategy != 'baseline' or completion_strategy != 'legacy'
     quality_settings = ({'version':'application-quality/1','mode':quality_mode,
                          'foregroundCleanup':foreground_cleanup,'seamStrategy':seam_strategy,
                          'humanConfirmation':'PENDING_REVIEW'} if experimental else None)
+    if completion_strategy != 'legacy':
+        quality_settings['completionStrategy'] = completion_strategy
     design_options = {}
-    if quality_mode in {'design-colors', 'design-cleanup'}:
+    if quality_mode in {'design-colors', 'design-cleanup', 'layered-selection'}:
         from design_color_regions import validate_request
         quality_settings['designColorRequest'] = validate_request(design_palette, palette_provenance)
         design_options = {'design_palette':design_palette, 'palette_provenance':palette_provenance}
     elif design_palette is not None or palette_provenance is not None:
         raise ValueError('design palette requires the explicit design-colour path')
-    if quality_mode == 'design-colors':
+    if quality_mode in {'design-colors', 'layered-selection'}:
         quality_settings['solidConstructionPolicy'] = 'PARENT_INTERSECTION_FOR_FLOATING_CUT_RESIDUE/1'
     if not foreground_source.strip():
         raise ValueError("foreground_source must locate actual caller/development evidence")
@@ -290,16 +297,24 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
                                       _read(output / "m4/boundary-graph.json"),
                                       _read(output / "m4/vector-result.json"),
                                       m4["configuration"]["effectiveVectorConfig"]["bezier"]["validationFlatnessPx"],
-                                      point_touch_cycles=quality_mode == 'design-colors')
+                                      point_touch_cycles=quality_mode in {'design-colors', 'layered-selection'})
         slots = {o["id"]: o["colorSlotId"] for o in input_object["observedRegions"]}
         for obj in observed:
             obj["colorSlotId"] = slots[obj["regionId"]]
+        if completion_strategy == 'layered-v1':
+            # Same guarded public entry and upstream source/Component pipeline.
+            # The new result is explicitly NOT a b2.result/1 PASS.
+            from layered_runtime import _finish_layered
+            return _finish_layered(output=output, input_object=input_object, observed=observed,
+                m4=m4, labels=labels, portable=portable, quality_settings=quality_settings,
+                started=started, stage_seconds=stage_seconds, phase=phase,
+                completed=completed, image_path=image_path, verify_artifacts=_verify_artifacts)
         visual = visual_relations(observed, labels, parsed)
         completed.append("M6_VISUAL_EVIDENCE")
         phase('M6_OBSERVED_AND_VISUAL')
         plans = rank_plans(observed, propose_plans(
-            observed, reject_invalid_options=quality_mode in {'contour', 'combined', 'design-colors', 'design-cleanup'},
-            clip_numeric_parts=quality_mode == 'design-colors'))
+            observed, reject_invalid_options=quality_mode in {'contour', 'combined', 'design-colors', 'design-cleanup', 'layered-selection'},
+            clip_numeric_parts=quality_mode in {'design-colors', 'layered-selection'}))
         phase('M7_PROPOSE_VALIDATE_SCORE')
         quality_comparison = None
         if seam_strategy != 'baseline':
@@ -452,7 +467,8 @@ def main():
     parser.add_argument("--mask", type=Path)
     parser.add_argument("--whole-image-foreground", action="store_true")
     parser.add_argument("--select-layer", action="append")
-    parser.add_argument('--quality-mode', choices=['baseline','selection','contour','combined','design-colors','design-cleanup'], default='baseline')
+    parser.add_argument('--quality-mode', choices=['baseline','selection','contour','combined','design-colors','design-cleanup','layered-selection'], default='baseline')
+    parser.add_argument('--completion-strategy', choices=['legacy','layered-v1'], default='legacy')
     parser.add_argument('--design-palette', help='Explicit JSON RGB array, e.g. [[0,0,0],[255,200,0]]; omitted means automatic')
     parser.add_argument('--palette-provenance', help='Required source for an explicit reference palette')
     parser.add_argument('--foreground-cleanup', action='store_true', help='Unconfirmed experimental foreground proposal; never overwrites original alpha')
@@ -465,6 +481,7 @@ def main():
                            quality_mode=args.quality_mode, foreground_cleanup=args.foreground_cleanup,
                            design_palette=json.loads(args.design_palette) if args.design_palette is not None else None,
                            palette_provenance=args.palette_provenance,
+                           completion_strategy=args.completion_strategy,
                            seam_strategy=args.seam_strategy)
     print(json.dumps({"status": report["status"], "resultSha256": report["resultSha256"]}))
 

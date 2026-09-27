@@ -470,9 +470,11 @@ def _run_runtime(
                 rgba, proposal.structural_label_map, 'RC-A', color_config, proposal.pixel_label_map)
             baseline_analysis = (proposal.structural_label_map.copy(), proposal.pixel_label_map.copy(),
                                  baseline_purified, baseline_metadata)
-            design_mode = quality_mode in {'design-colors', 'design-cleanup'}
+            design_mode = quality_mode in {'design-colors', 'design-cleanup', 'layered-selection'}
             if design_mode:
                 from design_color_regions import cleanup_foreground, rebuild_regions
+                if quality_mode == 'layered-selection':
+                    from layered_selection import rebuild_regions
                 rgba, cleanup = timed('experimentalForegroundProposal', lambda: cleanup_foreground(
                     original_rgba, color_config, design_color_request, enabled=foreground_cleanup))
             else:
@@ -480,7 +482,7 @@ def _run_runtime(
                     original_rgba, enabled=foreground_cleanup))
             if not np.array_equal(rgba, original_rgba):
                 proposal = timed('derivedForegroundCpB', lambda: get_candidate('CP-B').propose(rgba, color_config))
-            if quality_mode == 'design-colors':
+            if quality_mode in {'design-colors', 'layered-selection'}:
                 structural, pixels, refinement = timed('experimentalSelection', lambda: rebuild_regions(
                     rgba, proposal.structural_label_map, proposal.pixel_label_map, color_config, design_color_request))
             else:
@@ -516,15 +518,15 @@ def _run_runtime(
             from quality_contours import refine_contours
             vector_result, quality['contours'] = timed('experimentalSharedContours', lambda: refine_contours(
                 graph, vector_result, proposal.structural_label_map, vector_config,
-                enabled=quality_mode in {'contour', 'combined', 'design-colors'},
-                point_touch_cycles=quality_mode == 'design-colors'))
+                enabled=quality_mode in {'contour', 'combined', 'design-colors', 'layered-selection'},
+                point_touch_cycles=quality_mode in {'design-colors', 'layered-selection'}))
             # This is a new selected geometry, not a claim to frozen P0-04C evidence.
             attempted = list(dict.fromkeys([vector_result['route'], *attempted]))
         candidates = timed("observedCandidateDerivation", lambda: _observed_candidates(runtime_id, graph, vector_result, regions, attempted))
         geometry_objects = timed('selectedGeometryValidation', lambda: candidate_polygons(
             candidates, graph, vector_result, float(vector_config['bezier']['validationFlatnessPx']),
-            point_touch_cycles=quality_mode == 'design-colors'))
-        if quality_mode == 'design-colors':
+            point_touch_cycles=quality_mode in {'design-colors', 'layered-selection'}))
+        if quality_mode in {'design-colors', 'layered-selection'}:
             quality['pointTouchMaterialization'] = [
                 {'candidateId': item['id'], **item['boundaryProvenance']['pointTouchMaterialization']}
                 for item in geometry_objects if 'pointTouchMaterialization' in item['boundaryProvenance']]
@@ -597,7 +599,7 @@ def _run_runtime(
             'sourceToDesignChangedRgbPixels': int(np.count_nonzero(np.any(original_rgba[..., :3] != purified[..., :3], axis=2) & (original_rgba[..., 3] > 0))),
         })
         (output_root / 'experimental-design.json').write_bytes(_canonical_json(quality))
-        if quality_mode in {'design-colors', 'design-cleanup'}:
+        if quality_mode in {'design-colors', 'design-cleanup', 'layered-selection'}:
             # Full-resolution changes, separate from untouched original A.
             changed_alpha = original_rgba[..., 3] != rgba[..., 3]
             changed_labels = old_structural != proposal.structural_label_map
@@ -694,7 +696,7 @@ def _run_runtime(
         },
     }
     if quality is not None:
-        if quality_mode == 'design-colors':
+        if quality_mode in {'design-colors', 'layered-selection'}:
             report['topology']['materializedSinglePolygonHoleCount'] = sum(len(o['polygon'].interiors) for o in geometry_objects)
             report['topology']['pointTouchMaterializedComponentCount'] = len(quality['pointTouchMaterialization'])
         report['experimentalDesign'] = {'artifact': 'experimental-design.json',
@@ -751,12 +753,12 @@ def run_runtime(
     prevents reusable service callers from accidentally bypassing the same
     protected-path, non-empty-directory, and overlap gates used by the CLI.
     """
-    if quality_mode not in {'baseline', 'selection', 'contour', 'combined', 'design-colors', 'design-cleanup'}:
+    if quality_mode not in {'baseline', 'selection', 'contour', 'combined', 'design-colors', 'design-cleanup', 'layered-selection'}:
         raise M4RuntimeError('invalid experimental quality mode')
     if type(foreground_cleanup) is not bool or (foreground_cleanup and quality_mode == 'baseline'):
         raise M4RuntimeError('foreground cleanup requires an explicit experimental quality mode')
     design_request = None
-    if quality_mode in {'design-colors', 'design-cleanup'}:
+    if quality_mode in {'design-colors', 'design-cleanup', 'layered-selection'}:
         quality_root = str(BENCHMARK_ROOT / 'algorithm-v1')
         if quality_root not in sys.path:
             sys.path.insert(0, quality_root)

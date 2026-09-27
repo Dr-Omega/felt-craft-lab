@@ -27,7 +27,7 @@ def verify_quality_design(root):
                   'sha256': sha((root / 'experimental-design.json').read_bytes()),
                   'mode': record['mode'], 'foregroundCleanupEnabled': record['foregroundCleanupEnabled'],
                   'frozenEvidence': False, 'humanConfirmation': 'PENDING_REVIEW'}
-    design_mode = record['mode'] in {'design-colors','design-cleanup'}
+    design_mode = record['mode'] in {'design-colors','design-cleanup','layered-selection'}
     if design_mode:
         descriptor['designColorRequest'] = record['designColorRequest']
     if any(canonical_bytes(value) != canonical_bytes(descriptor) for value in
@@ -78,7 +78,7 @@ def verify_quality_design(root):
     color, vector_config = kernel.load_profile(config['profile'])
     if color != config['effectiveColorConfig'] or vector_config != config['effectiveVectorConfig']:
         raise ValueError('experimental effective profile differs from declared configuration')
-    if record['mode'] not in {'selection','contour','combined','design-colors','design-cleanup'} or type(record['foregroundCleanupEnabled']) is not bool:
+    if record['mode'] not in {'selection','contour','combined','design-colors','design-cleanup','layered-selection'} or type(record['foregroundCleanupEnabled']) is not bool:
         raise ValueError('invalid persisted experimental mode')
     if any(report['experimentalDesign'][k] != record[k] for k in ('mode','foregroundCleanupEnabled')):
         raise ValueError('experimental mode declaration mismatch')
@@ -98,6 +98,8 @@ def verify_quality_design(root):
         raise ValueError('baseline representative analysis differs')
     if design_mode:
         from design_color_regions import validate_request, cleanup_foreground, rebuild_regions
+        if record['mode'] == 'layered-selection':
+            from layered_selection import rebuild_regions
         request = record['designColorRequest']
         validated = validate_request(request['referencePalette'], request['referenceProvenance'])
         if canonical_bytes(validated) != canonical_bytes(request) or canonical_bytes(config.get('designColorRequest')) != canonical_bytes(request):
@@ -109,7 +111,7 @@ def verify_quality_design(root):
         raise ValueError('foreground cleanup mapping/proposal differs from actual change')
     if not np.array_equal(original,effective):
         proposal = kernel.get_candidate('CP-B').propose(effective,color)
-    if record['mode'] == 'design-colors':
+    if record['mode'] in {'design-colors','layered-selection'}:
         new_labels,new_pixels,selection = rebuild_regions(effective,proposal.structural_label_map,proposal.pixel_label_map,color,request)
     else:
         new_labels,new_pixels,selection = refine_selection(effective,proposal.structural_label_map,proposal.pixel_label_map,color,
@@ -139,8 +141,8 @@ def verify_quality_design(root):
         raise ValueError('experimental Region/Component derivation mismatch')
     verify_persisted_binding(root)
     selected,contours = refine_contours(graph,baseline_vector,labels,vector_config,
-        enabled=record['mode'] in {'contour','combined','design-colors'},
-        point_touch_cycles=record['mode']=='design-colors')
+        enabled=record['mode'] in {'contour','combined','design-colors','layered-selection'},
+        point_touch_cycles=record['mode'] in {'design-colors','layered-selection'})
     public_graph = {k:v for k,v in graph.items() if not k.startswith('_')}
     # The frozen result contains numeric Region-map keys in memory. JSON turns
     # these into strings; sorting 1,2,10 is not sorting "1","10","2". Normalize
@@ -148,7 +150,7 @@ def verify_quality_design(root):
     if any(json.loads(canonical_bytes(a)) != b for a,b in ((public_graph,read('boundary-graph.json')),
             (selected,read('vector-result.json')),(contours,record['contours']))):
         raise ValueError('experimental shared contour geometry/mapping/budget mismatch')
-    if record['mode']=='design-colors':
+    if record['mode'] in {'design-colors','layered-selection'}:
         candidates=kernel._observed_candidates(report['runtimeId'],graph,selected,replay_regions,[selected['route']])
         objects=kernel.candidate_polygons(candidates,graph,selected,
             float(vector_config['bezier']['validationFlatnessPx']),point_touch_cycles=True)

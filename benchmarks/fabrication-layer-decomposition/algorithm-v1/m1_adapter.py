@@ -27,7 +27,7 @@ def artifact(path: Path, artifact_id: str | None = None, media_type: str | None 
     data = path.read_bytes()
     return {"id": artifact_id or path.name, "sha256": hashlib.sha256(data).hexdigest(),
             "identityMode": "EXACT_BYTES", "byteLength": len(data),
-            "mediaType": media_type or ("image/png" if path.suffix == ".png" else "application/json")}
+            "mediaType": media_type or {".png": "image/png", ".npz": "application/x-npz"}.get(path.suffix.lower(), "application/json")}
 
 
 def _write_artifact(root: Path, name: str, value: Any) -> dict:
