@@ -214,10 +214,17 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
     image_path = Path(image_path).resolve()
     mask_path = Path(mask_path).resolve() if mask_path is not None else None
     output = validate_output_root(Path(output_root), [p for p in (image_path, mask_path) if p is not None])
-    if quality_mode not in {'baseline', 'selection', 'contour', 'combined', 'design-colors', 'design-cleanup', 'layered-selection'} or seam_strategy not in {'baseline', 'compare', 'visual-proxy'}:
+    if quality_mode == 'practical-auto':
+        if design_palette is not None or palette_provenance is not None or seam_strategy != 'baseline':
+            raise ValueError('practical auto owns its uniform selection/completion policy; no reference answers')
+        foreground_cleanup = True
+        completion_strategy = 'practical-auto'
+    if quality_mode not in {'baseline', 'selection', 'contour', 'combined', 'design-colors', 'design-cleanup', 'layered-selection', 'practical-auto'} or seam_strategy not in {'baseline', 'compare', 'visual-proxy'}:
         raise ValueError('invalid experimental quality/seam strategy')
-    if completion_strategy not in {'legacy', 'layered-v1'}:
+    if completion_strategy not in {'legacy', 'layered-v1', 'practical-auto'}:
         raise ValueError('invalid completion strategy')
+    if completion_strategy == 'practical-auto' and quality_mode != 'practical-auto':
+        raise ValueError('practical completion is owned by the practical-auto entry')
     if completion_strategy != 'legacy' and seam_strategy != 'baseline':
         raise ValueError('legacy seam ranking is not a layered result contract')
     if type(foreground_cleanup) is not bool or (foreground_cleanup and quality_mode == 'baseline'):
@@ -231,13 +238,13 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
     if completion_strategy != 'legacy':
         quality_settings['completionStrategy'] = completion_strategy
     design_options = {}
-    if quality_mode in {'design-colors', 'design-cleanup', 'layered-selection'}:
+    if quality_mode in {'design-colors', 'design-cleanup', 'layered-selection', 'practical-auto'}:
         from design_color_regions import validate_request
         quality_settings['designColorRequest'] = validate_request(design_palette, palette_provenance)
         design_options = {'design_palette':design_palette, 'palette_provenance':palette_provenance}
     elif design_palette is not None or palette_provenance is not None:
         raise ValueError('design palette requires the explicit design-colour path')
-    if quality_mode in {'design-colors', 'layered-selection'}:
+    if quality_mode in {'design-colors', 'layered-selection', 'practical-auto'}:
         quality_settings['solidConstructionPolicy'] = 'PARENT_INTERSECTION_FOR_FLOATING_CUT_RESIDUE/1'
     if not foreground_source.strip():
         raise ValueError("foreground_source must locate actual caller/development evidence")
@@ -281,7 +288,11 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
                          **design_options)
         completed.append("M4_RUNTIME")
         phase('M4_AND_INPUT_NORMALIZATION')
-        input_object = build_input(output / "m4", portable)
+        if quality_mode == 'practical-auto':
+            from m1_adapter import _assemble_generated_input
+            input_object = _assemble_generated_input(output / 'm4', portable)
+        else:
+            input_object = build_input(output / "m4", portable)
         if portable is not None:
             input_object['artifacts'].append(portable['arrayArtifact'])
         _write(output / 'algorithm-recipe.json', _recipe(m4, quality_settings))
@@ -297,24 +308,36 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
                                       _read(output / "m4/boundary-graph.json"),
                                       _read(output / "m4/vector-result.json"),
                                       m4["configuration"]["effectiveVectorConfig"]["bezier"]["validationFlatnessPx"],
-                                      point_touch_cycles=quality_mode in {'design-colors', 'layered-selection'})
+                                      point_touch_cycles=quality_mode in {'design-colors', 'layered-selection', 'practical-auto'})
         slots = {o["id"]: o["colorSlotId"] for o in input_object["observedRegions"]}
         for obj in observed:
             obj["colorSlotId"] = slots[obj["regionId"]]
-        if completion_strategy == 'layered-v1':
+        practical_prepared = None
+        practical_recommendation = None
+        legacy_fallback = None
+        if completion_strategy == 'practical-auto':
+            from practical_runtime import _prepare_and_search
+            practical_prepared, practical_recommendation = _prepare_and_search(observed, output, started)
+            if practical_recommendation['recommendedIndex'] is None:
+                legacy_fallback = practical_prepared['legacyFallback']
+                if legacy_fallback is None:
+                    raise ValueError('no legal same-design fallback contract')
+        if completion_strategy == 'layered-v1' or (completion_strategy == 'practical-auto' and legacy_fallback is None):
             # Same guarded public entry and upstream source/Component pipeline.
             # The new result is explicitly NOT a b2.result/1 PASS.
             from layered_runtime import _finish_layered
             return _finish_layered(output=output, input_object=input_object, observed=observed,
                 m4=m4, labels=labels, portable=portable, quality_settings=quality_settings,
                 started=started, stage_seconds=stage_seconds, phase=phase,
-                completed=completed, image_path=image_path, verify_artifacts=_verify_artifacts)
+                completed=completed, image_path=image_path, verify_artifacts=_verify_artifacts,
+                **({'practical_prepared': practical_prepared, 'practical_recommendation': practical_recommendation}
+                   if practical_prepared is not None else {}))
         visual = visual_relations(observed, labels, parsed)
         completed.append("M6_VISUAL_EVIDENCE")
         phase('M6_OBSERVED_AND_VISUAL')
-        plans = rank_plans(observed, propose_plans(
-            observed, reject_invalid_options=quality_mode in {'contour', 'combined', 'design-colors', 'design-cleanup', 'layered-selection'},
-            clip_numeric_parts=quality_mode in {'design-colors', 'layered-selection'}))
+        plans = rank_plans(observed, [legacy_fallback] if legacy_fallback is not None else propose_plans(
+            observed, reject_invalid_options=quality_mode in {'contour', 'combined', 'design-colors', 'design-cleanup', 'layered-selection', 'practical-auto'},
+            clip_numeric_parts=quality_mode in {'design-colors', 'layered-selection', 'practical-auto'}))
         phase('M7_PROPOSE_VALIDATE_SCORE')
         quality_comparison = None
         if seam_strategy != 'baseline':
@@ -436,6 +459,10 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
             summary['experimentalDesign'] = m4.get('experimentalDesign')
             summary['seamPlacementComparison'] = quality_comparison
             summary['qualityAcceptance'] = {'AtoB':'PENDING_MANUAL_REVIEW','BtoC':checks['renderBackStatus']}
+        if practical_recommendation is not None:
+            summary['practicalAutomaticSelection'] = practical_recommendation
+            summary['fallbackContract'] = 'b2.result/1'
+            summary['layeredCompletionPassClaimed'] = False
         _page(output, summary)
         phase('DIFFERENCE_AND_PAGE')
         _write(output / "execution.json", {"durationSeconds": time.perf_counter() - started,
@@ -467,7 +494,7 @@ def main():
     parser.add_argument("--mask", type=Path)
     parser.add_argument("--whole-image-foreground", action="store_true")
     parser.add_argument("--select-layer", action="append")
-    parser.add_argument('--quality-mode', choices=['baseline','selection','contour','combined','design-colors','design-cleanup','layered-selection'], default='baseline')
+    parser.add_argument('--quality-mode', choices=['baseline','selection','contour','combined','design-colors','design-cleanup','layered-selection','practical-auto'], default='baseline')
     parser.add_argument('--completion-strategy', choices=['legacy','layered-v1'], default='legacy')
     parser.add_argument('--design-palette', help='Explicit JSON RGB array, e.g. [[0,0,0],[255,200,0]]; omitted means automatic')
     parser.add_argument('--palette-provenance', help='Required source for an explicit reference palette')

@@ -28,11 +28,17 @@ def _write(path, value):
 
 def _finish_layered(*, output, input_object, observed, m4, labels, portable,
                     quality_settings, started, stage_seconds, phase, completed,
-                    image_path, verify_artifacts):
-    plans = rank_layered_plans(observed, propose_layered_plans(observed))
+                    image_path, verify_artifacts, practical_prepared=None,
+                    practical_recommendation=None):
+    if practical_prepared is None:
+        plans = rank_layered_plans(observed, propose_layered_plans(observed))
+        selected_index = 0
+    else:
+        plans = practical_prepared['layeredCandidates']
+        selected_index = practical_recommendation['recommendedIndex']
     if not plans:
         raise ValueError('no legally completed layered fabrication candidate')
-    plan = plans[0]
+    plan = plans[selected_index]
     phase('LAYERED_M7_PROPOSE_VALIDATE_SCORE')
     comparison = [{'id': p['id'], 'score': p['score'], 'status':'GEOMETRY_AND_ORDER_VALID',
                    'geometryChecks':p['geometryChecks'], 'proposal':p['proposal'],
@@ -64,7 +70,7 @@ def _finish_layered(*, output, input_object, observed, m4, labels, portable,
     fresh = candidate_polygons(_read(output/'m4/observed-candidates.json'),
         _read(output/'m4/boundary-graph.json'), _read(output/'m4/vector-result.json'),
         bound_recipe['effectiveConfiguration']['effectiveVectorConfig']['bezier']['validationFlatnessPx'],
-        point_touch_cycles=bound_recipe['experimentalQuality']['mode'] in {'design-colors','layered-selection'})
+        point_touch_cycles=bound_recipe['experimentalQuality']['mode'] in {'design-colors','layered-selection','practical-auto'})
     slots = {record['id']:record['colorSlotId'] for record in persisted_input['observedRegions']}
     for item in fresh:
         item['colorSlotId'] = slots[item['regionId']]
@@ -110,6 +116,9 @@ def _finish_layered(*, output, input_object, observed, m4, labels, portable,
         'qualityAcceptance':{'AtoB':'PENDING_MANUAL_REVIEW','BtoC':'PASS'},
         'visualQuality':'PENDING_MANUAL_REVIEW','manufacturingAssessment':'NOT_EVALUATED',
         'productionExportEligible':False}
+    if practical_recommendation is not None:
+        summary['practicalAutomaticSelection'] = practical_recommendation
+        summary['boundedSearch'] = practical_prepared['diagnostics']
     cards = [('Actual selected design','observed.png'),('Actual completed assembly','rerender.png'),
              ('Full pieces, magenta = hidden inferred material','complete-pieces.svg'),
              ('Union of hidden domains (not missing pixels)','hidden-domains.png'),

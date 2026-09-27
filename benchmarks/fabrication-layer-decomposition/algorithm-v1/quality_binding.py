@@ -27,7 +27,7 @@ def verify_quality_design(root):
                   'sha256': sha((root / 'experimental-design.json').read_bytes()),
                   'mode': record['mode'], 'foregroundCleanupEnabled': record['foregroundCleanupEnabled'],
                   'frozenEvidence': False, 'humanConfirmation': 'PENDING_REVIEW'}
-    design_mode = record['mode'] in {'design-colors','design-cleanup','layered-selection'}
+    design_mode = record['mode'] in {'design-colors','design-cleanup','layered-selection','practical-auto'}
     if design_mode:
         descriptor['designColorRequest'] = record['designColorRequest']
     if any(canonical_bytes(value) != canonical_bytes(descriptor) for value in
@@ -78,7 +78,7 @@ def verify_quality_design(root):
     color, vector_config = kernel.load_profile(config['profile'])
     if color != config['effectiveColorConfig'] or vector_config != config['effectiveVectorConfig']:
         raise ValueError('experimental effective profile differs from declared configuration')
-    if record['mode'] not in {'selection','contour','combined','design-colors','design-cleanup','layered-selection'} or type(record['foregroundCleanupEnabled']) is not bool:
+    if record['mode'] not in {'selection','contour','combined','design-colors','design-cleanup','layered-selection','practical-auto'} or type(record['foregroundCleanupEnabled']) is not bool:
         raise ValueError('invalid persisted experimental mode')
     if any(report['experimentalDesign'][k] != record[k] for k in ('mode','foregroundCleanupEnabled')):
         raise ValueError('experimental mode declaration mismatch')
@@ -89,8 +89,11 @@ def verify_quality_design(root):
         whole_image_foreground=origin['wholeImageForegroundDeclared'])
     if not np.array_equal(restored.rgba,original):
         raise ValueError('original effective foreground differs from source/mask snapshots')
-    proposal = kernel.get_candidate('CP-B').propose(original,color)
-    old_purified, old_metadata = kernel.apply_representatives(original,proposal.structural_label_map,'RC-A',color,proposal.pixel_label_map)
+    baseline_original = original.copy()
+    if record['mode'] == 'practical-auto':
+        baseline_original[baseline_original[...,3] == 0,:3] = 0
+    proposal = kernel.get_candidate('CP-B').propose(baseline_original,color)
+    old_purified, old_metadata = kernel.apply_representatives(baseline_original,proposal.structural_label_map,'RC-A',color,proposal.pixel_label_map)
     with np.load(root/'baseline-analysis.npz') as arrays:
         if not np.array_equal(arrays['structural'],proposal.structural_label_map) or not np.array_equal(arrays['pixels'],proposal.pixel_label_map):
             raise ValueError('baseline analysis is not original CP-B result')
@@ -100,18 +103,25 @@ def verify_quality_design(root):
         from design_color_regions import validate_request, cleanup_foreground, rebuild_regions
         if record['mode'] == 'layered-selection':
             from layered_selection import rebuild_regions
+        if record['mode'] == 'practical-auto':
+            from practical_selection import rebuild_regions
+            from practical_cleanup import cleanup_foreground
         request = record['designColorRequest']
         validated = validate_request(request['referencePalette'], request['referenceProvenance'])
         if canonical_bytes(validated) != canonical_bytes(request) or canonical_bytes(config.get('designColorRequest')) != canonical_bytes(request):
             raise ValueError('design colour request/reference provenance mismatch')
+        if record['mode'] == 'practical-auto' and (request['mode'] != 'AUTO' or not record['foregroundCleanupEnabled']):
+            raise ValueError('practical mode requires the uniform automatic cleanup policy')
         replay_effective,cleanup = cleanup_foreground(original,color,request,enabled=record['foregroundCleanupEnabled'])
     else:
         replay_effective, cleanup = propose_foreground_cleanup(original,enabled=record['foregroundCleanupEnabled'])
+    if record['mode'] == 'practical-auto':
+        replay_effective[replay_effective[...,3] == 0,:3] = 0
     if cleanup != record['cleanup'] or not np.array_equal(replay_effective,effective):
         raise ValueError('foreground cleanup mapping/proposal differs from actual change')
-    if not np.array_equal(original,effective):
+    if not np.array_equal(baseline_original,effective):
         proposal = kernel.get_candidate('CP-B').propose(effective,color)
-    if record['mode'] in {'design-colors','layered-selection'}:
+    if record['mode'] in {'design-colors','layered-selection','practical-auto'}:
         new_labels,new_pixels,selection = rebuild_regions(effective,proposal.structural_label_map,proposal.pixel_label_map,color,request)
     else:
         new_labels,new_pixels,selection = refine_selection(effective,proposal.structural_label_map,proposal.pixel_label_map,color,
@@ -141,8 +151,8 @@ def verify_quality_design(root):
         raise ValueError('experimental Region/Component derivation mismatch')
     verify_persisted_binding(root)
     selected,contours = refine_contours(graph,baseline_vector,labels,vector_config,
-        enabled=record['mode'] in {'contour','combined','design-colors','layered-selection'},
-        point_touch_cycles=record['mode'] in {'design-colors','layered-selection'})
+        enabled=record['mode'] in {'contour','combined','design-colors','layered-selection','practical-auto'},
+        point_touch_cycles=record['mode'] in {'design-colors','layered-selection','practical-auto'})
     public_graph = {k:v for k,v in graph.items() if not k.startswith('_')}
     # The frozen result contains numeric Region-map keys in memory. JSON turns
     # these into strings; sorting 1,2,10 is not sorting "1","10","2". Normalize
@@ -150,7 +160,7 @@ def verify_quality_design(root):
     if any(json.loads(canonical_bytes(a)) != b for a,b in ((public_graph,read('boundary-graph.json')),
             (selected,read('vector-result.json')),(contours,record['contours']))):
         raise ValueError('experimental shared contour geometry/mapping/budget mismatch')
-    if record['mode'] in {'design-colors','layered-selection'}:
+    if record['mode'] in {'design-colors','layered-selection','practical-auto'}:
         candidates=kernel._observed_candidates(report['runtimeId'],graph,selected,replay_regions,[selected['route']])
         objects=kernel.candidate_polygons(candidates,graph,selected,
             float(vector_config['bezier']['validationFlatnessPx']),point_touch_cycles=True)

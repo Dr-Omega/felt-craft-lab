@@ -47,6 +47,23 @@ def build_input(runtime_dir: Path, layered_evidence: dict | None = None) -> dict
     rejected rather than overwritten. Source identity excludes runtime names,
     absolute paths, durations and timestamps.
     """
+    return _build_input(runtime_dir, layered_evidence, replay_quality=True)
+
+
+def _assemble_generated_input(runtime_dir: Path, layered_evidence: dict | None = None) -> dict:
+    """Private in-process assembly after M4 generation; NOT acceptance.
+
+    Component domains are still recomputed below. The guarded practical runtime
+    must call public build_input on persisted artifacts before publishing any
+    completed result. There is no caller-supplied verified flag or PASS cache.
+    """
+    report = json.loads((runtime_dir / 'report.json').read_text('utf-8'))
+    if report.get('experimentalDesign', {}).get('mode') != 'practical-auto':
+        raise ValueError('fresh generation assembly is restricted to practical auto')
+    return _build_input(runtime_dir, layered_evidence, replay_quality=False)
+
+
+def _build_input(runtime_dir, layered_evidence, *, replay_quality):
     root = runtime_dir.resolve()
     from component_binding import verify_persisted_binding
     binding = verify_persisted_binding(root)
@@ -111,7 +128,8 @@ def build_input(runtime_dir: Path, layered_evidence: dict | None = None) -> dict
     design = report.get('experimentalDesign')
     if design is not None:
         from quality_binding import verify_quality_design
-        verify_quality_design(root)
+        if replay_quality:
+            verify_quality_design(root)
         provenance['experimentalDesign'] = design
         provenance['normalization'] = 'Original A snapshot retained; actual experimental B labels, exact palette and selected shared edges independently versioned; NOT frozen or human-accepted evidence'
     if layered_evidence is not None:
