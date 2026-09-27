@@ -3,12 +3,13 @@ from pathlib import Path
 import sys
 import unittest
 
-from shapely.geometry import box
+from shapely.geometry import box, Polygon
 from shapely.ops import unary_union
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from layered_completion import (LayeredPlanError, propose_layered_plans,
-                                rank_layered_plans, validate_layered_plan)
+                                rank_layered_plans, validate_layered_plan,
+                                _hidden_domain)
 
 
 def observed(polygon, name, color):
@@ -26,6 +27,35 @@ def nested(colors):
 
 
 class LayeredCompletionTests(unittest.TestCase):
+    def test_nonorthogonal_hidden_intersection_does_not_cancel_remote_boundary(self):
+        # Independently generated convex polygon / rotated rectangle (seed 319),
+        # not coordinates or a shape extracted from any material-library image.
+        full = Polygon([(9.290655025828848, .5250667124816466),
+                        (.0141893665862924, 4.861699569696992),
+                        (2.0207456741814256, 9.547182686297788),
+                        (9.451035997344611, 4.991344078336233)])
+        above = Polygon([(9.343614504884847, 5.188271724556769),
+                         (5.611364157790723, 8.894740036388907),
+                         (.9042903321179678, 4.154924006238955),
+                         (4.636540679212093, .4484556944068161)])
+        source_visible = full.difference(above).intersection(full)
+        cancellation = full.difference(source_visible)
+        actual = full.intersection(above)
+        # Area-only comparison cannot detect this remote, near-zero-area edge.
+        self.assertLess(cancellation.symmetric_difference(actual).area, 1e-10)
+        self.assertGreater(cancellation.boundary.hausdorff_distance(actual.boundary), 1.)
+        self.assertTrue(_hidden_domain(full, above).equals(actual))
+        self.assertEqual(_hidden_domain(full, above).boundary.hausdorff_distance(actual.boundary), 0.)
+
+    def test_reusable_rank_rejects_tiny_hidden_forgery_with_remote_boundary(self):
+        sources = nested(["red", "white", "black"])
+        plan = copy.deepcopy(propose_layered_plans(sources)[0])
+        piece = next(p for p in plan["pieces"] if p["colorSlotId"] == "red")
+        tiny = Polygon([(0.5, 0.5), (0.75, 0.5), (0.5, 0.5+1e-13)])
+        piece["hiddenPolygon"] = piece["hiddenPolygon"].union(tiny)
+        with self.assertRaisesRegex(LayeredPlanError, "hidden geometry"):
+            rank_layered_plans(sources, [plan])
+
     def test_three_actual_layers_complete_middle_eye_not_only_base(self):
         sources = nested(["red", "white", "black"])
         selected = propose_layered_plans(sources)[0]

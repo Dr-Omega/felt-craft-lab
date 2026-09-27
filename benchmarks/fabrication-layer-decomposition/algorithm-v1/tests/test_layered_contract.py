@@ -4,7 +4,7 @@ from pathlib import Path
 import sys
 import unittest
 
-from shapely.geometry import box, mapping, GeometryCollection
+from shapely.geometry import box, mapping, shape, Polygon, GeometryCollection
 from shapely.ops import unary_union
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -227,6 +227,50 @@ class LayeredContractTests(unittest.TestCase):
         bad = copy.deepcopy(self.wire)
         bad['payload']['orderSemantics'] = 'CONFIRMED_AUTHOR_LAYER_HISTORY'
         self.assertFalse(run_shared_layered_validation(bad, sign_result=True)['ok'])
+
+    def test_nonorthogonal_fractional_completion_persisted_domain_replay(self):
+        # General fractional, non-axis-aligned boundaries, not coordinates or
+        # an extracted contour from a real image. Visible rings are legitimate
+        # intermediate domains; final actual pieces are complete solid layers.
+        from layered_completion import propose_layered_plans
+        outer = Polygon([(0.2, 1.7), (9.3, 0.4), (11.6, 8.9), (6.7, 11.2), (1.1, 9.8)])
+        middle = Polygon([(2.23, 3.18), (7.47, 1.91), (9.37, 7.86), (5.13, 8.73)])
+        upper = Polygon([(4.39, 4.67), (6.23, 3.41), (7.59, 6.17), (5.11, 7.03)])
+        inp, _, sources = fixture(3)
+        observed = [dict(sources[0], polygon=outer.difference(middle)),
+                    dict(sources[1], polygon=middle.difference(upper)),
+                    dict(sources[2], polygon=upper)]
+        plan = propose_layered_plans(observed)[0]
+        wire = build_layered_result(inp, plan, observed)
+        # A real JSON round trip prevents relying on generated Shapely objects.
+        persisted = json.loads(json.dumps(wire))
+        verified = verify_layered_result(persisted, observed, (12, 12))
+        self.assertEqual(verified['metrics']['layerDepth'], 3)
+        self.assertEqual(verified['metrics']['pieceCount'], 3)
+        self.assertEqual(verified['interiorMismatchPixelCount'], 0)
+        by_id = {p['id']: p for p in persisted['payload']['pieces']}
+        above = GeometryCollection()
+        from solid_plans import _parts
+        for pid in reversed(persisted['payload']['bottomToTop']):
+            piece = by_id[pid]
+            full = shape(piece['full'])
+            hidden = unary_union(_parts(full.intersection(above)))
+            self.assertTrue(hidden.equals(shape(piece['hidden'])))
+            above = unary_union([above, full])
+
+    def test_rehashed_negligible_area_cannot_hide_remote_hidden_boundary(self):
+        bad = copy.deepcopy(self.wire)
+        actual = shape(bad['payload']['pieces'][0]['hidden'])
+        # Much smaller than the existing numerical area tolerance and smaller
+        # than a raster pixel, but a new boundary far from the true hidden set.
+        # Area, bbox or rerender-only acceptance must not authorize this claim.
+        sliver = Polygon([(0.5, 0.5), (0.5000001, 0.5), (0.5, 0.5000001)])
+        forged = actual.union(sliver)
+        self.assertLess(actual.symmetric_difference(forged).area, 144e-9)
+        self.assertGreater(actual.boundary.hausdorff_distance(forged.boundary), 0.1)
+        bad['payload']['pieces'][0]['hidden'] = mapping(forged)
+        with self.assertRaisesRegex(LayeredContractError, 'hidden: full domain/boundary differs'):
+            verify_layered_result(self.resign(bad), self.observed, (12, 12))
 
 
 if __name__ == '__main__':

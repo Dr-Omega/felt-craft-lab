@@ -12,11 +12,11 @@ import math
 from itertools import combinations
 
 from shapely import shortest_line
-from shapely.geometry import LineString, Polygon
+from shapely.geometry import GeometryCollection, LineString, Polygon
 from shapely.ops import unary_union
 from shapely.strtree import STRtree
 
-from solid_plans import (_key, _lines, _sources, _tolerance,
+from solid_plans import (_key, _lines, _parts, _sources, _tolerance,
                          _require_polygon, decompose_solid, SolidPlanError,
                          propose_plans as propose_legacy_plans)
 
@@ -38,6 +38,22 @@ def _positive(a, b):
     bx, by, bz, bw = b.bounds
     return (max(ax, bx) < min(az, bz) and max(ay, by) < min(aw, bw)
             and a.intersection(b).area > 0)
+
+
+def _same_domain(a, b, tolerance):
+    """Compare complete area and boundary, not only an overlay area residual."""
+    if a.equals(b):
+        return True
+    if a.is_empty or b.is_empty:
+        return False
+    scale = max(1., *(abs(value) for value in (*a.bounds, *b.bounds)))
+    return (a.symmetric_difference(b).area <= tolerance
+            and a.boundary.hausdorff_distance(b.boundary) <= scale * 1e-10)
+
+
+def _hidden_domain(full, above):
+    parts = _parts(full.intersection(above))
+    return unary_union(parts) if parts else Polygon()
 
 
 def _topological(ids, edges):
@@ -197,6 +213,16 @@ def _materialize(groups, sources, axis, mode, diagnostics=None):
             if position[pieces[int(i)]["id"]] > position[p["id"]]
             and _positive(p["polygon"], pieces[int(i)]["polygon"]))
         edges.extend({"belowPieceId": p["id"], "abovePieceId": above} for above in p["occluderIds"])
+    # Hidden material is the actual ordered overlap, not full minus a rounded
+    # source-derived visible overlay. The latter cancellation can erase a tiny
+    # non-axis-aligned domain far from the remaining hidden boundary. Do not
+    # drop such domains by area: retain the exact polygonal ordered intersection.
+    by_id = {p["id"]: p for p in pieces}
+    above = GeometryCollection()
+    for identifier in reversed(order):
+        p = by_id[identifier]
+        p["hiddenPolygon"] = _hidden_domain(p["polygon"], above)
+        above = unary_union([above, p["polygon"]])
     plan = {"strategy": STRATEGY, "pieces": pieces, "bottomToTop": order,
             "occlusionEdges": sorted(edges, key=lambda e: (e["belowPieceId"], e["abovePieceId"])),
             "proposal": {"mode": mode, "splitAxis": axis, **(diagnostics or {})}}
@@ -239,19 +265,21 @@ def validate_layered_plan(observed, plan):
     by_id = {p["id"]: p for p in pieces}
     actual_visible, actual_edges = [], []
     source_tree = STRtree([s["polygon"] for s in sources])
-    for index, identifier in enumerate(order):
+    above = GeometryCollection()
+    for index in range(len(order)-1, -1, -1):
+        identifier = order[index]
         p = by_id[identifier]
         full = p["polygon"]
         _require_polygon(full, identifier, solid=True)
         if full.difference(foreground).area > tolerance:
             raise LayeredPlanError("full piece enters genuine transparent foreground gap")
         occluders = [above for above in order[index+1:] if _positive(full, by_id[above]["polygon"])]
-        visible = full.difference(unary_union([by_id[above]["polygon"] for above in occluders]))
-        hidden = full.difference(visible)
+        visible = full.difference(above)
+        hidden = _hidden_domain(full, above)
         if visible.area <= 0:
             raise LayeredPlanError("useless wholly hidden piece")
-        if (visible.symmetric_difference(p["visiblePolygon"]).area > tolerance
-                or hidden.symmetric_difference(p["hiddenPolygon"]).area > tolerance):
+        if (not _same_domain(visible, p["visiblePolygon"], tolerance)
+                or not _same_domain(hidden, p["hiddenPolygon"], tolerance)):
             raise LayeredPlanError("declared visible or hidden geometry differs from real ordered coverage")
         if p.get("occluderIds") != sorted(occluders):
             raise LayeredPlanError("missing or incorrect actual occluder identity")
@@ -271,6 +299,7 @@ def validate_layered_plan(observed, plan):
         if visible.symmetric_difference(expected).area > tolerance:
             raise LayeredPlanError("piece visible geometry no longer matches original complete source domain")
         actual_visible.append(visible)
+        above = unary_union([above, full])
     if unary_union(actual_visible).symmetric_difference(foreground).area > tolerance:
         raise LayeredPlanError("final visible construction loses source coverage")
     if plan.get("occlusionEdges") != sorted(actual_edges, key=lambda e: (e["belowPieceId"], e["abovePieceId"])):
