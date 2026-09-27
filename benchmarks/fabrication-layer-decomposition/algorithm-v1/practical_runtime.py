@@ -70,13 +70,18 @@ def _prepare_and_search(observed, output, started):
     if remaining <= 0:
         attempt['status'] = 'SKIPPED_NO_SEARCH_BUDGET_BASELINE_RETAINED'
     else:
-        context = multiprocessing.get_context('spawn')
-        parent, child = context.Pipe(duplex=False)
-        worker = context.Process(target=_search_worker,
-            args=(child, observed, baseline, str(output/'practical-search.stderr.log')))
-        worker.start()
-        child.close()
+        parent = child = worker = None
+        worker_started = False
+        child_closed = False
         try:
+            context = multiprocessing.get_context('spawn')
+            parent, child = context.Pipe(duplex=False)
+            worker = context.Process(target=_search_worker,
+                args=(child, observed, baseline, str(output/'practical-search.stderr.log')))
+            worker.start()
+            worker_started = True
+            child.close()
+            child_closed = True
             if parent.poll(max(0.0, deadline-time.perf_counter())):
                 try:
                     answer = parent.recv()
@@ -88,16 +93,42 @@ def _prepare_and_search(observed, output, started):
                     selected = answer['value']
             else:
                 attempt['status'] = 'SEARCH_TIMEOUT_BASELINE_RETAINED'
+        except Exception as error:
+            selected = baseline
+            attempt.update(status='SEARCH_FAILURE_BASELINE_RETAINED',
+                           errorType=type(error).__name__, error=str(error),
+                           traceback=traceback.format_exc())
         finally:
-            parent.close()
-            if worker.is_alive():
-                worker.terminate()
-            worker.join(timeout=5)
-            attempt['workerExitCode'] = worker.exitcode
-    selected['diagnostics']['supervisor'] = attempt
+            if child is not None and not child_closed:
+                child.close()
+            if parent is not None:
+                parent.close()
+            if worker_started:
+                if worker.is_alive():
+                    worker.terminate()
+                worker.join(timeout=5)
+                if worker.is_alive():
+                    worker.kill()
+                    worker.join(timeout=5)
+                attempt['workerExitCode'] = worker.exitcode
+                if worker.is_alive():
+                    attempt['status'] = 'OWNED_WORKER_CLEANUP_FAILED'
+                    (output/'practical-search.json').write_bytes(canonical_bytes(attempt))
+                    raise RuntimeError('owned search worker did not exit; manual process cleanup required')
     # Real validation and metrics recomputation: a worker's old PASS/score is
     # never sufficient. This also checks fallback after timeout/crash.
-    recommendation = recommend_practical_plan(observed, selected)
+    try:
+        selected['diagnostics']['supervisor'] = attempt
+        recommendation = recommend_practical_plan(observed, selected)
+    except Exception as error:
+        if selected is baseline:
+            raise
+        attempt.update(status='INVALID_SEARCH_RESULT_BASELINE_RETAINED',
+                       errorType=type(error).__name__, error=str(error),
+                       traceback=traceback.format_exc())
+        selected = baseline
+        selected['diagnostics']['supervisor'] = attempt
+        recommendation = recommend_practical_plan(observed, selected)
     (output/'practical-search.json').write_bytes(canonical_bytes(selected['diagnostics']))
     (output/'practical-selection.json').write_bytes(canonical_bytes(recommendation))
     return selected, recommendation
