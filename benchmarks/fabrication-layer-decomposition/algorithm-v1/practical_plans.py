@@ -19,7 +19,7 @@ from layered_completion import (
     LayeredPlanError, _digest, _filled_groups, _group, _joined_groups,
     _materialize, _positive, rank_layered_plans, validate_layered_plan,
 )
-from solid_plans import _key, _sources, propose_plans, validate_plan
+from solid_plans import _key, _sources, propose_plans, validate_plan, rank_plans
 
 # Private child-local progress sink; never an input to validation or identity.
 _diagnostic_sink = None
@@ -334,16 +334,23 @@ def recommend_practical_plan(observed, search_result):
     for index, plan in enumerate(candidates):
         risk = _fragment_risk(plan)
         score = plan['score']
-        key = [risk['riskTier'], score['normalizedVisibleSeamLength'],
+        pieces = {p['id']: p for p in plan['pieces']}
+        exposed = unary_union([s['polyline'].intersection(
+            pieces[s['pieceIds'][0]]['visiblePolygon'].boundary).intersection(
+            pieces[s['pieceIds'][1]]['visiblePolygon'].boundary)
+            for s in plan['physicalSeams']])
+        union_length = float(exposed.length)
+        key = [risk['riskTier'], union_length/math.sqrt(foreground.area),
                score['pieceCount'], risk['riskPieceCount'], score['layerDepth'],
                score['hiddenAreaToForegroundRatio'], score['vertexCount']]
         basis.append({'candidateIndex': index, 'planId': plan['id'],
                       'fixedDesignPreservation': 'ACTUAL_VISIBLE_DOMAIN_COLOR_SOURCE_VALIDATED',
                       'fragmentRisk': risk, 'actualMetrics': score, 'decisionKey': key,
+                      'comparisonVisibleSeamUnionLengthCanonical': union_length,
                       'isDeclaredBaseline': plan['id'] == baseline['plan']['id']})
     decision = {
         'schemaVersion': 'practical-same-design-decision/1',
-        'policy': 'experimental-fragment-tier-then-exposed-cut-then-burden/1',
+        'policy': 'experimental-fragment-tier-then-exposed-cut-then-burden/2',
         'proxyStatus': 'EXPERIMENTAL_NOT_HUMAN_ACCEPTANCE',
         'sourceIdentity': _source_identity(sources),
         'foregroundAreaCanonical': float(foreground.area),
@@ -363,9 +370,29 @@ def recommend_practical_plan(observed, search_result):
         'newCompletionBenefitClaimed': False,
     }
     if baseline['contract'] != 'fabrication.layered-result/1':
-        # Conversion was not proven. Do not invent comparable layered metrics for
-        # the original contract or silently exchange the validated fallback.
-        decision['reason'] = 'RETAIN_VALID_LEGACY_FALLBACK_NO_COMPARABLE_LAYERED_BASELINE'
+        # Distinct contracts retain their own validators. Compare only physical
+        # metrics meaningful in both; never invent layered depth/hidden metrics
+        # for an unconverted legacy plan. A tie retains the proven baseline.
+        legacy = baseline['plan']
+        rank_plans(sources, [legacy])
+        risk = _fragment_risk(legacy)
+        score = legacy['score']  # freshly derived union of actual exposed cuts
+        prefix = [risk['riskTier'], score['visibleSeamLengthCanonical']/math.sqrt(foreground.area),
+                  len(legacy['pieces']), risk['riskPieceCount']]
+        decision['legacyBaselineComparison'] = {
+            'contract': 'LEGACY_SOLID_PLAN', 'planId': legacy['id'],
+            'actualMetrics': score, 'fragmentRisk': risk, 'decisionPrefix': prefix,
+            'comparisonScope': 'RISK_EXPOSED_LINE_UNION_PIECE_COUNT_ONLY',
+            'layeredConversionPassed': False}
+        eligible = [item for item in basis if item['decisionKey'][:4] < prefix]
+        if not eligible:
+            decision['reason'] = 'VALID_LEGACY_BASELINE_RETAINED_NO_STRICT_COMMON_METRIC_IMPROVEMENT'
+            return decision
+        selected = min(eligible, key=lambda item: (item['decisionKey'], item['planId']))
+        decision.update(recommendedIndex=selected['candidateIndex'],
+                        recommendedContract='fabrication.layered-result/1',
+                        recommendedPlanId=selected['planId'],
+                        reason='VALID_LAYERED_CANDIDATE_IMPROVES_LEGACY_COMMON_PHYSICAL_METRICS')
         return decision
     if baseline['plan']['id'] not in ids:
         raise PracticalPlanError('legal baseline omitted from recommendation candidates', {})

@@ -253,7 +253,8 @@ class PracticalPlanTests(unittest.TestCase):
 
     def test_recommendation_keeps_explicit_original_contract_when_conversion_failed(self):
         with patch.object(practical, '_convert_legacy', side_effect=LayeredPlanError('cannot convert')):
-            result = practical.propose_practical_plans(nested())
+            result = practical.propose_practical_plans(nested(),
+                budget=practical.PracticalPlanBudget(max_search_candidates=0))
         decision = practical.recommend_practical_plan(nested(), result)
         self.assertIsNone(decision['recommendedIndex'])
         self.assertEqual(decision['recommendedContract'], 'LEGACY_SOLID_PLAN')

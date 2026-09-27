@@ -24,8 +24,12 @@ The same-design solid baseline is actually validated and persisted before any
 improvement search. A child worker explores at most six existing completion
 proposals until whole-run second 420, reserving 180 of the uniform 600 seconds
 for final verification. Search failure/timeout keeps that baseline, with stderr
-and per-trial progress. If layered conversion was not proven, the original
-validated `b2.result/1` contract is explicitly retained instead of a layered PASS.
+and per-trial progress. If baseline conversion was not proven, it remains an
+original validated `b2.result/1` fallback, never a claimed layered PASS. A
+separately validated layered proposal can still win on strictly better shared
+physical criteria: fragment-risk tier, union length of actual exposed cuts,
+piece count, then risk count. Equal prefixes retain the original fallback; no
+layer depth or hidden-area value is invented for an unconverted contract.
 This does not guarantee that baseline construction or final validation themselves
 fit the full-run budget; a supervising batch timeout reports such runs as failures.
 
