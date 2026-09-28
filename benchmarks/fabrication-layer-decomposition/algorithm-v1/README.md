@@ -219,3 +219,26 @@ python benchmarks/fabrication-layer-decomposition/algorithm-v1/monochrome_runtim
 
 新增 `whole-base.png` 为实际底板/底板组；展开图、隐藏域和每步叠贴均来自
 独立核验后的完整裁片。几何及外观相等不是人工质量验收，仍停在审核候选。
+# Whole-base / intermediate-completion integration
+
+The opt-in `whole-silhouette-base/1` rule uses orchestration version
+`whole-base-completion-integration/1`. Raw `algorithm_runtime.py`, bound-M4
+`whole_silhouette_runtime.py`, and saved-result `monochrome_runtime.py` all call
+the existing practical supervisor. A geometry-validated whole-support fallback
+is checkpointed first; the existing bounded hole/bridge search (six proposals)
+and concave-pocket cover search (six proposals) then run in its disposable worker.
+The existing whole-run 420-second search deadline reserves 180 seconds for final
+validation. Search failure retains only a compliant same-design whole base.
+
+Completion candidates receive actual whole support and are revalidated before
+cover-priority selection. Bottom-visible pieces of the chosen colour provide the
+base's observed source; same-colour pieces above other material remain upstairs.
+Fully hidden source-less base members, transparent bridges, filled true holes,
+and unsupported layered contracts remain rejected. No selection, palette,
+cleanup, frozen kernel, or default-path policy is changed.
+
+`practical-baseline.json`, `practical-search.json`, child stderr/events, and
+`practical-selection.json` preserve the fallback, proposal failures, deadline
+outcome, and actual ranking. A legal whole base is not proof of useful middle
+completion: regression tests separately require actual hidden middle material,
+three/four-layer nesting, repeated base colours, and all three guarded entries.

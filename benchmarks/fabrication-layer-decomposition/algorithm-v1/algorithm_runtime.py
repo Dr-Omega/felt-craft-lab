@@ -330,8 +330,8 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
         if completion_strategy == 'practical-auto':
             from practical_runtime import _prepare_and_search
             if fabrication_policy == 'whole-silhouette-base/1':
-                from whole_silhouette import prepare_whole_base
-                practical_prepared, practical_recommendation = prepare_whole_base(observed, requested_color=base_color_slot)
+                practical_prepared, practical_recommendation = _prepare_and_search(observed, output, started,
+                    fabrication_policy, base_color_slot=base_color_slot)
                 _write(output/'practical-selection.json', practical_recommendation)
             else:
                 practical_prepared, practical_recommendation = _prepare_and_search(observed, output, started,

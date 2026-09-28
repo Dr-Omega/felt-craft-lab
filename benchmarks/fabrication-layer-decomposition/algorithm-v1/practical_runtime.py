@@ -29,7 +29,7 @@ def _portable(value):
     return value
 
 
-def _search_worker(channel, observed, baseline, stderr_path, fabrication_policy=None):
+def _search_worker(channel, observed, baseline, stderr_path, fabrication_policy=None, base_color_slot=None):
     # Redirection belongs only to our disposable child, never a user's process.
     with open(stderr_path, 'a', encoding='utf-8') as errors:
         os.dup2(errors.fileno(), 2)
@@ -41,8 +41,12 @@ def _search_worker(channel, observed, baseline, stderr_path, fabrication_policy=
                 stream.flush()
         practical_plans._diagnostic_sink = save_event
         try:
-            result = search_practical_candidates(observed, baseline)
-            if fabrication_policy is not None:
+            if fabrication_policy == 'whole-silhouette-base/1':
+                from whole_silhouette import search_whole_candidates
+                result = search_whole_candidates(observed, baseline, base_color_slot)
+            else:
+                result = search_practical_candidates(observed, baseline)
+            if fabrication_policy is not None and fabrication_policy != 'whole-silhouette-base/1':
                 from monochrome_policy import augment_cover_candidates
                 result = augment_cover_candidates(observed, result)
             channel.send({'status': 'RETURNED', 'value': result})
@@ -57,23 +61,30 @@ def _search_worker(channel, observed, baseline, stderr_path, fabrication_policy=
             channel.close()
 
 
-def _prepare_and_search(observed, output, started, fabrication_policy=None, saved_plan=None):
+def _prepare_and_search(observed, output, started, fabrication_policy=None, saved_plan=None, base_color_slot=None):
     recommend = recommend_practical_plan
     if fabrication_policy is not None:
         from monochrome_policy import POLICY, recommend_cover_plan
-        if fabrication_policy != POLICY:
+        if fabrication_policy not in {POLICY, 'whole-silhouette-base/1'}:
             raise ValueError('unknown fabrication policy')
         recommend = recommend_cover_plan
+        if fabrication_policy == 'whole-silhouette-base/1':
+            from whole_silhouette import recommend_whole_plan
+            recommend = lambda observed, prepared: recommend_whole_plan(observed, prepared, base_color_slot)
     try:
-        if saved_plan is None:
+        if fabrication_policy == 'whole-silhouette-base/1':
+            from whole_silhouette import _prepare_support_baseline
+            baseline, _ = _prepare_support_baseline(observed, saved_plan, base_color_slot)
+        elif saved_plan is None:
             baseline = prepare_practical_baseline(observed)
         else:
             if fabrication_policy is None:
                 raise ValueError('saved continuation requires explicit fabrication policy')
             from monochrome_policy import prepare_saved_baseline
             baseline = prepare_saved_baseline(observed, saved_plan)
-    except PracticalPlanError as error:
-        (output/'practical-search.json').write_bytes(canonical_bytes(error.diagnostics))
+    except ValueError as error:
+        (output/'practical-search.json').write_bytes(canonical_bytes(getattr(error, 'diagnostics',
+            {'status': 'NO_LEGAL_BASELINE', 'reason': str(error), 'traceback': traceback.format_exc()})))
         raise
     # Full real baseline geometries and source declarations, not merely its ID.
     (output/'practical-baseline.json').write_bytes(canonical_bytes(_portable(baseline)))
@@ -93,7 +104,7 @@ def _prepare_and_search(observed, output, started, fabrication_policy=None, save
             context = multiprocessing.get_context('spawn')
             parent, child = context.Pipe(duplex=False)
             worker = context.Process(target=_search_worker,
-                args=(child, observed, baseline, str(output/'practical-search.stderr.log'), fabrication_policy))
+                args=(child, observed, baseline, str(output/'practical-search.stderr.log'), fabrication_policy, base_color_slot))
             worker.start()
             worker_started = True
             child.close()

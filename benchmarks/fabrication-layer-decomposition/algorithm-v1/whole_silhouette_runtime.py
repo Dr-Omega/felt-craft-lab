@@ -17,7 +17,8 @@ from layered_runtime import _finish_layered
 from m1_adapter import artifact, build_input, canonical_bytes
 from m4_checks import candidate_polygons
 from m4_runtime import validate_output_root
-from whole_silhouette import RULE, prepare_whole_base
+from whole_silhouette import RULE
+from practical_runtime import _prepare_and_search
 
 
 def run_saved_m4(*, m4_root, output_root, base_color_slot=None):
@@ -51,7 +52,8 @@ def run_saved_m4(*, m4_root, output_root, base_color_slot=None):
         for item in observed: item['colorSlotId'] = slots[item['regionId']]
         with np.load(output/'m4/structural_label_map.npz') as arrays: labels = arrays['labels'].copy()
         phase('SAVED_M4_INDEPENDENT_SOURCE_AND_DESIGN_REPLAY')
-        prepared, recommendation = prepare_whole_base(observed, requested_color=base_color_slot)
+        prepared, recommendation = _prepare_and_search(observed, output, started, RULE,
+                                                       base_color_slot=base_color_slot)
         settings = {'version':'application-quality/1', 'mode':mode, 'fabricationPolicy':RULE,
                     'baseColorSlotId':base_color_slot, 'savedM4Continuation':True,
                     'humanConfirmation':'PENDING_REVIEW'}

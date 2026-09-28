@@ -86,9 +86,10 @@ def run_saved_design(*, source_run: Path, output_root: Path, whole_silhouette=Fa
         # bounded search can still retain existing proven completion proposals.
         policy = POLICY
         if whole_silhouette:
-            from whole_silhouette import RULE, prepare_whole_base
+            from whole_silhouette import RULE
             policy = RULE
-            prepared, recommendation = prepare_whole_base(observed, old_checked['plan'], base_color_slot)
+            prepared, recommendation = _prepare_and_search(observed, output, started, RULE,
+                saved_plan=old_checked['plan'], base_color_slot=base_color_slot)
             (output/'practical-selection.json').write_bytes(canonical_bytes(recommendation))
         else:
             prepared, recommendation = _prepare_and_search(observed, output, started, POLICY,
