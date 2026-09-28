@@ -65,7 +65,7 @@ def _verify_artifacts(output, result_input, portable):
         identifier = record['id']
         if identifier == 'layered-source':
             path = Path(portable['sourceArtifact']['path'])
-        elif identifier in {'algorithm-recipe.json', 'fabrication-geometry.json', 'relation-evidence.json', 'layer-arrays.npz', 'quality-seam-comparison.json'}:
+        elif identifier in {'algorithm-recipe.json', 'fabrication-geometry.json', 'relation-evidence.json', 'layer-arrays.npz', 'quality-seam-comparison.json', 'monochrome-policy.json'}:
             path = output / identifier
         else:
             path = output / 'm4' / identifier
@@ -204,7 +204,7 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
                   quality_mode: str = 'baseline', foreground_cleanup: bool = False,
                   seam_strategy: str = 'baseline', design_palette: list[list[int]] | None = None,
                   palette_provenance: str | None = None,
-                  completion_strategy: str = 'legacy') -> dict:
+                  completion_strategy: str = 'legacy', fabrication_policy: str | None = None) -> dict:
     """Run finite supported input → actual Base/Piece candidates, safely.
 
     All output protection runs here before *any* write (including failure files).
@@ -214,6 +214,10 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
     image_path = Path(image_path).resolve()
     mask_path = Path(mask_path).resolve() if mask_path is not None else None
     output = validate_output_root(Path(output_root), [p for p in (image_path, mask_path) if p is not None])
+    if fabrication_policy is not None:
+        from monochrome_policy import POLICY
+        if fabrication_policy != POLICY or quality_mode != 'practical-auto':
+            raise ValueError('monochrome cover policy requires explicit practical-auto')
     if quality_mode == 'practical-auto':
         if design_palette is not None or palette_provenance is not None or seam_strategy != 'baseline':
             raise ValueError('practical auto owns its uniform selection/completion policy; no reference answers')
@@ -237,6 +241,8 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
                          'humanConfirmation':'PENDING_REVIEW'} if experimental else None)
     if completion_strategy != 'legacy':
         quality_settings['completionStrategy'] = completion_strategy
+    if fabrication_policy is not None:
+        quality_settings['fabricationPolicy'] = fabrication_policy
     design_options = {}
     if quality_mode in {'design-colors', 'design-cleanup', 'layered-selection', 'practical-auto'}:
         from design_color_regions import validate_request
@@ -317,7 +323,8 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
         legacy_fallback = None
         if completion_strategy == 'practical-auto':
             from practical_runtime import _prepare_and_search
-            practical_prepared, practical_recommendation = _prepare_and_search(observed, output, started)
+            practical_prepared, practical_recommendation = _prepare_and_search(observed, output, started,
+                **({'fabrication_policy':fabrication_policy} if fabrication_policy is not None else {}))
             if practical_recommendation['recommendedIndex'] is None:
                 legacy_fallback = practical_prepared['legacyFallback']
                 if legacy_fallback is None:
@@ -496,6 +503,7 @@ def main():
     parser.add_argument("--select-layer", action="append")
     parser.add_argument('--quality-mode', choices=['baseline','selection','contour','combined','design-colors','design-cleanup','layered-selection','practical-auto'], default='baseline')
     parser.add_argument('--completion-strategy', choices=['legacy','layered-v1'], default='legacy')
+    parser.add_argument('--fabrication-policy', choices=['monochrome-supported-cover/1'])
     parser.add_argument('--design-palette', help='Explicit JSON RGB array, e.g. [[0,0,0],[255,200,0]]; omitted means automatic')
     parser.add_argument('--palette-provenance', help='Required source for an explicit reference palette')
     parser.add_argument('--foreground-cleanup', action='store_true', help='Unconfirmed experimental foreground proposal; never overwrites original alpha')
@@ -509,6 +517,7 @@ def main():
                            design_palette=json.loads(args.design_palette) if args.design_palette is not None else None,
                            palette_provenance=args.palette_provenance,
                            completion_strategy=args.completion_strategy,
+                           fabrication_policy=args.fabrication_policy,
                            seam_strategy=args.seam_strategy)
     print(json.dumps({"status": report["status"], "resultSha256": report["resultSha256"]}))
 

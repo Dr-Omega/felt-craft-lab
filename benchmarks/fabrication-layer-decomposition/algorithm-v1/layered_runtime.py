@@ -11,7 +11,7 @@ import time
 import numpy as np
 from PIL import Image
 
-from m1_adapter import canonical_bytes
+from m1_adapter import canonical_bytes, artifact
 from m4_checks import candidate_polygons
 from layered_completion import propose_layered_plans, rank_layered_plans
 from layered_contract import build_layered_result, verify_layered_result, run_shared_layered_validation
@@ -45,6 +45,15 @@ def _finish_layered(*, output, input_object, observed, m4, labels, portable,
                    'rankingKey':p['rankingKey']} for p in plans]
     _write(output/'candidate-comparison.json', comparison)
     _write(output/'completion-proposal-search.json',plan.get('proposalSearch',[]))
+    fabrication_policy = quality_settings.get('fabricationPolicy') if quality_settings else None
+    policy_record = None
+    if fabrication_policy is not None:
+        from monochrome_policy import POLICY, cover_metrics
+        if fabrication_policy != POLICY:
+            raise ValueError('unknown fabrication policy')
+        policy_record = cover_metrics(observed, plan)
+        _write(output/'monochrome-policy.json', policy_record)
+        input_object['artifacts'].append(artifact(output/'monochrome-policy.json'))
     result = build_layered_result(input_object, plan, observed)
     shared = run_shared_layered_validation(result)
     if not shared['ok']:
@@ -85,12 +94,19 @@ def _finish_layered(*, output, input_object, observed, m4, labels, portable,
     phase('INDEPENDENT_LAYERED_PIECE_AND_DESIGN_REPLAY')
 
     display_plan = verification['plan']
+    if fabrication_policy is not None:
+        from monochrome_policy import verify_cover_record
+        reread_policy = _read(output/'monochrome-policy.json')
+        verify_cover_record(fresh, display_plan, reread_policy)
     if verification['metrics'] != plan['score']:
         raise ValueError('independently recomputed layered metrics differ from generation')
     palette = {item['id']:item['rgb'] for item in persisted_input['colorSlots']}
     # These images are generated from the same full geometries/order checked
     # above. Source-photo overlays and invisible geometry omissions are absent.
     images, levels = assembly_images(display_plan,palette,reread_labels.shape)
+    if fabrication_policy is not None:
+        from layered_display import monochrome_images
+        images = monochrome_images(display_plan,palette,reread_labels.shape,reread_policy)
     for name, image in images.items():
         image.save(output/name)
     (output/'complete-pieces.svg').write_text(exploded_svg(display_plan,palette),encoding='utf-8')
@@ -102,7 +118,8 @@ def _finish_layered(*, output, input_object, observed, m4, labels, portable,
     _write(output/'assembly-display.json',{'pieceDepth':levels,'bottomToTop':display_plan['bottomToTop'],
         'pieceNumberMap':number_map, 'cutSeamLegend':{'MAGENTA':'EXPOSED_SAME_COLOR_CUT','CYAN':'COVERED_SAME_COLOR_CUT'},
         'geometrySource':'CHECKED_FULL_PIECE_GEOMETRY','hiddenLegend':'MAGENTA_INFERRED_FABRICATION_NOT_SOURCE',
-        'images':list(images), 'userVisualAcceptance':'PENDING'})
+        'images':list(images), 'userVisualAcceptance':'PENDING',
+        **({'monochromeFabrication':reread_policy} if fabrication_policy is not None else {})})
     phase('LAYERED_ACTUAL_GEOMETRY_DIAGNOSTICS')
     summary = {'schemaVersion':'m4-m7-layered-runtime/1',
         'status':'IMPLEMENTED_CANDIDATE_PENDING_REVIEW',
@@ -119,6 +136,8 @@ def _finish_layered(*, output, input_object, observed, m4, labels, portable,
     if practical_recommendation is not None:
         summary['practicalAutomaticSelection'] = practical_recommendation
         summary['boundedSearch'] = practical_prepared['diagnostics']
+    if fabrication_policy is not None:
+        summary['monochromeFabrication'] = reread_policy
     cards = [('Actual selected design','observed.png'),('Actual completed assembly','rerender.png'),
              ('Full pieces, magenta = hidden inferred material','complete-pieces.svg'),
              ('Union of hidden domains (not missing pixels)','hidden-domains.png'),

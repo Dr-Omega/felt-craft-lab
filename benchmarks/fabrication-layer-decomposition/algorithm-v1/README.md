@@ -145,3 +145,39 @@ interior patch. Existing body, extended-detail, alpha-hole and independent-motif
 guards remain. RGB under alpha zero is never evidence. This cleanup is a derived
 proposal, never a human-confirmed foreground. Remaining ambiguous details and
 known poor visual results must be reported separately from geometric validity.
+# 单色制作步骤与覆盖优先增量（显式启用）
+
+`--quality-mode practical-auto --fabrication-policy monochrome-supported-cover/1`
+启用统一单色制作步骤和有界凹口覆盖比较；不改变未指定该参数的默认路径、
+选区 V2、冻结核或任何正式分支。对已生成、可独立复核的 practical layered
+结果可执行：
+
+```powershell
+python benchmarks/fabrication-layer-decomposition/algorithm-v1/monochrome_runtime.py --source-run OLD_RUN --output NEW_EMPTY_OUTPUT
+```
+
+该入口复制已有 M4 产物到新目录，复核原输入、设计回放、Component 双射、
+共享边和原实际裁片。已有实际完整片作为同设计保底，不信任缓存 PASS；
+新候选仍走共享合同、落盘独立回读和重绘。原证据只读，不能把旧目录作为输出。
+
+每个制作步骤仅一个精确 ColorSlot，可包含多块实际完整几何互不叠压的裁片。
+实际遮挡依赖优先，同色可在后续步骤再出现。`monochrome-policy.json` 被结果
+输入的 artifact SHA 绑定，回读时从完整几何重算，而不是仅校验哈希。
+`monochromeWorkLayerCount` 是单色制作步骤数；`actualGeometricOverlapDepth`
+是具有正面积的同一位置最多覆盖的完整裁片数；`occlusionDependencyDepth`
+另记依赖最长链，不能混称物理深度。仅改变步骤分组不增加材料。
+
+比较保留所有合法候选，先通过可见颜色、域、来源、隐藏覆盖、透明洞及接缝
+硬门禁，再依碎片风险、实际外露同色切缝＋异色拼边、零件及材料负担比较。
+不同色的可见相邻边仅在两片完整几何都止于该边时才计为拼边；覆盖边不是拼边。
+这些量是实验性装配负担代理，不是人工制作质量真值。
+
+新凹口候选仅沿现有相邻前景域补全：邻片超过半周长贴着拟补全下片、补全缩短
+下片轮廓、总隐藏面积不超过其可见支撑面积；不得新增透明域材料、孔洞、细桥、
+零件或无用隐藏片。每轮最多六次候选验证，每个既有方案只增加一次局部补全，
+最多增加一级实际材料深度。失败保留已验证同设计保底。没有合适的覆盖候选仍
+可能保留异色拼边，应在结果中披露，不能为了零拼边生成满铺底板。
+
+输出 `work-layer-*.png` 为完整片逐步叠贴，`complete-pieces.svg` 紫色表示实际
+隐藏材料。`monochromeFabrication` 同时列出每层颜色、片号、三个不同层数指标。
+制造未评估、用户及独立审核仍待完成，生产导出不允许。

@@ -29,7 +29,7 @@ def _portable(value):
     return value
 
 
-def _search_worker(channel, observed, baseline, stderr_path):
+def _search_worker(channel, observed, baseline, stderr_path, fabrication_policy=None):
     # Redirection belongs only to our disposable child, never a user's process.
     with open(stderr_path, 'a', encoding='utf-8') as errors:
         os.dup2(errors.fileno(), 2)
@@ -41,7 +41,11 @@ def _search_worker(channel, observed, baseline, stderr_path):
                 stream.flush()
         practical_plans._diagnostic_sink = save_event
         try:
-            channel.send({'status': 'RETURNED', 'value': search_practical_candidates(observed, baseline)})
+            result = search_practical_candidates(observed, baseline)
+            if fabrication_policy is not None:
+                from monochrome_policy import augment_cover_candidates
+                result = augment_cover_candidates(observed, result)
+            channel.send({'status': 'RETURNED', 'value': result})
         except BaseException as error:
             trace = traceback.format_exc()
             errors.write(trace)
@@ -53,9 +57,21 @@ def _search_worker(channel, observed, baseline, stderr_path):
             channel.close()
 
 
-def _prepare_and_search(observed, output, started):
+def _prepare_and_search(observed, output, started, fabrication_policy=None, saved_plan=None):
+    recommend = recommend_practical_plan
+    if fabrication_policy is not None:
+        from monochrome_policy import POLICY, recommend_cover_plan
+        if fabrication_policy != POLICY:
+            raise ValueError('unknown fabrication policy')
+        recommend = recommend_cover_plan
     try:
-        baseline = prepare_practical_baseline(observed)
+        if saved_plan is None:
+            baseline = prepare_practical_baseline(observed)
+        else:
+            if fabrication_policy is None:
+                raise ValueError('saved continuation requires explicit fabrication policy')
+            from monochrome_policy import prepare_saved_baseline
+            baseline = prepare_saved_baseline(observed, saved_plan)
     except PracticalPlanError as error:
         (output/'practical-search.json').write_bytes(canonical_bytes(error.diagnostics))
         raise
@@ -77,7 +93,7 @@ def _prepare_and_search(observed, output, started):
             context = multiprocessing.get_context('spawn')
             parent, child = context.Pipe(duplex=False)
             worker = context.Process(target=_search_worker,
-                args=(child, observed, baseline, str(output/'practical-search.stderr.log')))
+                args=(child, observed, baseline, str(output/'practical-search.stderr.log'), fabrication_policy))
             worker.start()
             worker_started = True
             child.close()
@@ -119,7 +135,7 @@ def _prepare_and_search(observed, output, started):
     # never sufficient. This also checks fallback after timeout/crash.
     try:
         selected['diagnostics']['supervisor'] = attempt
-        recommendation = recommend_practical_plan(observed, selected)
+        recommendation = recommend(observed, selected)
     except Exception as error:
         if selected is baseline:
             raise
@@ -128,7 +144,7 @@ def _prepare_and_search(observed, output, started):
                        traceback=traceback.format_exc())
         selected = baseline
         selected['diagnostics']['supervisor'] = attempt
-        recommendation = recommend_practical_plan(observed, selected)
+        recommendation = recommend(observed, selected)
     (output/'practical-search.json').write_bytes(canonical_bytes(selected['diagnostics']))
     (output/'practical-selection.json').write_bytes(canonical_bytes(recommendation))
     return selected, recommendation

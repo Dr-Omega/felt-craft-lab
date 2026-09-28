@@ -82,6 +82,19 @@ def projected_image(plan, palette, shape, *, hidden=False):
     return Image.fromarray(render_polygons(items, shape))
 
 
+def monochrome_images(plan, palette, shape, schedule):
+    """Full-piece work-step assembly; schedule must have passed geometry checks."""
+    by_id = {p['id']: p for p in plan['pieces']}
+    ordered, images = [], {}
+    for step in schedule['steps']:
+        ordered.extend(step['pieceIds'])
+        items = [{**by_id[key], 'id': f'{index:08d}',
+                  'rgb': palette[by_id[key]['colorSlotId']]}
+                 for index, key in enumerate(ordered)]
+        images[f'work-layer-{step["step"]:02d}.png'] = Image.fromarray(render_polygons(items, shape))
+    return images
+
+
 def reference_overlays(plan, rgba):
     """Separate actual cut seams from ordinary colour/overlap boundaries."""
     seams = Image.fromarray(rgba.copy())
