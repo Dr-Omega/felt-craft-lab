@@ -181,3 +181,41 @@ python benchmarks/fabrication-layer-decomposition/algorithm-v1/monochrome_runtim
 输出 `work-layer-*.png` 为完整片逐步叠贴，`complete-pieces.svg` 紫色表示实际
 隐藏材料。`monochromeFabrication` 同时列出每层颜色、片号、三个不同层数指标。
 制造未评估、用户及独立审核仍待完成，生产导出不允许。
+
+### 整图轮廓承托底板（独立显式规则）
+
+原图公开入口 `algorithm_runtime.py --quality-mode practical-auto
+--fabrication-policy whole-silhouette-base/1`，或已绑定选区入口：
+
+```powershell
+python benchmarks/fabrication-layer-decomposition/algorithm-v1/monochrome_runtime.py --source-run OLD_PRACTICAL_RUN --output NEW_EMPTY_OUTPUT --whole-silhouette-base
+```
+
+两个入口均可追加 `--base-color-slot EXISTING_SLOT_ID`；未指定则沿用实际有限
+调色板、两种合法孔洞拆分方向及现有单色覆盖排序。已有方案的底板若已完整，
+直接复用全部几何，不再加一层。旧默认、未启用该规则的单色路径保持原行为。
+
+对更早模式的、已经完成 Component 绑定的选区可用
+`whole_silhouette_runtime.py --m4-root SAVED_BOUND_M4 --output NEW_EMPTY_OUTPUT
+--base-color-slot EXISTING_SLOT_ID`。此入口只消费保存选区，不再选择颜色或平滑；
+仍从原输入独立回放设计作验证。未绑定旧产物不能自动获得新版 PASS。
+
+规则以绑定后的全部选区几何并集 F 为目标；底板实际完整支撑域必须等于 F，
+同时检验缺失域、额外域及边界，不采用凸包、包围框或填孔外环。连通无孔主体
+必须单片；分离主体/真孔洞使用合法的底板组，绝不跨透明域连接。整个底板组
+先于上层，单色制作步骤与真实材料叠压深度分列。
+
+这是生成、候选筛选、独立落盘回读的硬要求，不允许评分选择缺支撑保底。
+`fabrication-result.json` 的版本化 recipe 和 `wholeSilhouetteBase` 绑定所选
+底色、实际完整/可见/推断隐藏域；回读从重新绑定的选区重算 F 和最低支撑，
+不信任声明或缓存。外部要求该规则时，`verify_layered_result` 应指定
+`required_base_rule=True` 及 `requested_base_color`，连删除规则声明也会拒绝。
+
+仅明确承托底板免于局部补全隐藏/可见面积比例上限；上层复用现有补全或精确
+可见域，未扩大上层授权。底板隐含的异色下方材料不是同色原始 Component 来源，
+来源仍只绑定可见域。**现有 layered-result/1 禁止完全隐藏、没有可见来源的片**：
+若某个分离主体完全不含指定底色，或孔洞拆分产生无可见来源的底板成员，候选
+明确拒绝并记原因。不会偷偷修改合同、伪造来源、填洞或连接主体以取得 PASS。
+
+新增 `whole-base.png` 为实际底板/底板组；展开图、隐藏域和每步叠贴均来自
+独立核验后的完整裁片。几何及外观相等不是人工质量验收，仍停在审核候选。

@@ -49,7 +49,8 @@ def _finish_layered(*, output, input_object, observed, m4, labels, portable,
     policy_record = None
     if fabrication_policy is not None:
         from monochrome_policy import POLICY, cover_metrics
-        if fabrication_policy != POLICY:
+        from whole_silhouette import RULE
+        if fabrication_policy not in {POLICY, RULE}:
             raise ValueError('unknown fabrication policy')
         policy_record = cover_metrics(observed, plan)
         _write(output/'monochrome-policy.json', policy_record)
@@ -83,7 +84,10 @@ def _finish_layered(*, output, input_object, observed, m4, labels, portable,
     slots = {record['id']:record['colorSlotId'] for record in persisted_input['observedRegions']}
     for item in fresh:
         item['colorSlotId'] = slots[item['regionId']]
-    verification = verify_layered_result(persisted, fresh, reread_labels.shape)
+    from whole_silhouette import RULE
+    verification = verify_layered_result(persisted, fresh, reread_labels.shape,
+        required_base_rule=fabrication_policy == RULE,
+        requested_base_color=(quality_settings or {}).get('baseColorSlotId'))
     if verification['mismatchPixelCount'] != 0:
         raise ValueError('persisted full-piece assembly differs from selected design')
     checks = {key:value for key,value in verification.items() if key != 'plan' and not isinstance(value,np.ndarray)}
@@ -138,12 +142,20 @@ def _finish_layered(*, output, input_object, observed, m4, labels, portable,
         summary['boundedSearch'] = practical_prepared['diagnostics']
     if fabrication_policy is not None:
         summary['monochromeFabrication'] = reread_policy
+    if fabrication_policy == RULE:
+        summary['wholeSilhouetteBase'] = persisted['payload']['wholeSilhouetteBase']
+        backing_ids = set(summary['wholeSilhouetteBase']['basePieceIds'])
+        from rerender import _render_closed
+        Image.fromarray(_render_closed([p for p in display_plan['pieces'] if p['id'] in backing_ids],
+                                      reread_labels.shape)).save(output/'whole-base.png')
     cards = [('Actual selected design','observed.png'),('Actual completed assembly','rerender.png'),
              ('Full pieces, magenta = hidden inferred material','complete-pieces.svg'),
              ('Union of hidden domains (not missing pixels)','hidden-domains.png'),
              ('Actual physical cuts, not ordinary pattern boundaries','physical-seams.png'),
              ('Piece numbers refer to actual visible sources','piece-references.png')]
     cards.extend((name.removesuffix('.png'),name) for name in images)
+    if fabrication_policy == RULE:
+        cards.insert(0, ('Actual whole-silhouette support (true holes retained)', 'whole-base.png'))
     page = '<!doctype html><meta charset="utf-8"><title>Layered completion candidate</title>'
     page += '<style>body{font:15px system-ui;background:#eee;padding:24px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}figure{background:white;padding:8px;margin:0}img{width:100%;background:repeating-conic-gradient(#ddd 0 25%,white 0 50%) 0/16px 16px}pre{white-space:pre-wrap}</style>'
     page += '<h1>Actual full-piece layered construction — review candidate</h1><p>A→B visual review pending. B→C exact assembly is not manufacturing approval.</p><div class="grid">'

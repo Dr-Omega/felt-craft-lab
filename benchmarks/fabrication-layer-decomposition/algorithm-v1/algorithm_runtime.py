@@ -204,7 +204,8 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
                   quality_mode: str = 'baseline', foreground_cleanup: bool = False,
                   seam_strategy: str = 'baseline', design_palette: list[list[int]] | None = None,
                   palette_provenance: str | None = None,
-                  completion_strategy: str = 'legacy', fabrication_policy: str | None = None) -> dict:
+                  completion_strategy: str = 'legacy', fabrication_policy: str | None = None,
+                  base_color_slot: str | None = None) -> dict:
     """Run finite supported input → actual Base/Piece candidates, safely.
 
     All output protection runs here before *any* write (including failure files).
@@ -216,8 +217,11 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
     output = validate_output_root(Path(output_root), [p for p in (image_path, mask_path) if p is not None])
     if fabrication_policy is not None:
         from monochrome_policy import POLICY
-        if fabrication_policy != POLICY or quality_mode != 'practical-auto':
+        from whole_silhouette import RULE
+        if fabrication_policy not in {POLICY, RULE} or quality_mode != 'practical-auto':
             raise ValueError('monochrome cover policy requires explicit practical-auto')
+    if base_color_slot is not None and fabrication_policy != 'whole-silhouette-base/1':
+        raise ValueError('base colour requires explicit whole-silhouette rule')
     if quality_mode == 'practical-auto':
         if design_palette is not None or palette_provenance is not None or seam_strategy != 'baseline':
             raise ValueError('practical auto owns its uniform selection/completion policy; no reference answers')
@@ -243,6 +247,8 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
         quality_settings['completionStrategy'] = completion_strategy
     if fabrication_policy is not None:
         quality_settings['fabricationPolicy'] = fabrication_policy
+        if fabrication_policy == 'whole-silhouette-base/1':
+            quality_settings['baseColorSlotId'] = base_color_slot
     design_options = {}
     if quality_mode in {'design-colors', 'design-cleanup', 'layered-selection', 'practical-auto'}:
         from design_color_regions import validate_request
@@ -323,8 +329,13 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
         legacy_fallback = None
         if completion_strategy == 'practical-auto':
             from practical_runtime import _prepare_and_search
-            practical_prepared, practical_recommendation = _prepare_and_search(observed, output, started,
-                **({'fabrication_policy':fabrication_policy} if fabrication_policy is not None else {}))
+            if fabrication_policy == 'whole-silhouette-base/1':
+                from whole_silhouette import prepare_whole_base
+                practical_prepared, practical_recommendation = prepare_whole_base(observed, requested_color=base_color_slot)
+                _write(output/'practical-selection.json', practical_recommendation)
+            else:
+                practical_prepared, practical_recommendation = _prepare_and_search(observed, output, started,
+                    **({'fabrication_policy':fabrication_policy} if fabrication_policy is not None else {}))
             if practical_recommendation['recommendedIndex'] is None:
                 legacy_fallback = practical_prepared['legacyFallback']
                 if legacy_fallback is None:
@@ -503,7 +514,8 @@ def main():
     parser.add_argument("--select-layer", action="append")
     parser.add_argument('--quality-mode', choices=['baseline','selection','contour','combined','design-colors','design-cleanup','layered-selection','practical-auto'], default='baseline')
     parser.add_argument('--completion-strategy', choices=['legacy','layered-v1'], default='legacy')
-    parser.add_argument('--fabrication-policy', choices=['monochrome-supported-cover/1'])
+    parser.add_argument('--fabrication-policy', choices=['monochrome-supported-cover/1', 'whole-silhouette-base/1'])
+    parser.add_argument('--base-color-slot')
     parser.add_argument('--design-palette', help='Explicit JSON RGB array, e.g. [[0,0,0],[255,200,0]]; omitted means automatic')
     parser.add_argument('--palette-provenance', help='Required source for an explicit reference palette')
     parser.add_argument('--foreground-cleanup', action='store_true', help='Unconfirmed experimental foreground proposal; never overwrites original alpha')
@@ -518,6 +530,7 @@ def main():
                            palette_provenance=args.palette_provenance,
                            completion_strategy=args.completion_strategy,
                            fabrication_policy=args.fabrication_policy,
+                           base_color_slot=args.base_color_slot,
                            seam_strategy=args.seam_strategy)
     print(json.dumps({"status": report["status"], "resultSha256": report["resultSha256"]}))
 

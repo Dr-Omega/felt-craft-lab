@@ -29,11 +29,13 @@ def _read(path):
     return json.loads(path.read_text('utf-8'))
 
 
-def run_saved_design(*, source_run: Path, output_root: Path):
+def run_saved_design(*, source_run: Path, output_root: Path, whole_silhouette=False, base_color_slot=None):
     source = Path(source_run).resolve()
     output = validate_output_root(Path(output_root), [source])
     if source in output.parents:
         raise ValueError('increment output must not be inside the read-only source run')
+    if type(whole_silhouette) is not bool or (base_color_slot is not None and not whole_silhouette):
+        raise ValueError('base colour requires explicit whole-silhouette rule')
     old_wire = _read(source/'fabrication-result.json')
     old_recipe = _read(source/'algorithm-recipe.json')
     if (old_wire['schemaVersion'] != 'fabrication.layered-result/1'
@@ -58,6 +60,8 @@ def run_saved_design(*, source_run: Path, output_root: Path):
     try:
         shutil.copytree(m4_source, output/'m4')
         shutil.copyfile(source/'algorithm-recipe.json', output/'algorithm-recipe.json')
+        if any(a['id'] == 'monochrome-policy.json' for a in old_wire['payload']['input']['artifacts']):
+            shutil.copyfile(source/'monochrome-policy.json', output/'monochrome-policy.json')
         # This recomputes labels/raw-boundary Component binding and the selected
         # design from its original source/config. Writes occur only in our copy.
         _verify_artifacts(output, old_wire['payload']['input'], None)
@@ -80,11 +84,20 @@ def run_saved_design(*, source_run: Path, output_root: Path):
         phase('SAVED_SELECTION_REPLAY_AND_BINDING')
         # Reuse the supplied actual plan as the same-design fallback; normal
         # bounded search can still retain existing proven completion proposals.
-        prepared, recommendation = _prepare_and_search(observed, output, started, POLICY,
-                                                       saved_plan=old_checked['plan'])
+        policy = POLICY
+        if whole_silhouette:
+            from whole_silhouette import RULE, prepare_whole_base
+            policy = RULE
+            prepared, recommendation = prepare_whole_base(observed, old_checked['plan'], base_color_slot)
+            (output/'practical-selection.json').write_bytes(canonical_bytes(recommendation))
+        else:
+            prepared, recommendation = _prepare_and_search(observed, output, started, POLICY,
+                                                           saved_plan=old_checked['plan'])
         if recommendation['recommendedIndex'] is None:
             raise ValueError('no lawful layered conversion: legacy candidate is not new-policy completion')
-        settings = dict(old_recipe['experimentalQuality'], fabricationPolicy=POLICY)
+        settings = dict(old_recipe['experimentalQuality'], fabricationPolicy=policy)
+        if whole_silhouette:
+            settings['baseColorSlotId'] = base_color_slot
         recipe = _recipe(m4, settings)
         recipe['fixedDesignContinuation'] = {'sourceResultSha256': old_wire['identity']['sha256'],
             'sourceRecipeSha256': hashlib.sha256((source/'algorithm-recipe.json').read_bytes()).hexdigest(),
@@ -112,8 +125,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--source-run', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--whole-silhouette-base', action='store_true')
+    parser.add_argument('--base-color-slot')
     args = parser.parse_args()
-    result = run_saved_design(source_run=args.source_run, output_root=args.output)
+    result = run_saved_design(source_run=args.source_run, output_root=args.output,
+        whole_silhouette=args.whole_silhouette_base, base_color_slot=args.base_color_slot)
     print(json.dumps({'resultSha256': result['resultSha256'],
                       'monochromeFabrication':result['monochromeFabrication']}))
 

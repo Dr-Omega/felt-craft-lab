@@ -67,6 +67,12 @@ def build_layered_result(input_object, plan, observed):
             'payload': {'input': copy.deepcopy(input_object), 'pieces': pieces, 'bottomToTop': list(plan['bottomToTop']), 'occlusionEdges': copy.deepcopy(plan['occlusionEdges']), 'physicalSeams': seams,
                         'orderSemantics': 'PROPOSED_FABRICATION_NOT_ORIGINAL_LAYER_HISTORY',
                         'recipe': {'id': 'bounded-piece-completion-order', 'version': '1'}, 'manufacturing': 'NOT_EVALUATED', 'productionExportEligible': 'NO', 'userVisualAcceptance': 'PENDING'}}
+    if 'wholeSilhouetteBase' in plan:
+        from whole_silhouette import RULE, verify_support_record
+        record = plan['wholeSilhouetteBase']
+        verify_support_record(observed, plan, record, record['requestedColorSlotId'])
+        wire['payload']['wholeSilhouetteBase'] = copy.deepcopy(record)
+        wire['payload']['recipe'] = {'id': RULE, 'version': '1'}
     response = run_shared_layered_validation(wire, sign_result=True)
     if not response['ok']:
         raise LayeredContractError('Shared layered contract rejected: ' + str(response))
@@ -213,7 +219,7 @@ def _verify_seams(seams, pieces, tolerance):
             raise LayeredContractError('Duplicated physical seam segment')
 
 
-def verify_layered_result(result, observed, shape_hw):
+def verify_layered_result(result, observed, shape_hw, *, required_base_rule=False, requested_base_color=None):
     """Recompute all domains/order from saved wire plus freshly bound sources."""
     if len(shape_hw) != 2 or any(type(v) is not int or v <= 0 for v in shape_hw):
         raise LayeredContractError('Invalid actual canvas shape')
@@ -271,6 +277,17 @@ def verify_layered_result(result, observed, shape_hw):
                                + 12*normalized_seam + 0.2*metrics['hiddenAreaToForegroundRatio']
                                + 0.02*metrics['vertexCount'] + 0.5*(metrics['layerDepth']-1))
     plan['score'] = metrics
+    from whole_silhouette import RULE, verify_support_record
+    declaration = result['payload'].get('wholeSilhouetteBase')
+    if required_base_rule or declaration is not None or result['payload'].get('recipe', {}).get('id') == RULE:
+        if declaration is None or result['payload'].get('recipe') != {'id': RULE, 'version': '1'}:
+            raise LayeredContractError('whole base: missing versioned backing requirement')
+        requested = declaration.get('requestedColorSlotId')
+        if required_base_rule and requested != requested_base_color:
+            raise LayeredContractError('whole base: caller/recipe requested colour differs')
+        verify_support_record(observed, plan, declaration, requested)
+        plan['wholeSilhouetteBase'] = copy.deepcopy(declaration)
+        checks['wholeSilhouetteBase'] = 'PASS'
     return {'checks': checks, 'rgba': rgba, 'expectedRgba': expected, 'mismatchPixelCount': count,
             'rawRasterMismatchPixelCount': raw_count, 'sharedBoundaryTiePixelCount': raw_count-count,
             'interiorMismatchPixelCount': count,
