@@ -119,3 +119,29 @@ are not invented. No M8–M11, sizing, material model, export or product UI is a
 See [VERIFICATION.md](VERIFICATION.md) for the executable evidence map and clean
 checkout commands, and [VISUAL_REVIEW.md](VISUAL_REVIEW.md) for located agent
 observations and explicit human-quality limitations.
+
+## Explicit practical-auto selection V2
+
+`--quality-mode practical-auto` uses `practical-seeded-design/2` and
+`local-ownership-candidates/2`; the default, design-colors and layered paths are
+not replaced. This is an experimental design proposal, not visual acceptance.
+The existing completion, fallback, ranking and persisted geometry gates remain.
+
+The selector compares source-supported KEEP/MERGE hypotheses using continuous
+multi-radius raw boundaries, local plateaus, actual perimeter burden and adjacent
+face mixing evidence. Diffuse near-ink interfaces may merge; a transitive merge
+cannot erase a sharp interface or exceed the bounded color span. Up to two
+structure-loss feedback rounds restore evidenced spatial cores, not merely a
+color somewhere in the frame. Up to eight missing-ink proposals require a
+continuous sharply bounded mark with a supported surround; one exact outlier
+alone is insufficient. No palette numbering supplies confidence. Reference
+palettes are not silently augmented. All effective parameters, comparisons and
+feedback are persisted in the design descriptor and independently replayed.
+
+`practical-visible-exterior-residue/2` separately considers tiny external residue
+from visible local boundary samples. An isolated matching RGB sample elsewhere
+does not prove a supported material color: that veto requires a coherent 2x2
+interior patch. Existing body, extended-detail, alpha-hole and independent-motif
+guards remain. RGB under alpha zero is never evidence. This cleanup is a derived
+proposal, never a human-confirmed foreground. Remaining ambiguous details and
+known poor visual results must be reported separately from geometric validity.

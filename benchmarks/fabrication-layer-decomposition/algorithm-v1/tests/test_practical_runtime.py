@@ -1,4 +1,5 @@
 """Public opt-in integration, not mocked geometry/TypeScript acceptance."""
+import copy
 import hashlib
 import json
 from pathlib import Path
@@ -40,16 +41,24 @@ class PracticalRuntimeTests(unittest.TestCase):
             # the altered selection claim, not accept internally matching SHA.
             design_path = output/'m4/experimental-design.json'
             design = json.loads(design_path.read_text('utf-8'))
-            design['selection']['reownedPixelCount'] += 1
-            design_path.write_bytes(canonical_bytes(design))
             runtime_path = output/'m4/report.json'
             runtime = json.loads(runtime_path.read_text('utf-8'))
-            sha = hashlib.sha256(design_path.read_bytes()).hexdigest()
-            runtime['experimentalDesign']['sha256'] = sha
-            runtime['configuration']['experimentalDesign']['sha256'] = sha
-            runtime_path.write_bytes(canonical_bytes(runtime))
-            with self.assertRaisesRegex(ValueError, 'selection mapping'):
-                verify_quality_design(output/'m4')
+            for mutation in ('ownership_count','candidate_choice','feedback_parameter'):
+                changed=copy.deepcopy(design)
+                if mutation=='ownership_count':
+                    changed['selection']['reownedPixelCount'] += 1
+                elif mutation=='candidate_choice':
+                    changed['selection']['candidateComparison']['domainComparisons'][0]['selected']='FORGED_KEEP'
+                else:
+                    changed['selection']['candidateComparison']['parameters']['maximumFeedbackRounds']=0
+                design_path.write_bytes(canonical_bytes(changed))
+                sha = hashlib.sha256(design_path.read_bytes()).hexdigest()
+                runtime['experimentalDesign']['sha256'] = sha
+                runtime['configuration']['experimentalDesign']['sha256'] = sha
+                runtime_path.write_bytes(canonical_bytes(runtime))
+                with self.subTest(mutation=mutation):
+                    with self.assertRaisesRegex(ValueError, 'selection mapping'):
+                        verify_quality_design(output/'m4')
 
     def test_automatic_mode_cannot_take_reference_answer_or_bypass_output_guard(self):
         with tempfile.TemporaryDirectory() as folder:

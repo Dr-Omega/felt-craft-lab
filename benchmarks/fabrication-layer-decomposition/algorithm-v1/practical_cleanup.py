@@ -13,7 +13,7 @@ import numpy as np
 from scipy import ndimage
 from scipy.spatial import cKDTree
 
-VERSION = "practical-visible-exterior-residue/1"
+VERSION = "practical-visible-exterior-residue/2"
 CROSS = ndimage.generate_binary_structure(2, 1)
 PARAMETERS = {
     "trustedInteriorDepthPx": 4.0,
@@ -26,6 +26,7 @@ PARAMETERS = {
     "minimumEdgeMatchToleranceRgb": 12.0,
     "minimumMatchingBoundarySamples": 2,
     "minimumRepeatedBodyBoundarySamples": 8,
+    "coherentInteriorMatchToleranceRgb": 12.0,
     "matteHypothesis": "NONE",
     "humanConfirmation": "NOT_CONFIRMED",
 }
@@ -114,7 +115,16 @@ def cleanup_foreground(rgba, config=None, request=None, *, enabled):
             local_rgb = source[window][..., :3].astype(float)
             global_distance = float(color_tree.query(median_rgb)[0]) if color_tree is not None else None
             evidence["nearestTrustedInteriorColorDistanceRgb"] = global_distance
-            if global_distance is None or global_distance <= PARAMETERS["minimumInteriorColorDistanceRgb"]:
+            # A lone distant interior outlier is not an authored colour face.
+            # Require a spatially coherent matching 2x2 patch, in addition to
+            # the independent local boundary-transition evidence below. This
+            # is not an island-size deletion rule: coherent/extended islands
+            # and genuine high-contrast small decoration remain protected.
+            matching=core & (np.linalg.norm(source[...,:3].astype(float)-median_rgb,axis=2)
+                             <= PARAMETERS['coherentInteriorMatchToleranceRgb'])
+            coherent_match=bool(np.any(matching[:-1,:-1]&matching[1:,:-1]&matching[:-1,1:]&matching[1:,1:]))
+            evidence['coherentInteriorColorPatch']=coherent_match
+            if global_distance is None or coherent_match:
                 reasons.append("SUPPORTED_INTERIOR_COLOR_OR_UNKNOWN_PROTECTED")
             if not local_core.any() or not edge.any():
                 reasons.append("INSUFFICIENT_LOCAL_TRANSITION_EVIDENCE")

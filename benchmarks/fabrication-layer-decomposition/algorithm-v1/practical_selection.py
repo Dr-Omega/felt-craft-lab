@@ -18,7 +18,7 @@ from design_color_regions import CROSS, _lab, _visible_neighbourhood_rgb, digest
 from layered_selection import _options, _palette
 from quality_fragments import _components, _rgba, _summary
 
-VERSION = 'practical-seeded-design/1'
+VERSION = 'practical-seeded-design/2'
 PARAMETERS = {
     'surfaceDepthPx': 3.5,
     'surfacePaletteDistanceLab': 8.0,
@@ -65,8 +65,12 @@ def rebuild_regions(rgba, old_labels, old_pixels, config, request):
     if not np.array_equal(expected, old_pixels):
         raise ValueError('baseline fringe differs from actual foreground')
     palette, palette_decisions = _palette(rgba, config, request, _options(None, None, None))
-    colors = np.asarray([item['rgb'] for item in palette], np.float32)
     rgb = _visible_neighbourhood_rgb(rgba)
+    from practical_candidates import compare_ownership, propose_missing_inks
+    missing_ink_proposals = []
+    if request['mode'] == 'AUTO':
+        palette, missing_ink_proposals = propose_missing_inks(rgb, active, palette)
+    colors = np.asarray([item['rgb'] for item in palette], np.float32)
     lab = _lab(rgb)
     color_labs = _lab(colors)
     distances = np.stack([np.linalg.norm(lab - color, axis=2) for color in color_labs])
@@ -178,7 +182,8 @@ def rebuild_regions(rgba, old_labels, old_pixels, config, request):
             markers[tuple(point)] = nearest[tuple(point)] + 1
     smoothed = cv2.medianBlur(rgb, 3)
     gradient = _edge_steps(_lab(smoothed), active)
-    labels = watershed(gradient, markers, connectivity=CROSS, mask=active).astype(np.int32)
+    labels, markers, comparison = compare_ownership(rgb, active, colors, nearest, markers, gradient)
+    comparison['missingInkProposals'] = missing_ink_proposals
     if not np.array_equal(labels > 0, active):
         raise ValueError('seeded ownership lost foreground support')
     pixels, fringe = assign_fringe_pixels(rgba, labels, config)
@@ -187,6 +192,7 @@ def rebuild_regions(rgba, old_labels, old_pixels, config, request):
         'strategyVersion': VERSION, 'effectiveParameters': copy.deepcopy(PARAMETERS),
         'request': copy.deepcopy(request), 'paletteProposal': palette,
         'paletteModeDecisions': palette_decisions, 'componentEvidence': decisions,
+        'candidateComparison': comparison,
         'automaticUsesReferenceAnswer': False,
         'paletteColorCount': len(palette), 'actualUsedColorCount': len(np.unique(labels[active])),
         'before': _summary(old_labels), 'after': _summary(labels),
