@@ -23,6 +23,7 @@ from shapely.ops import unary_union
 from m1_adapter import ROOT, HERE
 from solid_plans import _sources, _tolerance, _lines, _parts
 from rerender import _render_closed
+from coverage_geometry import ordered_coverage
 
 VERSION = 'fabrication.layered-result/1'
 
@@ -142,10 +143,10 @@ def _verify_geometry(wire, observed):
         full = item['polygon']
         if full.difference(foreground).area > tolerance:
             raise LayeredContractError('Hidden/full piece crosses actual foreground transparency')
-        visible = full.difference(above)
+        visible, hidden, coverage_occluders = ordered_coverage(
+            full, [(pid, pieces[pid]['polygon']) for pid in order[index+1:]])
         # A shared cut edge is not hidden material: retain only polygonal
         # positive-area intersection domains, not 1-D contact lines/points.
-        hidden = unary_union(_parts(full.intersection(above)))
         if visible.is_empty or visible.area <= 0:
             raise LayeredContractError('Useless fully hidden piece is forbidden')
         _equal(visible, item['visiblePolygon'], tolerance, 'Declared visible')
@@ -168,6 +169,8 @@ def _verify_geometry(wire, observed):
             collected[source['componentId']].append(visible.intersection(source['polygon']))
         _equal(visible, unary_union([s['polygon'].intersection(full) for s in actual_sources]), tolerance, 'Visible source conservation')
         occluders = {other for other in order[index+1:] if full.intersection(pieces[other]['polygon']).area > 0}
+        if set(coverage_occluders) != occluders:
+            raise LayeredContractError('Ordered coverage and actual occluders disagree')
         if set(item['occluderIds']) != occluders or len(item['occluderIds']) != len(occluders):
             raise LayeredContractError('Actual occluder declaration differs')
         actual_edges.update((item['id'], other) for other in occluders)

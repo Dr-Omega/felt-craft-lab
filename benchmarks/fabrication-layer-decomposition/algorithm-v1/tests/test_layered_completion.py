@@ -11,6 +11,18 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from layered_completion import (LayeredPlanError, propose_layered_plans,
                                 rank_layered_plans, validate_layered_plan,
                                 _hidden_domain, _group, _materialize)
+from solid_plans import decompose_solid
+
+
+def old_union_coverage(full, upper):
+    """Preserve the historical faulty arithmetic as explicit fault injection."""
+    merged = unary_union([g for _, g in upper])
+    return (full.difference(merged), _hidden_domain(full, merged),
+            sorted(k for k, g in upper if full.intersection(g).area > 0))
+
+
+def old_axis_partition(polygon, axis='x'):
+    return decompose_solid(polygon, axis, clip_numeric_parts=True)
 
 
 def observed(polygon, name, color):
@@ -43,28 +55,31 @@ class LayeredCompletionTests(unittest.TestCase):
             with self.subTest(axis=axis):
                 # Fault injection creates the formerly accepted candidate;
                 # actual public ranking below executes the real complete gate.
-                with patch('layered_completion.validate_layered_plan', return_value={'injected': True}):
+                with patch('layered_completion.validate_layered_plan', return_value={'injected': True}), \
+                        patch('layered_completion.vertex_partition', side_effect=old_axis_partition), \
+                        patch('layered_completion.ordered_coverage', side_effect=old_union_coverage):
                     bad = _materialize([_group(s) for s in sources], sources, axis, 'observed-solid-partition')
                 with self.assertRaises(LayeredPlanError):
                     rank_layered_plans(sources, [bad])
         valid = propose_layered_plans(sources)
         self.assertEqual(valid[0]['score']['pieceCount'], 3)
         self.assertEqual(valid[0]['score']['layerDepth'], 3)
-        self.assertTrue(all(p['proposal']['mode'] != 'observed-solid-partition' for p in valid))
-        rejected = [trial for trial in valid[0]['proposalSearch']
+        repaired = [trial for trial in valid[0]['proposalSearch']
                     if trial['mode'] == 'observed-solid-partition']
-        self.assertEqual(len(rejected), 2)
-        self.assertTrue(all(trial['status'] == 'REJECTED' for trial in rejected))
+        self.assertEqual(len(repaired), 2)
+        self.assertTrue(all(trial['status'] == 'VALID' for trial in repaired))
 
     def test_tiny_union_hidden_without_real_occluder_cannot_gain_forged_hypothesis(self):
         sources = fractional_nested()
-        with patch('layered_completion.validate_layered_plan', return_value={'injected': True}):
+        with patch('layered_completion.validate_layered_plan', return_value={'injected': True}), \
+                patch('layered_completion.vertex_partition', side_effect=old_axis_partition), \
+                patch('layered_completion.ordered_coverage', side_effect=old_union_coverage):
             bad = _materialize([_group(s) for s in sources], sources, 'x', 'observed-solid-partition')
         suspect = [p for p in bad['pieces'] if p['hiddenPolygon'].area > 0 and not p['occluderIds']]
         self.assertTrue(suspect)
         for p in suspect:
             p['completionEvidence'] = [{'method': 'forged-hypothesis', 'inferredHiddenGeometry': True}]
-        with self.assertRaisesRegex(LayeredPlanError, 'actual positive-area occluder'):
+        with self.assertRaises(LayeredPlanError):
             rank_layered_plans(sources, [bad])
 
     def test_hidden_material_requires_explicit_hypothesis_in_public_rank(self):

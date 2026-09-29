@@ -15,6 +15,8 @@ from shapely import shortest_line
 from shapely.geometry import GeometryCollection, LineString, Polygon
 from shapely.ops import unary_union
 from shapely.strtree import STRtree
+from coverage_geometry import ordered_coverage
+from vertex_partition import partition as vertex_partition
 
 from solid_plans import (_key, _lines, _parts, _sources, _tolerance,
                          _require_polygon, decompose_solid, SolidPlanError,
@@ -183,7 +185,7 @@ def _joined_groups(groups, foreground):
 def _materialize(groups, sources, axis, mode, diagnostics=None):
     pieces = []
     for group in groups:
-        for full in decompose_solid(group["full"], axis, clip_numeric_parts=True):
+        for full in vertex_partition(group["full"], axis):
             visible = full.intersection(group["visible"])
             if visible.area <= 0:
                 raise LayeredPlanError("completion would manufacture a wholly hidden useless piece")
@@ -218,11 +220,13 @@ def _materialize(groups, sources, axis, mode, diagnostics=None):
     # non-axis-aligned domain far from the remaining hidden boundary. Do not
     # drop such domains by area: retain the exact polygonal ordered intersection.
     by_id = {p["id"]: p for p in pieces}
-    above = GeometryCollection()
+    above = []
     for identifier in reversed(order):
         p = by_id[identifier]
-        p["hiddenPolygon"] = _hidden_domain(p["polygon"], above)
-        above = unary_union([above, p["polygon"]])
+        _, p["hiddenPolygon"], computed_occluders = ordered_coverage(p["polygon"], above)
+        if computed_occluders != p['occluderIds']:
+            raise LayeredPlanError('construction coverage and occluders disagree')
+        above.append((identifier, p["polygon"]))
     plan = {"strategy": STRATEGY, "pieces": pieces, "bottomToTop": order,
             "occlusionEdges": sorted(edges, key=lambda e: (e["belowPieceId"], e["abovePieceId"])),
             "proposal": {"mode": mode, "splitAxis": axis, **(diagnostics or {})}}
@@ -275,8 +279,10 @@ def validate_layered_plan(observed, plan):
         if full.difference(foreground).area > tolerance:
             raise LayeredPlanError("full piece enters genuine transparent foreground gap")
         occluders = [above for above in order[index+1:] if _positive(full, by_id[above]["polygon"])]
-        visible = full.difference(above)
-        hidden = _hidden_domain(full, above)
+        visible, hidden, coverage_occluders = ordered_coverage(
+            full, [(pid, by_id[pid]['polygon']) for pid in order[index+1:]])
+        if coverage_occluders != sorted(occluders):
+            raise LayeredPlanError('validation coverage and occluders disagree')
         if visible.area <= 0:
             raise LayeredPlanError("useless wholly hidden piece")
         if (not _same_domain(visible, p["visiblePolygon"], tolerance)
