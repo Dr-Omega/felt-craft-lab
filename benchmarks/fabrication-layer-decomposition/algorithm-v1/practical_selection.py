@@ -18,7 +18,7 @@ from design_color_regions import CROSS, _lab, _visible_neighbourhood_rgb, digest
 from layered_selection import _options, _palette
 from quality_fragments import _components, _rgba, _summary
 
-VERSION = 'practical-seeded-design/2'
+VERSION = 'practical-seeded-design/3'
 PARAMETERS = {
     'surfaceDepthPx': 3.5,
     'surfacePaletteDistanceLab': 8.0,
@@ -183,6 +183,9 @@ def rebuild_regions(rgba, old_labels, old_pixels, config, request):
     smoothed = cv2.medianBlur(rgb, 3)
     gradient = _edge_steps(_lab(smoothed), active)
     labels, markers, comparison = compare_ownership(rgb, active, colors, nearest, markers, gradient)
+    from transition_bands import compare_bands
+    labels, band_comparison = compare_bands(rgb, active, nearest, markers, gradient, labels, decisions)
+    comparison['jointTransitionBands'] = band_comparison
     comparison['missingInkProposals'] = missing_ink_proposals
     if not np.array_equal(labels > 0, active):
         raise ValueError('seeded ownership lost foreground support')
