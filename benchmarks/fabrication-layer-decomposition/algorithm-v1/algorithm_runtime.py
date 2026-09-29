@@ -60,12 +60,13 @@ def _recipe(m4, quality_settings=None):
 
 
 def _verify_artifacts(output, result_input, portable):
+    from rgba_handoff import ARTIFACTS, verify_persisted
     locations = {}
     for record in result_input['artifacts']:
         identifier = record['id']
         if identifier == 'layered-source':
             path = Path(portable['sourceArtifact']['path'])
-        elif identifier in {'algorithm-recipe.json', 'fabrication-geometry.json', 'relation-evidence.json', 'layer-arrays.npz', 'quality-seam-comparison.json', 'monochrome-policy.json'}:
+        elif identifier in {*ARTIFACTS, 'algorithm-recipe.json', 'fabrication-geometry.json', 'relation-evidence.json', 'layer-arrays.npz', 'quality-seam-comparison.json', 'monochrome-policy.json'}:
             path = output / identifier
         else:
             path = output / 'm4' / identifier
@@ -73,6 +74,12 @@ def _verify_artifacts(output, result_input, portable):
         if measured != record:
             raise ValueError('Persisted artifact bytes differ from result identity: ' + identifier)
         locations[identifier] = str(path.relative_to(output)).replace('\\', '/')
+    recipe = _read(output / 'algorithm-recipe.json')
+    handoff = recipe.get('experimentalQuality', {}).get('rgbaHandoff')
+    if handoff is not None:
+        if not set(ARTIFACTS).issubset(locations):
+            raise ValueError('saved-alpha handoff snapshots are missing from result identity')
+        verify_persisted(output, handoff)
     # Reconstruct source identities from persisted labels and raw boundaries.
     # Hash agreement alone cannot establish Component-to-domain identity.
     expected_input = build_input(output / 'm4', portable)
@@ -205,7 +212,8 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
                   seam_strategy: str = 'baseline', design_palette: list[list[int]] | None = None,
                   palette_provenance: str | None = None,
                   completion_strategy: str = 'legacy', fabrication_policy: str | None = None,
-                  base_color_slot: str | None = None) -> dict:
+                  base_color_slot: str | None = None,
+                  saved_alpha_path: Path | None = None) -> dict:
     """Run finite supported input → actual Base/Piece candidates, safely.
 
     All output protection runs here before *any* write (including failure files).
@@ -214,7 +222,16 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
     """
     image_path = Path(image_path).resolve()
     mask_path = Path(mask_path).resolve() if mask_path is not None else None
-    output = validate_output_root(Path(output_root), [p for p in (image_path, mask_path) if p is not None])
+    saved_alpha_path = Path(saved_alpha_path).resolve() if saved_alpha_path is not None else None
+    output = validate_output_root(Path(output_root), [p for p in (image_path, mask_path, saved_alpha_path) if p is not None])
+    handoff_data = None
+    if saved_alpha_path is not None:
+        if quality_mode != 'practical-auto' or mask_path is not None or mode != 'embedded-alpha' or selected_layer_ids is not None or whole_image_foreground:
+            raise ValueError('saved-alpha handoff requires explicit practical-auto and no alternate mask/layer semantics')
+        from rgba_handoff import prepare
+        original_bytes, alpha_bytes = image_path.read_bytes(), saved_alpha_path.read_bytes()
+        derived_bytes, handoff_record = prepare(original_bytes, alpha_bytes)
+        handoff_data = (original_bytes, alpha_bytes, derived_bytes)
     if fabrication_policy is not None:
         from monochrome_policy import POLICY
         from whole_silhouette import RULE
@@ -237,12 +254,14 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
         raise ValueError('legacy seam ranking is not a layered result contract')
     if type(foreground_cleanup) is not bool or (foreground_cleanup and quality_mode == 'baseline'):
         raise ValueError('foreground cleanup requires an explicit experimental design mode')
-    if quality_mode != 'baseline' and image_path.suffix.lower() != '.png':
+    if quality_mode != 'baseline' and image_path.suffix.lower() != '.png' and handoff_data is None:
         raise ValueError('experimental design V1 supports explicit PNG foreground; layered baseline remains available')
     experimental = quality_mode != 'baseline' or seam_strategy != 'baseline' or completion_strategy != 'legacy'
     quality_settings = ({'version':'application-quality/1','mode':quality_mode,
                          'foregroundCleanup':foreground_cleanup,'seamStrategy':seam_strategy,
                          'humanConfirmation':'PENDING_REVIEW'} if experimental else None)
+    if handoff_data is not None:
+        quality_settings['rgbaHandoff'] = handoff_record
     if completion_strategy != 'legacy':
         quality_settings['completionStrategy'] = completion_strategy
     if fabrication_policy is not None:
@@ -267,7 +286,7 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
         if mask_path is not None or mode != "embedded-alpha":
             raise ValueError("layered source uses explicit layer selection, not external-mask mode")
         parsed = parse_layered(image_path, selected_layer_ids)
-    elif image_path.suffix.lower() != ".png":
+    elif image_path.suffix.lower() != ".png" and handoff_data is None:
         raise ValueError("only single-frame PNG and finite SVG/PSD are supported")
     elif selected_layer_ids is not None:
         raise ValueError("flat input cannot claim selected layers")
@@ -284,6 +303,12 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
     try:
         portable = None
         runtime_source = image_path
+        if handoff_data is not None:
+            from rgba_handoff import ARTIFACTS
+            for name, data in zip(ARTIFACTS, handoff_data):
+                (output/name).write_bytes(data)
+            runtime_source = output / ARTIFACTS[2]
+            completed.append('EXPLICIT_SAVED_ALPHA_STRAIGHT_RGB_HANDOFF')
         if parsed is not None:
             portable = _portable_layers(parsed, output)
             if parsed["status"] != "SUPPORTED" or parsed.get("rgba") is None:
@@ -307,6 +332,8 @@ def run_algorithm(*, image_path: Path, output_root: Path, foreground_source: str
             input_object = build_input(output / "m4", portable)
         if portable is not None:
             input_object['artifacts'].append(portable['arrayArtifact'])
+        if handoff_data is not None:
+            input_object['artifacts'].extend(artifact(output/name, media_type=('application/octet-stream' if name.endswith('.bin') else 'image/png')) for name in ARTIFACTS)
         _write(output / 'algorithm-recipe.json', _recipe(m4, quality_settings))
         input_object['artifacts'].append(artifact(output / 'algorithm-recipe.json'))
         input_checked = run_shared_validation(input=input_object)
@@ -510,6 +537,7 @@ def main():
     parser.add_argument("--manual-confirmation", choices=["CONFIRMED", "PENDING_REVIEW"], default="PENDING_REVIEW")
     parser.add_argument("--profile", choices=["aggressive", "balanced"], default="aggressive")
     parser.add_argument("--mask", type=Path)
+    parser.add_argument('--saved-alpha', type=Path, help='Opt-in decoded original RGB + saved L PNG alpha; no inference/decontamination')
     parser.add_argument("--whole-image-foreground", action="store_true")
     parser.add_argument("--select-layer", action="append")
     parser.add_argument('--quality-mode', choices=['baseline','selection','contour','combined','design-colors','design-cleanup','layered-selection','practical-auto'], default='baseline')
@@ -531,6 +559,7 @@ def main():
                            completion_strategy=args.completion_strategy,
                            fabrication_policy=args.fabrication_policy,
                            base_color_slot=args.base_color_slot,
+                           saved_alpha_path=args.saved_alpha,
                            seam_strategy=args.seam_strategy)
     print(json.dumps({"status": report["status"], "resultSha256": report["resultSha256"]}))
 
