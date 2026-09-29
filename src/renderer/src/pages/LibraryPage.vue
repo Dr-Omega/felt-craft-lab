@@ -9,7 +9,6 @@ import {
   listCatalogThemes
 } from '../catalog/ywn-catalog'
 import {
-  isAcceptanceAllThemesInEditorEnabled,
   prepareNewWorkScene
 } from '../catalog/library-new-work'
 import { openEditor } from '../app-nav'
@@ -32,9 +31,6 @@ const message = ref('')
 const busy = ref(false)
 const themeFilter = ref<string>('all')
 const newWorkName = ref('我的新作品')
-const acceptanceAllThemesInEditor = isAcceptanceAllThemesInEditorEnabled(
-  import.meta.env.VITE_ACCEPTANCE_ALL_THEMES_IN_EDITOR
-)
 const confirmDelete = ref<
   | { kind: 'draft'; record: DraftRecord }
   | { kind: 'project'; record: ProjectRecord }
@@ -60,9 +56,7 @@ async function refreshLists(): Promise<void> {
 
 async function startNewWork(): Promise<void> {
   message.value = ''
-  const prepared = prepareNewWorkScene(newWorkName.value, themeFilter.value, {
-    allowAllThemes: acceptanceAllThemesInEditor
-  })
+  const prepared = prepareNewWorkScene(newWorkName.value, themeFilter.value)
   if (!prepared.scene) {
     message.value = prepared.message
     return

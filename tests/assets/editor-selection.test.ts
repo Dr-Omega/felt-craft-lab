@@ -83,7 +83,7 @@ describe('editor snapshot-scoped selection', () => {
   })
 
   it('shows every theme from the acceptance Scene snapshot without crossing snapshot boundaries', () => {
-    const prepared = prepareNewWorkScene('全主题验收作品', 'all', { allowAllThemes: true })
+    const prepared = prepareNewWorkScene('全主题验收作品', 'all')
     const scene = prepared.scene
     expect(scene?.assetSnapshotId).toBe(YWN_SNAPSHOT_ID)
     expect(scene?.themeId).not.toBe('all')
@@ -97,7 +97,7 @@ describe('editor snapshot-scoped selection', () => {
   })
 
   it('combines all-theme selection with acceptance unlock-all access for both asset types', async () => {
-    const prepared = prepareNewWorkScene('全主题全解锁验收作品', 'all', { allowAllThemes: true })
+    const prepared = prepareNewWorkScene('全主题全解锁验收作品', 'all')
     const snapshotAssets = getCatalogAssetsForSnapshot(prepared.scene!.assetSnapshotId)
     const saved: AssetAccessState[] = []
     await seedAcceptanceUnlockedAccess(

@@ -78,10 +78,10 @@ describe('V4.6 formal Editor UI contract', () => {
     expect(drawer).toContain('isAssetUnlocked')
   })
 
-  it('keeps the all-themes acceptance gate explicit without changing Scene semantics', () => {
+  it('allows the default all-themes selection without an acceptance gate', () => {
     const library = readFileSync(resolve('src/renderer/src/pages/LibraryPage.vue'), 'utf8')
-    expect(library).toContain('VITE_ACCEPTANCE_ALL_THEMES_IN_EDITOR')
-    expect(library).toContain('allowAllThemes: acceptanceAllThemesInEditor')
+    expect(library).not.toContain('VITE_ACCEPTANCE_ALL_THEMES_IN_EDITOR')
+    expect(library).not.toContain('allowAllThemes')
     expect(library).toContain('<option value="all">全部</option>')
   })
 
