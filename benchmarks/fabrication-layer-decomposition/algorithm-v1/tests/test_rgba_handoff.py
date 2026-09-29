@@ -12,7 +12,8 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT), str(ROOT.parent/'tools')]
 from rgba_handoff import prepare, verify_persisted, ARTIFACTS
-from algorithm_runtime import run_algorithm
+from algorithm_runtime import run_algorithm, _verify_artifacts
+from m1_adapter import artifact
 
 
 def png(array):
@@ -21,6 +22,21 @@ def png(array):
 
 
 class RgbaHandoffTests(unittest.TestCase):
+    def test_handoff_artifacts_require_bound_recipe(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)
+            snapshot=root/ARTIFACTS[0];snapshot.write_bytes(b'actual bytes')
+            records=[artifact(snapshot,ARTIFACTS[0],'application/octet-stream')]
+            recipe=root/'algorithm-recipe.json'
+            # Even an on-disk declaration cannot be trusted when not bound.
+            recipe.write_text(json.dumps({'experimentalQuality':{'rgbaHandoff':{}}}),'utf-8')
+            with self.assertRaisesRegex(ValueError,'lack a bound handoff recipe'):
+                _verify_artifacts(root,{'artifacts':records},None)
+            recipe.write_text('{}','utf-8')
+            records.append(artifact(recipe,'algorithm-recipe.json','application/json'))
+            with self.assertRaisesRegex(ValueError,'lack a bound handoff recipe'):
+                _verify_artifacts(root,{'artifacts':records},None)
+
     def test_semtransparent_straight_rgb_roundtrip_and_composite(self):
         rgb=np.array([[[200,100,40],[20,150,210],[70,80,90],[1,2,3]]],np.uint8)
         alpha=np.array([[128,254,255,0]],np.uint8)

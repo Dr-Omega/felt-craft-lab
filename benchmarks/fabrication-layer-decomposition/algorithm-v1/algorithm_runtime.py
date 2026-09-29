@@ -74,8 +74,13 @@ def _verify_artifacts(output, result_input, portable):
         if measured != record:
             raise ValueError('Persisted artifact bytes differ from result identity: ' + identifier)
         locations[identifier] = str(path.relative_to(output)).replace('\\', '/')
-    recipe = _read(output / 'algorithm-recipe.json')
+    # Standalone legacy M1 validation has no orchestration recipe. Only read a
+    # recipe whose actual bytes were bound and checked above; an unbound file
+    # must not supply trusted colour-encoding semantics.
+    recipe = _read(output / 'algorithm-recipe.json') if 'algorithm-recipe.json' in locations else {}
     handoff = recipe.get('experimentalQuality', {}).get('rgbaHandoff')
+    if set(ARTIFACTS).intersection(locations) and handoff is None:
+        raise ValueError('saved-alpha snapshots lack a bound handoff recipe')
     if handoff is not None:
         if not set(ARTIFACTS).issubset(locations):
             raise ValueError('saved-alpha handoff snapshots are missing from result identity')
