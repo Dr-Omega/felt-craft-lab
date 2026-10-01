@@ -128,9 +128,13 @@ onUnmounted(() => {
   box-sizing: border-box;
 }
 
-body {
+html,
+body,
+#app {
+  width: 100%;
+  height: 100%;
   margin: 0;
-  min-height: 100vh;
+  padding: 0;
   overflow: hidden;
 }
 
