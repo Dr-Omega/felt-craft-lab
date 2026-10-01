@@ -1,6 +1,7 @@
 import type { SceneDocument } from '@shared/contracts'
 import { ALL_THEMES_ID } from './catalog/ywn-catalog'
 import { prepareNewWorkScene } from './catalog/library-new-work'
+import { SHARE_PLAZA_V2_STANDALONE_DEV } from './config/share-plaza-v2'
 
 export type AppView = 'splash' | 'login' | 'plaza' | 'library' | 'editor' | 'projection' | 'status'
 
@@ -21,7 +22,7 @@ export interface ProjectionLaunchContext {
   sourceLabel?: string
 }
 
-let currentView: AppView = 'splash'
+let currentView: AppView = SHARE_PLAZA_V2_STANDALONE_DEV ? 'plaza' : 'splash'
 let launch: EditorLaunchContext | undefined
 let projectionLaunch: ProjectionLaunchContext | undefined
 const listeners = new Set<() => void>()

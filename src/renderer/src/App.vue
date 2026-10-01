@@ -9,6 +9,7 @@ import {
   openProjection,
   openPlaza,
   openStatus,
+  completeLogin,
   subscribeAppNav,
   type AppView,
   type MainAppView
@@ -22,6 +23,8 @@ import ProjectionPage from './pages/ProjectionPage.vue'
 import StatusPage from './pages/StatusPage.vue'
 import PlazaPage from './pages/PlazaPage.vue'
 import CenterToastOverlay from './components/shell/CenterToastOverlay.vue'
+import { SHARE_PLAZA_V2_STANDALONE_DEV } from './config/share-plaza-v2'
+import { ensureDevPlazaSession } from './services/plaza-dev-bootstrap'
 
 const view = ref<AppView>(getAppView())
 const editorRef = ref<{ requestBack: () => void } | null>(null)
@@ -68,6 +71,12 @@ function onHashChange(): void {
 }
 
 onMounted(() => {
+  if (SHARE_PLAZA_V2_STANDALONE_DEV) {
+    void ensureDevPlazaSession().then((ok) => {
+      if (ok) completeLogin()
+      syncView()
+    })
+  }
   applyHashRoute()
   syncView()
   syncHashFromView(view.value)

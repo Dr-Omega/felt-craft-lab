@@ -1,0 +1,53 @@
+{
+  "designSize": { "width": 1920, "height": 1080 },
+  "layers": [
+    {
+      "slug": "base-background",
+      "file": "layer-base-background.png",
+      "zIndex": 0,
+      "bbox": { "left": 0, "top": 0, "right": 1920, "bottom": 1080, "width": 1920, "height": 1080 }
+    },
+    {
+      "slug": "public-background",
+      "file": "layer-public-background-01.png",
+      "zIndex": 1,
+      "bbox": { "left": 0, "top": 0, "right": 1920, "bottom": 1080, "width": 1920, "height": 1080 }
+    },
+    {
+      "slug": "personal-background",
+      "file": "layer-personal-background-02.png",
+      "zIndex": 2,
+      "bbox": { "left": 0, "top": 0, "right": 1920, "bottom": 1080, "width": 1920, "height": 1080 }
+    },
+    {
+      "slug": "showcase-frame",
+      "file": "layer-showcase-frame-03.png",
+      "zIndex": 3,
+      "bbox": { "left": 0, "top": 0, "right": 1920, "bottom": 1080, "width": 1920, "height": 1080 }
+    },
+    {
+      "slug": "public-tab",
+      "file": "layer-public-tab-04.png",
+      "zIndex": 4,
+      "bbox": { "left": 134, "top": 214, "right": 335, "bottom": 337, "width": 201, "height": 123 }
+    },
+    {
+      "slug": "personal-tab",
+      "file": "layer-personal-tab-05.png",
+      "zIndex": 5,
+      "bbox": { "left": 326, "top": 216, "right": 527, "bottom": 341, "width": 201, "height": 125 }
+    },
+    {
+      "slug": "back-button",
+      "file": "layer-back-top.png",
+      "zIndex": 6,
+      "bbox": { "left": 39, "top": 35, "right": 245, "bottom": 146, "width": 206, "height": 111 }
+    }
+  ],
+  "contentSlot": {
+    "left": 130,
+    "top": 368,
+    "width": 1660,
+    "height": 648
+  }
+}

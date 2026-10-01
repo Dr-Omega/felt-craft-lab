@@ -1,23 +1,43 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import type { PlazaPost } from '@shared/contracts/plaza'
 import AuthArtboard from '../components/auth/AuthArtboard.vue'
+import PersonalSpacePanel from '../components/plaza/PersonalSpacePanel.vue'
 import PlazaPostDetailModal from '../components/plaza/PlazaPostDetailModal.vue'
-import { enterCreationStudio, openLogin } from '../app-nav'
+import { showCenterToast } from '../composables/center-toast'
 import { listPlazaPosts, loadPlazaPreviewUrl } from '../services/plaza-api'
-import { clearPlazaSession, loadPlazaSession } from '../services/plaza-session'
+import { ensureDevPlazaSession } from '../services/plaza-dev-bootstrap'
+import { loadPlazaSession } from '../services/plaza-session'
 import { friendlyShortDate } from '../util/friendly-time'
-import { authFullLayerStyle } from '../ui/auth-assets'
-import { plazaAssets } from '../ui/plaza-assets'
+import {
+  plazaV2Assets,
+  plazaV2ContentSlotStyle,
+  plazaV2FullLayerStyle,
+  plazaV2HitBoxStyle
+} from '../ui/plaza-v2-assets'
 
+type ShareTab = 'public' | 'personal'
+
+const activeTab = ref<ShareTab>('public')
 const posts = ref<PlazaPost[]>([])
 const previewCache = ref<Record<string, string>>({})
 const loading = ref(true)
 const listLoadedOk = ref(false)
-const message = ref('')
 const detailPost = ref<PlazaPost | null>(null)
 const detailOpen = ref(false)
 const detailPreview = ref('')
+const personalRef = ref<InstanceType<typeof PersonalSpacePanel> | null>(null)
+
+const publicTabHit = plazaV2HitBoxStyle('public-tab')
+const personalTabHit = plazaV2HitBoxStyle('personal-tab')
+const backHit = plazaV2HitBoxStyle('back-button')
+
+const publicTabLayerClass = computed(() =>
+  activeTab.value === 'public' ? 'plaza-v2-tab-layer plaza-v2-tab-layer--active' : 'plaza-v2-tab-layer plaza-v2-tab-layer--idle'
+)
+const personalTabLayerClass = computed(() =>
+  activeTab.value === 'personal' ? 'plaza-v2-tab-layer plaza-v2-tab-layer--active' : 'plaza-v2-tab-layer plaza-v2-tab-layer--idle'
+)
 
 function currentSession() {
   return loadPlazaSession()
@@ -25,12 +45,8 @@ function currentSession() {
 
 async function refreshPosts(): Promise<void> {
   const session = currentSession()
-  if (!session?.token) {
-    openLogin()
-    return
-  }
+  if (!session?.token) return
   loading.value = true
-  message.value = ''
   listLoadedOk.value = false
   try {
     posts.value = await listPlazaPosts(session.token)
@@ -39,7 +55,6 @@ async function refreshPosts(): Promise<void> {
   } catch {
     posts.value = []
     listLoadedOk.value = false
-    message.value = ''
   } finally {
     loading.value = false
   }
@@ -52,7 +67,7 @@ async function preloadThumbnails(token: string, items: PlazaPost[]): Promise<voi
     try {
       next[post.postId] = await loadPlazaPreviewUrl(token, post.previewMediaPath)
     } catch {
-      // keep card placeholder
+      // keep placeholder
     }
   }
   previewCache.value = next
@@ -69,7 +84,7 @@ async function openDetail(post: PlazaPost): Promise<void> {
       detailPreview.value = await loadPlazaPreviewUrl(session.token, post.previewMediaPath)
       previewCache.value = { ...previewCache.value, [post.postId]: detailPreview.value }
     } catch {
-      message.value = ''
+      // ignore
     }
   }
 }
@@ -80,14 +95,22 @@ function closeDetail(): void {
   detailPreview.value = ''
 }
 
-function logout(): void {
-  clearPlazaSession()
-  openLogin()
+function selectTab(tab: ShareTab): void {
+  if (activeTab.value === tab) return
+  activeTab.value = tab
+  if (tab === 'personal') {
+    void personalRef.value?.refresh?.()
+  }
 }
 
-onMounted(() => {
-  if (!currentSession()) {
-    openLogin()
+function onBack(): void {
+  showCenterToast('功能开发中')
+}
+
+onMounted(async () => {
+  await ensureDevPlazaSession()
+  if (!currentSession()?.token) {
+    showCenterToast('开发登录失败，请确认 backend 已启动（8788）')
     return
   }
   void refreshPosts()
@@ -96,41 +119,107 @@ onMounted(() => {
 
 <template>
   <AuthArtboard>
-    <img class="plaza-layer" :style="authFullLayerStyle" :src="plazaAssets.background" alt="" aria-hidden="true" />
+    <!-- z0 大背景 -->
     <img
-      class="plaza-layer plaza-layer--under-showcase"
-      :style="authFullLayerStyle"
-      :src="plazaAssets.screenBorderDecor"
+      class="plaza-v2-layer plaza-v2-layer--z0"
+      :style="plazaV2FullLayerStyle"
+      :src="plazaV2Assets.baseBackground"
       alt=""
       aria-hidden="true"
     />
-    <img class="plaza-layer plaza-layer--title" :style="authFullLayerStyle" :src="plazaAssets.titleBanner" alt="" aria-hidden="true" />
-    <img class="plaza-layer plaza-layer--frame" :style="authFullLayerStyle" :src="plazaAssets.showcaseFrame" alt="" aria-hidden="true" />
+    <!-- z1 公共空间背景 -->
+    <img
+      v-show="activeTab === 'public'"
+      class="plaza-v2-layer plaza-v2-layer--z1"
+      :style="plazaV2FullLayerStyle"
+      :src="plazaV2Assets.publicBackground"
+      alt=""
+      aria-hidden="true"
+    />
+    <!-- z2 个人空间背景 -->
+    <img
+      v-show="activeTab === 'personal'"
+      class="plaza-v2-layer plaza-v2-layer--z2"
+      :style="plazaV2FullLayerStyle"
+      :src="plazaV2Assets.personalBackground"
+      alt=""
+      aria-hidden="true"
+    />
+    <!-- z3 展示框 -->
+    <img
+      class="plaza-v2-layer plaza-v2-layer--z3"
+      :style="plazaV2FullLayerStyle"
+      :src="plazaV2Assets.showcaseFrame"
+      alt=""
+      aria-hidden="true"
+    />
+    <!-- z4 公共 tab 装饰层 -->
+    <img
+      :class="publicTabLayerClass"
+      class="plaza-v2-layer plaza-v2-layer--z4"
+      :style="plazaV2FullLayerStyle"
+      :src="plazaV2Assets.publicTab"
+      alt=""
+      aria-hidden="true"
+    />
+    <!-- z5 个人 tab 装饰层 -->
+    <img
+      :class="personalTabLayerClass"
+      class="plaza-v2-layer plaza-v2-layer--z5"
+      :style="plazaV2FullLayerStyle"
+      :src="plazaV2Assets.personalTab"
+      alt=""
+      aria-hidden="true"
+    />
 
-    <section class="plaza-grid-slot" aria-label="作品列表">
-      <p v-if="loading" class="plaza-grid-empty">加载中…</p>
-      <p v-else-if="listLoadedOk && posts.length === 0" class="plaza-grid-empty">还没有人分享作品，来做第一个吧。</p>
-      <ul v-else class="plaza-grid">
-        <li v-for="post in posts" :key="post.postId">
-          <button type="button" class="plaza-card text-box-surface" @click="openDetail(post)">
-            <div class="plaza-card__thumb">
-              <img v-if="previewCache[post.postId]" :src="previewCache[post.postId]" :alt="post.title" />
-              <span v-else class="muted">预览</span>
-            </div>
-            <div class="plaza-card__body">
-              <h3>{{ post.title }}</h3>
-              <p class="muted">{{ post.authorName }} · {{ friendlyShortDate(post.createdAt) }}</p>
-            </div>
-          </button>
-        </li>
-      </ul>
-      <p v-if="message" class="plaza-message error">{{ message }}</p>
+    <button
+      type="button"
+      class="plaza-v2-hit plaza-v2-hit--public-tab"
+      :style="publicTabHit"
+      :aria-pressed="activeTab === 'public'"
+      aria-label="公共空间"
+      @click="selectTab('public')"
+    />
+    <button
+      type="button"
+      class="plaza-v2-hit plaza-v2-hit--personal-tab"
+      :style="personalTabHit"
+      :aria-pressed="activeTab === 'personal'"
+      aria-label="个人空间"
+      @click="selectTab('personal')"
+    />
+
+    <section class="plaza-v2-content-slot" :style="plazaV2ContentSlotStyle" :aria-label="activeTab === 'public' ? '公共空间作品' : '个人空间作品'">
+      <template v-if="activeTab === 'public'">
+        <p v-if="loading" class="plaza-grid-empty">加载中…</p>
+        <p v-else-if="listLoadedOk && posts.length === 0" class="plaza-grid-empty">还没有人分享作品，来做第一个吧。</p>
+        <ul v-else class="plaza-grid">
+          <li v-for="post in posts" :key="post.postId">
+            <button type="button" class="plaza-card text-box-surface" @click="openDetail(post)">
+              <div class="plaza-card__thumb">
+                <img v-if="previewCache[post.postId]" :src="previewCache[post.postId]" :alt="post.title" />
+                <span v-else class="muted">预览</span>
+              </div>
+              <div class="plaza-card__body">
+                <h3>{{ post.title }}</h3>
+                <p class="muted">{{ post.authorName }} · {{ friendlyShortDate(post.createdAt) }}</p>
+              </div>
+            </button>
+          </li>
+        </ul>
+      </template>
+      <PersonalSpacePanel v-else ref="personalRef" />
     </section>
 
-    <div class="plaza-actions">
-      <button type="button" class="primary plaza-logout" @click="logout">退出登录</button>
-      <button type="button" class="primary plaza-start-create" @click="enterCreationStudio">开始创作</button>
-    </div>
+    <!-- 最顶层：返回键装饰 + 热区 -->
+    <img
+      class="plaza-v2-layer plaza-v2-layer--z6"
+      :style="plazaV2FullLayerStyle"
+      :src="plazaV2Assets.backButton"
+      alt=""
+      aria-hidden="true"
+    />
+    <button type="button" class="plaza-v2-hit plaza-v2-hit--back" :style="backHit" aria-label="返回" @click="onBack" />
   </AuthArtboard>
 
   <PlazaPostDetailModal
@@ -142,45 +231,77 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.plaza-layer {
+.plaza-v2-layer {
   position: absolute;
   display: block;
   pointer-events: none;
   user-select: none;
 }
 
-.plaza-layer--under-showcase {
+.plaza-v2-layer--z0 {
+  z-index: 0;
+}
+
+.plaza-v2-layer--z1,
+.plaza-v2-layer--z2 {
   z-index: 1;
 }
 
-.plaza-layer--title {
-  z-index: 2;
-}
-
-.plaza-layer--frame {
+.plaza-v2-layer--z3 {
   z-index: 3;
 }
 
-.plaza-grid-slot {
-  position: absolute;
-  left: 168px;
-  top: 424px;
+.plaza-v2-layer--z4 {
   z-index: 4;
-  width: 1584px;
-  height: 488px;
-  padding: 8px 12px;
+}
+
+.plaza-v2-layer--z5 {
+  z-index: 5;
+}
+
+.plaza-v2-layer--z6 {
+  z-index: 7;
+}
+
+.plaza-v2-tab-layer--active {
+  opacity: 1;
+}
+
+.plaza-v2-tab-layer--idle {
+  opacity: 0.48;
+  filter: brightness(0.92);
+}
+
+.plaza-v2-hit {
+  position: absolute;
+  z-index: 8;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.plaza-v2-hit--back {
+  z-index: 9;
+}
+
+.plaza-v2-content-slot {
+  position: absolute;
+  z-index: 6;
   overflow-x: hidden;
   overflow-y: auto;
+  padding: 8px 12px;
   background: transparent;
   scrollbar-width: thin;
   scrollbar-color: rgba(89, 71, 56, 0.35) transparent;
 }
 
-.plaza-grid-slot::-webkit-scrollbar {
+.plaza-v2-content-slot::-webkit-scrollbar {
   width: 10px;
 }
 
-.plaza-grid-slot::-webkit-scrollbar-thumb {
+.plaza-v2-content-slot::-webkit-scrollbar-thumb {
   background: rgba(89, 71, 56, 0.28);
   border-radius: 999px;
 }
@@ -190,7 +311,7 @@ onMounted(() => {
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 16px;
   margin: 0;
-  padding: 8px 4px 0;
+  padding: 4px 2px 12px;
   list-style: none;
 }
 
@@ -230,31 +351,5 @@ onMounted(() => {
   margin: 24px;
   text-align: center;
   color: var(--muted);
-}
-
-.plaza-actions {
-  position: absolute;
-  right: 120px;
-  bottom: 56px;
-  z-index: 4;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.plaza-start-create {
-  min-width: 200px;
-  min-height: 64px;
-  font-size: 26px;
-}
-
-.plaza-logout {
-  min-width: 200px;
-  min-height: 64px;
-  font-size: 26px;
-}
-
-.plaza-message {
-  margin-top: 12px;
 }
 </style>
