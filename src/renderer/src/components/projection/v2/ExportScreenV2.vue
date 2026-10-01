@@ -160,9 +160,10 @@ function onConfirm(): void {
 
 .layer {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  left: 0;
+  top: 0;
+  width: 1920px;
+  height: 1080px;
   pointer-events: none;
   user-select: none;
 }
@@ -183,9 +184,9 @@ function onConfirm(): void {
 }
 
 .hit img {
+  display: block;
   width: 100%;
   height: 100%;
-  object-fit: contain;
 }
 
 .hit--back,
