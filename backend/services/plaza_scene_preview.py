@@ -53,6 +53,22 @@ PLAZA_DEMO_SCENES: dict[str, PlazaDemoSceneSpec] = {
             StickerPlacement("sticker_tangyuan_001", 680, 140, 4),
         ),
     ),
+    "demo-plaza-personal-1.png": PlazaDemoSceneSpec(
+        background_asset_id="background_river_lantern_001",
+        stickers=(
+            StickerPlacement("sticker_flower_lantern_001", 160, 140, 1),
+            StickerPlacement("sticker_mooncake_001", 380, 180, 2),
+            StickerPlacement("sticker_rabbit_001", 520, 100, 3),
+        ),
+    ),
+    "demo-plaza-personal-2.png": PlazaDemoSceneSpec(
+        background_asset_id="background_lantern_street_001",
+        stickers=(
+            StickerPlacement("sticker_crescent_moon_001", 200, 120, 1),
+            StickerPlacement("sticker_tangyuan_001", 420, 200, 2),
+            StickerPlacement("sticker_flower_lantern_001", 600, 130, 3),
+        ),
+    ),
 }
 
 

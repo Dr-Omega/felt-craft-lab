@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import type { PlazaPost } from '@shared/contracts/plaza'
 import AuthArtboard from '../components/auth/AuthArtboard.vue'
 import PersonalSpacePanel from '../components/plaza/PersonalSpacePanel.vue'
-import PlazaPostDetailModal from '../components/plaza/PlazaPostDetailModal.vue'
 import { showCenterToast } from '../composables/center-toast'
-import { listPlazaPosts, loadPlazaPreviewUrl } from '../services/plaza-api'
 import { ensureDevPlazaSession } from '../services/plaza-dev-bootstrap'
 import { loadPlazaSession } from '../services/plaza-session'
-import { friendlyShortDate } from '../util/friendly-time'
+import {
+  PLAZA_V2_PUBLIC_DEMO_CARDS,
+  type PlazaV2DemoCard
+} from '../ui/plaza-v2-demo-cards'
 import {
   plazaV2Assets,
   plazaV2ContentSlotStyle,
@@ -19,13 +19,9 @@ import {
 type ShareTab = 'public' | 'personal'
 
 const activeTab = ref<ShareTab>('public')
-const posts = ref<PlazaPost[]>([])
-const previewCache = ref<Record<string, string>>({})
-const loading = ref(true)
-const listLoadedOk = ref(false)
-const detailPost = ref<PlazaPost | null>(null)
+const publicCards = PLAZA_V2_PUBLIC_DEMO_CARDS
+const detailCard = ref<PlazaV2DemoCard | null>(null)
 const detailOpen = ref(false)
-const detailPreview = ref('')
 const personalRef = ref<InstanceType<typeof PersonalSpacePanel> | null>(null)
 
 const publicTabHit = plazaV2HitBoxStyle('public-tab')
@@ -39,60 +35,14 @@ const personalTabLayerClass = computed(() =>
   activeTab.value === 'personal' ? 'plaza-v2-tab-layer plaza-v2-tab-layer--active' : 'plaza-v2-tab-layer plaza-v2-tab-layer--idle'
 )
 
-function currentSession() {
-  return loadPlazaSession()
-}
-
-async function refreshPosts(): Promise<void> {
-  const session = currentSession()
-  if (!session?.token) return
-  loading.value = true
-  listLoadedOk.value = false
-  try {
-    posts.value = await listPlazaPosts(session.token)
-    listLoadedOk.value = true
-    await preloadThumbnails(session.token, posts.value)
-  } catch {
-    posts.value = []
-    listLoadedOk.value = false
-  } finally {
-    loading.value = false
-  }
-}
-
-async function preloadThumbnails(token: string, items: PlazaPost[]): Promise<void> {
-  const next: Record<string, string> = { ...previewCache.value }
-  for (const post of items) {
-    if (next[post.postId]) continue
-    try {
-      next[post.postId] = await loadPlazaPreviewUrl(token, post.previewMediaPath)
-    } catch {
-      // keep placeholder
-    }
-  }
-  previewCache.value = next
-}
-
-async function openDetail(post: PlazaPost): Promise<void> {
-  const session = currentSession()
-  if (!session?.token) return
-  detailPost.value = post
+function openDetail(card: PlazaV2DemoCard): void {
+  detailCard.value = card
   detailOpen.value = true
-  detailPreview.value = previewCache.value[post.postId] ?? ''
-  if (!detailPreview.value) {
-    try {
-      detailPreview.value = await loadPlazaPreviewUrl(session.token, post.previewMediaPath)
-      previewCache.value = { ...previewCache.value, [post.postId]: detailPreview.value }
-    } catch {
-      // ignore
-    }
-  }
 }
 
 function closeDetail(): void {
   detailOpen.value = false
-  detailPost.value = null
-  detailPreview.value = ''
+  detailCard.value = null
 }
 
 function selectTab(tab: ShareTab): void {
@@ -109,17 +59,14 @@ function onBack(): void {
 
 onMounted(async () => {
   await ensureDevPlazaSession()
-  if (!currentSession()?.token) {
+  if (!loadPlazaSession()?.token) {
     showCenterToast('开发登录失败，请确认 backend 已启动（8788）')
-    return
   }
-  void refreshPosts()
 })
 </script>
 
 <template>
   <AuthArtboard>
-    <!-- z0 大背景 -->
     <img
       class="plaza-v2-layer plaza-v2-layer--z0"
       :style="plazaV2FullLayerStyle"
@@ -127,7 +74,6 @@ onMounted(async () => {
       alt=""
       aria-hidden="true"
     />
-    <!-- z1 公共空间背景 -->
     <img
       v-show="activeTab === 'public'"
       class="plaza-v2-layer plaza-v2-layer--z1"
@@ -136,7 +82,6 @@ onMounted(async () => {
       alt=""
       aria-hidden="true"
     />
-    <!-- z2 个人空间背景 -->
     <img
       v-show="activeTab === 'personal'"
       class="plaza-v2-layer plaza-v2-layer--z2"
@@ -145,7 +90,6 @@ onMounted(async () => {
       alt=""
       aria-hidden="true"
     />
-    <!-- z3 展示框 -->
     <img
       class="plaza-v2-layer plaza-v2-layer--z3"
       :style="plazaV2FullLayerStyle"
@@ -153,7 +97,6 @@ onMounted(async () => {
       alt=""
       aria-hidden="true"
     />
-    <!-- z4 公共 tab 装饰层 -->
     <img
       :class="publicTabLayerClass"
       class="plaza-v2-layer plaza-v2-layer--z4"
@@ -162,7 +105,6 @@ onMounted(async () => {
       alt=""
       aria-hidden="true"
     />
-    <!-- z5 个人 tab 装饰层 -->
     <img
       :class="personalTabLayerClass"
       class="plaza-v2-layer plaza-v2-layer--z5"
@@ -189,20 +131,21 @@ onMounted(async () => {
       @click="selectTab('personal')"
     />
 
-    <section class="plaza-v2-content-slot" :style="plazaV2ContentSlotStyle" :aria-label="activeTab === 'public' ? '公共空间作品' : '个人空间作品'">
+    <section
+      class="plaza-v2-content-slot"
+      :style="plazaV2ContentSlotStyle"
+      :aria-label="activeTab === 'public' ? '公共空间作品' : '个人空间作品'"
+    >
       <template v-if="activeTab === 'public'">
-        <p v-if="loading" class="plaza-grid-empty">加载中…</p>
-        <p v-else-if="listLoadedOk && posts.length === 0" class="plaza-grid-empty">还没有人分享作品，来做第一个吧。</p>
-        <ul v-else class="plaza-grid">
-          <li v-for="post in posts" :key="post.postId">
-            <button type="button" class="plaza-card text-box-surface" @click="openDetail(post)">
+        <ul class="plaza-grid">
+          <li v-for="card in publicCards" :key="card.id">
+            <button type="button" class="plaza-card text-box-surface" @click="openDetail(card)">
               <div class="plaza-card__thumb">
-                <img v-if="previewCache[post.postId]" :src="previewCache[post.postId]" :alt="post.title" />
-                <span v-else class="muted">预览</span>
+                <img :src="card.thumbUrl" :alt="card.title" />
               </div>
               <div class="plaza-card__body">
-                <h3>{{ post.title }}</h3>
-                <p class="muted">{{ post.authorName }} · {{ friendlyShortDate(post.createdAt) }}</p>
+                <h3 class="plaza-v2-card-title">{{ card.title }}</h3>
+                <p class="plaza-v2-card-meta muted">{{ card.meta }}</p>
               </div>
             </button>
           </li>
@@ -211,7 +154,6 @@ onMounted(async () => {
       <PersonalSpacePanel v-else ref="personalRef" />
     </section>
 
-    <!-- 最顶层：返回键装饰 + 热区 -->
     <img
       class="plaza-v2-layer plaza-v2-layer--z6"
       :style="plazaV2FullLayerStyle"
@@ -222,12 +164,14 @@ onMounted(async () => {
     <button type="button" class="plaza-v2-hit plaza-v2-hit--back" :style="backHit" aria-label="返回" @click="onBack" />
   </AuthArtboard>
 
-  <PlazaPostDetailModal
-    :open="detailOpen"
-    :post="detailPost"
-    :preview-src="detailPreview"
-    @close="closeDetail"
-  />
+  <div v-if="detailOpen && detailCard" class="plaza-detail-backdrop" role="presentation" @click.self="closeDetail">
+    <div class="plaza-detail text-box-surface" role="dialog" aria-modal="true">
+      <h3 class="plaza-v2-card-title">{{ detailCard.title }}</h3>
+      <p class="plaza-v2-card-meta muted">{{ detailCard.meta }}</p>
+      <img class="plaza-detail__img" :src="detailCard.thumbUrl" :alt="detailCard.title" />
+      <button type="button" class="primary" @click="closeDetail">关闭</button>
+    </div>
+  </div>
 </template>
 
 <style scoped>
@@ -264,12 +208,13 @@ onMounted(async () => {
 }
 
 .plaza-v2-tab-layer--active {
+  mix-blend-mode: normal;
   opacity: 1;
 }
 
 .plaza-v2-tab-layer--idle {
-  opacity: 0.48;
-  filter: brightness(0.92);
+  mix-blend-mode: multiply;
+  opacity: 1;
 }
 
 .plaza-v2-hit {
@@ -291,8 +236,9 @@ onMounted(async () => {
   z-index: 6;
   overflow-x: hidden;
   overflow-y: auto;
-  padding: 8px 12px;
+  padding: 10px 14px;
   background: transparent;
+  font-size: 1.05rem;
   scrollbar-width: thin;
   scrollbar-color: rgba(89, 71, 56, 0.35) transparent;
 }
@@ -308,8 +254,8 @@ onMounted(async () => {
 
 .plaza-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 18px;
   margin: 0;
   padding: 4px 2px 12px;
   list-style: none;
@@ -319,7 +265,7 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   width: 100%;
-  padding: 10px;
+  padding: 12px;
   border: 0;
   text-align: left;
   cursor: pointer;
@@ -330,8 +276,8 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
   aspect-ratio: 4 / 3;
-  margin-bottom: 10px;
-  border-radius: 10px;
+  margin-bottom: 12px;
+  border-radius: 12px;
   overflow: hidden;
   background: rgba(255, 255, 255, 0.5);
 }
@@ -342,14 +288,38 @@ onMounted(async () => {
   object-fit: cover;
 }
 
-.plaza-card__body h3 {
-  margin: 0 0 6px;
-  font-size: 20px;
+.plaza-detail-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: grid;
+  place-items: center;
+  background: rgba(89, 71, 56, 0.35);
 }
 
-.plaza-grid-empty {
-  margin: 24px;
-  text-align: center;
-  color: var(--muted);
+.plaza-detail {
+  width: min(560px, 92vw);
+  padding: 22px;
+}
+
+.plaza-detail__img {
+  display: block;
+  width: 100%;
+  margin: 14px 0 18px;
+  border-radius: 12px;
+}
+</style>
+
+<style>
+.plaza-v2-card-title {
+  margin: 0 0 8px;
+  font-size: 1.65rem;
+  line-height: 1.25;
+}
+
+.plaza-v2-card-meta {
+  margin: 0 0 8px;
+  font-size: 1.15rem;
+  line-height: 1.35;
 }
 </style>
