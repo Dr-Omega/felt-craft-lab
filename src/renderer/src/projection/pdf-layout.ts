@@ -1,4 +1,5 @@
 import { jsPDF } from 'jspdf'
+import type { ProjectionLayerDescriptor } from './projection-layers'
 import type { LoadedLayerImage } from './load-layer-image'
 import { ensurePdfTextFont, rasterizePdfText } from './pdf-text-image'
 
@@ -9,7 +10,7 @@ export interface LayoutLayerInput {
   image: LoadedLayerImage
 }
 
-interface PlacedRect {
+export interface PlacedRect {
   x: number
   y: number
   width: number
@@ -17,11 +18,15 @@ interface PlacedRect {
   layer: LayoutLayerInput
 }
 
-interface PageLayout {
+export interface PageLayout {
   placed: PlacedRect[]
 }
 
-const PAGE_MM: Record<PaperSize, { width: number; height: number }> = {
+export interface LayoutPackOptions {
+  maxLayerWidthMm?: number
+}
+
+export const PAGE_MM: Record<PaperSize, { width: number; height: number }> = {
   a4: { width: 210, height: 297 },
   a3: { width: 297, height: 420 }
 }
@@ -31,7 +36,12 @@ const GAP_MM = 6
 const MAX_LAYER_WIDTH_MM = 72
 
 /** Row-flow packing with per-layer aspect scaling (Q16-C). */
-export function layoutLayersOnPages(layers: LayoutLayerInput[], paper: PaperSize): PageLayout[] {
+export function layoutLayersOnPages(
+  layers: LayoutLayerInput[],
+  paper: PaperSize,
+  options: LayoutPackOptions = {}
+): PageLayout[] {
+  const maxLayerWidthMm = options.maxLayerWidthMm ?? MAX_LAYER_WIDTH_MM
   const pageSize = PAGE_MM[paper]
   const innerW = pageSize.width - MARGIN_MM * 2
   const innerH = pageSize.height - MARGIN_MM * 2
@@ -46,7 +56,7 @@ export function layoutLayersOnPages(layers: LayoutLayerInput[], paper: PaperSize
     const remaining: LayoutLayerInput[] = []
 
     for (const layer of queue) {
-      const size = fitLayerSize(layer, MAX_LAYER_WIDTH_MM)
+      const size = fitLayerSize(layer, maxLayerWidthMm)
       if (cursorX + size.width > MARGIN_MM + innerW && cursorX > MARGIN_MM) {
         cursorX = MARGIN_MM
         cursorY += rowHeight + GAP_MM
@@ -114,9 +124,12 @@ export async function exportLayoutPdf(options: {
   workName: string
   paper: PaperSize
   layers: LayoutLayerInput[]
+  maxLayerWidthMm?: number
 }): Promise<Blob> {
   await ensurePdfTextFont()
-  const pages = layoutLayersOnPages(options.layers, options.paper)
+  const pages = layoutLayersOnPages(options.layers, options.paper, {
+    maxLayerWidthMm: options.maxLayerWidthMm
+  })
   const firstSize = PAGE_MM[options.paper]
   const doc = new jsPDF({
     orientation: 'portrait',

@@ -22,6 +22,8 @@ import ProjectionPage from './pages/ProjectionPage.vue'
 import StatusPage from './pages/StatusPage.vue'
 import PlazaPage from './pages/PlazaPage.vue'
 import CenterToastOverlay from './components/shell/CenterToastOverlay.vue'
+import ProjectionWorkflowV2Page from './pages/ProjectionWorkflowV2Page.vue'
+import { EXPLODE_UI_V2_STANDALONE_DEV } from './config/explode-ui-v2'
 
 const view = ref<AppView>(getAppView())
 const editorRef = ref<{ requestBack: () => void } | null>(null)
@@ -86,6 +88,8 @@ onUnmounted(() => {
 
 <template>
   <CenterToastOverlay />
+  <ProjectionWorkflowV2Page v-if="EXPLODE_UI_V2_STANDALONE_DEV" class="projection-v2-root" />
+  <template v-else>
   <SplashPage v-if="view === 'splash'" />
   <LoginPage v-else-if="view === 'login'" />
   <PlazaPage v-else-if="view === 'plaza'" />
@@ -100,6 +104,7 @@ onUnmounted(() => {
     <EditorPage v-if="mainView === 'editor'" ref="editorRef" />
     <ProjectionPage v-if="mainView === 'projection'" :key="projectionPageKey" />
   </AppShell>
+  </template>
 </template>
 
 <style>
@@ -169,5 +174,14 @@ button.ghost {
 
 .status-shell__bar {
   margin-bottom: 16px;
+}
+
+.projection-v2-root {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #f6edd3;
 }
 </style>
