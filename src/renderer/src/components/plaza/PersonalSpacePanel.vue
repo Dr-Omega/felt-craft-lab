@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import '../../styles/plaza-v2-detail-dialog.css'
 import { ref } from 'vue'
 import { showCenterToast } from '../../composables/center-toast'
 import { PLAZA_V2_PERSONAL_DEMO_CARDS, type PlazaV2DemoCard } from '../../ui/plaza-v2-demo-cards'
@@ -92,11 +93,11 @@ defineExpose({ refresh: refreshLists })
       </li>
     </ul>
 
-    <div v-if="previewOpen && previewCard" class="personal-preview-backdrop" role="presentation" @click.self="previewOpen = false">
-      <div class="personal-preview text-box-surface" role="dialog" aria-modal="true">
+    <div v-if="previewOpen && previewCard" class="plaza-v2-detail-backdrop" role="presentation" @click.self="previewOpen = false">
+      <div class="plaza-v2-detail-dialog text-box-surface" role="dialog" aria-modal="true">
         <h3 class="plaza-v2-card-title">{{ previewCard.title }}</h3>
         <p class="plaza-v2-card-meta muted">{{ previewCard.meta }}</p>
-        <img class="personal-preview__img" :src="previewCard.thumbUrl" :alt="previewCard.title" />
+        <img class="plaza-v2-detail-dialog__img" :src="previewCard.thumbUrl" :alt="previewCard.title" />
         <button type="button" class="primary" @click="previewOpen = false">关闭</button>
       </div>
     </div>
@@ -152,8 +153,9 @@ defineExpose({ refresh: refreshLists })
 
 .personal-card__primary {
   width: fit-content;
-  padding: 8px 14px;
-  font-size: 1.05rem;
+  min-height: 48px;
+  padding: 10px 20px;
+  font-size: 1.28rem;
 }
 
 .personal-card__grid {
@@ -163,30 +165,10 @@ defineExpose({ refresh: refreshLists })
 }
 
 .plaza-v2-action {
-  padding: 8px 10px;
+  min-height: 44px;
+  padding: 10px 12px;
   border-radius: 10px;
-  font-size: 1rem;
-}
-
-.personal-preview-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 500;
-  display: grid;
-  place-items: center;
-  background: rgba(89, 71, 56, 0.35);
-}
-
-.personal-preview {
-  width: min(520px, 92vw);
-  padding: 20px;
-}
-
-.personal-preview__img {
-  display: block;
-  width: 100%;
-  margin: 12px 0 16px;
-  border-radius: 12px;
+  font-size: 1.22rem;
 }
 </style>
 

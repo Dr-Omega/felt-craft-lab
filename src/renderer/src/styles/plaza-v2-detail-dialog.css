@@ -1,0 +1,28 @@
+.plaza-v2-detail-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: grid;
+  place-items: center;
+  background: rgba(89, 71, 56, 0.35);
+}
+
+.plaza-v2-detail-dialog {
+  width: min(560px, 92vw);
+  max-height: min(90vh, 920px);
+  padding: 22px;
+  overflow: auto;
+}
+
+.plaza-v2-detail-dialog__img {
+  display: block;
+  width: 100%;
+  margin: 14px 0 18px;
+  border-radius: 12px;
+}
+
+.plaza-v2-detail-dialog .primary {
+  min-height: 48px;
+  padding: 10px 22px;
+  font-size: 1.15rem;
+}

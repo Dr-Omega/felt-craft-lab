@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import '../styles/plaza-v2-detail-dialog.css'
 import { computed, onMounted, ref } from 'vue'
 import AuthArtboard from '../components/auth/AuthArtboard.vue'
 import PersonalSpacePanel from '../components/plaza/PersonalSpacePanel.vue'
@@ -164,11 +165,11 @@ onMounted(async () => {
     <button type="button" class="plaza-v2-hit plaza-v2-hit--back" :style="backHit" aria-label="返回" @click="onBack" />
   </AuthArtboard>
 
-  <div v-if="detailOpen && detailCard" class="plaza-detail-backdrop" role="presentation" @click.self="closeDetail">
-    <div class="plaza-detail text-box-surface" role="dialog" aria-modal="true">
+  <div v-if="detailOpen && detailCard" class="plaza-v2-detail-backdrop" role="presentation" @click.self="closeDetail">
+    <div class="plaza-v2-detail-dialog text-box-surface" role="dialog" aria-modal="true">
       <h3 class="plaza-v2-card-title">{{ detailCard.title }}</h3>
       <p class="plaza-v2-card-meta muted">{{ detailCard.meta }}</p>
-      <img class="plaza-detail__img" :src="detailCard.thumbUrl" :alt="detailCard.title" />
+      <img class="plaza-v2-detail-dialog__img" :src="detailCard.thumbUrl" :alt="detailCard.title" />
       <button type="button" class="primary" @click="closeDetail">关闭</button>
     </div>
   </div>
@@ -288,26 +289,6 @@ onMounted(async () => {
   object-fit: cover;
 }
 
-.plaza-detail-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 500;
-  display: grid;
-  place-items: center;
-  background: rgba(89, 71, 56, 0.35);
-}
-
-.plaza-detail {
-  width: min(560px, 92vw);
-  padding: 22px;
-}
-
-.plaza-detail__img {
-  display: block;
-  width: 100%;
-  margin: 14px 0 18px;
-  border-radius: 12px;
-}
 </style>
 
 <style>
