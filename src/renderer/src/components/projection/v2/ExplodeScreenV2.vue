@@ -4,7 +4,7 @@ import { explodeV2Assets, explodeV2HitAreas } from '../../../ui/explode-v2-asset
 import { boxStyle, VIEWPORT_BOUNDS } from '../../../ui/stage-1920'
 import type { ExplodeLayerInput } from '../ProjectionExplodeCanvas.vue'
 
-const props = defineProps<{
+defineProps<{
   layers: ExplodeLayerInput[]
   explode: number
   explodePercent: number
@@ -22,43 +22,18 @@ const emit = defineEmits<{
 
 <template>
   <div class="explode-v2-screen" aria-label="3D 展开页">
-    <img class="layer layer--big-bg" :src="explodeV2Assets.bigBackground" alt="" />
-    <img class="layer layer--frame-bg" :src="explodeV2Assets.frameBackground" alt="" />
-    <div class="layer layer--viewport" :style="boxStyle(VIEWPORT_BOUNDS)">
+    <img class="layer z-1" :src="explodeV2Assets.bigBackground" alt="" />
+    <img class="layer z-2" :src="explodeV2Assets.frameBackground" alt="" />
+
+    <div class="layer layer--viewport z-3" :style="boxStyle(VIEWPORT_BOUNDS)">
       <ProjectionExplodeCanvas v-if="layers.length > 0" :layers="layers" :explode="explode" />
     </div>
 
-    <button
-      type="button"
-      class="hit hit--check"
-      :class="{ 'is-active': includeBackground }"
-      :style="boxStyle(explodeV2HitAreas.check)"
-      aria-label="显示背景"
-      @click="emit('enableBackground')"
-    >
-      <img :src="explodeV2Assets.btnCheck" alt="" />
-    </button>
-    <button
-      type="button"
-      class="hit hit--cross"
-      :class="{ 'is-active': !includeBackground }"
-      :style="boxStyle(explodeV2HitAreas.cross)"
-      aria-label="隐藏背景"
-      @click="emit('disableBackground')"
-    >
-      <img :src="explodeV2Assets.btnCross" alt="" />
-    </button>
-    <button
-      type="button"
-      class="hit hit--next"
-      :style="boxStyle(explodeV2HitAreas.next)"
-      aria-label="下一步"
-      @click="emit('next')"
-    >
-      <img :src="explodeV2Assets.btnNext" alt="" />
-    </button>
+    <img class="layer z-4" :src="explodeV2Assets.btnCheck" alt="" />
+    <img class="layer z-5" :src="explodeV2Assets.btnCross" alt="" />
+    <img class="layer z-6" :src="explodeV2Assets.btnNext" alt="" />
 
-    <div class="explode-slider">
+    <div class="explode-slider z-15">
       <label class="explode-slider__label">展开程度 {{ explodePercent }}%</label>
       <input
         :value="explodePercent"
@@ -70,16 +45,37 @@ const emit = defineEmits<{
       />
     </div>
 
-    <img class="layer layer--frame-border" :src="explodeV2Assets.frameBorder" alt="" />
+    <img class="layer z-16" :src="explodeV2Assets.frameBorder" alt="" />
+    <img class="layer z-17" :src="explodeV2Assets.btnBack" alt="" />
+
     <button
       type="button"
-      class="hit hit--back"
+      class="hit z-40"
+      :style="boxStyle(explodeV2HitAreas.check)"
+      aria-label="显示背景"
+      @click="emit('enableBackground')"
+    />
+    <button
+      type="button"
+      class="hit z-40"
+      :style="boxStyle(explodeV2HitAreas.cross)"
+      aria-label="隐藏背景"
+      @click="emit('disableBackground')"
+    />
+    <button
+      type="button"
+      class="hit z-40"
+      :style="boxStyle(explodeV2HitAreas.next)"
+      aria-label="下一步"
+      @click="emit('next')"
+    />
+    <button
+      type="button"
+      class="hit z-40"
       :style="boxStyle(explodeV2HitAreas.back)"
       aria-label="返回"
       @click="emit('back')"
-    >
-      <img :src="explodeV2Assets.btnBack" alt="" />
-    </button>
+    />
   </div>
 </template>
 
@@ -101,65 +97,75 @@ const emit = defineEmits<{
 }
 
 .layer--viewport {
-  inset: auto;
   overflow: hidden;
-  border-radius: 6px;
 }
 
 .hit {
   position: absolute;
   padding: 0;
+  margin: 0;
   border: 0;
   background: transparent;
   cursor: pointer;
 }
 
-.hit img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-
-.hit.is-active {
-  filter: drop-shadow(0 0 8px rgba(125, 38, 26, 0.55));
-}
-
 .explode-slider {
   position: absolute;
   left: 50%;
-  bottom: 36px;
+  bottom: 132px;
   transform: translateX(-50%);
-  width: min(520px, 72%);
-  padding: 10px 16px;
-  border: 3px solid #7d261a;
+  width: 920px;
+  padding: 16px 28px;
+  border: 4px solid #7d261a;
   border-radius: 999px;
-  background: rgba(245, 229, 164, 0.92);
+  background: rgba(245, 229, 164, 0.94);
   display: grid;
-  gap: 6px;
-  z-index: 12;
+  gap: 10px;
+  box-sizing: border-box;
 }
 
 .explode-slider__label {
   text-align: center;
   color: #7d261a;
   font-weight: 700;
-  font-size: 18px;
+  font-size: 32px;
+  line-height: 1.2;
 }
 
 .explode-slider input[type='range'] {
   width: 100%;
+  height: 28px;
   accent-color: #7d261a;
 }
 
-.layer--frame-border,
-.hit--back {
-  z-index: 20;
+.z-1 {
+  z-index: 1;
 }
-
-.hit--next,
-.hit--check,
-.hit--cross {
-  z-index: 11;
+.z-2 {
+  z-index: 2;
+}
+.z-3 {
+  z-index: 3;
+}
+.z-4 {
+  z-index: 4;
+}
+.z-5 {
+  z-index: 5;
+}
+.z-6 {
+  z-index: 6;
+}
+.z-15 {
+  z-index: 15;
+}
+.z-16 {
+  z-index: 16;
+}
+.z-17 {
+  z-index: 17;
+}
+.z-40 {
+  z-index: 40;
 }
 </style>

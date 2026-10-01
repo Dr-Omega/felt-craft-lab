@@ -31,5 +31,3 @@ export const exportV2HitAreas = {
   modalField: { left: 701, top: 603, width: 584, height: 199 },
   modalConfirm: { left: 960, top: 820, width: 200, height: 56 }
 } as const
-
-export const exportModalBox = { left: 640, top: 192, width: 706, height: 651 } as const
