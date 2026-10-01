@@ -98,6 +98,7 @@ const emit = defineEmits<{
 
 .layer--viewport {
   overflow: hidden;
+  pointer-events: auto;
 }
 
 .hit {

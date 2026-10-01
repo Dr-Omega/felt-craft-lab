@@ -138,10 +138,16 @@ function resize(): void {
 }
 
 function onPointerDown(event: PointerEvent): void {
+  if (event.button !== 2) return
+  event.preventDefault()
   dragging = true
   lastX = event.clientX
   lastY = event.clientY
   hostEl.value?.setPointerCapture(event.pointerId)
+}
+
+function onContextMenu(event: MouseEvent): void {
+  event.preventDefault()
 }
 
 function onPointerMove(event: PointerEvent): void {
@@ -162,11 +168,13 @@ function onPointerUp(event: PointerEvent): void {
 
 function onWheel(event: WheelEvent): void {
   event.preventDefault()
+  event.stopPropagation()
   cameraDistance = Math.max(
     MIN_CAMERA_DISTANCE,
     Math.min(MAX_CAMERA_DISTANCE, cameraDistance + event.deltaY * 0.004)
   )
   applyCameraDistance()
+  renderFrame()
 }
 
 onMounted(() => {
@@ -187,6 +195,7 @@ onMounted(() => {
   startLoop()
   window.addEventListener('resize', resize)
   hostEl.value.addEventListener('wheel', onWheel, { passive: false })
+  hostEl.value.addEventListener('contextmenu', onContextMenu)
   if (typeof ResizeObserver !== 'undefined') {
     resizeObserver = new ResizeObserver(() => resize())
     resizeObserver.observe(hostEl.value)
@@ -195,6 +204,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   hostEl.value?.removeEventListener('wheel', onWheel)
+  hostEl.value?.removeEventListener('contextmenu', onContextMenu)
   window.removeEventListener('resize', resize)
   resizeObserver?.disconnect()
   cancelAnimationFrame(animationId)
@@ -237,6 +247,7 @@ watch(
     @pointermove="onPointerMove"
     @pointerup="onPointerUp"
     @pointercancel="onPointerUp"
+    @contextmenu.prevent
   />
 </template>
 

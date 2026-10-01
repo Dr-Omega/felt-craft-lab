@@ -6,7 +6,7 @@ import { boxStyle, VIEWPORT_BOUNDS } from '../../../ui/stage-1920'
 import {
   SIZE_METAPHOR_OPTIONS,
   choiceFromMetaphor,
-  choiceFromSpecificInput,
+  choiceFromSpecificCm,
   type SubjectSizeChoice,
   type SubjectSizeMode
 } from '../../../projection/subject-size'
@@ -26,7 +26,8 @@ const emit = defineEmits<{
 
 const modalOpen = ref(false)
 const mode = ref<SubjectSizeMode>('metaphor')
-const specificText = ref('8×8')
+const widthCm = ref('')
+const heightCm = ref('')
 const metaphorId = ref('apple')
 
 function toggleModal(): void {
@@ -39,9 +40,9 @@ function selectMode(next: SubjectSizeMode): void {
 
 function onConfirm(): void {
   if (mode.value === 'specific') {
-    const choice = choiceFromSpecificInput(specificText.value)
+    const choice = choiceFromSpecificCm(Number(widthCm.value), Number(heightCm.value))
     if (!choice) {
-      window.alert('请填写具体尺寸，例如 12×15 或 12cm×15cm')
+      window.alert('请填写具体尺寸，例如 12 cm × 15 cm')
       return
     }
     emit('confirmExport', choice)
@@ -69,27 +70,36 @@ function onConfirm(): void {
 
     <template v-if="modalOpen">
       <img class="layer z-30" :src="exportV2Assets.exportModal" alt="" />
-      <img class="layer z-31" :src="exportV2Assets.btnSpecific" alt="" />
-      <img class="layer z-32" :src="exportV2Assets.btnOptional" alt="" />
+      <img
+        class="layer z-31 mode-layer"
+        :class="{ 'mode-layer--active': mode === 'specific', 'mode-layer--inactive': mode !== 'specific' }"
+        :src="exportV2Assets.btnSpecific"
+        alt=""
+      />
+      <img
+        class="layer z-32 mode-layer"
+        :class="{ 'mode-layer--active': mode === 'metaphor', 'mode-layer--inactive': mode !== 'metaphor' }"
+        :src="exportV2Assets.btnOptional"
+        alt=""
+      />
       <img class="layer z-33" :src="exportV2Assets.textField" alt="" />
 
-      <input
-        v-if="mode === 'specific'"
-        v-model="specificText"
-        class="field-input z-34"
-        :style="boxStyle(exportV2HitAreas.modalField)"
-        placeholder="例如 12×15 cm"
-        aria-label="具体尺寸"
-      />
+      <div v-if="mode === 'specific'" class="specific-field z-34" :style="boxStyle(exportV2HitAreas.modalField)">
+        <input v-model="widthCm" class="specific-field__num" type="number" min="1" step="0.1" aria-label="宽度厘米" />
+        <span class="specific-field__unit">cm</span>
+        <span class="specific-field__times">×</span>
+        <input v-model="heightCm" class="specific-field__num" type="number" min="1" step="0.1" aria-label="高度厘米" />
+        <span class="specific-field__unit">cm</span>
+      </div>
       <select
         v-else
         v-model="metaphorId"
-        class="field-input z-34"
+        class="field-select z-34"
         :style="boxStyle(exportV2HitAreas.modalField)"
         aria-label="大小比喻"
       >
         <option v-for="option in SIZE_METAPHOR_OPTIONS" :key="option.id" :value="option.id">
-          {{ option.label }} — {{ option.description }}
+          {{ option.label }}
         </option>
       </select>
 
@@ -109,11 +119,13 @@ function onConfirm(): void {
       />
       <button
         type="button"
-        class="hit hit--confirm z-40"
+        class="modal-confirm z-41"
         :style="boxStyle(exportV2HitAreas.modalConfirm)"
         aria-label="确认导出"
         @click="onConfirm"
-      />
+      >
+        确认
+      </button>
     </template>
 
     <img class="layer z-16" :src="exportV2Assets.frameBorder" alt="" />
@@ -164,6 +176,16 @@ function onConfirm(): void {
   overflow: hidden;
 }
 
+.mode-layer--inactive {
+  opacity: 0.52;
+  mix-blend-mode: multiply;
+}
+
+.mode-layer--active {
+  opacity: 1;
+  mix-blend-mode: normal;
+}
+
 .hit {
   position: absolute;
   padding: 0;
@@ -173,18 +195,56 @@ function onConfirm(): void {
   cursor: pointer;
 }
 
-.hit--confirm {
-  opacity: 0.02;
+.modal-confirm {
+  position: absolute;
+  border: 3px solid #7d261a;
+  border-radius: 999px;
+  background: #f5e5a4;
+  color: #7d261a;
+  font-size: 24px;
+  font-weight: 700;
+  cursor: pointer;
 }
 
-.field-input {
+.specific-field {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-sizing: border-box;
+  padding: 0 20px;
+  color: #594738;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.specific-field__num {
+  width: 88px;
+  border: 0;
+  border-bottom: 2px solid #7d261a;
+  background: transparent;
+  color: #594738;
+  font: inherit;
+  text-align: center;
+  outline: none;
+}
+
+.specific-field__num::-webkit-outer-spin-button,
+.specific-field__num::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.field-select {
   position: absolute;
   margin: 0;
-  padding: 0 16px;
+  padding: 0 20px;
   border: 0;
   background: transparent;
   color: #594738;
-  font-size: 22px;
+  font-size: 26px;
+  font-weight: 700;
   outline: none;
   box-sizing: border-box;
 }
@@ -227,5 +287,8 @@ function onConfirm(): void {
 }
 .z-40 {
   z-index: 40;
+}
+.z-41 {
+  z-index: 41;
 }
 </style>

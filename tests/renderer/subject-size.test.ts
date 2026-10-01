@@ -18,6 +18,11 @@ describe('subject-size', () => {
     expect(maxLayerWidthMmForSubject(choice!)).toBe(80)
   })
 
+  it('offers three metaphor presets', () => {
+    expect(choiceFromMetaphor('egg')?.targetLongEdgeMm).toBe(60)
+    expect(choiceFromMetaphor('book')?.targetLongEdgeMm).toBe(210)
+  })
+
   it('uses the longer edge from specific input', () => {
     const choice = choiceFromSpecificInput('10×25')
     expect(choice?.targetLongEdgeMm).toBe(250)

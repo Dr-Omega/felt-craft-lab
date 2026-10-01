@@ -10,21 +10,14 @@ export interface SubjectSizeChoice {
 export interface SizeMetaphorOption {
   id: string
   label: string
-  description: string
   longEdgeCm: number
 }
 
+/** 可选比喻：仅三项，对应主体较长边约多少厘米。 */
 export const SIZE_METAPHOR_OPTIONS: SizeMetaphorOption[] = [
-  { id: 'grape', label: '一颗葡萄', description: '小巧细节，约 3cm', longEdgeCm: 3 },
-  { id: 'coin', label: '一枚硬币', description: '掌心小物，约 5cm', longEdgeCm: 5 },
-  { id: 'apple', label: '一个苹果', description: '常见水果，约 8cm', longEdgeCm: 8 },
-  { id: 'orange', label: '一个橙子', description: '稍大一些，约 10cm', longEdgeCm: 10 },
-  { id: 'palm', label: '小朋友手掌', description: '手作练习，约 14cm', longEdgeCm: 14 },
-  { id: 'picture-book', label: '绘本一页', description: '故事插图，约 20cm', longEdgeCm: 20 },
-  { id: 'a4-sheet', label: 'A4 纸短边', description: '接近整页，约 21cm', longEdgeCm: 21 },
-  { id: 'cushion', label: '小坐垫', description: '布偶主体，约 28cm', longEdgeCm: 28 },
-  { id: 'backpack', label: '小书包正面', description: '大型主体，约 35cm', longEdgeCm: 35 },
-  { id: 'desk-mat', label: '课桌面垫', description: '展示级，约 45cm', longEdgeCm: 45 }
+  { id: 'egg', label: '一个鸡蛋', longEdgeCm: 6 },
+  { id: 'apple', label: '一个苹果', longEdgeCm: 8 },
+  { id: 'book', label: '一本书', longEdgeCm: 21 }
 ]
 
 const CM_TO_MM = 10
@@ -41,15 +34,22 @@ export function parseSpecificSizeCm(text: string): { widthCm: number; heightCm: 
   return { widthCm, heightCm }
 }
 
-export function choiceFromSpecificInput(text: string): SubjectSizeChoice | undefined {
-  const parsed = parseSpecificSizeCm(text)
-  if (!parsed) return undefined
-  const longEdgeCm = Math.max(parsed.widthCm, parsed.heightCm)
+export function choiceFromSpecificCm(widthCm: number, heightCm: number): SubjectSizeChoice | undefined {
+  if (!Number.isFinite(widthCm) || !Number.isFinite(heightCm) || widthCm <= 0 || heightCm <= 0) {
+    return undefined
+  }
+  const longEdgeCm = Math.max(widthCm, heightCm)
   return {
     mode: 'specific',
     targetLongEdgeMm: longEdgeCm * CM_TO_MM,
-    label: `${parsed.widthCm}×${parsed.heightCm} cm`
+    label: `${widthCm}×${heightCm} cm`
   }
+}
+
+export function choiceFromSpecificInput(text: string): SubjectSizeChoice | undefined {
+  const parsed = parseSpecificSizeCm(text)
+  if (!parsed) return undefined
+  return choiceFromSpecificCm(parsed.widthCm, parsed.heightCm)
 }
 
 export function choiceFromMetaphor(optionId: string): SubjectSizeChoice | undefined {
