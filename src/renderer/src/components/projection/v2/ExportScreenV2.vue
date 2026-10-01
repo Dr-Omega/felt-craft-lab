@@ -197,12 +197,16 @@ function onConfirm(): void {
 
 .modal-confirm {
   position: absolute;
-  border: 3px solid #7d261a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 4px solid #7d261a;
   border-radius: 999px;
   background: #f5e5a4;
   color: #7d261a;
-  font-size: 24px;
+  font-size: 34px;
   font-weight: 700;
+  line-height: 1;
   cursor: pointer;
 }
 
@@ -215,12 +219,12 @@ function onConfirm(): void {
   box-sizing: border-box;
   padding: 0 20px;
   color: #594738;
-  font-size: 26px;
+  font-size: 34px;
   font-weight: 700;
 }
 
 .specific-field__num {
-  width: 88px;
+  width: 108px;
   border: 0;
   border-bottom: 2px solid #7d261a;
   background: transparent;
@@ -243,10 +247,22 @@ function onConfirm(): void {
   border: 0;
   background: transparent;
   color: #594738;
-  font-size: 26px;
+  font-size: 34px;
   font-weight: 700;
   outline: none;
   box-sizing: border-box;
+  accent-color: #f5e5a4;
+}
+
+.field-select option {
+  background: #fff8dc;
+  color: #594738;
+}
+
+.field-select option:checked,
+.field-select option:hover {
+  background: #f5e5a4;
+  color: #7d261a;
 }
 
 .z-1 {

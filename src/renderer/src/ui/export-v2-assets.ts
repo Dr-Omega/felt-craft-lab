@@ -29,5 +29,5 @@ export const exportV2HitAreas = {
   modalSpecific: { left: 703, top: 517, width: 150, height: 91 },
   modalOptional: { left: 844, top: 517, width: 150, height: 91 },
   modalField: { left: 701, top: 603, width: 584, height: 199 },
-  modalConfirm: { left: 900, top: 808, width: 240, height: 64 }
+  modalConfirm: { left: 870, top: 798, width: 300, height: 84 }
 } as const
