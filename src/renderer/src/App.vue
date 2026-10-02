@@ -17,6 +17,7 @@ import StoryCardPage from './pages/StoryCardPage.vue'
 import { getFeltCraftDatabase, ProjectStore } from './persistence'
 import { CATALOG_ASSETS, resolveEditorCatalogForSnapshot } from './catalog/ywn-catalog'
 import { adaptStoryCardWorkContext } from './story-card/work-context.adapter'
+import { createFreshAcceptanceWorkContext } from './story-card/acceptance-work-context'
 
 const storyCardAcceptance = import.meta.env.DEV && import.meta.env.VITE_STORY_CARD_ACCEPTANCE === '1'
 const view = ref<AppView>(storyCardAcceptance ? 'story-card' : getAppView())
@@ -30,28 +31,28 @@ async function openStoryCardForAcceptance(): Promise<void> {
   if (!project) {
     const previewAsset = CATALOG_ASSETS.find((asset) => asset.type === 'sticker')
     if (!previewAsset) return
-    openStoryCard({
+    openStoryCard(createFreshAcceptanceWorkContext({
       workId: '00000000-0000-4000-8000-000000000001',
       completionStatus: 'completed',
       artworkImageRef: previewAsset.imageUrl,
       background: null,
       subject: { name: previewAsset.nameZh },
       stickers: []
-    })
+    }))
     return
   }
 
   try {
-    openStoryCard(adaptStoryCardWorkContext(project, {
+    openStoryCard(createFreshAcceptanceWorkContext(adaptStoryCardWorkContext(project, {
       listBySnapshot: (snapshotId) => resolveEditorCatalogForSnapshot(snapshotId).assets
-    }))
+    })))
   } catch {
     const snapshotAssets = resolveEditorCatalogForSnapshot(project.scene.assetSnapshotId).assets
     const assets = snapshotAssets.length ? snapshotAssets : CATALOG_ASSETS
     const byId = new Map(assets.map((asset) => [asset.assetId, asset]))
     const subject = project.scene.subject?.name ?? byId.get(project.scene.objects[0]?.assetId)?.nameZh
     if (!subject) return
-    openStoryCard({
+    openStoryCard(createFreshAcceptanceWorkContext({
       workId: project.projectId,
       completionStatus: 'completed',
       artworkImageRef: project.previewUrl,
@@ -62,7 +63,7 @@ async function openStoryCardForAcceptance(): Promise<void> {
       stickers: project.scene.subject
         ? project.scene.objects.map((object) => ({ name: byId.get(object.assetId)?.nameZh ?? '作品素材' }))
         : project.scene.objects.slice(1).map((object) => ({ name: byId.get(object.assetId)?.nameZh ?? '作品素材' }))
-    })
+    }))
   }
 }
 
