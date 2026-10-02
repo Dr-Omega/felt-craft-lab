@@ -6,6 +6,7 @@ import { APP_DISPLAY_NAME, IPC_CHANNELS } from '@shared/constants/app'
 import { isAllowedExternalUrl } from './external-url'
 import { resolveRuntimeAssetPath } from './paths'
 import { registerAiIpc } from './ai/ipc'
+import { registerFabricationIpc } from './fabrication/ipc'
 import { registerCreationIntentIpc, CreationIntentHost, createLiveCreationIntentParser } from './creation-intent'
 import { generateCandidatePng } from './image-generation'
 import { registerPreviewIpc } from './preview'
@@ -137,6 +138,7 @@ app.whenReady().then(() => {
   registerPreviewIpc(resourceRoots)
   registerBootstrapIpc()
   registerAiIpc()
+  registerFabricationIpc()
   registerCreationIntentIpc(
     new CreationIntentHost({
       parser: createLiveCreationIntentParser(),

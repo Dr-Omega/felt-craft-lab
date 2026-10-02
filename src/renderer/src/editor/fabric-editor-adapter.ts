@@ -1,4 +1,5 @@
 import { fabric } from 'fabric'
+import { ElementImagePreview, type PreviewImage } from './element-image-preview'
 import type {
   AssetAccessState,
   AssetRecord,
@@ -69,6 +70,9 @@ export interface FabricCanvasPort {
 export type SceneObjectKind = 'system_sticker' | 'core_pattern' | 'personal_element'
 
 export interface FabricObjectPort {
+  getElement?(): CanvasImageSource
+  setElement?(image: CanvasImageSource, options: { width: number; height: number }): unknown
+  toDataURL?(options: Record<string, unknown>): string
   objectId?: string
   assetId?: string
   assetType?: 'sticker'
@@ -454,6 +458,7 @@ function throwIfInvalidAccess(asset: AssetRecord, access: AssetAccessState | und
  * Fabric JSON is intentionally neither produced nor consumed as save data.
  */
 export class FabricEditorAdapter {
+  private readonly elementPreview = new ElementImagePreview()
   private readonly runtime: FabricEditorRuntime
   private readonly loadResource: (ref: string) => Promise<LoadedResource>
   private readonly now: () => Date
@@ -966,6 +971,7 @@ export class FabricEditorAdapter {
   }
 
   exportScene(): SceneDocument {
+    if (this.elementPreview.active) throw editorError('SCENE_VALIDATION_FAILED', '请先关闭换色预览再保存原作品。')
     this.requireReadyCanvas()
     const scene = this.serializeScene()
     const validation = validateSceneDocument(scene)
@@ -1010,9 +1016,16 @@ export class FabricEditorAdapter {
     }
   }
 
-  exportPngDataUrl(): string {
+  exportPngDataUrl(objectId?: string): string {
     try {
-      const value = this.requireReadyCanvas().toDataURL({ format: 'png', multiplier: 1 })
+      if (this.elementPreview.active) throw new Error('Temporary preview cannot be exported as the original scene')
+      const canvas = this.requireReadyCanvas()
+      const object = objectId === undefined ? undefined : this.findObject(objectId)
+      if (objectId !== undefined && (!object || !object.visible || !object.toDataURL || this.recoveryPlaceholders.has(object))) throw new Error('Element unavailable')
+      // Fabric exports only this object in local coordinates and restores its
+      // scene transform synchronously; other objects/background are not included.
+      const value = object ? object.toDataURL!({ format: 'png', multiplier: 1, withoutTransform: true, withoutShadow: true })
+        : canvas.toDataURL({ format: 'png', multiplier: 1 })
       if (!value.startsWith('data:image/png')) throw new Error('Canvas did not return a PNG data URL.')
       return value
     } catch {
@@ -1020,11 +1033,11 @@ export class FabricEditorAdapter {
     }
   }
 
-  async exportPng(): Promise<Blob> {
+  async exportPng(objectId?: string): Promise<Blob> {
     // Convert the PNG data URL directly to a Blob. The previous `fetch(data:...)`
     // path is unreliable under Electron CSP: `connect-src` can refuse data URLs,
     // which silently breaks preview export in the renderer.
-    const dataUrl = this.exportPngDataUrl()
+    const dataUrl = this.exportPngDataUrl(objectId)
     const match = /^data:image\/png;base64,([A-Za-z0-9+/=]+)$/.exec(dataUrl)
     if (!match) {
       throw editorError('PREVIEW_EXPORT_FAILED', 'PNG preview export failed.')
@@ -1048,7 +1061,56 @@ export class FabricEditorAdapter {
     return new Blob([buffer], { type: 'image/png' })
   }
 
+  async previewElementImage(objectId: string, png: string): Promise<void> {
+    const canvas = this.requireReadyCanvas()
+    const target = this.findObject(objectId)
+    if (!target?.getElement || !target.setElement || !target.visible || this.recoveryPlaceholders.has(target)) throw new Error('当前元素不能预览换色。')
+    if (!/^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(png)) throw new Error('换色预览必须为本地 PNG。')
+    await this.elementPreview.show(target as PreviewImage, async () => {
+      const image = new Image()
+      await new Promise<void>((resolve, reject) => { image.onload = () => resolve(); image.onerror = () => reject(new Error('换色预览解码失败。')); image.src = png })
+      const normalized = document.createElement('canvas')
+      normalized.width = target.width!; normalized.height = target.height!
+      const context = normalized.getContext('2d')
+      if (!context) throw new Error('无法创建换色预览。')
+      context.drawImage(image, 0, 0, normalized.width, normalized.height)
+      return normalized
+    }, () => canvas.requestRenderAll())
+  }
+
+  clearElementPreview(): void { this.elementPreview.clear() }
+
+  /** Commit an immutable derived asset in the SAME element/tier, preserving its displayed footprint. */
+  async replaceElementImage(objectId: string, asset: PersonalAssetRecord, version: PersonalAssetVersionRecord): Promise<void> {
+    const canvas = this.requireReadyCanvas(), target = this.findObject(objectId)
+    if (!target || this.recoveryPlaceholders.has(target)) throw new Error('原元素已不可用，未应用换色。')
+    const isCore = runtimeObjectKind(target) === 'core_pattern'
+    const bundle = this.assertPersonalBundle(asset, version, isCore ? 'core_pattern' : 'element', this.requireMetadata().userId)
+    const operation = this.beginAsyncOperation('personal', canvas)
+    const index = canvas.getObjects().indexOf(target)
+    const loaded = await this.loadPersonalEditorImage(bundle, personalObjectOptions({
+      objectId, personalAssetId: asset.personalAssetId, versionId: version.versionId,
+      left: target.left!, top: target.top!, scaleX: target.scaleX!, scaleY: target.scaleY!, angle: target.angle ?? 0,
+      visible: target.visible !== false, locked: target.selectable === false,
+      ...(isCore ? {} : { zIndex: this.elementObjects(canvas).indexOf(target) + 1 })
+    }), operation, canvas)
+    try {
+      this.ensureCurrentOperation(operation)
+      if (this.findObject(objectId) !== target) throw new Error('元素在换色期间已变化。')
+      loaded.object.set({ scaleX: target.scaleX! * target.width! / loaded.object.width!,
+        scaleY: target.scaleY! * target.height! / loaded.object.height! })
+    } catch (error) { loaded.release(); throw error }
+    this.clearElementPreview()
+    canvas.remove(target); canvas.add(loaded.object); canvas.moveTo(loaded.object, index)
+    this.objectResources.set(loaded.object, loaded.release)
+    this.personalAssetCache.set(personalAssetKey(asset.personalAssetId, version.versionId), bundle)
+    this.releaseObject(target)
+    loaded.object.setCoords(); canvas.setActiveObject(loaded.object)
+    canvas.calcOffset(); canvas.requestRenderAll(); this.captureHistory()
+  }
+
   dispose(): void {
+    this.clearElementPreview()
     this.sceneGeneration += 1
     this.sceneReady = false
     this.committedSceneReady = false

@@ -1,4 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
+import { FABRICATION_CHANNELS, type FabricationJob, type ForegroundMode } from '@shared/fabrication-desktop'
+import type { LayerColors, SceneBinding } from '@shared/fabrication-colors'
 import { IPC_CHANNELS, type BootstrapPingResult } from '@shared/constants/app'
 import type { ResourceRef, SharedError } from '@shared/contracts'
 import type {
@@ -58,6 +60,16 @@ async function invokePreviewDelete(previewRef: string): Promise<void> {
 }
 
 const electronAPI = {
+  fabrication: {
+    start: (bytes: Uint8Array, mode: ForegroundMode, binding?: SceneBinding): Promise<FabricationJob> =>
+      ipcRenderer.invoke(FABRICATION_CHANNELS.start, bytes, mode, binding),
+    colors: (id: string): Promise<LayerColors> => ipcRenderer.invoke(FABRICATION_CHANNELS.colors, id),
+    saveColors: (id: string, colors: LayerColors): Promise<LayerColors> => ipcRenderer.invoke(FABRICATION_CHANNELS.saveColors, id, colors),
+    resume: (id: string): Promise<FabricationJob> => ipcRenderer.invoke(FABRICATION_CHANNELS.resume, id),
+    status: (id: string): Promise<FabricationJob> => ipcRenderer.invoke(FABRICATION_CHANNELS.status, id),
+    asset: (id: string, key: string): Promise<{ bytes: Uint8Array; mime: string }> =>
+      ipcRenderer.invoke(FABRICATION_CHANNELS.asset, id, key)
+  },
   ping: (): Promise<BootstrapPingResult> => ipcRenderer.invoke(IPC_CHANNELS.PING),
   /**
    * Renderer-safe resource inspection. Never returns OS paths.

@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 const page = readFileSync(resolve('src/renderer/src/pages/EditorPage.vue'), 'utf8')
+const frame = readFileSync(resolve('src/renderer/src/components/editor/DrawingFrame.vue'), 'utf8')
 const topbar = readFileSync(resolve('src/renderer/src/components/editor/EditorTopbar.vue'), 'utf8')
 const drawer = readFileSync(resolve('src/renderer/src/components/editor/BackgroundDrawer.vue'), 'utf8')
 const sheet = readFileSync(resolve('src/renderer/src/components/editor/MaterialSheet.vue'), 'utf8')
@@ -12,7 +13,7 @@ const quickTools = readFileSync(resolve('src/renderer/src/components/editor/Obje
 const removeToast = readFileSync(resolve('src/renderer/src/components/editor/RemoveToast.vue'), 'utf8')
 const selectionTypes = readFileSync(resolve('src/renderer/src/editor/editor-selection.types.ts'), 'utf8')
 
-describe('V4.6 formal Editor UI contract', () => {
+describe('SXY recent shell with preserved Editor behavior contract', () => {
   it('uses runtime dirty state for the return gate and explicit persistence baselines', () => {
     expect(page).toContain('sessionState.value?.isDirty === false')
     expect(page).toContain("launch.mode === 'draft' || launch.mode === 'project'")
@@ -26,7 +27,7 @@ describe('V4.6 formal Editor UI contract', () => {
     for (const forbidden of ['Scene.assetSnapshotId', 'addSticker', 'setBackground', 'prepareProject', 'prepareDraft', 'pending', 'local_only', 'syncStatus', '测试解锁']) {
       expect(renderedText).not.toContain(forbidden)
     }
-    expect(topbar).toContain('完成啦')
+    expect(frame).toContain('完成啦')
     expect(sheet).toContain('放进作品')
     expect(modal).toContain('要先把作品收起来吗？')
   })
@@ -34,7 +35,8 @@ describe('V4.6 formal Editor UI contract', () => {
   it('preserves canonical logical Canvas and responsive display formula', () => {
     expect(page).toContain(':width="logicalCanvasWidth"')
     expect(page).toContain(':height="logicalCanvasHeight"')
-    expect(page).toContain('min(66vw, calc(100vh - 180px), 760px)')
+    expect(page).toContain('logicalCanvasWidth / logicalCanvasHeight')
+    expect(page).toContain('min(100cqw, calc(100cqh * var(--canvas-ratio)))')
     expect(page).toContain('width: 100% !important')
     expect(page).toContain('height: 100% !important')
   })
@@ -46,15 +48,19 @@ describe('V4.6 formal Editor UI contract', () => {
     expect(editorCanvasRule).not.toMatch(/background\s*:/)
   })
 
-  it('defines the frozen V4.6 visual tokens and geometry layers', () => {
+  it('uses the supplied drawing-page PSD frame without changing the Canvas scene', () => {
     for (const token of ['#f8f0e2', '#f0e2c5', '#efe2c9', '#d9b98a', '#a88b6c', '#7e6244', '#e8a572', '#f4c9a4', '#9caf88', '#594738']) {
       expect(page).toContain(token)
     }
     expect(page).toContain('.editor-topbar')
-    expect(page).toContain('.canvas-frame')
+    expect(page).toContain('DrawingFrame')
+    expect(frame).toContain('assets/ui/drawing/board.png')
+    expect(frame).toContain('assets/ui/drawing/save.png')
+    expect(page).not.toContain('PsdFrameStage')
+    expect(dock).toContain('handDrawnAssets.btnRoundMaterial')
     expect(page).toContain('.background-trigger')
     expect(page).toContain('.bottom-action-dock')
-    expect(page).toContain('.material-sheet')
+    expect(sheet).toContain('.material-sheet')
   })
 
   it('maps visible UI actions to the existing session and persistence boundaries', () => {
@@ -105,8 +111,7 @@ describe('V4.6 formal Editor UI contract', () => {
   })
 
   it('provides accessible icon-only controls and the return fallback choices', () => {
-    expect(topbar).toContain('aria-label="返回素材库"')
-    expect(topbar).toContain('aria-label="返回素材库"')
+    expect(topbar).toContain('aria-label="返回书本"')
     expect(dock).toContain('aria-label="撤销"')
     expect(dock).toContain('aria-label="打开素材盒"')
     expect(dock).toContain('aria-label="重做"')

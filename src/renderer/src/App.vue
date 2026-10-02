@@ -1,171 +1,53 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
-import { APP_DISPLAY_NAME } from '@shared/constants/app'
-import { getAppView, openCreate, openLibrary, openStatus, subscribeAppNav, type AppView } from './app-nav'
+import { getAppView, getEditorLaunch, openEditor, openCreate, openLibrary, openStatus, openFabrication, subscribeAppNav, type AppView, type MainAppView } from './app-nav'
+import { prepareNewWorkScene } from './catalog/library-new-work'
+import { listCatalogThemes } from './catalog/ywn-catalog'
+import AppShell from './components/shell/AppShell.vue'
+import FabricationPage from './pages/FabricationPage.vue'
 import LibraryPage from './pages/LibraryPage.vue'
 import EditorPage from './pages/EditorPage.vue'
 import StatusPage from './pages/StatusPage.vue'
 import CreateAssetPage from './pages/CreateAssetPage.vue'
-
+import './styles/hand-drawn-ui.css'
 const view = ref<AppView>(getAppView())
-
-function syncView(): void {
-  view.value = getAppView()
+const unsubscribe = subscribeAppNav(() => { view.value = getAppView() })
+onMounted(() => { view.value = getAppView() })
+onUnmounted(unsubscribe)
+function navigate(target: MainAppView): void {
+  if (target === 'projection') { openFabrication(); return }
+  if (target === 'library') { openLibrary(); return }
+  const launch = getEditorLaunch()
+  if (launch) { openEditor(launch); return }
+  const prepared = prepareNewWorkScene('我的新作品', listCatalogThemes()[0] || 'all')
+  if (prepared.scene) openEditor({ mode: 'new', scene: prepared.scene })
+  else openLibrary()
 }
-
-let unsubscribe = subscribeAppNav(syncView)
-
-onMounted(() => {
-  syncView()
-})
-
-onUnmounted(() => {
-  unsubscribe()
-})
 </script>
-
 <template>
-  <div class="shell">
-    <header class="topbar">
-      <div>
-        <p class="eyebrow">Material Library · UI Workflows</p>
-        <h1>{{ APP_DISPLAY_NAME }}</h1>
-      </div>
-      <nav class="nav">
-        <button type="button" :class="{ active: view === 'library' }" @click="openLibrary">素材库</button>
-        <button type="button" :class="{ active: view === 'create' }" @click="openCreate">生成作品</button>
-        <button type="button" :class="{ active: view === 'status' }" @click="openStatus">运行状态</button>
-      </nav>
-    </header>
-
-    <main class="content">
+  <EditorPage v-if="view === 'editor'" />
+  <AppShell v-else :active-view="view === 'fabrication' ? 'projection' : 'library'"
+    @navigate="navigate" @back-to-plaza="openLibrary">
+    <div class="integration-content">
+      <nav class="utility-nav"><button @click="openLibrary">作品与素材</button><button @click="openCreate">生成作品</button><button @click="openStatus">运行状态</button></nav>
       <LibraryPage v-if="view === 'library'" />
       <CreateAssetPage v-else-if="view === 'create'" />
-      <EditorPage v-else-if="view === 'editor'" />
+      <FabricationPage v-else-if="view === 'fabrication'" />
       <StatusPage v-else />
-    </main>
-  </div>
+    </div>
+  </AppShell>
 </template>
-
 <style>
-:root {
-  color-scheme: light;
-  --ink: #16302b;
-  --muted: #4d6460;
-  --paper: #eef4f2;
-  --panel: #ffffff;
-  --line: #c5d5d0;
-  --accent: #1f6f63;
-  --danger: #9b2c2c;
-  font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-  background:
-    radial-gradient(circle at 12% 8%, rgba(31, 111, 99, 0.16), transparent 42%),
-    linear-gradient(165deg, #e7f2ef 0%, var(--paper) 48%, #f7faf9 100%);
-  color: var(--ink);
-}
-
-* {
-  box-sizing: border-box;
-}
-
-html,
-body,
-#app {
-  height: 100%;
-  margin: 0;
-}
-
-body {
-  overflow: hidden;
-}
-
-button {
-  appearance: none;
-  border: 1px solid var(--line);
-  background: #fff;
-  color: var(--ink);
-  padding: 8px 12px;
-  font: inherit;
-  cursor: pointer;
-}
-
-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-button.primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
-}
-
-button.ghost,
-button.linkish {
-  background: transparent;
-}
-
-button.linkish {
-  border: 0;
-  padding: 0;
-  color: var(--accent);
-  text-align: left;
-}
-
-button.active {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-.shell {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  max-width: 1180px;
-  margin: 0 auto;
-  padding: 20px 20px 16px;
-  overflow: hidden;
-}
-
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  align-items: flex-end;
-  margin-bottom: 24px;
-}
-
-.topbar h1 {
-  margin: 4px 0 0;
-  font-size: clamp(1.6rem, 3vw, 2.2rem);
-}
-
-.eyebrow {
-  margin: 0;
-  color: var(--accent);
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  font-size: 0.75rem;
-}
-
-.nav {
-  display: flex;
-  gap: 8px;
-}
-
-.content {
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-@media (max-width: 720px) {
-  .topbar {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-}
+:root { color-scheme: light; --ink: #594738; --muted: #8b7355; --paper: #f8f0e2; --panel: #fffef8; --line: #d9b98a; --accent: #855637; --danger: #9b3f32; color: var(--ink); font-family: "Segoe UI", "Microsoft YaHei", sans-serif; }
+* { box-sizing: border-box; }
+html, body, #app { height: 100%; margin: 0; }
+body { overflow: hidden; }
+button { appearance: none; border: 1px solid var(--line); background: var(--panel); color: var(--ink); padding: 8px 12px; font: inherit; cursor: pointer; border-radius: 10px; }
+button:disabled { opacity: .5; cursor: not-allowed; }
+button.primary { background: #f5e5a4; color: #7d261a; border: 2px solid #7d261a; }
+button.linkish, button.ghost { background: transparent; }
+button.active { border-color: var(--accent); }
+.integration-content { position: absolute; z-index: 30; inset: 16% 19% 8% 8%; overflow: auto; background: #fffef8; border: 4px solid #8b5a32; border-radius: 20px; padding: 14px; display: flex; flex-direction: column; }
+.utility-nav { display: flex; gap: 10px; margin-bottom: 8px; }
+:focus-visible { outline: 3px solid #7d261a; outline-offset: 3px; }
 </style>

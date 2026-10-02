@@ -1,6 +1,20 @@
 import type { SceneDocument } from '@shared/contracts'
+import type { SceneBinding } from '@shared/fabrication-colors'
 
-export type AppView = 'library' | 'editor' | 'status' | 'create'
+export type AppView = 'library' | 'editor' | 'status' | 'create' | 'fabrication'
+export type MainAppView = 'library' | 'editor' | 'projection'
+
+let fabricationInput: { bytes: Uint8Array; name: string; binding?: SceneBinding } | undefined
+export function takeFabricationInput(): typeof fabricationInput {
+  const input = fabricationInput
+  fabricationInput = undefined
+  return input
+}
+export function openFabrication(input?: { bytes: Uint8Array; name: string; binding?: SceneBinding }): void {
+  fabricationInput = input
+  currentView = 'fabrication'
+  notify()
+}
 
 export type EditorLaunchMode = 'new' | 'draft' | 'project'
 

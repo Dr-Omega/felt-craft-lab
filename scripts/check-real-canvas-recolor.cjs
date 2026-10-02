@@ -1,0 +1,112 @@
+// Real saved pipeline layers, real IPC and Canvas; no fabricated layer response.
+const {createRequire}=require('node:module')
+const {resolve,join}=require('node:path')
+const {mkdirSync,cpSync,readFileSync,writeFileSync}=require('node:fs')
+const assert=require('node:assert/strict')
+const {_electron:electron}=createRequire(resolve('..','node_modules/playwright/package.json'))('playwright')
+async function main(){
+  const source=resolve(process.argv[2]),out=resolve(process.argv[3]),profile=join(out,'profile')
+  const job=JSON.parse(readFileSync(join(source,'desktop-job.json'),'utf8'))
+  mkdirSync(profile,{recursive:true});cpSync(source,join(profile,'fabrication-jobs',job.id),{recursive:true,force:false,errorOnExist:true})
+  const env={...process.env};delete env.ELECTRON_RUN_AS_NODE
+  const options={executablePath:resolve('node_modules/electron/dist/electron.exe'),args:['.',`--user-data-dir=${profile}`,'--use-angle=swiftshader','--enable-unsafe-swiftshader'],env}
+  let app=await electron.launch(options);const errors=[]
+  try{
+    let page=await app.firstWindow();page.on('pageerror',e=>errors.push(String(e)))
+    await page.getByRole('button',{name:'画板 · 创作',exact:true}).waitFor()
+    await page.evaluate(id=>localStorage.setItem('felt-fabrication-job',id),job.id)
+    await page.setViewportSize({width:1440,height:900})
+    await page.getByRole('button',{name:'画板 · 创作',exact:true}).click()
+    await page.getByRole('button',{name:'打开素材盒',exact:true}).click()
+    await page.locator('.material-card').nth(1).click()
+    await page.getByRole('button',{name:'放进作品',exact:true}).click()
+    await page.locator('.material-sheet.is-open').waitFor({state:'hidden'});await page.waitForTimeout(300)
+    const canvas=await page.locator('.upper-canvas').boundingBox()
+    await page.mouse.move(canvas.x+canvas.width/2,canvas.y+canvas.height/2);await page.mouse.down()
+    await page.mouse.move(canvas.x+canvas.width*.2,canvas.y+canvas.height*.23,{steps:8});await page.mouse.up()
+    await page.getByRole('button',{name:'加入已分层素材',exact:true}).click()
+    await page.getByText('已放入真实分层素材，双击它即可按层换色。',{exact:true}).waitFor()
+    // Normalize Fabric render caches through a normal history restore before comparing pixels.
+    await page.getByRole('button',{name:'撤销',exact:true}).click();await page.waitForTimeout(200)
+    await page.getByRole('button',{name:'重做',exact:true}).click();await page.waitForTimeout(300)
+    await page.mouse.click(canvas.x+5,canvas.y+5);await page.waitForTimeout(100)
+    const original=await page.locator('.lower-canvas').evaluate(e=>e.toDataURL())
+    await page.screenshot({path:join(out,'01-original-scene.png')})
+    await page.mouse.dblclick(canvas.x+canvas.width/2,canvas.y+canvas.height*.6)
+    await page.getByRole('button',{name:'编辑元素图层',exact:true}).click()
+    const panel=page.getByRole('dialog',{name:'元素图层编辑',exact:true})
+    await panel.locator('.layer-row').nth(2).waitFor()
+    await panel.locator('.layer-row img').nth(2).waitFor()
+    assert.equal(await panel.locator('.layer-row').count(),3)
+    const before=await page.evaluate(id=>window.electronAPI.fabrication.colors(id),job.id)
+    const thumbsBefore=await panel.locator('.layer-row img').evaluateAll(es=>es.map(e=>e.src))
+    await panel.getByRole('button',{name:/^第 3 层/}).click()
+    const previewBefore=await page.locator('.lower-canvas').evaluate(e=>e.toDataURL())
+    await page.getByRole('button',{name:'预设颜色 #7457BB',exact:true}).click()
+    await page.waitForTimeout(400)
+    const previewAfter=await page.locator('.lower-canvas').evaluate(e=>e.toDataURL())
+    const pixelCheck=await page.evaluate(async ({a,b,id})=>{
+      async function read(url){const image=new Image();image.src=url;await image.decode();const c=document.createElement('canvas');c.width=image.width;c.height=image.height;const ctx=c.getContext('2d');ctx.drawImage(image,0,0);return {w:c.width,h:c.height,data:ctx.getImageData(0,0,c.width,c.height).data}}
+      const p=await read(a),q=await read(b);let inside=0,outside=0
+      const result=(await window.electronAPI.fabrication.resume(id)).result
+      const asset=await window.electronAPI.fabrication.asset(id,result.steps[2].asset)
+      const url=URL.createObjectURL(new Blob([asset.bytes],{type:asset.mime}))
+      const layer=new Image();layer.src=url;await layer.decode()
+      const mask=document.createElement('canvas');mask.width=p.w;mask.height=p.h
+      const ctx=mask.getContext('2d');ctx.scale(p.w/960,p.h/960)
+      // Existing public addPersonalElement uses unit scale, centered in a 960px scene.
+      ctx.drawImage(layer,480-result.width/2,480-result.height/2)
+      const alpha=ctx.getImageData(0,0,p.w,p.h).data;URL.revokeObjectURL(url)
+      for(let y=0;y<p.h;y++)for(let x=0;x<p.w;x++){const i=(y*p.w+x)*4;if([0,1,2,3].some(k=>p.data[i+k]!==q.data[i+k])){
+        if(alpha[i+3]===0)outside++;else inside++
+      }}return {changedInsideSelectedElement:inside,changedOutsideSelectedElement:outside}
+    },{a:previewBefore,b:previewAfter,id:job.id})
+    assert(pixelCheck.changedInsideSelectedElement>0);assert.equal(pixelCheck.changedOutsideSelectedElement,0)
+    const thumbsAfter=await panel.locator('.layer-row img').evaluateAll(es=>es.map(e=>e.src))
+    assert(thumbsBefore[0]!==thumbsAfter[0]);assert(JSON.stringify(thumbsBefore.slice(1))===JSON.stringify(thumbsAfter.slice(1)),'Other layer thumbnails unchanged')
+    assert.notEqual(previewBefore,previewAfter)
+    await page.screenshot({path:join(out,'02-one-real-layer-recolored.png')})
+    await page.getByRole('button',{name:'应用到画布',exact:true}).click()
+    await page.getByText('已应用到画布，关闭面板不会恢复原色。保存作品后可继续编辑。',{exact:true}).waitFor()
+    const after=await page.evaluate(id=>window.electronAPI.fabrication.colors(id),job.id)
+    assert.equal(after.layers[2].hex,'#7457BB');assert.deepEqual(after.layers.slice(0,2),before.layers.slice(0,2))
+    await page.getByRole('button',{name:'关闭图层编辑',exact:true}).click()
+    await page.mouse.click(canvas.x+5,canvas.y+5);await page.waitForTimeout(200)
+    const committed=await page.locator('.lower-canvas').evaluate(e=>e.toDataURL())
+    await page.getByRole('button',{name:'撤销',exact:true}).click();await page.waitForTimeout(300)
+    assert(await page.locator('.lower-canvas').evaluate(e=>e.toDataURL())===original,'Undo actual scene')
+    await page.getByRole('button',{name:'重做',exact:true}).click();await page.waitForTimeout(300)
+    assert(await page.locator('.lower-canvas').evaluate(e=>e.toDataURL())===committed,'Redo actual scene')
+    await page.getByRole('button',{name:'保存作品',exact:true}).click()
+    await page.getByText('作品收好啦！',{exact:true}).waitFor()
+    await page.screenshot({path:join(out,'03-applied-scene.png')})
+    writeFileSync(join(out,'original-canvas.png'),Buffer.from(original.split(',')[1],'base64'))
+    writeFileSync(join(out,'committed-canvas.png'),Buffer.from(committed.split(',')[1],'base64'))
+    await app.close();app=await electron.launch(options);page=await app.firstWindow()
+    page.on('pageerror',e=>errors.push(String(e)))
+    await page.getByRole('button',{name:'打开作品',exact:true}).waitFor()
+    await page.setViewportSize({width:1440,height:900})
+    await page.getByRole('button',{name:'打开作品',exact:true}).click()
+    await page.locator('.lower-canvas').waitFor();await page.waitForTimeout(500)
+    const reopened=await page.locator('.lower-canvas').evaluate(e=>e.toDataURL())
+    writeFileSync(join(out,'reopened-canvas.png'),Buffer.from(reopened.split(',')[1],'base64'))
+    assert(reopened===committed,'Restart preserves scene')
+    await page.mouse.dblclick(canvas.x+canvas.width/2,canvas.y+canvas.height*.6)
+    await page.getByRole('button',{name:'编辑元素图层',exact:true}).click()
+    await page.locator('.layer-row').nth(2).waitFor()
+    await page.getByRole('button',{name:/^第 3 层/}).click()
+    assert.equal(await page.locator('input[type=color]').inputValue(),'#7457bb')
+    await page.screenshot({path:join(out,'04-reopened-editable-scene.png')})
+    await page.setViewportSize({width:960,height:640});await page.waitForTimeout(200)
+    const box=await page.getByRole('dialog',{name:'元素图层编辑',exact:true}).boundingBox()
+    assert(box.x>=0&&box.y>=0&&box.x+box.width<=961&&box.y+box.height<=641)
+    await page.screenshot({path:join(out,'05-compact-editor.png')})
+    assert.deepEqual(errors,[])
+    writeFileSync(join(out,'checks.json'),JSON.stringify({realJob:job.id,before,after,realLayers:3,changedLayer:3,
+      otherTwoLayerPixelsUnchanged:true,undoExactSceneParity:true,redoExactSceneParity:true,restartExactSceneParity:true,
+      editableAfterRestart:true,algorithmRerun:false,ipcStub:false,compactPanelInViewport:true,...pixelCheck,errors},null,2))
+    console.log('REAL_THREE_LAYER_CANVAS_RECOLOR_PASS')
+  }catch(e){const p=await app.firstWindow();await p.screenshot({path:join(out,'failure.png')});writeFileSync(join(out,'failure.txt'),await p.locator('body').innerText());throw e}
+  finally{await app.close()}
+}
+main().catch(e=>{console.error(e);process.exitCode=1})

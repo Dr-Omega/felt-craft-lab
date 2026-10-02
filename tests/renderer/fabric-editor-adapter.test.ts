@@ -1207,6 +1207,22 @@ describe('P0 Fabric image validation and PNG export', () => {
     expect(canvas.getObjects()).toHaveLength(initialCount)
   })
 
+  it('exports only the selected object in local coordinates without changing scene order or transforms', async () => {
+    const { adapter, canvas } = createHarness()
+    await adapter.importScene(cloneFixture(validScene), resolver())
+    const before = adapter.exportScene()
+    const target = canvas.getObjects().find(o => o.objectId === validScene.objects[0].objectId)!
+    let options: Record<string, unknown> | undefined
+    target.toDataURL = value => { options = value; return canvas.toDataURL() }
+    const image = await adapter.exportPng(target.objectId)
+    expect(image.type).toBe('image/png')
+    expect(options).toEqual({ format: 'png', multiplier: 1, withoutTransform: true, withoutShadow: true })
+    expect(adapter.exportScene()).toEqual(before)
+    await expect(adapter.exportPng('missing')).rejects.toMatchObject({ code: 'PREVIEW_EXPORT_FAILED' })
+    target.visible = false
+    await expect(adapter.exportPng(target.objectId)).rejects.toMatchObject({ code: 'PREVIEW_EXPORT_FAILED' })
+  })
+
   it('exportPng() produces a valid PNG blob with non-zero size and image/png type', async () => {
     const { adapter } = createHarness()
     await adapter.importScene(cloneFixture(validScene), resolver())

@@ -8,6 +8,7 @@
   "include": [
     "tests/**/*.ts",
     "src/renderer/src/editor/**/*",
+    "src/renderer/src/fabrication/**/*",
     "src/renderer/src/services/**/*",
     "src/renderer/src/persistence/**/*",
     "src/renderer/src/catalog/**/*",

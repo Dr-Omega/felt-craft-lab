@@ -274,6 +274,52 @@ function resolverForPersonal(): FabricEditorAssetResolver {
 }
 
 describe('personal asset Fabric runtime integration', () => {
+  it('recolors a system element through an immutable personal version without changing scene order or other objects', async () => {
+    const scene = mixedScene(), resolver = resolverForPersonal()
+    const { adapter, canvas } = createHarness(scene, resolver)
+    await adapter.importScene(scene, resolver)
+    const original = adapter.exportScene(), selected = original.objects[0]
+    const order = canvas.objects.map(o => o.objectId)
+    await adapter.replaceElementImage(selected.objectId, personalAsset(elementAssetId, elementVersionId, 'element'), personalVersion(elementVersionId, elementAssetId))
+    const changed = adapter.exportScene()
+    expect(canvas.objects.map(o => o.objectId)).toEqual(order)
+    expect(changed.personalElements.find(o => o.objectId === selected.objectId)).toMatchObject({
+      objectId: selected.objectId, left: selected.left, top: selected.top, angle: selected.angle,
+      scaleX: selected.scaleX, scaleY: selected.scaleY, zIndex: selected.zIndex, versionId: elementVersionId
+    })
+    expect(changed.objects).toEqual(original.objects.slice(1))
+    expect(changed.corePattern).toEqual(original.corePattern)
+    expect(changed.personalBackground).toEqual(original.personalBackground)
+    expect(changed.personalElements.find(o => o.objectId === original.personalElements[0].objectId)).toEqual(original.personalElements[0])
+    await adapter.undo()
+    expect(adapter.exportScene().objects).toEqual(original.objects)
+    await adapter.redo()
+    expect(adapter.exportScene().personalElements).toEqual(changed.personalElements)
+  })
+
+  it('retains the fixed core tier when replacing core pattern pixels', async () => {
+    const scene = mixedScene(), resolver = resolverForPersonal()
+    const { adapter, canvas } = createHarness(scene, resolver)
+    await adapter.importScene(scene, resolver)
+    const original = adapter.exportScene()
+    await adapter.replaceElementImage(scene.corePattern!.objectId, personalAsset(coreAssetId, coreVersionId, 'core_pattern'), personalVersion(coreVersionId, coreAssetId))
+    expect(canvas.objects[0].sceneObjectKind).toBe('core_pattern')
+    expect(adapter.exportScene().corePattern).toEqual(original.corePattern)
+    expect(adapter.exportScene().objects).toEqual(original.objects)
+    expect(adapter.exportScene().personalElements).toEqual(original.personalElements)
+  })
+
+  it('rejects foreign ownership, incorrect roles and missing objects without replacing any pixels', async () => {
+    const scene = mixedScene(), resolver = resolverForPersonal()
+    const { adapter, canvas } = createHarness(scene, resolver)
+    await adapter.importScene(scene, resolver)
+    const objects = [...canvas.objects]
+    await expect(adapter.replaceElementImage(scene.objects[0].objectId, personalAsset(elementAssetId, elementVersionId, 'element', 'other-user'), personalVersion(elementVersionId, elementAssetId))).rejects.toThrow()
+    await expect(adapter.replaceElementImage(scene.corePattern!.objectId, personalAsset(elementAssetId, elementVersionId, 'element'), personalVersion(elementVersionId, elementAssetId))).rejects.toThrow()
+    await expect(adapter.replaceElementImage('missing', personalAsset(elementAssetId, elementVersionId, 'element'), personalVersion(elementVersionId, elementAssetId))).rejects.toThrow()
+    expect(canvas.objects).toEqual(objects)
+  })
+
   it('imports and round-trips background, core, mixed elements, and fixed versions', async () => {
     const scene = mixedScene()
     const { adapter, canvas } = createHarness(scene, resolverForPersonal())

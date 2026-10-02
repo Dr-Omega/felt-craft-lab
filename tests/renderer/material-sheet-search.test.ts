@@ -11,7 +11,7 @@ const categoryDisplay = readFileSync(resolve('src/renderer/src/catalog/category-
 describe('V4.6 Phase 2 MaterialSheet search and category filters', () => {
   it('renders a search input that filters by nameZh, nameEn, and keywords', () => {
     expect(sheet).toContain('搜索素材')
-    expect(sheet).toContain('placeholder="搜索素材……"')
+    expect(sheet).toContain('placeholder="找一找素材……"')
     expect(sheet).toContain('v-model="searchQuery"')
     expect(categoryDisplay).toContain('filterAssetsByCategoryAndQuery')
     expect(categoryDisplay).toContain('asset.nameZh')

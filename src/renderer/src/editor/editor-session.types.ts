@@ -58,7 +58,10 @@ export interface EditorSessionAdapter {
   getHistoryProjection(): EditorHistoryProjection
   subscribeHistory(listener: EditorHistoryListener): () => void
   exportScene(): SceneDocument
-  exportPng(): Promise<Blob>
+  exportPng(objectId?: string): Promise<Blob>
+  previewElementImage?(objectId: string, png: string): Promise<void>
+  clearElementPreview?(): void
+  replaceElementImage?(objectId: string, asset: PersonalAssetRecord, version: PersonalAssetVersionRecord): Promise<void>
   getRecoveryIssues(): readonly SceneRecoveryIssue[]
   subscribeSelection(listener: EditorSelectionListener): () => void
   dispose(): void

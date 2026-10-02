@@ -312,7 +312,23 @@ export class EditorSessionService {
     }
   }
 
-  async prepareProjectSave(): Promise<PreparedProjectSave> {
+  async previewElementImage(objectId: string, png: string): Promise<void> {
+    const adapter = this.requireAdapter('INVALID_ARGUMENT')
+    if (!adapter.previewElementImage) throw new Error('当前编辑器不支持原位换色预览。')
+    await adapter.previewElementImage(objectId, png)
+  }
+
+  clearElementPreview(): void { this.adapter?.clearElementPreview?.() }
+
+  async replaceElementImage(objectId: string, asset: PersonalAssetRecord, version: PersonalAssetVersionRecord): Promise<void> {
+    await this.runAsyncMutation('INVALID_ARGUMENT', async () => {
+      const adapter = this.requireAdapter()
+      if (!adapter.replaceElementImage) throw new Error('当前编辑器不支持保存图层换色。')
+      await adapter.replaceElementImage(objectId, asset, version)
+    })
+  }
+
+  async prepareProjectSave(objectId?: string): Promise<PreparedProjectSave> {
     const adapter = this.requireSaveAdapter('PROJECT_SAVE_FAILED')
     try {
       // Both exports are captured synchronously before exportPng's first await,
@@ -320,7 +336,9 @@ export class EditorSessionService {
       const scene = adapter.exportScene()
       const validation = validateSceneDocument(scene)
       if (!validation.ok) throw sessionError('PROJECT_SAVE_FAILED', 'Scene failed runtime validation for project save.')
-      const previewPng = await adapter.exportPng()
+      if (objectId !== undefined && ![...scene.objects, ...scene.personalElements, ...(scene.corePattern ? [scene.corePattern] : [])]
+        .some(item => item.objectId === objectId && item.visible)) throw new Error('Selected element is unavailable')
+      const previewPng = await adapter.exportPng(objectId)
       if (!previewPng || typeof previewPng.size !== 'number') {
         throw sessionError('PROJECT_SAVE_FAILED', 'PNG preview export did not return a Blob.')
       }
