@@ -42,13 +42,14 @@ import type { SceneBinding, LayerColors } from '@shared/fabrication-colors'
 import { persistCanvasRecolor, readCanvasRecolorLink, type CanvasRecolorLink } from '../fabrication/canvas-recolor'
 import { recolorLayers } from '../fabrication/recolor'
 import type { ScreenBox } from '../fabrication/panel-placement'
+import { DEFAULT_SCENE_CANVAS } from '../catalog/scene-defaults'
 
 const launch = getEditorLaunch()
 if (!launch) openLibrary()
 
 const canvasEl = ref<HTMLCanvasElement | null>(null)
-const logicalCanvasWidth = launch?.scene.canvas.width ?? 960
-const logicalCanvasHeight = launch?.scene.canvas.height ?? 960
+const logicalCanvasWidth = launch?.scene.canvas.width ?? DEFAULT_SCENE_CANVAS.width
+const logicalCanvasHeight = launch?.scene.canvas.height ?? DEFAULT_SCENE_CANVAS.height
 const session = shallowRef<EditorSessionService | null>(null)
 const sessionState = ref<EditorSessionState | null>(null)
 const accessByAssetId = ref<Record<string, AssetAccessState | undefined>>({})
