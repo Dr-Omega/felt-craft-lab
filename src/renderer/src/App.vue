@@ -3,30 +3,79 @@ import { onMounted, onUnmounted, ref } from 'vue'
 import { APP_DISPLAY_NAME } from '@shared/constants/app'
 import {
   getAppView,
-  getStoryCardTestContext,
+  getStoryCardContext,
   openLibrary,
+  openStoryCard,
   openStatus,
-  openStoryCardTest,
   subscribeAppNav,
   type AppView
 } from './app-nav'
 import LibraryPage from './pages/LibraryPage.vue'
 import EditorPage from './pages/EditorPage.vue'
 import StatusPage from './pages/StatusPage.vue'
-import StoryCardTestPage from './pages/StoryCardTestPage.vue'
+import StoryCardPage from './pages/StoryCardPage.vue'
+import { getFeltCraftDatabase, ProjectStore } from './persistence'
+import { CATALOG_ASSETS, resolveEditorCatalogForSnapshot } from './catalog/ywn-catalog'
+import { adaptStoryCardWorkContext } from './story-card/work-context.adapter'
 
-const view = ref<AppView>(getAppView())
-const storyCardTestContext = ref(getStoryCardTestContext())
+const storyCardAcceptance = import.meta.env.DEV && import.meta.env.VITE_STORY_CARD_ACCEPTANCE === '1'
+const view = ref<AppView>(storyCardAcceptance ? 'story-card' : getAppView())
+const storyCardContext = ref(getStoryCardContext())
+
+async function openStoryCardForAcceptance(): Promise<void> {
+  const projects = await new ProjectStore(getFeltCraftDatabase()).list()
+  const project = projects.find((item) => item.completionStatus === 'completed' && item.scene.subject)
+    ?? projects.find((item) => item.completionStatus === 'completed'
+      && item.scene.objects.some((object) => CATALOG_ASSETS.some((asset) => asset.assetId === object.assetId)))
+  if (!project) {
+    const previewAsset = CATALOG_ASSETS.find((asset) => asset.type === 'sticker')
+    if (!previewAsset) return
+    openStoryCard({
+      workId: '00000000-0000-4000-8000-000000000001',
+      completionStatus: 'completed',
+      artworkImageRef: previewAsset.imageUrl,
+      background: null,
+      subject: { name: previewAsset.nameZh },
+      stickers: []
+    })
+    return
+  }
+
+  try {
+    openStoryCard(adaptStoryCardWorkContext(project, {
+      listBySnapshot: (snapshotId) => resolveEditorCatalogForSnapshot(snapshotId).assets
+    }))
+  } catch {
+    const snapshotAssets = resolveEditorCatalogForSnapshot(project.scene.assetSnapshotId).assets
+    const assets = snapshotAssets.length ? snapshotAssets : CATALOG_ASSETS
+    const byId = new Map(assets.map((asset) => [asset.assetId, asset]))
+    const subject = project.scene.subject?.name ?? byId.get(project.scene.objects[0]?.assetId)?.nameZh
+    if (!subject) return
+    openStoryCard({
+      workId: project.projectId,
+      completionStatus: 'completed',
+      artworkImageRef: project.previewUrl,
+      background: project.scene.backgroundAssetId
+        ? { name: byId.get(project.scene.backgroundAssetId)?.nameZh ?? '作品背景' }
+        : null,
+      subject: { name: subject },
+      stickers: project.scene.subject
+        ? project.scene.objects.map((object) => ({ name: byId.get(object.assetId)?.nameZh ?? '作品素材' }))
+        : project.scene.objects.slice(1).map((object) => ({ name: byId.get(object.assetId)?.nameZh ?? '作品素材' }))
+    })
+  }
+}
 
 function syncView(): void {
   view.value = getAppView()
-  storyCardTestContext.value = getStoryCardTestContext()
+  storyCardContext.value = getStoryCardContext()
 }
 
 let unsubscribe = subscribeAppNav(syncView)
 
 onMounted(() => {
-  syncView()
+  if (storyCardAcceptance) void openStoryCardForAcceptance()
+  else syncView()
 })
 
 onUnmounted(() => {
@@ -35,15 +84,14 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="shell">
-    <header class="topbar">
+  <div class="shell" :class="{ 'story-mode': view === 'story-card' }">
+    <header v-if="view !== 'story-card'" class="topbar">
       <div>
         <p class="eyebrow">Material Library · UI Workflows</p>
         <h1>{{ APP_DISPLAY_NAME }}</h1>
       </div>
       <nav class="nav">
         <button type="button" :class="{ active: view === 'library' }" @click="openLibrary">素材库</button>
-        <button type="button" :class="{ active: view === 'story-card-test' }" @click="() => openStoryCardTest()">故事卡测试</button>
         <button type="button" :class="{ active: view === 'status' }" @click="openStatus">运行状态</button>
       </nav>
     </header>
@@ -51,7 +99,7 @@ onUnmounted(() => {
     <main class="content">
       <LibraryPage v-if="view === 'library'" />
       <EditorPage v-else-if="view === 'editor'" />
-      <StoryCardTestPage v-else-if="view === 'story-card-test'" :work-context="storyCardTestContext" />
+      <StoryCardPage v-else-if="view === 'story-card'" :work-context="storyCardContext" />
       <StatusPage v-else />
     </main>
   </div>
@@ -125,6 +173,11 @@ button.active {
   max-width: 1180px;
   margin: 0 auto;
   padding: 28px 20px 48px;
+}
+
+.shell.story-mode {
+  max-width: none;
+  padding: 0;
 }
 
 .topbar {

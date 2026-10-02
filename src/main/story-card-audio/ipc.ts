@@ -44,7 +44,8 @@ export function registerStoryCardAudioIpc(roots: ResourceRoots): void {
   ipcMain.handle(IPC_CHANNELS.STORY_CARD_AUDIO_READ, async (event, rawRef: unknown): Promise<TemporaryStoryCardAudioReadResult> => {
     try {
       if (!isTrustedIpcEvent(event)) return denied()
-      return readTemporaryStoryCardAudio(rawRef, roots)
+      const result = readTemporaryStoryCardAudio(rawRef, roots)
+      return result
     } catch {
       return {
         ok: false,

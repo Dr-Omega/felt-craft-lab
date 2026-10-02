@@ -2,9 +2,9 @@ import { afterEach, describe, expect, it } from 'vitest'
 import type { StoryCardWorkContext } from '../../src/shared/contracts'
 import {
   getAppView,
-  getStoryCardTestContext,
+  getStoryCardContext,
   openLibrary,
-  openStoryCardTest
+  openStoryCard
 } from '../../src/renderer/src/app-nav'
 
 const workContext: StoryCardWorkContext = {
@@ -16,20 +16,15 @@ const workContext: StoryCardWorkContext = {
   stickers: [{ name: '灯笼' }]
 }
 
-describe('story-card test entry navigation', () => {
+describe('story-card entry navigation', () => {
   afterEach(() => {
     openLibrary()
   })
 
-  it('opens the story-card test view', () => {
-    openStoryCardTest()
+  it('opens the formal story-card view with the completed work context', () => {
+    openStoryCard(workContext)
 
-    expect(getAppView()).toBe('story-card-test')
-  })
-
-  it('keeps the completed work context for the story-card test view', () => {
-    openStoryCardTest(workContext)
-
-    expect(getStoryCardTestContext()).toEqual(workContext)
+    expect(getAppView()).toBe('story-card')
+    expect(getStoryCardContext()).toEqual(workContext)
   })
 })

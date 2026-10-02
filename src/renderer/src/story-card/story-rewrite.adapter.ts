@@ -46,6 +46,25 @@ function isValidInput(input: StoryRewriteInput): boolean {
   )
 }
 
+/**
+ * Electron IPC cannot clone Vue's reactive Proxy objects. The gateway only
+ * needs these story facts, so send a fresh plain-data copy across the bridge.
+ */
+function toGatewayContext(context: StoryCardWorkContext): Record<string, unknown> {
+  return {
+    workId: context.workId,
+    completionStatus: context.completionStatus,
+    background: context.background
+      ? { name: context.background.name, ...(context.background.themeName ? { themeName: context.background.themeName } : {}) }
+      : null,
+    subject: { name: context.subject.name, ...(context.subject.themeName ? { themeName: context.subject.themeName } : {}) },
+    stickers: context.stickers.map((sticker) => ({
+      name: sticker.name,
+      ...(sticker.themeName ? { themeName: sticker.themeName } : {})
+    }))
+  }
+}
+
 function normalizeDraft(workId: string, draft: StoryCardDraft): StoryCardDraft {
   switch (draft.status) {
     case 'processing':
@@ -136,7 +155,7 @@ export class GatewayStoryRewriteAdapter implements StoryRewriteAdapter {
       const response = await this.client.storyRewrite({
         workId,
         text: input.text.trim(),
-        context: input.context as unknown as Record<string, unknown>
+        context: toGatewayContext(input.context)
       })
       if (response && typeof response === 'object' && (response as { ok?: unknown }).ok === false) {
         return failed(workId, (response as { error?: unknown }).error as SharedError)

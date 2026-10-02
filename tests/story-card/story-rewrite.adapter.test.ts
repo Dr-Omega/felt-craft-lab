@@ -101,6 +101,27 @@ describe('GatewayStoryRewriteAdapter', () => {
     await expect(adapter.rewrite(rewriteInput(ready))).resolves.toEqual({ workId: ready.input.workId, ...ready.expected })
   })
 
+  it('sends a cloneable plain context when the page provides a reactive Proxy', async () => {
+    const ready = caseById('zh-ready')
+    const reactiveContext = new Proxy(ready.context, {})
+    let received: Record<string, unknown> | undefined
+    const adapter = new GatewayStoryRewriteAdapter({
+      storyRewrite: async (input) => {
+        received = input.context
+        return { ok: true, result: { workId: ready.input.workId, ...ready.expected } }
+      }
+    })
+
+    await adapter.rewrite({ ...rewriteInput(ready), context: reactiveContext })
+
+    expect(received).toMatchObject({
+      workId: ready.input.workId,
+      completionStatus: 'completed',
+      subject: { name: ready.context.subject.name }
+    })
+    expect(() => structuredClone(received)).not.toThrow()
+  })
+
   it('maps gateway failures and malformed candidates into temporary failed drafts', async () => {
     const ready = caseById('zh-ready')
     await expect(new GatewayStoryRewriteAdapter({

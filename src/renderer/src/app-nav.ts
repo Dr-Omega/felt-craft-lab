@@ -1,6 +1,6 @@
 import type { SceneDocument, StoryCardWorkContext } from '@shared/contracts'
 
-export type AppView = 'library' | 'editor' | 'status' | 'story-card-test'
+export type AppView = 'library' | 'editor' | 'status' | 'story-card'
 
 export type EditorLaunchMode = 'new' | 'draft' | 'project'
 
@@ -13,7 +13,7 @@ export interface EditorLaunchContext {
 
 let currentView: AppView = 'library'
 let launch: EditorLaunchContext | undefined
-let storyCardTestContext: StoryCardWorkContext | undefined
+let storyCardContext: StoryCardWorkContext | undefined
 const listeners = new Set<() => void>()
 
 function notify(): void {
@@ -28,8 +28,8 @@ export function getEditorLaunch(): EditorLaunchContext | undefined {
   return launch
 }
 
-export function getStoryCardTestContext(): StoryCardWorkContext | undefined {
-  return storyCardTestContext
+export function getStoryCardContext(): StoryCardWorkContext | undefined {
+  return storyCardContext
 }
 
 export function subscribeAppNav(listener: () => void): () => void {
@@ -46,9 +46,9 @@ export function openStatus(): void {
   currentView = 'status'
   notify()
 }
-export function openStoryCardTest(context?: StoryCardWorkContext): void {
-  storyCardTestContext = context
-  currentView = 'story-card-test'
+export function openStoryCard(context: StoryCardWorkContext): void {
+  storyCardContext = context
+  currentView = 'story-card'
   notify()
 }
 

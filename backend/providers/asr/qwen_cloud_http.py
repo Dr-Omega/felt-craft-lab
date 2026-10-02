@@ -13,7 +13,7 @@ from services.asr_types import err_result, ok_result
 
 from .base import AsrProvider
 
-DASHSCOPE_URL = (
+DEFAULT_DASHSCOPE_URL = (
     "https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation"
 )
 MODEL = "qwen3-asr-flash"
@@ -25,6 +25,20 @@ def _api_key() -> str:
         os.getenv("QWEN_ASR_API_KEY", "").strip()
         or os.getenv("DASHSCOPE_API_KEY", "").strip()
     )
+
+
+def _asr_url() -> str:
+    return (os.getenv("QWEN_ASR_BASE_URL") or DEFAULT_DASHSCOPE_URL).strip()
+
+
+def _upstream_error(status_code: int) -> tuple[str, bool]:
+    if status_code in {401, 403}:
+        return "语音识别服务的 Key 无效，或当前业务空间未开通该模型。", False
+    if status_code in {400, 404}:
+        return "语音识别服务地址或模型配置不匹配，请检查 QWEN_ASR_BASE_URL。", False
+    if status_code == 413:
+        return "录音文件超过语音识别服务允许的大小。", False
+    return "语音识别服务暂时不可用，请稍后重试。", status_code >= 500
 
 
 class QwenCloudHttpProvider(AsrProvider):
@@ -69,11 +83,12 @@ class QwenCloudHttpProvider(AsrProvider):
         headers = {
             "Authorization": f"Bearer {key}",
             "Content-Type": "application/json",
+            "X-DashScope-SSE": "disable",
         }
 
         started = time.perf_counter()
         try:
-            resp = requests.post(DASHSCOPE_URL, headers=headers, json=payload, timeout=60)
+            resp = requests.post(_asr_url(), headers=headers, json=payload, timeout=60)
         except requests.Timeout:
             return err_result(code="ASR_TIMEOUT")
         except requests.RequestException:
@@ -81,16 +96,21 @@ class QwenCloudHttpProvider(AsrProvider):
 
         latency_ms = int((time.perf_counter() - started) * 1000)
 
+        if resp.status_code >= 400:
+            message, retryable = _upstream_error(resp.status_code)
+            print(f"[story-card][asr] upstream status={resp.status_code}")
+            return err_result(
+                code="ASR_UPSTREAM_ERROR",
+                message=message,
+                retryable=retryable,
+                details={"upstreamStatus": resp.status_code},
+            )
+
         try:
             data = resp.json()
         except ValueError:
+            print("[story-card][asr] upstream response=invalid-json")
             return err_result(code="ASR_BAD_RESPONSE")
-
-        if resp.status_code >= 400:
-            return err_result(
-                code="ASR_UPSTREAM_ERROR",
-                retryable=resp.status_code >= 500,
-            )
 
         transcript, request_id = _extract_transcript(data)
         return ok_result(

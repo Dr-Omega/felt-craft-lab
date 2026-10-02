@@ -20,7 +20,7 @@ import {
   isAcceptanceUnlockAllAssetsEnabled,
   seedAcceptanceUnlockedAccess
 } from '../catalog/acceptance-access'
-import { getEditorLaunch, openLibrary, openStoryCardTest } from '../app-nav'
+import { getEditorLaunch, openLibrary } from '../app-nav'
 import {
   AssetAccessStore,
   ProjectStore,
@@ -38,7 +38,6 @@ import ObjectQuickTools from '../components/editor/ObjectQuickTools.vue'
 import RemoveToast from '../components/editor/RemoveToast.vue'
 import ImageUploadControl from '../components/editor/ImageUploadControl.vue'
 import { audioService } from '../services/audio.service'
-import { enterStoryCardAfterWorkCompleted } from '../story-card/story-card-entry.service'
 
 const launch = getEditorLaunch()
 if (!launch) openLibrary()
@@ -412,14 +411,7 @@ async function finish(): Promise<void> {
       projectId = savedProject.projectId
     }
     session.value.markSaved()
-    const projectStore = new ProjectStore(getFeltCraftDatabase())
-    const context = await enterStoryCardAfterWorkCompleted(savedProject.projectId, {
-      workReader: projectStore,
-      assetReader: {
-        listBySnapshot: (snapshotId) => resolveEditorCatalogForSnapshot(snapshotId).assets
-      }
-    })
-    openStoryCardTest(context)
+    showFeedback('作品已完成。', 'success')
   } catch (error) {
     showFeedback(friendlyError(error), 'error')
   } finally {
