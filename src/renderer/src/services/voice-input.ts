@@ -66,6 +66,7 @@ export class MicRecorder {
   private media: MediaRecorder | null = null
   private chunks: Blob[] = []
   private stream: MediaStream | null = null
+  private generation = 0
 
   get recording(): boolean {
     return this.media !== null && this.media.state !== 'inactive'
@@ -73,36 +74,45 @@ export class MicRecorder {
 
   async start(): Promise<void> {
     if (this.media) await this.stop()
+    const generation = ++this.generation
     try {
-      this.stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      if (generation !== this.generation) { stream.getTracks().forEach(track => track.stop()); throw new Error('录音已取消。') }
+      this.stream = stream
     } catch {
       throw new Error(ASR_MIC_VOICE_MESSAGE)
     }
     const mimeType = pickRecorderMime()
-    this.chunks = []
-    this.media = mimeType ? new MediaRecorder(this.stream, { mimeType }) : new MediaRecorder(this.stream)
+    const chunks: Blob[] = []
+    this.chunks = chunks
+    try { this.media = mimeType ? new MediaRecorder(this.stream, { mimeType }) : new MediaRecorder(this.stream) }
+    catch { this.cleanup(); throw new Error(ASR_FAIL_VOICE_MESSAGE) }
     this.media.ondataavailable = (event) => {
-      if (event.data.size > 0) this.chunks.push(event.data)
+      if (generation === this.generation && event.data.size > 0) chunks.push(event.data)
     }
-    this.media.start()
+    try { this.media.start() } catch { this.cleanup(); throw new Error(ASR_FAIL_VOICE_MESSAGE) }
   }
+
+  pause(): void { if (this.media?.state === 'recording') this.media.pause() }
+  resume(): void { if (this.media?.state === 'paused') this.media.resume() }
 
   async stop(): Promise<{ blob: Blob; mimeType: string }> {
     const media = this.media
     if (!media) throw new Error('还没有开始说话。')
+    const chunks = this.chunks
     const blob = await new Promise<Blob>((resolve, reject) => {
       media.onerror = () => reject(new Error(ASR_FAIL_VOICE_MESSAGE))
       media.onstop = () => {
-        resolve(new Blob(this.chunks, { type: media.mimeType || 'audio/webm' }))
+        resolve(new Blob(chunks, { type: media.mimeType || 'audio/webm' }))
       }
       media.stop()
-    })
-    this.cleanup()
+    }).finally(() => { if (this.media === media) this.cleanup() })
     if (blob.size === 0) throw new Error(ASR_EMPTY_VOICE_MESSAGE)
     return { blob, mimeType: blob.type || 'audio/webm' }
   }
 
   cancel(): void {
+    this.generation++
     try {
       if (this.media && this.media.state !== 'inactive') this.media.stop()
     } catch {

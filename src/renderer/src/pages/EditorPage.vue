@@ -42,6 +42,8 @@ import type { SceneBinding, LayerColors } from '@shared/fabrication-colors'
 import { persistCanvasRecolor, readCanvasRecolorLink, type CanvasRecolorLink } from '../fabrication/canvas-recolor'
 import { recolorLayers } from '../fabrication/recolor'
 import type { ScreenBox } from '../fabrication/panel-placement'
+import CreationInputDialog from '../components/editor/CreationInputDialog.vue'
+import { persistCanvasInput } from '../fabrication/canvas-intake'
 
 const launch = getEditorLaunch()
 if (!launch) openLibrary()
@@ -59,6 +61,7 @@ const returnModalOpen = ref(false)
 const returnModalError = ref('')
 const sheetOpen = ref(false)
 const backgroundDrawerOpen = ref(false)
+const inputDialogOpen = ref(false)
 const sceneSnapshotMissing = ref(false)
 const currentSelection = ref<EditorSelectionProjection | null>(null)
 const oqtSelection = ref<EditorSelectionProjection | null>(null)
@@ -136,6 +139,24 @@ async function editElementLayers(): Promise<void> {
     updateLayerAnchor(); closeTransientContexts()
   } catch (e) { showFeedback(friendlyError(e), 'error') }
   finally { busy.value = false }
+}
+
+async function insertCreationImage(bytes: Uint8Array, name: string, source: 'uploaded'|'ai_generated'): Promise<void> {
+  const service = session.value
+  if (!service || busy.value) throw new Error('画布尚未就绪，请稍后重试。')
+  busy.value = true
+  try {
+    const { asset, version } = await persistCanvasInput(bytes, name, launch!.scene.userId, source)
+    const objectId = await service.addPersonalElement(asset, version)
+    inputDialogOpen.value = false
+    closeTransientContexts()
+    // Fabric selection events provide the real object bounds; no image-derived synthetic layer list.
+    await nextTick()
+    if (currentSelection.value?.objectId === objectId) {
+      busy.value = false
+      await editElementLayers()
+    } else showFeedback('图片已加入画布。双击它并选择编辑即可准备图层。', 'success')
+  } finally { busy.value = false }
 }
 
 let unsubscribe: (() => void) | undefined
@@ -609,6 +630,7 @@ watch([oqtOpen, oqtSelection], () => { void nextTick(updateOqtPosition) })
 
       </div>
       <template #tools>
+        <button :disabled="busy || !canEdit || !!layerEditor" @click="inputDialogOpen = true">添加图片</button>
         <button aria-label="打开素材盒" :disabled="busy || !canEdit" @click="toggleSheet">素材</button>
         <button aria-label="打开背景选择" :aria-expanded="backgroundDrawerOpen" @click="toggleBackgroundDrawer">背景</button>
         <button :disabled="busy || !currentSelection || !canFinish" @click="editElementLayers">编辑选中元素</button>
@@ -653,6 +675,7 @@ watch([oqtOpen, oqtSelection], () => { void nextTick(updateOqtPosition) })
 
     <ElementLayerEditor v-if="layerEditor" :input="layerEditor.input" :binding="layerEditor.binding"
       :anchor="layerAnchor" :saved-edit="layerEditor.savedEdit" :apply="applyLayerColor" @preview="previewLayerColor" @close="closeLayerEditor" />
+    <CreationInputDialog v-if="inputDialogOpen" :insert="insertCreationImage" @close="inputDialogOpen = false" />
 
     <ReturnSaveModal
       :open="returnModalOpen"
@@ -756,6 +779,13 @@ body { margin: 0; }
 .editor-side .background-trigger,
 .editor-side .background-drawer {
   pointer-events: auto;
+}
+
+/* DrawingFrame has no legacy side dock: keep the chooser inside the visible canvas. */
+.editor-side .background-drawer {
+  left: auto;
+  right: 8px;
+  margin-left: 0;
 }
 
 .bottom-action-dock {

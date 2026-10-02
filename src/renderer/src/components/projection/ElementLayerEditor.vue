@@ -48,6 +48,8 @@ async function load(): Promise<void> {
   colors.value = doc; selected.value = 0
   message.value = '选中一层调色，效果直接显示在作品中。'
   await paint(false)
+  // A newly decomposed source can be applied without forcing a gratuitous color change.
+  if (!props.savedEdit) { dirty.value = true; message.value = '真实分层已完成，可按层换色或直接应用到原画布。' }
 }
 async function poll(): Promise<void> {
   if (disposed || !job.value) return
@@ -102,7 +104,7 @@ onMounted(async () => {
       if (disposed) return
       if (job.value.status === 'complete') await load()
       else if (['background','fabrication'].includes(job.value.status)) void poll()
-      else message.value = '上次未完成，可以重新拆分。'
+      else error.value = '上次未完成，可以重试准备图层。'
     } else {
       // Source opacity selects an existing foreground mode, never an inferred RGB encoding.
       const url = URL.createObjectURL(new Blob([new Uint8Array(props.input).buffer], {type:'image/png'}))

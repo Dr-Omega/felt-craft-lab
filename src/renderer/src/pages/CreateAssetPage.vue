@@ -5,12 +5,23 @@ import { createSceneWithCorePattern } from '../catalog/ywn-catalog'
 import { CreationIntentController } from '../services/creation-intent.controller'
 import { aiClient } from '../services/ai.client'
 import { blobToBase64, MicRecorder, parseAsrEnvelope } from '../services/voice-input'
+import type { CreationIntentAccepted } from '@shared/creation-intent'
+import ArtworkButton from '../components/editor/ArtworkButton.vue'
+import recordStart from '../../../../assets/ui/creation/record-start.png'
+import recordPause from '../../../../assets/ui/creation/record-pause.png'
+import recordResume from '../../../../assets/ui/creation/record-resume.png'
+import recordDone from '../../../../assets/ui/creation/record-done.png'
+import recordReset from '../../../../assets/ui/creation/record-reset.png'
+
+const props = defineProps<{ useCandidate?: (accepted: CreationIntentAccepted) => Promise<void> }>()
+const paused = ref(false), startingMic = ref(false), placing = ref(false)
+let voiceTimer: ReturnType<typeof setTimeout> | undefined, disposed = false
 
 const GUIDE_STORAGE_KEY = 'felt-create-guide-dismissed'
 const GUIDE_STEPS = [
-  '先说想画什么，或按「开始说话」。',
+  '先说想画什么，或按「开始录音」。',
   '看下面的方案卡。缺的一栏会问你，也可以点「你来定」。',
-  '点「就这样画」看图。喜欢就去编辑器装饰，不喜欢就再画一张。'
+  props.useCandidate ? '点「就这样画」看图。确认后加入当前画布并拆分，不喜欢就再画一张。' : '点「就这样画」看图。喜欢就去编辑器装饰，不喜欢就再画一张。'
 ] as const
 
 const controller = reactive(new CreationIntentController())
@@ -36,9 +47,10 @@ const qualityHeadline = computed(() => {
   if (verdict === 'PASS') return '看起来适合做成不织布'
   return ''
 })
-const voiceBusy = computed(() => recording.value || transcribing.value || controller.busy)
+const voiceBusy = computed(() => recording.value || startingMic.value || transcribing.value || controller.busy || placing.value)
 
 onUnmounted(() => {
+  disposed = true; clearTimeout(voiceTimer)
   recorder.cancel()
 })
 
@@ -73,22 +85,27 @@ async function retryVoice(): Promise<void> {
 }
 
 async function toggleVoice(): Promise<void> {
-  if (compiled.value || transcribing.value || controller.busy) return
+  if (compiled.value || startingMic.value || transcribing.value || controller.busy) return
   controller.error = null
   controller.retryAction = null
   voiceRetry.value = false
   if (!recording.value) {
+    startingMic.value = true
     try {
       await recorder.start()
+      if (disposed) return
       recording.value = true
+      paused.value = false
+      voiceTimer = setTimeout(() => { if (recording.value) void toggleVoice() }, 60_000)
     } catch (error) {
       controller.error = error instanceof Error ? error.message : '打不开麦克风。请允许使用麦克风，或先在上面打字。'
       voiceRetry.value = true
-    }
+    } finally { startingMic.value = false }
     return
   }
 
   recording.value = false
+  paused.value = false; clearTimeout(voiceTimer)
   transcribing.value = true
   try {
     const captured = await recorder.stop()
@@ -105,7 +122,7 @@ async function toggleVoice(): Promise<void> {
       voiceRetry.value = parsed.reason === 'empty' || parsed.reason === 'network' || parsed.reason === 'unknown'
       return
     }
-    await controller.acceptUtterance(parsed.transcript)
+    if (!disposed) await controller.acceptUtterance(parsed.transcript)
   } catch (error) {
     controller.error =
       error instanceof Error ? error.message : '语音识别暂时用不了。请稍后再试，或先在上面打字。'
@@ -116,6 +133,7 @@ async function toggleVoice(): Promise<void> {
 }
 
 function resetAll(): void {
+  clearTimeout(voiceTimer); paused.value = false
   recorder.cancel()
   recording.value = false
   transcribing.value = false
@@ -124,8 +142,16 @@ function resetAll(): void {
 }
 
 async function startWork(): Promise<void> {
-  await controller.acceptCandidate()
+  if (placing.value) return
+  if (!controller.accepted) await controller.acceptCandidate()
   if (!controller.accepted) return
+  if (props.useCandidate) {
+    placing.value = true
+    try { await props.useCandidate(controller.accepted) }
+    catch (e) { controller.error = e instanceof Error ? e.message : String(e) }
+    finally { placing.value = false }
+    return
+  }
   openEditor({
     mode: 'new',
     fromGeneration: true,
@@ -136,6 +162,9 @@ async function startWork(): Promise<void> {
     })
   })
 }
+
+function pauseVoice(): void { if (paused.value) recorder.resume(); else recorder.pause(); paused.value = !paused.value }
+async function restartVoice(): Promise<void> { recorder.cancel(); clearTimeout(voiceTimer); recording.value = false; paused.value = false; await toggleVoice() }
 </script>
 
 <template>
@@ -144,7 +173,7 @@ async function startWork(): Promise<void> {
       <header class="section-head">
         <div>
           <h2>生成作品</h2>
-          <p class="muted">先画出核心图案。看过图后，点去编辑器装饰，再用贴纸和背景打扮它。</p>
+          <p class="muted">{{ useCandidate ? '说出想画的内容，确认图片后加入当前画布并准备图层。也可以打字。' : '先画出核心图案。看过图后，点去编辑器装饰，再用贴纸和背景打扮它。' }}</p>
         </div>
         <button v-if="!guideOpen" type="button" class="ghost guide-reopen" @click="reopenGuide">怎么用</button>
       </header>
@@ -190,7 +219,7 @@ async function startWork(): Promise<void> {
           </button>
         </div>
 
-        <p v-if="recording" class="summary waiting">正在听，说完再按一次。</p>
+        <p v-if="recording" class="summary waiting">{{ paused ? '录音已暂停。' : '正在录音，最长60秒；说完请点完成录音。' }}</p>
         <p v-else-if="transcribing" class="summary waiting">正在把你说的写成字…</p>
         <p v-else-if="controller.busyHint" class="summary waiting">{{ controller.busyHint }}</p>
         <p v-else-if="controller.busy" class="summary waiting">请稍等…</p>
@@ -270,15 +299,14 @@ async function startWork(): Promise<void> {
     </div>
 
     <div class="actions">
-      <button
-        v-if="!compiled"
-        type="button"
-        :class="{ primary: recording }"
-        :disabled="transcribing || controller.busy"
-        @click="toggleVoice"
-      >
-        {{ recording ? '说完了' : '开始说话' }}
-      </button>
+      <div v-if="!compiled" class="record-controls">
+        <ArtworkButton v-if="!recording" :image="recordStart" bounds="768 566 385 140" label="开始录音" :disabled="voiceBusy" @click="toggleVoice" />
+        <template v-else>
+          <ArtworkButton :image="paused ? recordResume : recordPause" bounds="604 540 233 219" :label="paused ? '继续录音' : '暂停录音'" @click="pauseVoice" />
+          <ArtworkButton :image="recordDone" bounds="844 540 233 219" label="完成录音" @click="toggleVoice" />
+          <ArtworkButton :image="recordReset" bounds="1090 540 233 219" label="重新录音" @click="restartVoice" />
+        </template>
+      </div>
       <button
         v-if="!compiled"
         type="button"
@@ -309,21 +337,21 @@ async function startWork(): Promise<void> {
         v-if="compiled && controller.candidateRef"
         type="button"
         class="primary"
-        :disabled="controller.busy"
+        :disabled="controller.busy || placing"
         @click="startWork"
       >
-        去编辑器装饰
+        {{ useCandidate ? '使用这张图并开始拆分' : '去编辑器装饰' }}
       </button>
       <button
         v-if="compiled"
         type="button"
         class="ghost"
-        :disabled="controller.busy"
+        :disabled="controller.busy || placing"
         @click="controller.redrawCandidate()"
       >
         再画一张
       </button>
-      <button v-if="compiled" type="button" class="ghost" :disabled="controller.busy" @click="resetAll">
+      <button v-if="compiled" type="button" class="ghost" :disabled="controller.busy || placing" @click="resetAll">
         重新说
       </button>
     </div>
@@ -331,6 +359,9 @@ async function startWork(): Promise<void> {
 </template>
 
 <style scoped>
+.record-controls { display: flex; gap: 8px; align-items: center; }
+.record-controls button { width: 74px; height: 68px; }
+.record-controls button:only-child { width: 150px; height: 55px; }
 .create-page {
   display: flex;
   flex-direction: column;

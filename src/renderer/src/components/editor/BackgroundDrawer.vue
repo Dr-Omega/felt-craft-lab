@@ -27,7 +27,8 @@ function unlocked(asset: AssetRecord): boolean {
 </script>
 
 <template>
-  <aside class="background-drawer" :class="{ 'is-open': open }" aria-label="背景选择">
+  <aside class="background-drawer" :class="{ 'is-open': open }" :inert="!open" :aria-hidden="!open" aria-label="背景选择">
+    <button type="button" aria-label="关闭背景选择" @click="emit('close')">关闭</button>
     <div class="drawer-title">选个背景</div>
     <div class="background-list">
       <button

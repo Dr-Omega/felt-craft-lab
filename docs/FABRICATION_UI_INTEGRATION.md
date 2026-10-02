@@ -206,3 +206,68 @@ in `../fabrication-ui-evidence/real-canvas-recolor-05/checks.json` with screensh
 0 changed outside it. Both other actual layer images remained byte-identical.
 Full-scene undo, redo and process-restart restoration matched pixel-for-pixel.
 Desktop 1440×900 and compact 960×640 were checked; no page errors.
+
+## Creation Steps 1–2 wiring (2026-10-02)
+
+Scope is the user's red box, not story cards or manufacturing. Supplied PNG
+controls are mapped in `assets/ui/creation/README.md`.
+
+| Canvas interaction | Implementation / boundary |
+| --- | --- |
+| 添加图片 → 直接上传图片 | JPEG/PNG decode, 10MB and dimension checks; original file untouched; JPEG serialized to PNG at original dimensions. Confirmation persists a personal element in the CURRENT scene. |
+| 添加图片 → 语音输入生图 | Existing CreationIntent and Main AI gateway reused in a floating dialog; supplied start/pause/resume/done/reset recording artwork. Text fallback retained. Accepted candidate becomes a personal element without navigating away or replacing the scene. |
+| Confirm new image | Automatically opens the real element decomposition workflow; embedded alpha is reused, opaque input requests configured BiRefNet General. No sample layers on failure. |
+| 背景 / 素材 | Existing catalog and access checks retained; background drawer positioning corrected for DrawingFrame and hidden drawer removed from keyboard navigation. |
+| Double click → 编辑 | Whole-layer wheel/RGB/palette recolor on original Canvas, not an isolated recolor page. A new decomposition can also be applied without changing a color. |
+| 保存 | Existing project save/reopen; object ordering and element-local layer ordering retained. |
+
+Microphone permission cancellation/unmount releases the late stream. Pause and
+resume use the same recording; record session stops after 60 seconds. Candidate
+insertion errors remain visible and retryable; an unconfigured AI service is NOT
+substituted by an example picture. New-image intake is disabled during layer editing.
+
+Verification commands (from this worktree):
+
+```text
+npm run typecheck
+npm run build
+npx vitest run --reporter=json --outputFile=../fabrication-ui-evidence/step12-full-tests.json
+node scripts/check-canvas-intake.cjs <real-transparent-source.png> <new-evidence-directory> [copy-of-previous-test-profile]
+node scripts/check-canvas-upload-errors.cjs <new-evidence-directory>
+node scripts/check-real-canvas-recolor.cjs <real-completed-job-directory> <new-evidence-directory>
+```
+
+Electron catalog tests use the existing test-only
+`VITE_ACCEPTANCE_UNLOCK_ALL_ASSETS=true` build in isolated profiles; ordinary
+builds leave access rules unchanged. `check-canvas-intake` configures the existing
+local algorithm Python environment for **actual** decomposition. Its ASR and
+image endpoint are a **loopback HTTP fixture**, not mocked fabrication IPC and
+not a live cloud generation result. Main authentication, response validation,
+candidate acceptance, file ingestion and scene insertion are actually exercised.
+The optional previous-profile argument only avoids repeating the completed
+upload leg; a newly accepted image still goes through real decomposition.
+
+Evidence (outside source tree):
+- `../fabrication-ui-evidence/step12-canvas-02/`: real upload, background/sticker,
+  three real layers, in-scene recolor/save/restart, voice transport/candidate
+  preview/cancel, desktop and compact screenshots.
+- `../fabrication-ui-evidence/step12-voice-03/`: reuses that saved scene; recorded
+  voice and accepted HTTP fixture candidate inserted into the original scene,
+  actual downstream decomposition/application/save/reopen.
+- `../fabrication-ui-evidence/step12-errors-final/`: ordinary build, damaged image rejection,
+  JPEG 80×60 decode without resizing, unavailable ASR, missing runtime rejected
+  with zero fake layers.
+- `../fabrication-ui-evidence/step12-recolor-regression-01/`: actual three-layer
+  recolor regression; unchanged other layers, exact undo/redo/restart scene parity.
+
+Unit results: 450 discovered / 449 passed / 1 failed / 0 skipped. The only failure
+is the independently reproduced pre-existing concurrent-sticker test documented
+above. All 16 newly added image-boundary/recording lifetime tests passed.
+
+Remaining deployment prerequisite: the real AI Gateway at the configured URL
+was not running in this environment. Real microphone-to-cloud ASR and real
+image-provider quality are **not verified** by the fixture. Configure/start the
+existing Gateway and its provider credentials before live use; never put keys
+in renderer code. Python/BiRefNet distribution remains the existing development
+integration boundary, not a packaged production implementation. This change
+does not modify any frozen algorithms or claim a manufacturing/visual PASS.
