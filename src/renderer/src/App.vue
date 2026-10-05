@@ -5,7 +5,7 @@ import {
   getAppView,
   getStoryCardTestContext,
   openLibrary,
-  openLearningZoneTest,
+  openLearningZone,
   openStatus,
   openStoryCardTest,
   subscribeAppNav,
@@ -15,7 +15,7 @@ import LibraryPage from './pages/LibraryPage.vue'
 import EditorPage from './pages/EditorPage.vue'
 import StatusPage from './pages/StatusPage.vue'
 import StoryCardTestPage from './pages/StoryCardTestPage.vue'
-import LearningZoneTestPage from './pages/LearningZoneTestPage.vue'
+import LearningZonePage from './pages/LearningZonePage.vue'
 
 const view = ref<AppView>(getAppView())
 const storyCardTestContext = ref(getStoryCardTestContext())
@@ -37,15 +37,15 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="shell">
-    <header class="topbar">
+  <div class="shell" :class="{ 'learning-zone-shell': view === 'learning-zone' }">
+    <header v-if="view !== 'learning-zone'" class="topbar">
       <div>
         <p class="eyebrow">Material Library · UI Workflows</p>
         <h1>{{ APP_DISPLAY_NAME }}</h1>
       </div>
       <nav class="nav">
         <button type="button" :class="{ active: view === 'library' }" @click="openLibrary">素材库</button>
-        <button type="button" :class="{ active: view === 'learning-zone-test' }" @click="openLearningZoneTest">学习区测试</button>
+        <button type="button" :class="{ active: view === 'learning-zone' }" @click="openLearningZone">学习区</button>
         <button type="button" :class="{ active: view === 'story-card-test' }" @click="() => openStoryCardTest()">故事卡测试</button>
         <button type="button" :class="{ active: view === 'status' }" @click="openStatus">运行状态</button>
       </nav>
@@ -54,7 +54,7 @@ onUnmounted(() => {
     <main class="content">
       <LibraryPage v-if="view === 'library'" />
       <EditorPage v-else-if="view === 'editor'" />
-      <LearningZoneTestPage v-else-if="view === 'learning-zone-test'" />
+      <LearningZonePage v-else-if="view === 'learning-zone'" />
       <StoryCardTestPage v-else-if="view === 'story-card-test'" :work-context="storyCardTestContext" />
       <StatusPage v-else />
     </main>
@@ -129,6 +129,12 @@ button.active {
   max-width: 1180px;
   margin: 0 auto;
   padding: 28px 20px 48px;
+}
+
+.learning-zone-shell {
+  max-width: none;
+  margin: 0;
+  padding: 0;
 }
 
 .topbar {
