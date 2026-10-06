@@ -81,8 +81,8 @@ const THEME_DEFINITIONS = [
 ];
 
 const MID_AUTUMN_LAKE_PLACEMENTS = {
-  sticker_moon_001: placement({ x: 145, y: 90, width: 200, height: 200, zIndex: 1 }, { minX: 185, minY: 110, maxX: 305, maxY: 230 }, 24),
-  sticker_rabbit_001: placement({ x: 168, y: 5, width: 155, height: 205, zIndex: 2 }, { minX: 205, minY: 95, maxX: 285, maxY: 225 }, 18),
+  sticker_moon_001: placement({ x: 100, y: 70, width: 200, height: 200, zIndex: 1 }, { minX: 140, minY: 90, maxX: 260, maxY: 210 }, 24),
+  sticker_rabbit_001: placement({ x: 350, y: 90, width: 155, height: 205, zIndex: 2 }, { minX: 388, minY: 140, maxX: 468, maxY: 270 }, 18),
   sticker_mooncake_001: placement({ x: 550, y: 390, width: 130, height: 124, zIndex: 1 }, { minX: 555, minY: 405, maxX: 675, maxY: 505 }, 24),
 };
 
@@ -95,8 +95,8 @@ const BACKGROUND_LAYOUTS = {
   "dragon-boat-race-001": [[0.2, 0.67], [0.8, 0.66], [0.5, 0.74]],
   "lantern-street-001": [[0.5, 0.74], [0.76, 0.68]],
   "lantern-river-001": [[0.3, 0.68], [0.7, 0.72]],
-  "mid-autumn-osmanthus-001": [[0.39, 0.24], [0.68, 0.55], [0.78, 0.76]],
-  "plants-pastoral-courtyard-001": [[0.12, 0.76], [0.2, 0.35], [0.32, 0.27], [0.84, 0.74], [0.5, 0.82], [0.42, 0.33], [0.2, 0.68]],
+  "mid-autumn-osmanthus-001": [[0.39, 0.24], [0.68, 0.55], [0.82, 0.8]],
+  "plants-pastoral-courtyard-001": [[0.12, 0.76], [0.2, 0.35], [0.32, 0.27], [0.84, 0.74], [0.5, 0.82], [0.42, 0.33], [0.32, 0.6]],
   "qingming-kite-meadow-001": [[0.72, 0.23], [0.16, 0.73], [0.52, 0.78], [0.86, 0.69], [0.34, 0.3]],
   "qingming-willow-riverbank-001": [[0.75, 0.28], [0.17, 0.72], [0.5, 0.72], [0.82, 0.69], [0.34, 0.33]],
   "spring-meadow-001": [[0.3, 0.7], [0.72, 0.65]],

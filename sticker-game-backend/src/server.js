@@ -16,7 +16,6 @@ const CELEBRATION_DIR =
   process.env.CELEBRATION_DIR
     ? resolve(process.env.CELEBRATION_DIR)
     : resolve(PROJECT_DIR, "celebrations");
-const PUBLIC_DIR = resolve(PROJECT_DIR, "public");
 const gameService = new GameService();
 
 const server = createServer(async (request, response) => {
@@ -29,16 +28,6 @@ const server = createServer(async (request, response) => {
   try {
     const url = new URL(request.url, `http://${request.headers.host ?? HOST}`);
     const path = decodeURIComponent(url.pathname);
-
-    if (request.method === "GET" && path === "/") {
-      serveFile(response, PUBLIC_DIR, "index.html");
-      return;
-    }
-
-    if (request.method === "GET" && path.startsWith("/app/")) {
-      serveFile(response, PUBLIC_DIR, path.slice("/app/".length));
-      return;
-    }
 
     if (request.method === "GET" && path === "/health") {
       sendJson(response, 200, { status: "ok" });

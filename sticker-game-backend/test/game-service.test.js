@@ -64,8 +64,8 @@ test("chooses and persists one celebration when the final sticker lands", () => 
   });
   service.placeSticker("session-001", {
     stickerId: "sticker_rabbit_001",
-    x: 245,
-    y: 160,
+    x: 428,
+    y: 205,
   });
   const finished = service.placeSticker("session-001", {
     stickerId: "sticker_mooncake_001",

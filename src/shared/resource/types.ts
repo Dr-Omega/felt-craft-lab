@@ -18,6 +18,8 @@ export interface ResourceRoots {
    */
   audioDynamicRoot: string
   previewRoot: string
+  /** Packaged learning-zone completion videos. */
+  celebrationRoot?: string
 }
 
 export type FeltResourceResolveSuccess = {

@@ -6,7 +6,7 @@ import type { FeltResourceResolveResult, ResourceRoots } from './types'
 
 function rootForKind(
   roots: ResourceRoots,
-  kind: 'material' | 'audio' | 'preview',
+  kind: 'material' | 'audio' | 'preview' | 'celebration',
   relativePath: string
 ): string {
   if (kind === 'material') return roots.materialRoot
@@ -15,6 +15,7 @@ function rootForKind(
     if (relativePath.startsWith('dynamic/')) return roots.audioDynamicRoot
     return roots.audioRoot
   }
+  if (kind === 'celebration') return roots.celebrationRoot ?? roots.previewRoot
   return roots.previewRoot
 }
 

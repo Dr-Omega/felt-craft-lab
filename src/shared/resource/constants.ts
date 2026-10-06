@@ -6,7 +6,7 @@ export const FELT_RESOURCE_PROTOCOL = 'felt-resource:' as const
 /** URL scheme name without trailing colon (Electron protocol.register*). */
 export const FELT_RESOURCE_SCHEME = 'felt-resource' as const
 
-export const FELT_RESOURCE_KINDS = ['material', 'audio', 'preview'] as const
+export const FELT_RESOURCE_KINDS = ['material', 'audio', 'preview', 'celebration'] as const
 export type FeltResourceKind = (typeof FELT_RESOURCE_KINDS)[number]
 
 /**

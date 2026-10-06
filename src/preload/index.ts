@@ -145,6 +145,10 @@ const electronAPI = {
       voicePurpose?: string
       provider?: string
     }): Promise<unknown> => ipcRenderer.invoke(IPC_CHANNELS.AI_TTS_SYNTHESIZE, input)
+  },
+  learningZone: {
+    request: (path: string, init?: { method?: 'GET' | 'POST'; body?: string }): Promise<unknown> =>
+      ipcRenderer.invoke(IPC_CHANNELS.LEARNING_ZONE_REQUEST, { path, ...init })
   }
 }
 

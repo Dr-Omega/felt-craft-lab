@@ -11,7 +11,8 @@ export interface EditorLaunchContext {
   projectId?: string
 }
 
-let currentView: AppView = 'library'
+const initialView = new URLSearchParams(window.location.search).get('view')
+let currentView: AppView = initialView === 'learning-zone' ? 'learning-zone' : 'library'
 let launch: EditorLaunchContext | undefined
 let storyCardTestContext: StoryCardWorkContext | undefined
 const listeners = new Set<() => void>()

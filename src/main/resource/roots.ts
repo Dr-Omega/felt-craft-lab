@@ -31,6 +31,11 @@ export function createResourceRoots(): ResourceRoots {
     join(appGenerated, 'audio'),
     join(cwdGenerated, 'audio')
   )
+  const celebrationRoot = firstExisting(
+    join(process.resourcesPath, 'sticker-game-backend', 'celebrations'),
+    join(app.getAppPath(), 'sticker-game-backend', 'celebrations'),
+    join(process.cwd(), 'sticker-game-backend', 'celebrations')
+  )
 
   const audioDynamicRoot = join(app.getPath('userData'), 'audio')
   mkdirSync(join(audioDynamicRoot, 'dynamic'), { recursive: true })
@@ -38,5 +43,5 @@ export function createResourceRoots(): ResourceRoots {
   const previewRoot = join(app.getPath('userData'), 'previews')
   mkdirSync(previewRoot, { recursive: true })
 
-  return { materialRoot, audioRoot, audioDynamicRoot, previewRoot }
+  return { materialRoot, audioRoot, audioDynamicRoot, previewRoot, celebrationRoot }
 }

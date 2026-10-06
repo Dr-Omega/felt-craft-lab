@@ -1,7 +1,17 @@
 <script setup lang="ts">
-import { computed, ref, type CSSProperties } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch, type CSSProperties } from 'vue'
 import { CATALOG_ASSETS } from '../catalog/ywn-catalog'
 import { openLibrary } from '../app-nav'
+import {
+  createGameSession,
+  gameResourceUrl,
+  LearningZoneApiError,
+  loadUnlockedThemeIds,
+  saveUnlockedThemeId,
+  submitPlacement,
+  type GameSession,
+  type GameSticker
+} from '../learning-zone/game-client'
 
 type Topic = { id: string; name: string; themeId: string }
 type Unit = { id: string; order: number; name: string; topics: Topic[] }
@@ -37,10 +47,38 @@ const units: Unit[] = [
 
 const selectedUnit = ref(units[0])
 const selectedTopic = ref(units[0].topics[0])
-const reviewUnlocked = new URLSearchParams(window.location.search).get('learning-preview') === 'unlocked'
+const previewMode = new URLSearchParams(window.location.search).get('learning-preview')
+const reviewUnlocked = previewMode === 'unlocked'
+const reviewLocked = previewMode === 'locked'
+const unlockedThemeIds = ref(loadUnlockedThemeIds())
+const reviewCompletedThemeIds = ref(new Set<string>())
+const gameSession = ref<GameSession | null>(null)
+const loadingGame = ref(false)
+const gameError = ref('')
+const activeStickerId = ref<string | null>(null)
+const completedStickerIds = ref(new Set<string>())
+const narratedStickerIds = ref(new Set<string>())
+const placedStickerIds = ref(new Set<string>())
+const celebrationUrl = ref('')
+const pendingCelebrationUrl = ref('')
+const finalPlacementConfirmed = ref(false)
+const narrationRetryStickerId = ref<string | null>(null)
+let activeAudio: HTMLAudioElement | null = null
 const selectedAssets = computed(() => CATALOG_ASSETS.filter((asset) => asset.themeId === selectedTopic.value.themeId))
 const background = computed(() => selectedAssets.value.find((asset) => asset.type === 'background'))
 const stickers = computed(() => selectedAssets.value.filter((asset) => asset.type === 'sticker'))
+const isUnlocked = computed(() => reviewUnlocked || reviewCompletedThemeIds.value.has(selectedTopic.value.themeId) || (!reviewLocked && unlockedThemeIds.value.includes(selectedTopic.value.themeId)))
+const levelStickers = computed(() => gameSession.value?.level.stickers ?? [])
+const visibleStickers = computed(() => levelStickers.value.length ? levelStickers.value : stickers.value.map((asset) => ({
+  stickerId: asset.assetId,
+  name: asset.nameZh,
+  stickerAssetUrl: previewUrl(asset.thumbnailUrl ?? asset.imageUrl),
+  narrationAudio: [],
+  targetArea: { minX: 0, minY: 0, maxX: 0, maxY: 0 },
+  tolerance: 0,
+  placeholder: { x: 0, y: 0, width: 0, height: 0 },
+  isCompleted: false
+} satisfies GameSticker)))
 const unlockedAssets = computed(() => [
   ...selectedAssets.value.filter((asset) => asset.type === 'background'),
   ...selectedAssets.value.filter((asset) => asset.type === 'sticker')
@@ -111,6 +149,178 @@ function selectUnit(unit: Unit): void {
 function selectTopic(topic: Topic): void {
   selectedTopic.value = topic
 }
+
+function isCurrentSticker(stickerId: string): boolean {
+  if (!gameSession.value || isUnlocked.value) return false
+  const next = levelStickers.value.find((item) => !completedStickerIds.value.has(item.stickerId))
+  return next?.stickerId === stickerId
+}
+
+function isDraggable(sticker: GameSticker): boolean {
+  return Boolean(isCurrentSticker(sticker.stickerId) && !placedStickerIds.value.has(sticker.stickerId))
+}
+
+function stopActiveAudio(): void {
+  activeAudio?.pause()
+  activeAudio = null
+}
+
+async function playAudio(url: string): Promise<void> {
+  await new Promise<void>((resolve, reject) => {
+    const audio = new Audio(gameResourceUrl(url))
+    activeAudio = audio
+    audio.onended = () => resolve()
+    audio.onerror = () => reject(new Error('音频播放失败，请重试。'))
+    void audio.play().catch(reject)
+  })
+}
+
+async function narrateSticker(sticker: GameSticker): Promise<void> {
+  if (narratedStickerIds.value.has(sticker.stickerId) || activeStickerId.value === sticker.stickerId) return
+  activeStickerId.value = sticker.stickerId
+  gameError.value = ''
+  try {
+    for (const audio of sticker.narrationAudio) await playAudio(audio.assetUrl)
+    narratedStickerIds.value = new Set([...narratedStickerIds.value, sticker.stickerId])
+    narrationRetryStickerId.value = null
+    finishStickerIfReady(sticker.stickerId)
+  } catch (error) {
+    gameError.value = error instanceof Error ? error.message : '音频播放失败，请重试。'
+    narrationRetryStickerId.value = sticker.stickerId
+  } finally {
+    activeStickerId.value = null
+    activeAudio = null
+  }
+}
+
+function retryNarration(): void {
+  const sticker = levelStickers.value.find((item) => item.stickerId === narrationRetryStickerId.value)
+  if (sticker) void narrateSticker(sticker)
+}
+
+function finishStickerIfReady(stickerId: string): void {
+  if (!placedStickerIds.value.has(stickerId) || !narratedStickerIds.value.has(stickerId)) return
+  completedStickerIds.value = new Set([...completedStickerIds.value, stickerId])
+  if (finalPlacementConfirmed.value && levelStickers.value.every((item) => completedStickerIds.value.has(item.stickerId))) {
+    if (celebrationUrl.value) return
+    if (!pendingCelebrationUrl.value) {
+      gameError.value = '鼓励内容暂时不可播放，请重新开始本主题后再试。'
+      return
+    }
+    celebrationUrl.value = pendingCelebrationUrl.value
+  }
+}
+
+function completeThemeUnlock(): void {
+  saveUnlockedThemeId(selectedTopic.value.themeId)
+  unlockedThemeIds.value = loadUnlockedThemeIds()
+  reviewCompletedThemeIds.value = new Set([...reviewCompletedThemeIds.value, selectedTopic.value.themeId])
+}
+
+function handleCelebrationError(): void {
+  celebrationUrl.value = ''
+  gameError.value = '鼓励视频暂时无法播放，请重新开始本主题后再试。'
+}
+
+function completeAfterCelebration(): void {
+  celebrationUrl.value = ''
+  pendingCelebrationUrl.value = ''
+  completeThemeUnlock()
+}
+
+async function startDrag(event: DragEvent, sticker: GameSticker): Promise<void> {
+  if (!isDraggable(sticker)) {
+    event.preventDefault()
+    return
+  }
+  beginStickerNarration(sticker)
+  event.dataTransfer?.setData('text/plain', sticker.stickerId)
+}
+
+function beginStickerNarration(sticker: GameSticker): void {
+  if (!isDraggable(sticker) || activeStickerId.value === sticker.stickerId) return
+  // A new drag is a new listening attempt. This prevents a sticker that was
+  // previously dropped in the wrong place from unlocking immediately on retry.
+  narratedStickerIds.value = new Set(
+    [...narratedStickerIds.value].filter((stickerId) => stickerId !== sticker.stickerId)
+  )
+  void narrateSticker(sticker)
+}
+
+async function dropSticker(event: DragEvent): Promise<void> {
+  event.preventDefault()
+  const stickerId = event.dataTransfer?.getData('text/plain')
+  const session = gameSession.value
+  if (!stickerId || !session || !isCurrentSticker(stickerId)) return
+  const bounds = event.currentTarget instanceof HTMLElement ? event.currentTarget.getBoundingClientRect() : null
+  if (!bounds) return
+  const canvas = session.level.canvasBounds
+  const x = (event.clientX - bounds.left) / bounds.width * (canvas.maxX - canvas.minX) + canvas.minX
+  const y = (event.clientY - bounds.top) / bounds.height * (canvas.maxY - canvas.minY) + canvas.minY
+  try {
+    const result = await submitPlacement(session.playSessionId, stickerId, x, y)
+    if (!result.success) {
+      gameError.value = '还没有放到正确的位置，再试一次。'
+      return
+    }
+    gameError.value = ''
+    placedStickerIds.value = new Set([...placedStickerIds.value, stickerId])
+    finishStickerIfReady(stickerId)
+    if (result.allFinished && result.justFinished) {
+      finalPlacementConfirmed.value = true
+      pendingCelebrationUrl.value = result.celebration ? gameResourceUrl(result.celebration.assetUrl) : ''
+      finishStickerIfReady(stickerId)
+    }
+  } catch (error) {
+    if (error instanceof LearningZoneApiError && error.code === 'SESSION_NOT_FOUND') {
+      gameError.value = '游戏进度已失效，正在为你重新开始。'
+      void loadGame()
+      return
+    }
+    gameError.value = error instanceof Error ? error.message : '提交贴纸失败，请重试。'
+  }
+}
+
+async function loadGame(): Promise<void> {
+  if (isUnlocked.value) return
+  loadingGame.value = true
+  gameError.value = ''
+  gameSession.value = null
+  completedStickerIds.value = new Set()
+  narratedStickerIds.value = new Set()
+  placedStickerIds.value = new Set()
+  celebrationUrl.value = ''
+  pendingCelebrationUrl.value = ''
+  finalPlacementConfirmed.value = false
+  narrationRetryStickerId.value = null
+  try {
+    gameSession.value = await createGameSession(selectedTopic.value.themeId)
+  } catch (error) {
+    gameError.value = error instanceof Error ? error.message : '解锁任务加载失败，请重试。'
+  } finally {
+    loadingGame.value = false
+  }
+}
+
+function playCatalogAudio(urls: Array<string | undefined>): void {
+  stopActiveAudio()
+  const [first, ...rest] = urls.filter((url): url is string => Boolean(url))
+  if (!first) return
+  const playNext = (url: string): void => {
+    const audio = new Audio(url)
+    activeAudio = audio
+    audio.onended = () => {
+      const next = rest.shift()
+      if (next) playNext(next)
+    }
+    void audio.play()
+  }
+  playNext(first)
+}
+
+watch(selectedTopic, () => { void loadGame() })
+onMounted(() => { void loadGame() })
+onBeforeUnmount(stopActiveAudio)
 </script>
 
 <template>
@@ -131,20 +341,24 @@ function selectTopic(topic: Topic): void {
       </button>
     </div>
 
-    <template v-if="!reviewUnlocked">
+    <template v-if="!isUnlocked">
       <img class="layer" :src="imageFor('素材展示页05.png')" alt="" :style="unlockFrameStyle()">
       <section class="unlock-panel" :style="unlockPanelStyle()" :aria-label="`${selectedTopic.name}待解锁内容`">
       <div class="unlock-heading"><span class="status-label">待解锁</span><h2>{{ selectedTopic.name }}</h2></div>
       <p class="unlock-copy">拖动每张贴纸到背景中的虚线位置，即可解锁本主题。</p>
-      <div class="background-preview" aria-label="主题背景目标区">
-        <img v-if="background" :src="previewUrl(background.thumbnailUrl)" :alt="background.nameZh">
-        <span v-for="sticker in stickers" :key="sticker.assetId" class="target-dot" :style="{ left: `${20 + stickers.indexOf(sticker) * 28}%` }" aria-hidden="true"></span>
+      <div class="background-preview" aria-label="主题背景目标区" @dragover.prevent @drop="dropSticker">
+        <img v-if="gameSession" :src="gameResourceUrl(gameSession.level.backgroundAssetUrl)" :alt="selectedTopic.name">
+        <img v-else-if="background" :src="previewUrl(background.thumbnailUrl ?? background.imageUrl)" :alt="background.nameZh">
+        <span v-for="sticker in levelStickers.filter((item) => !placedStickerIds.has(item.stickerId))" :key="sticker.stickerId" class="target-shadow" :style="{ left: `${(sticker.placeholder.x + sticker.placeholder.width / 2) / gameSession!.level.canvasBounds.maxX * 100}%`, top: `${(sticker.placeholder.y + sticker.placeholder.height / 2) / gameSession!.level.canvasBounds.maxY * 100}%`, width: `${sticker.placeholder.width / gameSession!.level.canvasBounds.maxX * 100}%`, height: `${sticker.placeholder.height / gameSession!.level.canvasBounds.maxY * 100}%` }" aria-hidden="true"><img :src="gameResourceUrl(sticker.placeholder.outlineAssetUrl ?? sticker.stickerAssetUrl)" alt=""></span>
+        <span v-for="sticker in visibleStickers.filter((item) => placedStickerIds.has(item.stickerId))" :key="`${sticker.stickerId}-placed`" class="placed-sticker" :style="{ left: `${(sticker.placeholder.x + sticker.placeholder.width / 2) / gameSession!.level.canvasBounds.maxX * 100}%`, top: `${(sticker.placeholder.y + sticker.placeholder.height / 2) / gameSession!.level.canvasBounds.maxY * 100}%` }"><img :src="gameResourceUrl(sticker.stickerAssetUrl)" :alt="sticker.name"></span>
       </div>
       <section class="sticker-tray" aria-label="待拖拽贴纸">
-        <p>待放置贴纸</p>
+        <p>待放置贴纸 <span v-if="loadingGame">加载中…</span></p>
         <div class="sticker-list">
-          <article v-for="sticker in stickers" :key="sticker.assetId" class="sticker-card" draggable="true"><img :src="previewUrl(sticker.thumbnailUrl)" :alt="sticker.nameZh"><span>{{ sticker.nameZh }}</span></article>
+          <article v-for="sticker in visibleStickers.filter((item) => !placedStickerIds.has(item.stickerId))" :key="sticker.stickerId" class="sticker-card" :class="{ locked: !isDraggable(sticker) }" :draggable="isDraggable(sticker)" @pointerdown="beginStickerNarration(sticker)" @dragstart="startDrag($event, sticker)"><img :src="gameSession ? gameResourceUrl(sticker.stickerAssetUrl) : previewUrl(sticker.stickerAssetUrl)" :alt="sticker.name"><span>{{ sticker.name }}</span></article>
         </div>
+        <p v-if="gameError" class="game-message">{{ gameError }}</p>
+        <button v-if="narrationRetryStickerId" class="retry-audio-button" type="button" @click="retryNarration">重播当前贴纸音频</button>
       </section>
       </section>
     </template>
@@ -153,17 +367,19 @@ function selectTopic(topic: Topic): void {
       <p class="unlocked-copy">背景和主题贴纸均已收集，可随时播放名称与介绍音频。</p>
       <div class="material-list">
         <article v-for="asset in unlockedAssets" :key="asset.assetId" class="material-card" :class="{ 'background-card': asset.type === 'background' }">
-          <img :src="previewUrl(asset.thumbnailUrl)" :alt="asset.nameZh">
+          <img :src="previewUrl(asset.thumbnailUrl ?? asset.imageUrl)" :alt="asset.nameZh">
           <div>
-            <div class="material-title"><h3>{{ asset.nameZh }} <span>/ {{ asset.nameEn }}</span></h3><button class="audio-button name-audio-button" type="button" :aria-label="`播放${asset.nameZh}的中英文名称`"><img :src="imageFor('audio-button.png')" alt="">中英文名称</button></div>
+            <div class="material-title"><h3>{{ asset.nameZh }} <span>/ {{ asset.nameEn }}</span></h3><button class="audio-button name-audio-button" type="button" :aria-label="`播放${asset.nameZh}的中英文名称`" @click="playCatalogAudio([asset.audio.nameZhUrl, asset.audio.nameEnUrl])"><img :src="imageFor('audio-button.png')" alt="">中英文名称</button></div>
             <p>{{ asset.introZh }}</p>
             <div class="audio-actions" :aria-label="`${asset.nameZh}的音频`">
-              <button class="audio-button" type="button" :aria-label="`播放${asset.nameZh}的中文介绍`"><img :src="imageFor('audio-button.png')" alt="">中文介绍</button>
+              <button class="audio-button" type="button" :aria-label="`播放${asset.nameZh}的中文介绍`" @click="playCatalogAudio([asset.audio.introZhUrl])"><img :src="imageFor('audio-button.png')" alt="">中文介绍</button>
             </div>
           </div>
         </article>
       </div>
     </section>
+
+    <video v-if="celebrationUrl" class="celebration-video" :src="celebrationUrl" autoplay @ended="completeAfterCelebration" @error="handleCelebrationError"></video>
 
     <img class="layer" :src="imageFor('learning-border.png')" alt="" :style="box(0, 0, 1920, 1080, 70)">
     <button class="back-button" type="button" aria-label="返回素材库" :style="box(39, 35, 208, 112, 100)" @click="openLibrary"><img :src="imageFor('back-button.png')" alt=""></button>
@@ -185,8 +401,10 @@ function selectTopic(topic: Topic): void {
 .unit-button.selected > span, .unit-button.selected > strong, .topic-button.selected > strong { color: #a53c14; }
 .unit-button.selected, .topic-button.selected { filter: drop-shadow(0 0 8px rgba(232, 159, 41, 0.58)); }
 .unlock-panel { display: grid; grid-template-rows: auto auto 1fr auto; gap: 7px; padding: clamp(7px, .95vw, 18px) clamp(10px, 1.35vw, 26px); }.unlock-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; transform: translateY(-20px); }.unlock-panel h2, .unlock-copy, .status-label { margin: 0; }.status-label { color: #a53c14; font-weight: 800; font-size: clamp(11px, 1.2vw, 22px); }.unlock-panel h2 { font-size: clamp(20px, 2vw, 38px); }.unlock-copy { font-size: clamp(10px, 1.1vw, 21px); line-height: 1.4; transform: translateY(-20px); }
-.background-preview { position: relative; width: calc(100% + 40px); aspect-ratio: 902 / 516; margin-left: -20px; overflow: hidden; border: 3px dashed #a9632c; border-radius: 20px; background: #fff7d7; transform: translateY(-14px); }.background-preview img { width: 100%; height: 100%; object-fit: cover; }.target-dot { position: absolute; top: 52%; width: 34px; height: 34px; border: 3px dashed #8a3b1c; border-radius: 50%; background: rgba(255, 247, 217, .72); transform: translate(-50%, -50%); }
-.sticker-tray { position: absolute; top: 270px; left: -12px; width: calc(100% + 52px); min-width: 0; }.sticker-tray > p { margin: 0 0 4px; font-weight: 800; font-size: clamp(12px, 1.3vw, 24px); }.sticker-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(4px, .65vw, 12px); overflow: visible; }.sticker-card { min-width: 0; text-align: center; font-weight: 700; font-size: clamp(12px, 1.18vw, 22px); cursor: grab; }.sticker-card img { display: block; width: clamp(38px, 4.5vw, 68px); height: clamp(38px, 4.5vw, 68px); margin: 0 auto 2px; object-fit: contain; }
+.background-preview { position: relative; width: calc(100% + 40px); aspect-ratio: 902 / 516; margin-left: -20px; overflow: hidden; border: 3px dashed #a9632c; border-radius: 20px; background: #fff7d7; transform: translateY(-14px); }.background-preview > img { width: 100%; height: 100%; object-fit: cover; }.target-shadow { position: absolute; display: block; transform: translate(-50%, -50%); pointer-events: none; }.target-shadow::after { position: absolute; inset: 4%; box-sizing: border-box; border: 3px dashed rgba(112, 57, 28, .9); border-radius: 50%; content: ''; }.target-shadow img { width: 100%; height: 100%; object-fit: contain; filter: grayscale(1) brightness(.35); opacity: .42; }.placed-sticker { position: absolute; width: 24%; height: 24%; transform: translate(-50%, -50%); pointer-events: none; }.placed-sticker img { width: 100%; height: 100%; object-fit: contain; }
+.sticker-tray { position: absolute; top: 330px; left: -12px; width: calc(100% + 52px); min-width: 0; }.sticker-tray > p { margin: 0 0 4px; font-weight: 800; font-size: clamp(12px, 1.3vw, 24px); }.sticker-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(4px, .65vw, 12px); overflow: visible; }.sticker-card { min-width: 0; text-align: center; font-weight: 700; font-size: clamp(12px, 1.18vw, 22px); cursor: grab; }.sticker-card.locked { opacity: .45; cursor: not-allowed; }.sticker-card img { display: block; width: clamp(38px, 4.5vw, 68px); height: clamp(38px, 4.5vw, 68px); margin: 0 auto 2px; object-fit: contain; }.game-message { color: #a53c14; }
+.retry-audio-button { padding: 3px 8px; border: 1px solid #a45e25; border-radius: 8px; background: #fff9de; color: #6c210e; font: inherit; font-weight: 800; cursor: pointer; }
 .unlocked-panel { display: grid; grid-template-rows: auto auto 1fr; gap: 9px; padding: 0; background: transparent; }.unlocked-panel header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }.unlocked-panel h2, .unlocked-panel h3, .unlocked-panel p { margin: 0; }.unlocked-panel h2 { font-size: clamp(16px, 1.65vw, 32px); }.unlocked-copy { font-size: clamp(8px, .85vw, 16px); line-height: 1.5; }.material-list { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; padding: 2px 6px 2px 2px; }.material-card { display: flex; flex: 0 0 auto; align-items: flex-start; gap: 10px; width: 100%; aspect-ratio: auto; padding: 10px; border: 3px solid #a45e25; border-radius: 22px; background: #fff9de; }.material-card > div { min-width: 0; flex: 1 1 auto; }.material-card > img { flex: 0 0 auto; width: clamp(58px, 6.5vw, 110px); height: 126px; object-fit: contain; border-radius: 14px; background: #f1e0ae; }.background-card { flex-direction: column; }.background-card > img { width: 100%; height: 140px; }.material-title { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }.material-card h3 { font-size: clamp(12px, 1.3vw, 24px); }.material-card h3 span { font-size: .68em; font-weight: 600; }.material-card p { margin-top: 4px; color: #71331d; font-size: clamp(8px, .8vw, 15px); line-height: 1.4; white-space: pre-line; }.audio-actions { display: flex; margin-top: 8px; }.audio-button { display: inline-flex; align-items: center; gap: 4px; padding: 0; border: 0; background: transparent; color: #6c210e; font-weight: 800; font-size: clamp(8px, .8vw, 15px); }.name-audio-button { flex: 0 0 auto; }.audio-button img { width: clamp(18px, 2vw, 38px); height: auto; }
 .back-button { border: 0; padding: 0; background: transparent; cursor: pointer; }.back-button img { width: 100%; height: 100%; object-fit: contain; }
+.celebration-video { position: fixed; inset: 15% 25%; z-index: 200; width: 50%; max-height: 70%; border: 4px solid #a45e25; border-radius: 20px; background: #fff9de; }
 </style>

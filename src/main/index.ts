@@ -16,6 +16,7 @@ import {
 } from './resource'
 import { runResourceSmoke } from './resource-smoke'
 import { runAiSmoke } from './ai-smoke'
+import { LEARNING_ZONE_API_URL, startLearningZoneServer, stopLearningZoneServer } from './learning-zone-server'
 import { isTrustedIpcEvent } from './security/ipc-guard'
 import { configureTrustedRendererTargets, isAllowedRendererUrl } from './security/renderer-origin'
 
@@ -59,10 +60,11 @@ function attachNavigationGuards(window: BrowserWindow): void {
 
 function createWindow(packagedRendererPath: string): void {
   mainWindow = new BrowserWindow({
-    width: 1180,
-    height: 760,
+    width: 1280,
+    height: 720,
+    useContentSize: true,
     minWidth: 960,
-    minHeight: 640,
+    minHeight: 540,
     show: false,
     title: APP_DISPLAY_NAME,
     webPreferences: {
@@ -80,10 +82,11 @@ function createWindow(packagedRendererPath: string): void {
     mainWindow?.show()
   })
 
+  const reviewSearch = process.env.FELT_LEARNING_ZONE_REVIEW === '1' ? '?view=learning-zone&learning-preview=locked' : ''
   if (process.env.ELECTRON_RENDERER_URL) {
-    void mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
+    void mainWindow.loadURL(`${process.env.ELECTRON_RENDERER_URL}${reviewSearch}`)
   } else {
-    void mainWindow.loadFile(packagedRendererPath)
+    void mainWindow.loadFile(packagedRendererPath, { search: reviewSearch })
   }
 }
 
@@ -116,6 +119,27 @@ function registerBootstrapIpc(): void {
   })
 }
 
+function registerLearningZoneIpc(): void {
+  ipcMain.handle(IPC_CHANNELS.LEARNING_ZONE_REQUEST, async (event, raw: unknown) => {
+    if (!isTrustedIpcEvent(event)) throw new Error('不受信任的学习区请求。')
+    const input = raw as { path?: unknown; method?: unknown; body?: unknown }
+    if (typeof input.path !== 'string' || !input.path.startsWith('/api/')) {
+      throw new Error('学习区请求路径无效。')
+    }
+    const method = input.method === 'POST' ? 'POST' : 'GET'
+    const response = await fetch(`${LEARNING_ZONE_API_URL}${input.path}`, {
+      method,
+      headers: method === 'POST' ? { 'Content-Type': 'application/json' } : undefined,
+      body: method === 'POST' && typeof input.body === 'string' ? input.body : undefined
+    })
+    return {
+      ok: response.ok,
+      status: response.status,
+      payload: await response.json()
+    }
+  })
+}
+
 app.whenReady().then(() => {
   if (process.env.FELT_RESOURCE_SMOKE === '1') {
     void runResourceSmoke()
@@ -134,8 +158,11 @@ app.whenReady().then(() => {
   registerPreviewIpc(resourceRoots)
   registerStoryCardAudioIpc(resourceRoots)
   registerBootstrapIpc()
+  registerLearningZoneIpc()
   registerAiIpc()
-  createWindow(packagedRendererPath)
+  void startLearningZoneServer()
+    .catch((error) => console.error('学习区游戏服务启动失败', error))
+    .finally(() => createWindow(packagedRendererPath))
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -148,6 +175,7 @@ app.on('window-all-closed', () => {
   if (process.env.FELT_RESOURCE_SMOKE === '1') return
   if (process.env.FELT_AI_SMOKE === '1') return
   if (process.platform !== 'darwin') {
+    stopLearningZoneServer()
     app.quit()
   }
 })

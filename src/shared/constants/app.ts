@@ -15,7 +15,8 @@ export const IPC_CHANNELS = {
   AI_STORY_REWRITE: 'felt:ai:story:rewrite',
   AI_QA_ASK: 'felt:ai:qa:ask',
   AI_TTS_SYNTHESIZE: 'felt:ai:tts:synthesize',
-  IMAGE_UPLOAD: 'felt:image:upload'
+  IMAGE_UPLOAD: 'felt:image:upload',
+  LEARNING_ZONE_REQUEST: 'felt:learning-zone:request'
 } as const
 
 export interface BootstrapPingResult {

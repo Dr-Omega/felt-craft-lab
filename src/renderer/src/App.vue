@@ -25,6 +25,10 @@ function syncView(): void {
   storyCardTestContext.value = getStoryCardTestContext()
 }
 
+function isCurrentView(candidate: AppView): boolean {
+  return view.value === candidate
+}
+
 let unsubscribe = subscribeAppNav(syncView)
 
 onMounted(() => {
@@ -37,15 +41,15 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="shell" :class="{ 'learning-zone-shell': view === 'learning-zone' }">
-    <header v-if="view !== 'learning-zone'" class="topbar">
+  <div class="shell" :class="{ 'learning-zone-shell': isCurrentView('learning-zone') }">
+    <header v-if="!isCurrentView('learning-zone')" class="topbar">
       <div>
         <p class="eyebrow">Material Library · UI Workflows</p>
         <h1>{{ APP_DISPLAY_NAME }}</h1>
       </div>
       <nav class="nav">
         <button type="button" :class="{ active: view === 'library' }" @click="openLibrary">素材库</button>
-        <button type="button" :class="{ active: view === 'learning-zone' }" @click="openLearningZone">学习区</button>
+        <button type="button" :class="{ active: isCurrentView('learning-zone') }" @click="openLearningZone">学习区</button>
         <button type="button" :class="{ active: view === 'story-card-test' }" @click="() => openStoryCardTest()">故事卡测试</button>
         <button type="button" :class="{ active: view === 'status' }" @click="openStatus">运行状态</button>
       </nav>

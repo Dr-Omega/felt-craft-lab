@@ -77,6 +77,14 @@
           "**/*",
           "!.gitkeep"
         ]
+      },
+      {
+        "from": "sticker-game-backend",
+        "to": "sticker-game-backend",
+        "filter": [
+          "**/*",
+          "!test/**/*"
+        ]
       }
     ],
     "asar": true,
