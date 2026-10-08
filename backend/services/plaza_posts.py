@@ -20,6 +20,7 @@ def post_public_dict(post: PlazaPostRow) -> dict[str, Any]:
         "previewMediaPath": f"/api/plaza/media/{post.preview_filename}",
         "createdAt": post.created_at,
         "userId": post.user_id,
+        "outputType": post.output_type,
     }
 
 
@@ -50,6 +51,7 @@ def publish_post(
     preview_filename: str | None,
     preview_mime: str | None,
     upload_root: Path,
+    output_type: str = "collage",
 ) -> PlazaPostRow:
     project_id = (project_id or "").strip()
     title = (title or "").strip()
@@ -59,6 +61,8 @@ def publish_post(
         raise ValueError("TITLE_REQUIRED")
     if len(title) > 80:
         raise ValueError("TITLE_TOO_LONG")
+    if output_type not in {"collage", "story"}:
+        raise ValueError("INVALID_OUTPUT_TYPE")
 
     try:
         stored_name = save_plaza_preview(
@@ -77,6 +81,7 @@ def publish_post(
             title=title,
             author_name=author_name,
             preview_filename=stored_name,
+            output_type=output_type,
         )
     except ValueError:
         raise

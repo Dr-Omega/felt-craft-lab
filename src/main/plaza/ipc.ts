@@ -15,6 +15,8 @@ import {
   plazaRegister,
   plazaWithdrawPost
 } from './gateway-plaza'
+import { plazaRewardAction } from './gateway-rewards'
+import type { RewardAction } from '@shared/contracts/rewards'
 
 function deny() {
   return {
@@ -89,7 +91,8 @@ export function registerPlazaIpc(roots: ResourceRoots): void {
     const input = asRecord(raw)
     const username = typeof input.username === 'string' ? input.username : ''
     const password = typeof input.password === 'string' ? input.password : ''
-    return mapGatewayBody(await plazaRegister({ username, password, isPackaged: packaged }))
+    const role = typeof input.role === 'string' ? input.role : 'child'
+    return mapGatewayBody(await plazaRegister({ username, password, role, isPackaged: packaged }))
   })
 
   ipcMain.handle(IPC_CHANNELS.PLAZA_AUTH_LOGIN, async (event, raw: unknown) => {
@@ -130,6 +133,7 @@ export function registerPlazaIpc(roots: ResourceRoots): void {
     const projectId = typeof input.projectId === 'string' ? input.projectId : ''
     const title = typeof input.title === 'string' ? input.title : ''
     const previewRef = typeof input.previewRef === 'string' ? input.previewRef : ''
+    const outputType = input.outputType === 'story' ? 'story' : 'collage'
     if (!token.trim() || !projectId.trim() || !title.trim() || !previewRef.trim()) return deny()
 
     const preview = readPreviewPngBytes(previewRef, roots)
@@ -140,6 +144,7 @@ export function registerPlazaIpc(roots: ResourceRoots): void {
       projectId,
       title,
       previewBytes: preview.bytes,
+      outputType,
       isPackaged: packaged
     })
     return mapGatewayBody(published)
@@ -177,5 +182,28 @@ export function registerPlazaIpc(roots: ResourceRoots): void {
       ok: true as const,
       result: { previewUrl }
     }
+  })
+
+  ipcMain.handle(IPC_CHANNELS.PLAZA_REWARD_ACTION, async (event, raw: unknown) => {
+    if (!isTrustedIpcEvent(event)) return deny()
+    const input = asRecord(raw)
+    const token = typeof input.token === 'string' ? input.token : ''
+    const action = typeof input.action === 'string' ? (input.action as RewardAction) : null
+    const payload = asRecord(input.payload)
+    const allowed = new Set<RewardAction>([
+      'dashboard',
+      'inbox',
+      'claim',
+      'like',
+      'review',
+      'convert',
+      'recharge',
+      'redeem',
+      'feed',
+      'adminConfig',
+      'updateAdminConfig'
+    ])
+    if (!token.trim() || !action || !allowed.has(action)) return deny()
+    return mapGatewayBody(await plazaRewardAction({ token, action, payload, isPackaged: packaged }))
   })
 }

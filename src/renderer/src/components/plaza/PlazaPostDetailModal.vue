@@ -1,23 +1,95 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import type { PlazaPost } from '@shared/contracts/plaza'
+import type { UserRole } from '@shared/contracts/rewards'
 import { friendlyShortDate } from '../../util/friendly-time'
+import { loadPlazaSession } from '../../services/plaza-session'
+import { likePlazaPost, submitTeacherReview } from '../../services/reward-api'
+import { showCenterToast } from '../../composables/center-toast'
+import type { SharedError } from '@shared/contracts'
+import { rewardAssets } from '../../ui/reward-assets'
 
 const props = defineProps<{
   post: PlazaPost | null
   open: boolean
   previewSrc: string
+  role: UserRole
 }>()
 
-const emit = defineEmits<{ close: [] }>()
+const emit = defineEmits<{
+  close: []
+  updated: [stats: { postId: string; likeCount: number; likedByMe: boolean; reviewCount: number }]
+}>()
 
 const dialogEl = ref<HTMLDivElement | null>(null)
+const score = ref(8)
+const comment = ref('')
+const busy = ref(false)
 
 const title = computed(() => props.post?.title ?? '作品详情')
 const meta = computed(() => {
   if (!props.post) return ''
   return `${props.post.authorName} · ${friendlyShortDate(props.post.createdAt)}`
 })
+const canLike = computed(() => props.role === 'child' || props.role === 'parent')
+const isTeacher = computed(() => props.role === 'art_teacher' || props.role === 'chinese_teacher')
+const directionMatches = computed(() => {
+  if (!props.post) return false
+  return (
+    (props.role === 'art_teacher' && props.post.outputType === 'collage') ||
+    (props.role === 'chinese_teacher' && props.post.outputType === 'story')
+  )
+})
+
+function errorMessage(error: unknown): string {
+  const shared = error as SharedError
+  return typeof shared?.message === 'string' && shared.message.trim() ? shared.message : '操作没有完成，请稍后再试。'
+}
+
+async function like(): Promise<void> {
+  const session = loadPlazaSession()
+  if (!session?.token || !props.post || busy.value) return
+  busy.value = true
+  try {
+    const stats = await likePlazaPost(session.token, props.post.postId)
+    emit('updated', { postId: props.post.postId, ...stats })
+    showCenterToast('点赞成功，作者会在反馈邮箱收到奖励')
+  } catch (error) {
+    showCenterToast(errorMessage(error))
+  } finally {
+    busy.value = false
+  }
+}
+
+async function review(): Promise<void> {
+  const session = loadPlazaSession()
+  if (!session?.token || !props.post || busy.value) return
+  const cleanComment = comment.value.trim()
+  if (!cleanComment || score.value < 1 || score.value > 10) {
+    showCenterToast('请填写评语并给出 1-10 分评分')
+    return
+  }
+  busy.value = true
+  try {
+    const result = await submitTeacherReview(session.token, {
+      postId: props.post.postId,
+      score: score.value,
+      comment: cleanComment
+    })
+    emit('updated', {
+      postId: props.post.postId,
+      likeCount: props.post.likeCount,
+      likedByMe: props.post.likedByMe,
+      reviewCount: props.post.reviewCount + 1
+    })
+    comment.value = ''
+    showCenterToast(`点评已提交，获得 ${result.teacherRewardCoins} 金币`)
+  } catch (error) {
+    showCenterToast(errorMessage(error))
+  } finally {
+    busy.value = false
+  }
+}
 
 function handleKey(event: KeyboardEvent): void {
   if (event.key === 'Escape' && props.open) emit('close')
@@ -62,6 +134,34 @@ watch(
       <img v-if="previewSrc" :src="previewSrc" :alt="title" />
       <p v-else class="muted">预览加载中…</p>
     </div>
+    <div class="plaza-detail-stats">
+      <span>{{ post.outputType === 'story' ? '故事卡' : '拼贴作品' }}</span>
+      <strong class="stat-with-icon"><img :src="post.likedByMe ? rewardAssets.likeOn : rewardAssets.likeOff" alt="爱心" />{{ post.likeCount }} 赞</strong>
+      <strong class="stat-with-icon"><img :src="rewardAssets.commentIcon" alt="评论" />{{ post.reviewCount }} 条点评</strong>
+    </div>
+
+    <div v-if="canLike" class="plaza-detail-action-band">
+      <button type="button" class="primary" :disabled="post.likedByMe || busy" @click="like">
+        <img :src="post.likedByMe ? rewardAssets.likeOn : rewardAssets.likeOff" alt="" />{{ post.likedByMe ? '已点赞' : '点赞' }}
+      </button>
+    </div>
+
+    <form v-if="isTeacher" class="teacher-review-form" :style="{ backgroundImage: `url(${rewardAssets.reviewFrame})` }" @submit.prevent="review">
+      <template v-if="directionMatches">
+        <label>
+          <span>评分</span>
+          <input v-model.number="score" type="number" min="1" max="10" :disabled="busy" />
+        </label>
+        <label class="teacher-comment" :style="{ backgroundImage: `url(${rewardAssets.reviewInput})` }">
+          <span>评语</span>
+          <textarea v-model="comment" rows="3" maxlength="500" :disabled="busy"></textarea>
+        </label>
+        <button type="submit" class="primary" :disabled="busy || !comment.trim()">提交点评</button>
+      </template>
+      <p v-else class="direction-note">
+        {{ role === 'art_teacher' ? '美术教师点评拼贴作品' : '语文教师点评故事卡' }}
+      </p>
+    </form>
   </div>
 </template>
 
@@ -115,4 +215,64 @@ watch(
   max-height: 60vh;
   object-fit: contain;
 }
+
+.plaza-detail-stats {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 0;
+  color: #6d5e51;
+}
+
+.plaza-detail-stats span {
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: #e7f0eb;
+  color: #2d6d5b;
+}
+
+.stat-with-icon { display: inline-flex; align-items: center; gap: 6px; }
+.stat-with-icon img, .plaza-detail-action-band img { width: 24px; height: 24px; object-fit: contain; }
+
+.plaza-detail-action-band {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 8px;
+  border-top: 1px solid rgba(89, 71, 56, 0.18);
+}
+
+.plaza-detail-action-band button { display: inline-flex; align-items: center; gap: 7px; }
+
+.teacher-review-form {
+  display: grid;
+  grid-template-columns: 110px 1fr auto;
+  align-items: end;
+  gap: 12px;
+  min-height: 250px;
+  padding: 54px 36px 22px;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  border-top: 1px solid rgba(89, 71, 56, 0.18);
+}
+
+.teacher-review-form label {
+  display: grid;
+  gap: 6px;
+}
+
+.teacher-review-form input,
+.teacher-review-form textarea {
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid #bfae9e;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.82);
+  color: #493d33;
+  font: inherit;
+}
+
+.teacher-comment { min-height: 130px; padding: 18px 20px 10px; background-repeat: no-repeat; background-position: center; background-size: 100% 100%; }
+.teacher-comment textarea { resize: vertical; background: rgba(255, 255, 255, 0.7); }
+.direction-note { grid-column: 1 / -1; margin: 0; color: #796d61; }
 </style>

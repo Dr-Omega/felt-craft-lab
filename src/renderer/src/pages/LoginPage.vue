@@ -6,12 +6,14 @@ import { loginPlazaUser, registerPlazaUser } from '../services/plaza-api'
 import { savePlazaSession } from '../services/plaza-session'
 import { showCenterToast } from '../composables/center-toast'
 import type { SharedError } from '@shared/contracts'
+import type { UserRole } from '@shared/contracts/rewards'
 import { authAssets, authFullLayerStyle, authHitBoxStyle } from '../ui/auth-assets'
 
 const username = ref('')
 const password = ref('')
 const mode = ref<'login' | 'register'>('login')
 const busy = ref(false)
+const role = ref<UserRole>('child')
 const PASSWORD_MIN = 3
 const PASSWORD_MAX = 20
 
@@ -53,9 +55,10 @@ async function submit(): Promise<void> {
   try {
     const auth =
       mode.value === 'register'
-        ? await registerPlazaUser(name, password.value)
+        ? await registerPlazaUser(name, password.value, role.value)
         : await loginPlazaUser(name, password.value)
     savePlazaSession({ token: auth.token, user: auth.user })
+    if (auth.dailyRewardGranted) showCenterToast('今日登录奖励：1 钻石已到账')
     completeLogin()
   } catch (error) {
     showCenterToast(authErrorMessage(error))
@@ -107,6 +110,16 @@ async function submit(): Promise<void> {
         :aria-label="mode === 'login' ? '进入' : '注册并进入'"
         :disabled="busy"
       />
+
+      <label v-if="mode === 'register'" class="login-role">
+        <span>账号身份</span>
+        <select v-model="role" :disabled="busy">
+          <option value="child">儿童</option>
+          <option value="parent">家长</option>
+          <option value="art_teacher">美术教师</option>
+          <option value="chinese_teacher">语文教师</option>
+        </select>
+      </label>
 
       <button type="button" class="login-mode-toggle linkish" :disabled="busy" @click="toggleMode">
         {{ mode === 'login' ? '没有账号？注册' : '已有账号？登录' }}
@@ -175,6 +188,29 @@ async function submit(): Promise<void> {
   padding: 8px 12px;
   background: rgba(255, 254, 248, 0.82);
   border-radius: 999px;
+}
+
+.login-role {
+  position: absolute;
+  left: 720px;
+  top: 742px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 2px solid rgba(132, 91, 49, 0.35);
+  border-radius: 8px;
+  background: rgba(255, 254, 248, 0.92);
+  font-size: 18px;
+}
+
+.login-role select {
+  min-width: 130px;
+  border: 0;
+  background: transparent;
+  color: #594738;
+  font: inherit;
 }
 
 </style>

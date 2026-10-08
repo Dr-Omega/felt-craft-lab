@@ -14,12 +14,13 @@ function plazaBodyError(body: unknown): string | null {
 export async function plazaRegister(input: {
   username: string
   password: string
+  role: string
   isPackaged?: boolean
 }): Promise<GatewayJsonResult> {
   return gatewayJson('/api/plaza/auth/register', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username: input.username, password: input.password }),
+    body: JSON.stringify({ username: input.username, password: input.password, role: input.role }),
     skipAuth: true,
     isPackaged: input.isPackaged
   })
@@ -78,6 +79,7 @@ export async function plazaPublishPost(input: {
   projectId: string
   title: string
   previewBytes: Buffer
+  outputType?: 'collage' | 'story'
   isPackaged?: boolean
 }): Promise<GatewayJsonResult> {
   const form = new FormData()
@@ -85,6 +87,7 @@ export async function plazaPublishPost(input: {
   form.append('file', blob, 'preview.png')
   form.append('projectId', input.projectId)
   form.append('title', input.title)
+  form.append('outputType', input.outputType ?? 'collage')
   return gatewayJson('/api/plaza/posts', {
     method: 'POST',
     body: form,

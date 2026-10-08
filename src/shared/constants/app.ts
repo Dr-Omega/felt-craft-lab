@@ -18,7 +18,8 @@ export const IPC_CHANNELS = {
   PLAZA_PUBLISH: 'felt:plaza:posts:publish',
   PLAZA_WITHDRAW: 'felt:plaza:posts:withdraw',
   PLAZA_MY_PROJECT_IDS: 'felt:plaza:posts:mine-project-ids',
-  PLAZA_PREVIEW_BYTES: 'felt:plaza:preview:bytes'
+  PLAZA_PREVIEW_BYTES: 'felt:plaza:preview:bytes',
+  PLAZA_REWARD_ACTION: 'felt:plaza:rewards:action'
 } as const
 
 export interface BootstrapPingResult {

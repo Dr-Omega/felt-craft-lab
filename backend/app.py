@@ -46,6 +46,7 @@ from services.plaza_auth import (
     issue_user_token,
     parse_bearer_user_token,
     register_user,
+    user_public_dict,
     validate_password,
     validate_username,
     verify_user_token,
@@ -53,6 +54,7 @@ from services.plaza_auth import (
 from services.plaza_db import PlazaDb
 from services.plaza_dev_seed import seed_plaza_demo_posts, seed_plaza_dev_users
 from services.plaza_posts import PLAZA_UPLOAD_DIR_NAME, post_public_dict, publish_post
+from services.reward_system import RewardError, RewardSystem
 from services.ops_rules import ops_rules_doc
 from services.qa_service import QaService, UnknownQaProvider
 from services.qa_types import QA_ERROR_CODES
@@ -84,6 +86,7 @@ app.config["MAX_CONTENT_LENGTH"] = _MAX_CONTENT_LENGTH
 _ALLOWED_ASR_AUDIO_URLS = frozenset({SAMPLE_AUDIO_URL})
 IMAGE_UPLOAD_DIR = BASE_DIR / "data" / "uploads"
 PLAZA_DB = PlazaDb()
+REWARD_SYSTEM = RewardSystem(PLAZA_DB.db_path)
 seed_plaza_dev_users(PLAZA_DB)
 seed_plaza_demo_posts(PLAZA_DB, IMAGE_UPLOAD_DIR)
 
@@ -118,6 +121,10 @@ def _json_fail(code: str, http_status: int = 400):
 
 def _json_ok(payload: dict, http_status: int = 200):
     return jsonify({"ok": True, **payload}), http_status
+
+
+def _reward_fail(error: RewardError):
+    return jsonify(fail(code="INVALID_ARGUMENT", message=error.message, retryable=False)), error.status
 
 
 def _require_plaza_user():
@@ -179,8 +186,11 @@ def plaza_register():
     body = request.get_json(silent=True) or {}
     username = body.get("username") if isinstance(body, dict) else None
     password = body.get("password") if isinstance(body, dict) else None
+    role = body.get("role", "child") if isinstance(body, dict) else "child"
     if not isinstance(username, str) or not isinstance(password, str):
         return _json_fail("INVALID_ARGUMENT")
+    if role not in {"child", "parent", "art_teacher", "chinese_teacher"}:
+        return jsonify(fail(code="INVALID_ARGUMENT", message="账号身份无效。")), 400
     if validate_username(username):
         return jsonify(fail(code="INVALID_ARGUMENT", message="用户名格式不正确。")), 400
     if validate_password(password):
@@ -189,18 +199,20 @@ def plaza_register():
     if existing:
         return jsonify(fail(code="INVALID_ARGUMENT", message="账号已存在，请前往登录界面")), 409
     try:
-        user = register_user(PLAZA_DB, username, password)
+        user = register_user(PLAZA_DB, username, password, role)
     except ValueError as exc:
         code = str(exc)
         if code == "USERNAME_TAKEN":
             return jsonify(fail(code="INVALID_ARGUMENT", message="账号已存在，请前往登录界面")), 409
         return _json_fail("INVALID_ARGUMENT")
     token = issue_user_token(user)
+    daily_reward_granted = REWARD_SYSTEM.on_login(user)
     return _json_ok(
         {
             "result": {
                 "token": token,
-                "user": {"userId": user.user_id, "username": user.username},
+                "user": user_public_dict(user),
+                "dailyRewardGranted": daily_reward_granted,
             }
         },
         201,
@@ -221,7 +233,16 @@ def plaza_login():
     if not user:
         return jsonify(fail(code="INVALID_ARGUMENT", message="密码错误")), 401
     token = issue_user_token(user)
-    return _json_ok({"result": {"token": token, "user": {"userId": user.user_id, "username": user.username}}})
+    daily_reward_granted = REWARD_SYSTEM.on_login(user)
+    return _json_ok(
+        {
+            "result": {
+                "token": token,
+                "user": user_public_dict(user),
+                "dailyRewardGranted": daily_reward_granted,
+            }
+        }
+    )
 
 
 @app.get("/api/plaza/posts")
@@ -229,8 +250,11 @@ def plaza_list_posts():
     user, err = _require_plaza_user()
     if err:
         return err
-    _ = user
-    posts = [post_public_dict(row) for row in PLAZA_DB.list_posts()]
+    posts = []
+    for row in PLAZA_DB.list_posts():
+        post = post_public_dict(row)
+        post.update(REWARD_SYSTEM.post_stats(user.user_id, row.post_id))
+        posts.append(post)
     return _json_ok({"result": {"posts": posts}})
 
 
@@ -248,11 +272,12 @@ def plaza_get_post(post_id: str):
     user, err = _require_plaza_user()
     if err:
         return err
-    _ = user
     post = PLAZA_DB.get_post((post_id or "").strip())
     if not post:
         return _json_fail("INVALID_ARGUMENT", 404)
-    return _json_ok({"result": {"post": post_public_dict(post)}})
+    public_post = post_public_dict(post)
+    public_post.update(REWARD_SYSTEM.post_stats(user.user_id, post.post_id))
+    return _json_ok({"result": {"post": public_post}})
 
 
 @app.post("/api/plaza/posts")
@@ -263,6 +288,7 @@ def plaza_publish_post():
 
     project_id = (request.form.get("projectId") or "").strip()
     title = (request.form.get("title") or "").strip()
+    output_type = (request.form.get("outputType") or "collage").strip()
     preview = request.files.get("file") or request.files.get("image")
     if not preview:
         return _json_fail("IMAGE_MISSING_FILE")
@@ -278,6 +304,7 @@ def plaza_publish_post():
             preview_filename=preview.filename,
             preview_mime=preview.mimetype,
             upload_root=IMAGE_UPLOAD_DIR,
+            output_type=output_type,
         )
     except ValueError as exc:
         code = str(exc)
@@ -318,6 +345,170 @@ def plaza_media(filename: str):
     folder = IMAGE_UPLOAD_DIR / PLAZA_UPLOAD_DIR_NAME
     folder.mkdir(parents=True, exist_ok=True)
     return send_from_directory(folder, Path(rel).name)
+
+
+@app.post("/api/plaza/posts/<post_id>/like")
+def plaza_like_post(post_id: str):
+    user, err = _require_plaza_user()
+    if err:
+        return err
+    post = PLAZA_DB.get_post((post_id or "").strip())
+    if not post:
+        return _json_fail("INVALID_ARGUMENT", 404)
+    try:
+        result = REWARD_SYSTEM.like_post(user, post)
+    except RewardError as exc:
+        return _reward_fail(exc)
+    return _json_ok({"result": result}, 201)
+
+
+@app.post("/api/plaza/posts/<post_id>/reviews")
+def plaza_submit_review(post_id: str):
+    user, err = _require_plaza_user()
+    if err:
+        return err
+    post = PLAZA_DB.get_post((post_id or "").strip())
+    if not post:
+        return _json_fail("INVALID_ARGUMENT", 404)
+    body = request.get_json(silent=True) or {}
+    score = body.get("score") if isinstance(body, dict) else None
+    comment = body.get("comment") if isinstance(body, dict) else None
+    if isinstance(score, bool) or not isinstance(score, int) or not isinstance(comment, str):
+        return _json_fail("INVALID_ARGUMENT")
+    try:
+        result = REWARD_SYSTEM.submit_review(user, post, score=score, comment=comment)
+    except RewardError as exc:
+        return _reward_fail(exc)
+    return _json_ok({"result": result}, 201)
+
+
+@app.get("/api/rewards/dashboard")
+def rewards_dashboard():
+    user, err = _require_plaza_user()
+    if err:
+        return err
+    return _json_ok({"result": REWARD_SYSTEM.dashboard(user)})
+
+
+@app.post("/api/rewards/convert")
+def rewards_convert():
+    user, err = _require_plaza_user()
+    if err:
+        return err
+    body = request.get_json(silent=True) or {}
+    diamonds = body.get("diamonds") if isinstance(body, dict) else None
+    request_id = body.get("requestId") if isinstance(body, dict) else None
+    if isinstance(diamonds, bool) or not isinstance(diamonds, int) or not isinstance(request_id, str):
+        return _json_fail("INVALID_ARGUMENT")
+    try:
+        result = REWARD_SYSTEM.convert_diamonds(user, diamonds, request_id)
+    except RewardError as exc:
+        return _reward_fail(exc)
+    return _json_ok({"result": result})
+
+
+@app.post("/api/rewards/recharge")
+def rewards_recharge():
+    user, err = _require_plaza_user()
+    if err:
+        return err
+    body = request.get_json(silent=True) or {}
+    yuan = body.get("yuan") if isinstance(body, dict) else None
+    request_id = body.get("requestId") if isinstance(body, dict) else None
+    if isinstance(yuan, bool) or not isinstance(yuan, int) or not isinstance(request_id, str):
+        return _json_fail("INVALID_ARGUMENT")
+    try:
+        result = REWARD_SYSTEM.recharge_diamonds(user, yuan, request_id)
+    except RewardError as exc:
+        return _reward_fail(exc)
+    return _json_ok({"result": result})
+
+
+@app.get("/api/rewards/inbox")
+def rewards_inbox():
+    user, err = _require_plaza_user()
+    if err:
+        return err
+    try:
+        messages = REWARD_SYSTEM.list_inbox(user)
+    except RewardError as exc:
+        return _reward_fail(exc)
+    return _json_ok({"result": {"messages": messages}})
+
+
+@app.post("/api/rewards/inbox/<message_id>/claim")
+def rewards_claim_message(message_id: str):
+    user, err = _require_plaza_user()
+    if err:
+        return err
+    try:
+        result = REWARD_SYSTEM.claim_message(user, (message_id or "").strip())
+    except RewardError as exc:
+        return _reward_fail(exc)
+    return _json_ok({"result": result})
+
+
+@app.post("/api/rewards/store/redeem")
+def rewards_redeem():
+    user, err = _require_plaza_user()
+    if err:
+        return err
+    body = request.get_json(silent=True) or {}
+    product_id = body.get("productId") if isinstance(body, dict) else None
+    currency = body.get("currency") if isinstance(body, dict) else None
+    request_id = body.get("requestId") if isinstance(body, dict) else None
+    if not all(isinstance(value, str) for value in (product_id, currency, request_id)):
+        return _json_fail("INVALID_ARGUMENT")
+    try:
+        result = REWARD_SYSTEM.redeem(user, product_id, currency, request_id)
+    except RewardError as exc:
+        return _reward_fail(exc)
+    return _json_ok({"result": result}, 201)
+
+
+@app.post("/api/rewards/bear/feed")
+def rewards_feed_bear():
+    user, err = _require_plaza_user()
+    if err:
+        return err
+    body = request.get_json(silent=True) or {}
+    food_id = body.get("foodId") if isinstance(body, dict) else None
+    currency = body.get("currency") if isinstance(body, dict) else None
+    request_id = body.get("requestId") if isinstance(body, dict) else None
+    if not all(isinstance(value, str) for value in (food_id, currency, request_id)):
+        return _json_fail("INVALID_ARGUMENT")
+    try:
+        result = REWARD_SYSTEM.feed_bear(user, food_id, currency, request_id)
+    except RewardError as exc:
+        return _reward_fail(exc)
+    return _json_ok({"result": result}, 201)
+
+
+@app.get("/api/rewards/admin/config")
+def rewards_get_admin_config():
+    user, err = _require_plaza_user()
+    if err:
+        return err
+    try:
+        result = REWARD_SYSTEM.get_admin_config(user)
+    except RewardError as exc:
+        return _reward_fail(exc)
+    return _json_ok({"result": {"config": result}})
+
+
+@app.put("/api/rewards/admin/config")
+def rewards_update_admin_config():
+    user, err = _require_plaza_user()
+    if err:
+        return err
+    body = request.get_json(silent=True) or {}
+    if not isinstance(body, dict):
+        return _json_fail("INVALID_ARGUMENT")
+    try:
+        result = REWARD_SYSTEM.update_admin_config(user, body)
+    except RewardError as exc:
+        return _reward_fail(exc)
+    return _json_ok({"result": {"config": result}})
 
 
 @app.post("/api/images/upload")
