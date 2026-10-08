@@ -16,11 +16,14 @@ import {
 import AppShell from './components/shell/AppShell.vue'
 import SplashPage from './pages/SplashPage.vue'
 import LoginPage from './pages/LoginPage.vue'
+import LobbyPage from './pages/LobbyPage.vue'
 import LibraryPage from './pages/LibraryPage.vue'
 import EditorPage from './pages/EditorPage.vue'
 import ProjectionPage from './pages/ProjectionPage.vue'
 import StatusPage from './pages/StatusPage.vue'
 import PlazaPage from './pages/PlazaPage.vue'
+import PersonalCenterPage from './pages/PersonalCenterPage.vue'
+import RewardCenterPage from './pages/RewardCenterPage.vue'
 import CenterToastOverlay from './components/shell/CenterToastOverlay.vue'
 
 const view = ref<AppView>(getAppView())
@@ -88,7 +91,10 @@ onUnmounted(() => {
   <CenterToastOverlay />
   <SplashPage v-if="view === 'splash'" />
   <LoginPage v-else-if="view === 'login'" />
+  <LobbyPage v-else-if="view === 'lobby'" />
   <PlazaPage v-else-if="view === 'plaza'" />
+  <PersonalCenterPage v-else-if="view === 'profile'" />
+  <RewardCenterPage v-else-if="view === 'rewards'" />
   <div v-else-if="view === 'status'" class="status-shell">
     <header class="status-shell__bar">
       <button type="button" class="ghost" @click="openPlaza">返回分享广场</button>

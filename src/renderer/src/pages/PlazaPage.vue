@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import type { PlazaPost } from '@shared/contracts/plaza'
+import type { RewardDashboard } from '@shared/contracts/rewards'
 import AuthArtboard from '../components/auth/AuthArtboard.vue'
 import PlazaPostDetailModal from '../components/plaza/PlazaPostDetailModal.vue'
-import { enterCreationStudio, openLogin } from '../app-nav'
+import { enterCreationStudio, openLobby, openLogin, openPersonalCenter, openRewards } from '../app-nav'
 import { listPlazaPosts, loadPlazaPreviewUrl } from '../services/plaza-api'
-import { clearPlazaSession, loadPlazaSession } from '../services/plaza-session'
+import { loadPlazaSession } from '../services/plaza-session'
 import { friendlyShortDate } from '../util/friendly-time'
 import { authFullLayerStyle } from '../ui/auth-assets'
-import { plazaAssets } from '../ui/plaza-assets'
+import { plazaAssets, plazaAvatarForRole } from '../ui/plaza-assets'
+import { rewardAssets } from '../ui/reward-assets'
+import { loadRewardDashboard } from '../services/reward-api'
 
 const posts = ref<PlazaPost[]>([])
 const previewCache = ref<Record<string, string>>({})
@@ -18,6 +21,7 @@ const message = ref('')
 const detailPost = ref<PlazaPost | null>(null)
 const detailOpen = ref(false)
 const detailPreview = ref('')
+const rewardDashboard = ref<RewardDashboard | null>(null)
 
 function currentSession() {
   return loadPlazaSession()
@@ -34,6 +38,7 @@ async function refreshPosts(): Promise<void> {
   listLoadedOk.value = false
   try {
     posts.value = await listPlazaPosts(session.token)
+    rewardDashboard.value = await loadRewardDashboard(session.token)
     listLoadedOk.value = true
     await preloadThumbnails(session.token, posts.value)
   } catch {
@@ -43,6 +48,13 @@ async function refreshPosts(): Promise<void> {
   } finally {
     loading.value = false
   }
+}
+
+function updatePostStats(stats: { postId: string; likeCount: number; likedByMe: boolean; reviewCount: number }): void {
+  posts.value = posts.value.map((post) => (post.postId === stats.postId ? { ...post, ...stats } : post))
+  if (detailPost.value?.postId === stats.postId) detailPost.value = { ...detailPost.value, ...stats }
+  const session = currentSession()
+  if (session?.token) void loadRewardDashboard(session.token).then((next) => (rewardDashboard.value = next))
 }
 
 async function preloadThumbnails(token: string, items: PlazaPost[]): Promise<void> {
@@ -80,11 +92,6 @@ function closeDetail(): void {
   detailPreview.value = ''
 }
 
-function logout(): void {
-  clearPlazaSession()
-  openLogin()
-}
-
 onMounted(() => {
   if (!currentSession()) {
     openLogin()
@@ -98,15 +105,25 @@ onMounted(() => {
   <AuthArtboard>
     <img class="plaza-layer" :style="authFullLayerStyle" :src="plazaAssets.background" alt="" aria-hidden="true" />
     <img
-      class="plaza-layer plaza-layer--under-showcase"
+      class="plaza-layer plaza-layer--public-space"
       :style="authFullLayerStyle"
-      :src="plazaAssets.screenBorderDecor"
+      :src="plazaAssets.publicSpace"
       alt=""
       aria-hidden="true"
     />
-    <img class="plaza-layer plaza-layer--title" :style="authFullLayerStyle" :src="plazaAssets.titleBanner" alt="" aria-hidden="true" />
+    <img
+      class="plaza-layer plaza-layer--avatar"
+      :style="authFullLayerStyle"
+      :src="plazaAvatarForRole(rewardDashboard?.user.role ?? currentSession()?.user.role ?? 'child')"
+      alt=""
+      aria-hidden="true"
+    />
     <img class="plaza-layer plaza-layer--frame" :style="authFullLayerStyle" :src="plazaAssets.showcaseFrame" alt="" aria-hidden="true" />
-
+    <img class="plaza-layer plaza-layer--personal-button" :style="authFullLayerStyle" :src="plazaAssets.personalButton" alt="" aria-hidden="true" />
+    <img class="plaza-layer plaza-layer--public-button" :style="authFullLayerStyle" :src="plazaAssets.publicButton" alt="" aria-hidden="true" />
+    <img class="plaza-layer plaza-layer--back-button" :style="authFullLayerStyle" :src="plazaAssets.backButton" alt="" aria-hidden="true" />
+    <button type="button" class="plaza-back-hitbox" aria-label="返回游戏大厅" @click="openLobby"></button>
+    <button type="button" class="plaza-personal-hitbox" aria-label="打开个人中心" @click="openPersonalCenter"></button>
     <section class="plaza-grid-slot" aria-label="作品列表">
       <p v-if="loading" class="plaza-grid-empty">加载中…</p>
       <p v-else-if="listLoadedOk && posts.length === 0" class="plaza-grid-empty">还没有人分享作品，来做第一个吧。</p>
@@ -120,6 +137,7 @@ onMounted(() => {
             <div class="plaza-card__body">
               <h3>{{ post.title }}</h3>
               <p class="muted">{{ post.authorName }} · {{ friendlyShortDate(post.createdAt) }}</p>
+              <p class="plaza-card__stats">{{ post.likeCount }} 赞 · {{ post.reviewCount }} 条点评</p>
             </div>
           </button>
         </li>
@@ -127,8 +145,17 @@ onMounted(() => {
       <p v-if="message" class="plaza-message error">{{ message }}</p>
     </section>
 
+    <div class="plaza-account">
+      <span v-if="rewardDashboard?.user.role !== 'parent' && rewardDashboard?.user.role !== 'admin'">
+        <img :src="rewardAssets.diamond" alt="钻石" />{{ rewardDashboard?.wallet.diamonds ?? 0 }}
+      </span>
+      <span v-if="rewardDashboard?.user.role !== 'parent' && rewardDashboard?.user.role !== 'admin'">
+        <img :src="rewardAssets.coin" alt="金币" />{{ rewardDashboard?.wallet.coins ?? 0 }}
+      </span>
+      <button type="button" class="primary" @click="openRewards">成长中心</button>
+    </div>
+
     <div class="plaza-actions">
-      <button type="button" class="primary plaza-logout" @click="logout">退出登录</button>
       <button type="button" class="primary plaza-start-create" @click="enterCreationStudio">开始创作</button>
     </div>
   </AuthArtboard>
@@ -137,7 +164,9 @@ onMounted(() => {
     :open="detailOpen"
     :post="detailPost"
     :preview-src="detailPreview"
+    :role="rewardDashboard?.user.role ?? currentSession()?.user.role ?? 'child'"
     @close="closeDetail"
+    @updated="updatePostStats"
   />
 </template>
 
@@ -149,16 +178,53 @@ onMounted(() => {
   user-select: none;
 }
 
-.plaza-layer--under-showcase {
+.plaza-layer--public-space {
   z-index: 1;
 }
 
-.plaza-layer--title {
+.plaza-layer--avatar {
   z-index: 2;
 }
 
 .plaza-layer--frame {
   z-index: 3;
+}
+
+.plaza-layer--back-button {
+  z-index: 5;
+}
+
+.plaza-layer--personal-button {
+  z-index: 5;
+}
+
+.plaza-layer--public-button {
+  z-index: 5;
+}
+
+.plaza-back-hitbox {
+  position: absolute;
+  left: 39px;
+  top: 35px;
+  z-index: 6;
+  width: 207px;
+  height: 112px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.plaza-personal-hitbox {
+  position: absolute;
+  left: 285px;
+  top: 178px;
+  z-index: 6;
+  width: 260px;
+  height: 190px;
+  border: 0;
+  background: transparent;
 }
 
 .plaza-grid-slot {
@@ -223,6 +289,49 @@ onMounted(() => {
 
 .plaza-card__body h3 {
   margin: 0 0 6px;
+  font-size: 20px;
+}
+
+.plaza-card__stats {
+  margin: 8px 0 0;
+  color: #9a4138;
+  font-size: 15px;
+}
+
+.plaza-account {
+  position: absolute;
+  right: 270px;
+  top: 42px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.plaza-account span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 250px;
+  min-height: 75px;
+  padding: 12px 18px;
+  border: 2px solid rgba(105, 69, 40, 0.28);
+  border-radius: 12px;
+  background: rgba(255, 252, 238, 0.92);
+  color: #71351c;
+  font-size: 30px;
+}
+
+.plaza-account img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.plaza-account .primary {
+  min-width: 132px;
+  min-height: 58px;
+  padding: 10px 16px;
   font-size: 20px;
 }
 

@@ -2,7 +2,7 @@ import type { SceneDocument } from '@shared/contracts'
 import { ALL_THEMES_ID } from './catalog/ywn-catalog'
 import { prepareNewWorkScene } from './catalog/library-new-work'
 
-export type AppView = 'splash' | 'login' | 'plaza' | 'library' | 'editor' | 'projection' | 'status'
+export type AppView = 'splash' | 'login' | 'lobby' | 'plaza' | 'profile' | 'rewards' | 'library' | 'editor' | 'projection' | 'status'
 
 /** Views rendered inside the main three-page shell after login. */
 export type MainAppView = 'library' | 'editor' | 'projection'
@@ -59,12 +59,27 @@ export function openLogin(): void {
 
 /** Enter the share plaza after login. */
 export function completeLogin(): void {
-  currentView = 'plaza'
+  currentView = 'lobby'
+  notify()
+}
+
+export function openLobby(): void {
+  currentView = 'lobby'
   notify()
 }
 
 export function openPlaza(): void {
   currentView = 'plaza'
+  notify()
+}
+
+export function openRewards(): void {
+  currentView = 'rewards'
+  notify()
+}
+
+export function openPersonalCenter(): void {
+  currentView = 'profile'
   notify()
 }
 

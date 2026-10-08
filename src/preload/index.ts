@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer } from 'electron'
 import { IPC_CHANNELS, type BootstrapPingResult } from '@shared/constants/app'
 import type { ResourceRef, SharedError } from '@shared/contracts'
 import type { QaAskInput } from '@shared/contracts/ai'
+import type { RewardAction, UserRole } from '@shared/contracts/rewards'
 import type { ResourceInspectResult } from '@shared/resource'
 
 type PreviewSaveIpcResult = { ok: true; ref: ResourceRef } | { ok: false; error: SharedError }
@@ -61,7 +62,7 @@ const electronAPI = {
    * Dev: Main→localhost; Prod: Main→remote AI_GATEWAY_BASE_URL.
    */
   plaza: {
-    register: (input: { username: string; password: string }): Promise<PlazaIpcResult<unknown>> =>
+    register: (input: { username: string; password: string; role: UserRole }): Promise<PlazaIpcResult<unknown>> =>
       ipcRenderer.invoke(IPC_CHANNELS.PLAZA_AUTH_REGISTER, input),
     login: (input: { username: string; password: string }): Promise<PlazaIpcResult<unknown>> =>
       ipcRenderer.invoke(IPC_CHANNELS.PLAZA_AUTH_LOGIN, input),
@@ -74,12 +75,20 @@ const electronAPI = {
       projectId: string
       title: string
       previewRef: string
+      outputType?: 'collage' | 'story'
     }): Promise<PlazaIpcResult<unknown>> => ipcRenderer.invoke(IPC_CHANNELS.PLAZA_PUBLISH, input),
     withdraw: (input: { token: string; projectId: string }): Promise<PlazaIpcResult<unknown>> =>
       ipcRenderer.invoke(IPC_CHANNELS.PLAZA_WITHDRAW, input),
     previewBytes: (input: { token: string; previewMediaPath: string }): Promise<
       PlazaIpcResult<{ previewUrl: string }>
     > => ipcRenderer.invoke(IPC_CHANNELS.PLAZA_PREVIEW_BYTES, input)
+  },
+  rewards: {
+    action: (input: {
+      token: string
+      action: RewardAction
+      payload?: Record<string, unknown>
+    }): Promise<PlazaIpcResult<unknown>> => ipcRenderer.invoke(IPC_CHANNELS.PLAZA_REWARD_ACTION, input)
   },
   ai: {
     health: (): Promise<unknown> => ipcRenderer.invoke(IPC_CHANNELS.AI_HEALTH),

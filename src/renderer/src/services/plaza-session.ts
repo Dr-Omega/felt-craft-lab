@@ -15,7 +15,7 @@ export function loadPlazaSession(): PlazaSession | null {
     if (!token || !rawUser) return null
     const user = JSON.parse(rawUser) as PlazaUser
     if (!user?.userId || !user?.username) return null
-    return { token, user }
+    return { token, user: { ...user, role: user.role ?? 'child' } }
   } catch {
     return null
   }

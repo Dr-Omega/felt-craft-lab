@@ -17,6 +17,7 @@ USERNAME_RE = re.compile(r"^[A-Za-z0-9_\u4e00-\u9fff]{2,40}$")
 MIN_PASSWORD_LEN = 3
 MAX_PASSWORD_LEN = 20
 TOKEN_TTL_DAYS = 14
+USER_ROLES = frozenset({"child", "parent", "art_teacher", "chinese_teacher", "admin"})
 
 
 @dataclass(frozen=True)
@@ -32,7 +33,7 @@ def _jwt_secret() -> str:
         return secret
     dev = (os.getenv("APP_ENV") or "").strip().lower()
     if dev in {"dev", "development", "local"}:
-        return "felt-plaza-dev-secret-change-me"
+        return "felt-plaza-development-secret-change-me"
     raise RuntimeError("PLAZA_JWT_SECRET is required outside development")
 
 
@@ -50,13 +51,15 @@ def validate_password(password: str) -> str | None:
     return None
 
 
-def register_user(db: PlazaDb, username: str, password: str) -> PlazaUserRow:
+def register_user(db: PlazaDb, username: str, password: str, role: str = "child") -> PlazaUserRow:
     if validate_username(username):
         raise ValueError("INVALID_USERNAME")
     if validate_password(password):
         raise ValueError("INVALID_PASSWORD")
+    if role not in USER_ROLES:
+        raise ValueError("INVALID_ROLE")
     password_hash = generate_password_hash(password)
-    return db.create_user(username, password_hash)
+    return db.create_user(username, password_hash, role)
 
 
 def authenticate_user(db: PlazaDb, username: str, password: str) -> PlazaUserRow | None:
@@ -107,4 +110,4 @@ def parse_bearer_user_token(header_value: str | None) -> str | None:
 
 
 def user_public_dict(user: PlazaUserRow) -> dict[str, Any]:
-    return {"userId": user.user_id, "username": user.username}
+    return {"userId": user.user_id, "username": user.username, "role": user.role}

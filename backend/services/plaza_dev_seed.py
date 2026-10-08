@@ -36,7 +36,13 @@ DEMO_ASSET_DIR = BASE_DIR.parent / "assets" / "demo" / "plaza"
 
 
 
-DEV_SEED_USERS: tuple[tuple[str, str], ...] = (("111", "111"),)
+DEV_SEED_USERS: tuple[tuple[str, str, str], ...] = (
+    ("111", "111", "child"),
+    ("家长体验", "111", "parent"),
+    ("美术老师", "111", "art_teacher"),
+    ("语文老师", "111", "chinese_teacher"),
+    ("运营管理员", "111", "admin"),
+)
 
 
 
@@ -64,6 +70,8 @@ DEMO_POSTS: tuple[dict[str, str], ...] = (
 
         "color": "#fff8e7",
 
+        "output_type": "collage",
+
     },
 
     {
@@ -77,6 +85,8 @@ DEMO_POSTS: tuple[dict[str, str], ...] = (
         "png_name": "demo-plaza-mid-autumn-2.png",
 
         "color": "#fff8e7",
+
+        "output_type": "story",
 
     },
 
@@ -130,6 +140,8 @@ def _ensure_demo_png(plaza_dir: Path, png_name: str, fallback_color: str) -> Non
 
     target = plaza_dir / png_name
 
+    plaza_dir.mkdir(parents=True, exist_ok=True)
+
     asset_copy = DEMO_ASSET_DIR / png_name
 
     DEMO_ASSET_DIR.mkdir(parents=True, exist_ok=True)
@@ -178,13 +190,13 @@ def seed_plaza_dev_users(db: PlazaDb) -> None:
 
         return
 
-    for username, password in DEV_SEED_USERS:
+    for username, password, role in DEV_SEED_USERS:
 
         if db.find_user_by_username(username):
 
             continue
 
-        db.create_user(username, generate_password_hash(password))
+        db.create_user(username, generate_password_hash(password), role)
 
 
 
@@ -238,6 +250,8 @@ def seed_plaza_demo_posts(db: PlazaDb, upload_root: Path) -> None:
 
                 preview_filename=png_name,
 
+                output_type=spec["output_type"],
+
             )
 
             continue
@@ -256,5 +270,6 @@ def seed_plaza_demo_posts(db: PlazaDb, upload_root: Path) -> None:
 
             preview_filename=png_name,
 
-        )
+            output_type=spec["output_type"],
 
+        )
