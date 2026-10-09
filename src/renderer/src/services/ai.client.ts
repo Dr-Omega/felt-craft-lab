@@ -12,6 +12,7 @@ export type AiAsrTranscribeInput = {
 }
 
 export type AiQaAskInput = {
+  history?: readonly import('@shared/qa-history').QaHistoryMessage[]
   question: string
   asset?: Record<string, unknown>
   provider?: string

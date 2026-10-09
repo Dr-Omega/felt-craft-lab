@@ -22,5 +22,6 @@ export {
   FavoriteStore,
   PersonalAssetStore,
   PersonalAssetVersionStore,
-  ProjectStore
+  ProjectStore,
+  StoryCardStore
 } from './stores'

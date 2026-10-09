@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { nextTick, onMounted, onUnmounted, ref } from 'vue'
 import type { CreationIntentAccepted } from '@shared/creation-intent'
+import type { ForegroundMode } from '@shared/fabrication-desktop'
 import CreateAssetPage from '../../pages/CreateAssetPage.vue'
 import { normalizeCanvasUpload } from '../../fabrication/canvas-intake'
 import ArtworkButton from './ArtworkButton.vue'
@@ -8,7 +9,8 @@ import chooseArt from '../../../../../assets/ui/creation/choose.png'
 import uploadArt from '../../../../../assets/ui/creation/upload.png'
 import voiceArt from '../../../../../assets/ui/creation/voice.png'
 import panelArt from '../../../../../assets/ui/creation/voice-panel.png'
-const props = defineProps<{ insert: (bytes: Uint8Array, name: string, source: 'uploaded' | 'ai_generated') => Promise<void> }>()
+const props = defineProps<{ insert: (bytes: Uint8Array, name: string, source: 'uploaded' | 'ai_generated', foregroundMode?: ForegroundMode) => Promise<void> }>()
+const foregroundMode = ref<ForegroundMode>('birefnet-general')
 const emit = defineEmits<{ close: [] }>()
 const mode = ref<'choose'|'upload'|'voice'>('choose'), busy = ref(false), error = ref(''), preview = ref(''), filename = ref('')
 const panel = ref<HTMLElement>(), input = ref<HTMLInputElement>()
@@ -17,7 +19,7 @@ function close(): void { if (!busy.value) emit('close') }
 function keys(e: KeyboardEvent): void {
   if (e.key === 'Escape') { e.stopPropagation(); close() }
   if (e.key !== 'Tab') return
-  const items = [...(panel.value?.querySelectorAll<HTMLElement>('button:not(:disabled),textarea:not(:disabled),input:not([hidden]):not(:disabled)') || [])]
+  const items = [...(panel.value?.querySelectorAll<HTMLElement>('button:not(:disabled),textarea:not(:disabled),select:not(:disabled),input:not([hidden]):not(:disabled)') || [])]
   if (e.shiftKey && document.activeElement === items[0]) { e.preventDefault(); items.at(-1)?.focus() }
   else if (!e.shiftKey && document.activeElement === items.at(-1)) { e.preventDefault(); items[0]?.focus() }
 }
@@ -29,6 +31,7 @@ async function selected(e: Event): Promise<void> {
     if (disposed || token !== generation) return
     if (preview.value) URL.revokeObjectURL(preview.value)
     bytes = normalized; filename.value = file.name
+    foregroundMode.value = 'birefnet-general'
     preview.value = URL.createObjectURL(new Blob([new Uint8Array(normalized).buffer], {type:'image/png'})); mode.value = 'upload'
   } catch(e) { error.value = e instanceof Error ? e.message : String(e) }
   finally { busy.value = false; if (input.value) input.value.value = '' }
@@ -36,7 +39,7 @@ async function selected(e: Event): Promise<void> {
 async function useUpload(): Promise<void> {
   if (!bytes || busy.value) return
   busy.value = true; error.value = ''
-  try { await props.insert(bytes, filename.value, 'uploaded'); emit('close') }
+  try { await props.insert(bytes, filename.value, 'uploaded', foregroundMode.value); emit('close') }
   catch(e) { error.value = e instanceof Error ? e.message : String(e) }
   finally { busy.value = false }
 }
@@ -66,6 +69,10 @@ onUnmounted(() => { disposed = true; generation++; if (preview.value) URL.revoke
           <h2>确认这张图片</h2><img class="upload-preview" :src="preview" alt="待加入画布的原始图片" />
           <p>{{ filename }} · PNG/JPEG，最多 10MB</p>
           <p>确认后放入当前画布并准备图层；有背景的图片使用 BiRefNet General。</p>
+          <label>前景来源 <select v-model="foregroundMode" :disabled="busy" aria-label="前景来源">
+            <option value="birefnet-general">原图，需要去背景（BiRefNet General）</option>
+            <option value="embedded-alpha">我确认已去背景，使用图片现有透明前景</option>
+          </select></label>
           <div class="intake-actions"><button :disabled="busy" @click="input?.click()">重新选择</button><button class="primary" :disabled="busy" @click="useUpload">确认图片并开始拆分</button></div>
         </template>
         <CreateAssetPage v-else :use-candidate="useGenerated" />

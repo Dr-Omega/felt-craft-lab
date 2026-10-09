@@ -20,6 +20,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   select: [assetId: string]
   add: [asset: AssetRecord]
+  ask: [asset: AssetRecord]
+  unlock: [themeId: string]
   close: []
 }>()
 
@@ -173,9 +175,12 @@ function addSelection(): void {
           <p v-if="selectedAsset()?.nameEn" class="sheet-footer-name-en">{{ selectedAsset()?.nameEn }}</p>
         </div>
         <div class="sheet-footer-secondary">
+          <button type="button" @click="emit('ask', selectedAsset()!)">问问它</button>
           <AssetAudioControls :asset="selectedAsset()" :active="open" />
         </div>
         <div class="sheet-footer-primary">
+          <p v-if="!unlocked(selectedAsset()!)">该主题尚未解锁，完成主题引导后才能使用。</p>
+          <button v-if="!unlocked(selectedAsset()!)" type="button" :disabled="busy" @click="emit('unlock', selectedAsset()!.themeId)">前往解锁本主题</button>
           <button
             class="hand-btn-primary sheet-add"
             type="button"

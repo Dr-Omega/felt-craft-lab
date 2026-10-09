@@ -143,16 +143,15 @@ function resetAll(): void {
 
 async function startWork(): Promise<void> {
   if (placing.value) return
-  if (!controller.accepted) await controller.acceptCandidate()
-  if (!controller.accepted) return
-  if (props.useCandidate) {
-    placing.value = true
-    try { await props.useCandidate(controller.accepted) }
-    catch (e) { controller.error = e instanceof Error ? e.message : String(e) }
-    finally { placing.value = false }
-    return
-  }
-  openEditor({
+  placing.value = true
+  try {
+    if (!controller.accepted) await controller.acceptCandidate()
+    if (!controller.accepted) return
+    if (props.useCandidate) {
+      await props.useCandidate(controller.accepted)
+      return
+    }
+    openEditor({
     mode: 'new',
     fromGeneration: true,
     scene: createSceneWithCorePattern({
@@ -160,7 +159,9 @@ async function startWork(): Promise<void> {
       personalAssetId: controller.accepted.personalAssetId,
       versionId: controller.accepted.versionId
     })
-  })
+    })
+  } catch (e) { controller.error = e instanceof Error ? e.message : String(e) }
+  finally { placing.value = false }
 }
 
 function pauseVoice(): void { if (paused.value) recorder.resume(); else recorder.pause(); paused.value = !paused.value }
@@ -173,7 +174,7 @@ async function restartVoice(): Promise<void> { recorder.cancel(); clearTimeout(v
       <header class="section-head">
         <div>
           <h2>生成作品</h2>
-          <p class="muted">{{ useCandidate ? '说出想画的内容，确认图片后加入当前画布并准备图层。也可以打字。' : '先画出核心图案。看过图后，点去编辑器装饰，再用贴纸和背景打扮它。' }}</p>
+          <p class="muted">{{ useCandidate ? '说出想画的内容，确认图片后加入当前画布并准备图层。也可以打字。' : '先画出核心图案。确认后去编辑器装饰，同时自动开始拆分；等待时也能布置贴纸和背景。' }}</p>
         </div>
         <button v-if="!guideOpen" type="button" class="ghost guide-reopen" @click="reopenGuide">怎么用</button>
       </header>
@@ -271,7 +272,7 @@ async function restartVoice(): Promise<void> { recorder.cancel(); clearTimeout(v
         <div v-if="compiled" class="preview-block">
           <h3>临时预览</h3>
           <p v-if="!controller.accepted" class="muted">
-            喜欢这张就去编辑器装饰；不喜欢就再画一张，方案还在。
+            确认这张图后立即开始拆分，并进入画布继续创作；不喜欢就再画一张，方案还在。
           </p>
           <div v-if="controller.candidateRef" class="candidate-stage" data-testid="candidate-stage">
             <img
@@ -291,7 +292,7 @@ async function restartVoice(): Promise<void> { recorder.cancel(); clearTimeout(v
               {{ message }}
             </p>
             <p v-if="controller.quality.verdict === 'FAIL'" class="muted">
-              这只是提醒，仍可以点「去编辑器装饰」。
+              这只是提醒，仍可以点「确认图片并开始拆分」。
             </p>
           </div>
         </div>
@@ -340,7 +341,7 @@ async function restartVoice(): Promise<void> { recorder.cancel(); clearTimeout(v
         :disabled="controller.busy || placing"
         @click="startWork"
       >
-        {{ useCandidate ? '使用这张图并开始拆分' : '去编辑器装饰' }}
+        {{ useCandidate ? '使用这张图并开始拆分' : '确认图片并开始拆分' }}
       </button>
       <button
         v-if="compiled"

@@ -1,3 +1,4 @@
+import { getCurrentUserId } from '../services/plaza-session'
 import type { AssetRecord, SceneDocument } from '@shared/contracts'
 import type { FabricEditorAssetResolver } from '../editor'
 import { getFeltCraftDatabase, PersonalAssetStore, PersonalAssetVersionStore } from '../persistence'
@@ -145,7 +146,7 @@ export function createBlankScene(workName: string, themeId?: string): SceneDocum
   return {
     schemaVersion: 2,
     sceneId: crypto.randomUUID(),
-    userId: DEFAULT_USER_ID,
+    userId: getCurrentUserId(),
     workName: name,
     themeId: theme,
     assetSnapshotId: YWN_SNAPSHOT_ID,

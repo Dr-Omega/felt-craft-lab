@@ -236,6 +236,33 @@ def _ready_row(**overrides: str) -> list[str]:
 
 
 class BuildYwnManifestTests(unittest.TestCase):
+    def test_master_workbook_is_authoritative_over_theme_copies(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            source = Path(tmp)
+            _write_xlsx(source / '素材库.xlsx', HEADERS, [_ready_row(nameZh='新版福字')])
+            _write_xlsx(source / 'spring_festival/feishu_fields_old.xlsx', HEADERS, [_ready_row(nameZh='旧版福字')])
+            rows, issues = builder.load_ready_rows(source)
+            self.assertEqual(issues, [])
+            self.assertEqual(len(rows), 1)
+            self.assertEqual(rows[0]['nameZh'], '新版福字')
+            self.assertEqual(rows[0]['sourceSheet'], '素材库.xlsx')
+
+    def test_malformed_master_does_not_fall_back_to_old_theme_copy(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            source = Path(tmp)
+            _write_xlsx(source / '素材库.xlsx', ['wrong'], [['bad']])
+            _write_xlsx(source / 'feishu_fields_old.xlsx', HEADERS, [_ready_row()])
+            rows, issues = builder.load_ready_rows(source)
+            self.assertEqual(rows, [])
+            self.assertIn('missing required columns', issues[0]['errors'][0])
+
+    def test_master_duplicate_ids_remain_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            source = Path(tmp)
+            _write_xlsx(source / '素材库.xlsx', HEADERS, [_ready_row(), _ready_row()])
+            _, issues = builder.load_ready_rows(source)
+            self.assertIn('duplicate assetId', issues[0]['errors'][0])
+
     def test_fail_closed_preserves_published_artifacts(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

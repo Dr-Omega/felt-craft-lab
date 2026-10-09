@@ -2,10 +2,10 @@ import type { AssetAccessState } from '@shared/contracts'
 
 export const DEFAULT_USER_ID = 'user_demo_001'
 
-/** Explicit test unlock helper — never seed automatically on product startup. */
-export function createUnlockedAccess(assetId: string, now = new Date().toISOString()): AssetAccessState {
+/** Explicit in-memory allowance. Guided tasks pass the authenticated owner; never persist as a completion. */
+export function createUnlockedAccess(assetId: string, now = new Date().toISOString(), userId = DEFAULT_USER_ID): AssetAccessState {
   return {
-    userId: DEFAULT_USER_ID,
+    userId,
     assetId,
     unlocked: true,
     unlockSource: 'theme_complete',

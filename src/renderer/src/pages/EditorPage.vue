@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { getCurrentUserId } from '../services/plaza-session'
 import { computed, nextTick, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue'
 import type { AssetAccessState, AssetRecord } from '@shared/contracts'
 import {
@@ -10,7 +11,6 @@ import {
 } from '../editor'
 import {
   createCatalogResolver,
-  DEFAULT_USER_ID,
   isAssetUnlocked,
   resolveEditorCatalogForSnapshot,
   YWN_SNAPSHOT_CONTEXT
@@ -18,10 +18,10 @@ import {
 import { assetsForEditor, pickSelectedAsset } from '../catalog/editor-selection'
 import {
   isAcceptanceUnlockAllAssetsEnabled,
-  seedAcceptanceUnlockedAccess,
-  seedThemeUnlockedAccess
+  seedAcceptanceUnlockedAccess
 } from '../catalog/acceptance-access'
-import { getEditorLaunch, openLibrary } from '../app-nav'
+import { getEditorLaunch, openLibrary, openLearning, openSavedWork } from '../app-nav'
+import { DEFAULT_SCENE_CANVAS } from '../catalog/scene-defaults'
 import {
   AssetAccessStore,
   ProjectStore,
@@ -30,9 +30,11 @@ import {
   saveNewProject,
   updateExistingProject
 } from '../persistence'
+import GuidedThemeTask from '../components/editor/GuidedThemeTask.vue'
 import DrawingFrame from '../components/editor/DrawingFrame.vue'
 import BackgroundDrawer from '../components/editor/BackgroundDrawer.vue'
 import MaterialSheet from '../components/editor/MaterialSheet.vue'
+import AssetQaSheet from '../components/editor/AssetQaSheet.vue'
 import ReturnSaveModal from '../components/editor/ReturnSaveModal.vue'
 import ObjectQuickTools from '../components/editor/ObjectQuickTools.vue'
 import RemoveToast from '../components/editor/RemoveToast.vue'
@@ -44,13 +46,24 @@ import { recolorLayers } from '../fabrication/recolor'
 import type { ScreenBox } from '../fabrication/panel-placement'
 import CreationInputDialog from '../components/editor/CreationInputDialog.vue'
 import { persistCanvasInput } from '../fabrication/canvas-intake'
+import type { ForegroundMode } from '@shared/fabrication-desktop'
 
 const launch = getEditorLaunch()
 if (!launch) openLibrary()
+const guidedTheme = launch?.guidedTheme
+let unlockDestination: string | undefined
+function leaveEditor(): void {
+  if (guidedTheme || unlockDestination) openLearning(guidedTheme?.themeId ?? unlockDestination)
+  else openLibrary()
+}
+function requestThemeUnlock(themeId: string): void {
+  unlockDestination = themeId
+  requestBack()
+}
 
 const canvasEl = ref<HTMLCanvasElement | null>(null)
-const logicalCanvasWidth = launch?.scene.canvas.width ?? 960
-const logicalCanvasHeight = launch?.scene.canvas.height ?? 960
+const logicalCanvasWidth = launch?.scene.canvas.width ?? DEFAULT_SCENE_CANVAS.width
+const logicalCanvasHeight = launch?.scene.canvas.height ?? DEFAULT_SCENE_CANVAS.height
 const session = shallowRef<EditorSessionService | null>(null)
 const sessionState = ref<EditorSessionState | null>(null)
 const accessByAssetId = ref<Record<string, AssetAccessState | undefined>>({})
@@ -60,6 +73,7 @@ const feedbackKind = ref<'success' | 'error' | 'info'>('info')
 const returnModalOpen = ref(false)
 const returnModalError = ref('')
 const sheetOpen = ref(false)
+const qaAsset = ref<AssetRecord | null>(null)
 const backgroundDrawerOpen = ref(false)
 const inputDialogOpen = ref(false)
 const sceneSnapshotMissing = ref(false)
@@ -69,7 +83,7 @@ const oqtOpen = ref(false)
 const oqtPosition = ref({ left: 0, top: 0, below: false })
 const oqtElement = ref<{ $el: HTMLElement } | null>(null)
 const removeToastOpen = ref(false)
-const layerEditor = shallowRef<{ input: Uint8Array; binding: SceneBinding | null; selection: EditorSelectionProjection; savedEdit?: CanvasRecolorLink }>()
+const layerEditor = shallowRef<{ input: Uint8Array; binding: SceneBinding | null; selection: EditorSelectionProjection; savedEdit?: CanvasRecolorLink; foregroundMode: ForegroundMode }>()
 const layerAnchor = ref<ScreenBox>({ left: 0, top: 0, width: 0, height: 0 })
 
 function updateLayerAnchor(): void {
@@ -97,7 +111,7 @@ async function applyLayerColor(png: string, colors: LayerColors, jobId: string, 
   const current = layerEditor.value, service = session.value
   if (!current || !service) throw new Error('元素编辑已关闭。')
   const { asset, version } = await persistCanvasRecolor(png, {
-    binding: current.binding, colors, jobId, sourceSha256, ownerUserId: launch!.scene.userId
+    binding: colors.binding, colors, jobId, sourceSha256, ownerUserId: launch!.scene.userId
   }, current.selection.kind === 'core_pattern' ? 'core_pattern' : 'element')
   await service.replaceElementImage(current.selection.objectId, asset, version)
 }
@@ -125,6 +139,10 @@ async function addProcessedElement(): Promise<void> {
   finally { urls.forEach(url=>URL.revokeObjectURL(url)); busy.value=false }
 }
 
+// Keep the original job binding while this element's actual input bytes remain unchanged.
+// Scene export timestamps, dragging, or adding unrelated stickers must not restart decomposition.
+const layerPreparations = new Map<string, { input: Uint8Array; binding: SceneBinding }>()
+
 async function editElementLayers(): Promise<void> {
   const selection = oqtSelection.value || currentSelection.value
   if (!session.value || !selection || busy.value) return
@@ -134,29 +152,40 @@ async function editElementLayers(): Promise<void> {
     const personal = [...prepared.scene.personalElements, ...(prepared.scene.corePattern ? [prepared.scene.corePattern] : [])]
       .find(item => item.objectId === selection.objectId)
     const savedEdit = personal ? readCanvasRecolorLink(personal.versionId) : undefined
-    layerEditor.value = { input: new Uint8Array(await prepared.previewPng.arrayBuffer()),
-      binding: savedEdit ? savedEdit.binding : { scene: prepared.scene, objectId: selection.objectId }, selection, savedEdit }
+    const input = new Uint8Array(await prepared.previewPng.arrayBuffer())
+    const cached = layerPreparations.get(selection.objectId)
+    const preparation = cached && cached.input.length === input.length && input.every((byte, i) => byte === cached.input[i])
+      ? cached : { input, binding: { scene: prepared.scene, objectId: selection.objectId } }
+    if (!savedEdit) layerPreparations.set(selection.objectId, preparation)
+    const foregroundMode = personal && localStorage.getItem(`felt-foreground-mode:${personal.versionId}`) === 'embedded-alpha' ? 'embedded-alpha' : 'birefnet-general'
+    layerEditor.value = { input, binding: savedEdit ? savedEdit.binding : preparation.binding, selection, savedEdit, foregroundMode }
     updateLayerAnchor(); closeTransientContexts()
   } catch (e) { showFeedback(friendlyError(e), 'error') }
   finally { busy.value = false }
 }
 
-async function insertCreationImage(bytes: Uint8Array, name: string, source: 'uploaded'|'ai_generated'): Promise<void> {
+async function insertCreationImage(bytes: Uint8Array, name: string, source: 'uploaded'|'ai_generated', foregroundMode: ForegroundMode = 'birefnet-general'): Promise<void> {
   const service = session.value
   if (!service || busy.value) throw new Error('画布尚未就绪，请稍后重试。')
   busy.value = true
   try {
     const { asset, version } = await persistCanvasInput(bytes, name, launch!.scene.userId, source)
+    localStorage.setItem(`felt-foreground-mode:${version.versionId}`, foregroundMode)
     const objectId = await service.addPersonalElement(asset, version)
     inputDialogOpen.value = false
     closeTransientContexts()
-    // Fabric selection events provide the real object bounds; no image-derived synthetic layer list.
-    await nextTick()
-    if (currentSelection.value?.objectId === objectId) {
-      busy.value = false
-      await editElementLayers()
-    } else showFeedback('图片已加入画布。双击它并选择编辑即可准备图层。', 'success')
+    busy.value = false
+    await prepareConfirmedImage(objectId)
   } finally { busy.value = false }
+}
+
+async function prepareConfirmedImage(objectId: string): Promise<void> {
+  closeTransientContexts()
+  // Select through Fabric so preparation uses the actual element bounds and source.
+  session.value!.selectObject(objectId)
+  await nextTick()
+  if (currentSelection.value?.objectId !== objectId) throw new Error('图片已加入画布，但未能选中以准备图层。请重新选择编辑。')
+  await editElementLayers()
 }
 
 let unsubscribe: (() => void) | undefined
@@ -212,7 +241,7 @@ function accessFor(assetId: string): AssetAccessState | undefined {
 function friendlyError(error: unknown): string {
   const text = error instanceof Error ? error.message : String(error)
   if (/snapshot|registry|assetSnapshot|ASSET_SNAPSHOT/i.test(text)) return '有些以前用过的素材暂时找不到啦，这件作品先不能继续保存。'
-  if (/locked|unlock|解锁/i.test(text)) return '这个素材还没有解锁，先看看别的吧。'
+  if (/locked|unlock|解锁/i.test(text)) return '这个主题还没有解锁，请先前往主题引导任务。'
   if (/save|draft|project|preview|PROJECT_SAVE|DRAFT_SAVE/i.test(text)) return '这次还没有收好作品，请稍后再试。'
   return text && text.length < 120 ? text : '刚刚遇到一点小问题，请稍后再试。'
 }
@@ -282,6 +311,7 @@ function updateOqtPosition(): void {
 }
 
 function handleSelectionEvent(event: EditorSelectionEvent): void {
+  if (guidedTheme) return
   if (event.type === 'cleared') {
     currentSelection.value = null
     closeOqt()
@@ -311,7 +341,7 @@ function handleSelectionEvent(event: EditorSelectionEvent): void {
 
 async function refreshAccess(): Promise<void> {
   const store = new AssetAccessStore(getFeltCraftDatabase())
-  const rows = await store.listForUser(DEFAULT_USER_ID)
+  const rows = await store.listForUser(getCurrentUserId())
   const next: Record<string, AssetAccessState | undefined> = {}
   for (const row of rows) next[row.assetId] = row
   accessByAssetId.value = next
@@ -321,13 +351,10 @@ async function boot(): Promise<void> {
   if (!launch || !canvasEl.value) return
   sceneSnapshotMissing.value = editorCatalog.snapshotMissing
   const accessStore = new AssetAccessStore(getFeltCraftDatabase())
-  await seedAcceptanceUnlockedAccess(accessStore, sceneCatalogAssets, acceptanceUnlockAllAssets)
-  if (launch.fromGeneration && launch.scene.themeId) {
-    await seedThemeUnlockedAccess(accessStore, sceneCatalogAssets, launch.scene.themeId)
-  }
+  if (!guidedTheme) await seedAcceptanceUnlockedAccess(accessStore, sceneCatalogAssets, acceptanceUnlockAllAssets)
   await refreshAccess()
   if (launch.fromGeneration) {
-    showFeedback('点下面的花，用贴纸打扮它', 'info')
+    showFeedback('图片已确认，正在准备图层。等待时可以继续布置画布。', 'info')
   }
   const service = new EditorSessionService({
     createAdapter: () => new FabricEditorAdapter({ allowTestAssets: false, snapshotContext: YWN_SNAPSHOT_CONTEXT })
@@ -343,6 +370,9 @@ async function boot(): Promise<void> {
     await service.open(canvasEl.value, launch.scene, createCatalogResolver())
     if (launch.mode === 'draft' || launch.mode === 'project') service.markSaved()
     selectionUnsubscribe = service.subscribeSelection(handleSelectionEvent)
+    if (launch.fromGeneration && launch.scene.corePattern) {
+      await prepareConfirmedImage(launch.scene.corePattern.objectId)
+    }
   } catch (error) {
     showFeedback(friendlyError(error), 'error')
   }
@@ -442,8 +472,8 @@ async function redo(): Promise<void> {
   try { await session.value.redo() } catch (error) { showFeedback(friendlyError(error), 'error') }
 }
 
-async function finish(): Promise<void> {
-  if (!session.value) return
+async function finish(next?: 'story-card' | 'work-display'): Promise<void> {
+  if (!session.value || busy.value) return
   closeOqt()
   busy.value = true
   try {
@@ -453,11 +483,13 @@ async function finish(): Promise<void> {
       if (!existing) throw new Error('这件作品暂时找不到啦。')
       await updateExistingProject(existing, prepared)
     } else {
-      const saved = await saveNewProject(prepared)
+      const saved = await saveNewProject(prepared, { draftId })
       projectId = saved.projectId
+      draftId = undefined
     }
     session.value.markSaved()
     showFeedback('作品收好啦！', 'success')
+    if (next && projectId) await openSavedWork(projectId, next, 'editor')
   } catch (error) {
     showFeedback(friendlyError(error), 'error')
   } finally {
@@ -537,27 +569,35 @@ async function undoRemoval(): Promise<void> {
 }
 
 function requestBack(): void {
+  if (busy.value) return
+  if (guidedTheme) { leaveEditor(); return }
   closeTransientContexts()
   returnModalError.value = ''
   if (sessionState.value?.isDirty === false) {
-    openLibrary()
+    leaveEditor()
     return
   }
   returnModalOpen.value = true
 }
 
 async function saveProgressAndBack(): Promise<void> {
-  if (!session.value) return
+  if (!session.value || busy.value) return
   busy.value = true
   returnModalError.value = ''
   try {
-    const preparedScene = session.value.prepareDraftSave()
-    const saved = await saveDraftFromPreparedScene(preparedScene, { draftId })
-    draftId = saved.draftId
+    if (projectId) {
+      const existing = await new ProjectStore(getFeltCraftDatabase()).get(projectId)
+      if (!existing) throw new Error('这件作品暂时找不到啦。')
+      await updateExistingProject(existing, await session.value.prepareProjectSave())
+    } else {
+      const preparedScene = session.value.prepareDraftSave()
+      const saved = await saveDraftFromPreparedScene(preparedScene, { draftId })
+      draftId = saved.draftId
+    }
     session.value.markSaved()
     audioService.stop('primary')
     returnModalOpen.value = false
-    openLibrary()
+    leaveEditor()
   } catch (error) {
     returnModalError.value = friendlyError(error)
   } finally {
@@ -566,12 +606,14 @@ async function saveProgressAndBack(): Promise<void> {
 }
 
 function discardAndBack(): void {
+  if (busy.value) return
   audioService.stop('primary')
   returnModalOpen.value = false
-  openLibrary()
+  leaveEditor()
 }
 
 function continueEditing(): void {
+  unlockDestination = undefined
   returnModalOpen.value = false
   returnModalError.value = ''
 }
@@ -599,10 +641,10 @@ watch([oqtOpen, oqtSelection], () => { void nextTick(updateOqtPosition) })
 
 <template>
   <section class="editor-stage">
-    <DrawingFrame :busy="busy" :can-undo="canUndo" :can-redo="canRedo" :can-save="canFinish"
-      @back="requestBack" @undo="undo" @redo="redo" @save="finish">
+    <DrawingFrame :task-mode="!!guidedTheme" :busy="busy" :can-undo="canUndo" :can-redo="canRedo" :can-save="canFinish && !guidedTheme"
+      @back="requestBack" @undo="undo" @redo="redo" @save="finish()">
       <div class="editor-frame-inner" @click.self="closeTransientContexts">
-        <div class="canvas-area">
+        <div class="canvas-area" :inert="busy || undefined">
           <div class="canvas-stage">
             <div class="canvas-wrap" :style="{ '--canvas-ratio': logicalCanvasWidth / logicalCanvasHeight }">
               <canvas
@@ -611,11 +653,12 @@ watch([oqtOpen, oqtSelection], () => { void nextTick(updateOqtPosition) })
                 :width="logicalCanvasWidth"
                 :height="logicalCanvasHeight"
               ></canvas>
+              <GuidedThemeTask v-if="guidedTheme && session && sessionState?.status === 'ready'" :service="session" :session-id="guidedTheme.sessionId" :theme-id="guidedTheme.themeId" />
             </div>
           </div>
         </div>
 
-        <div class="editor-side">
+        <div v-if="!guidedTheme" class="editor-side">
           <BackgroundDrawer
             :assets="backgrounds"
             :access-by-asset-id="accessByAssetId"
@@ -624,12 +667,15 @@ watch([oqtOpen, oqtSelection], () => { void nextTick(updateOqtPosition) })
             :busy="busy"
             @select="(assetId) => (selectedBackgroundId = assetId)"
             @apply="applyBackground"
+            @unlock="requestThemeUnlock"
             @close="closeBackgroundDrawer"
           />
         </div>
 
       </div>
-      <template #tools>
+      <template v-if="!guidedTheme" #tools>
+        <button :disabled="busy || !canFinish || Boolean(layerEditor)" @click="finish('story-card')">保存并讲故事</button>
+        <button :disabled="busy || !canFinish || Boolean(layerEditor)" @click="finish('work-display')">保存并展示</button>
         <button :disabled="busy || !canEdit || !!layerEditor" @click="inputDialogOpen = true">添加图片</button>
         <button aria-label="打开素材盒" :disabled="busy || !canEdit" @click="toggleSheet">素材</button>
         <button aria-label="打开背景选择" :aria-expanded="backgroundDrawerOpen" @click="toggleBackgroundDrawer">背景</button>
@@ -643,7 +689,7 @@ watch([oqtOpen, oqtSelection], () => { void nextTick(updateOqtPosition) })
     </p>
     <p v-if="feedback" class="editor-feedback" :class="`is-${feedbackKind}`" role="status">{{ feedback }}</p>
 
-    <MaterialSheet
+    <MaterialSheet v-if="!guidedTheme"
       :assets="stickers"
       :access-by-asset-id="accessByAssetId"
       :selected-asset-id="selectedStickerId"
@@ -651,6 +697,8 @@ watch([oqtOpen, oqtSelection], () => { void nextTick(updateOqtPosition) })
       :busy="busy"
       @select="selectSticker"
       @add="addSticker"
+      @unlock="requestThemeUnlock"
+      @ask="asset => { qaAsset = asset; closeMaterialSheet() }"
       @close="closeMaterialSheet"
     />
 
@@ -672,8 +720,9 @@ watch([oqtOpen, oqtSelection], () => { void nextTick(updateOqtPosition) })
     />
 
     <RemoveToast :open="removeToastOpen" @undo="undoRemoval" />
+    <AssetQaSheet :asset="qaAsset" :open="!!qaAsset" @close="qaAsset = null" />
 
-    <ElementLayerEditor v-if="layerEditor" :input="layerEditor.input" :binding="layerEditor.binding"
+    <ElementLayerEditor v-if="layerEditor" :key="layerEditor.selection.objectId" :input="layerEditor.input" :binding="layerEditor.binding" :foreground-mode="layerEditor.foregroundMode"
       :anchor="layerAnchor" :saved-edit="layerEditor.savedEdit" :apply="applyLayerColor" @preview="previewLayerColor" @close="closeLayerEditor" />
     <CreationInputDialog v-if="inputDialogOpen" :insert="insertCreationImage" @close="inputDialogOpen = false" />
 

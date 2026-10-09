@@ -272,6 +272,21 @@ function stickerAccess(): AssetAccessState {
 }
 
 describe('EditorSessionService', () => {
+  it('selects the confirmed object without creating a history mutation, and rejects unavailable sessions', async () => {
+    const adapter = new StubAdapter()
+    const selected: string[] = []
+    Object.assign(adapter, { selectObject: (id: string) => selected.push(id) })
+    const service = createSession(adapter)
+    expect(() => service.selectObject('confirmed')).toThrow()
+    await service.open({} as HTMLCanvasElement, cloneFixture(validScene), resolver())
+    service.markSaved()
+    service.selectObject('confirmed')
+    expect(selected).toEqual(['confirmed'])
+    expect(service.getState()).toMatchObject({ isDirty: false, canUndo: false })
+    service.dispose()
+    expect(() => service.selectObject('confirmed')).toThrow()
+  })
+
   it('projects NEW dirty state from history identity and keeps prepare side-effect free', async () => {
     const adapter = new StubAdapter()
     const service = createSession(adapter)

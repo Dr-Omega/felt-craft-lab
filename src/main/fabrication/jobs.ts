@@ -1,8 +1,9 @@
 import { spawn } from 'node:child_process'
 import { createWriteStream, existsSync } from 'node:fs'
-import { mkdir, writeFile, readFile, realpath, stat, rename } from 'node:fs/promises'
+import { mkdir, writeFile, readFile, realpath, stat, rename, readdir } from 'node:fs/promises'
 import { join, resolve, sep, extname } from 'node:path'
-import { randomUUID } from 'node:crypto'
+import { randomUUID, createHash } from 'node:crypto'
+import { elementSourceIdentity } from '@shared/fabrication-task-identity'
 import type { FabricationJob, FabricationView, ForegroundMode } from '@shared/fabrication-desktop'
 import { initialColors, validateBinding, validateColors, type LayerColors } from '@shared/fabrication-colors'
 
@@ -13,6 +14,7 @@ export interface RuntimeConfig {
   backgroundPython: string
   modelCache: string
   timeoutMs?: number
+  requireRuntimeFiles?: boolean
 }
 
 export function validateStart(bytes: unknown, mode: unknown): asserts bytes is Uint8Array {
@@ -25,44 +27,168 @@ export function validateStart(bytes: unknown, mode: unknown): asserts bytes is U
   if (mode !== 'birefnet-general' && mode !== 'embedded-alpha') throw new Error('无效前景模式。')
 }
 
-/** One bounded job at a time; no renderer-supplied paths, shell, or recipe flags. */
+interface RequestRecord { mode: ForegroundMode; key: string; inputHash: string }
+/** Persistent admission queue; only one worker at a time, no renderer-supplied paths. */
 export class FabricationJobs {
   private jobs = new Map<string, FabricationJob>()
   private active = false
   private colorWrites = new Set<string>()
+  private requests = new Map<string, RequestRecord>()
+  private initialized?: Promise<void>
+  private admission: Promise<unknown> = Promise.resolve()
+  private implementation?: Promise<string>
+  private stopping = false
+  private stopWorker?: () => void
+  private running?: Promise<void>
   constructor(private config: RuntimeConfig) {}
 
-  async start(bytes: unknown, mode: ForegroundMode, rawBinding?: unknown): Promise<FabricationJob> {
+  async shutdown(): Promise<void> {
+    this.stopping = true
+    this.stopWorker?.()
+    await this.running
+  }
+
+  availability(): { available: boolean; message: string } {
+    const missing = !existsSync(this.config.python) || !existsSync(this.config.backgroundPython) || !existsSync(this.config.modelCache)
+    const codeMissing = this.config.requireRuntimeFiles && !this.runtimeFilesPresent()
+    return { available: !missing && !codeMissing, message: codeMissing
+      ? '算法运行目录未安装：请配置 FELT_FABRICATION_ROOT（包含 backend、benchmarks、src/shared 与依赖）。'
+      : missing ? '算法环境未配置：需要 Python 环境和已安装的 BiRefNet General 模型，不会自动下载或换模型。' : '算法环境路径已配置；实际运行仍会验证依赖及产物。' }
+  }
+
+  private runtimeFilesPresent(): boolean {
+    return ['backend/fabrication/worker.py', 'benchmarks/fabrication-layer-decomposition/algorithm-v1/algorithm_runtime.py',
+      'benchmarks/background-removal/scripts/benchmark_lib.py', 'src/shared/contracts/index.ts', 'node_modules/typescript/lib/tsc.js']
+      .every(path=>existsSync(join(this.config.root,path)))
+  }
+
+  private implementationHash(): Promise<string> {
+    return this.implementation ??= (async()=>{
+      const hash=createHash('sha256').update('desktop-task-queue/1')
+      // A completed task from another implementation cannot silently win admission.
+      const walk=async(path:string):Promise<void>=>{
+        if(!existsSync(path)) return
+        const info=await stat(path)
+        if(info.isDirectory()) {
+          for(const name of (await readdir(path)).sort()) if(!['__pycache__','node_modules','.git'].includes(name)) await walk(join(path,name))
+        } else if(/\.(py|ts|json)$/.test(path)) { hash.update(path.slice(this.config.root.length)); hash.update(await readFile(path)) }
+      }
+      for(const path of ['backend/fabrication','benchmarks/fabrication-layer-decomposition/algorithm-v1',
+        'benchmarks/fabrication-layer-decomposition/tools','benchmarks/background-removal/scripts','src/shared','package-lock.json']) await walk(join(this.config.root,path))
+      hash.update(JSON.stringify([this.config.python,this.config.backgroundPython,this.config.modelCache]))
+      return hash.digest('hex')
+    })()
+  }
+
+  private initialize(): Promise<void> {
+    return this.initialized ??= (async () => {
+      if (!this.config.jobsRoot) throw new Error('算法环境未配置：任务存储目录缺失。')
+      await mkdir(this.config.jobsRoot, { recursive: true })
+      for (const name of await readdir(this.config.jobsRoot)) {
+        if (!/^[a-f\d-]{36}$/i.test(name)) continue
+        const folder = join(this.config.jobsRoot, name)
+        if (!existsSync(join(folder, 'request.json'))) continue // legacy completed jobs remain resumable by ID
+        const request = JSON.parse(await readFile(join(folder, 'request.json'), 'utf8')) as RequestRecord
+        if (!['embedded-alpha', 'birefnet-general'].includes(request.mode) || !/^[a-f\d]{64}$/.test(request.key) || !/^[a-f\d]{64}$/.test(request.inputHash)) throw new Error('任务记录损坏，请保留本地任务目录。')
+        const job = JSON.parse(await readFile(join(folder, 'desktop-job.json'), 'utf8')) as FabricationJob
+        if (job.id !== name) throw new Error('任务身份不匹配。')
+        job.binding = validateBinding(JSON.parse(await readFile(join(folder, 'scene-binding.json'), 'utf8')))
+        if (['queued', 'background', 'fabrication'].includes(job.status)) {
+          job.status = 'failed'; job.message = '上次运行被中断；输入已保留，请点击重试从头处理，不会把部分结果当成完成。'
+          delete job.result
+          await this.persist(job)
+        } else if (job.status === 'complete') {
+          await this.readCompleted(name) // validate persisted view before accepting a completion
+        } else if (!['failed', 'timeout'].includes(job.status)) throw new Error('任务状态损坏。')
+        this.jobs.set(name, job); this.requests.set(name, request)
+      }
+    })()
+  }
+
+  async list(): Promise<FabricationJob[]> {
+    await this.initialize()
+    return [...this.jobs.values()].sort((a,b)=>a.startedAt-b.startedAt).map(job=>structuredClone(job))
+  }
+
+  private async persist(job: FabricationJob): Promise<void> {
+    const folder = join(this.config.jobsRoot, job.id)
+    const temp = join(folder, `job-${randomUUID()}.tmp`)
+    await writeFile(temp, JSON.stringify(job), { flag: 'wx' })
+    await rename(temp, join(folder, 'desktop-job.json'))
+  }
+
+  async retry(id: string): Promise<FabricationJob> {
+    await this.initialize()
+    const job = this.status(id), request = this.requests.get(id)
+    if (!request) throw new Error('旧任务没有保留重试输入，请重新选择原图。')
+    if (!['failed','timeout'].includes(job.status)) return job
+    const bytes = await readFile(join(this.config.jobsRoot, id, 'input.bin'))
+    if (createHash('sha256').update(bytes).digest('hex') !== request.inputHash) throw new Error('原始任务输入已变化，拒绝重试。')
+    return this.submit(bytes, request.mode, job.binding, true, job.ownerUserId)
+  }
+
+  async start(bytes: unknown, mode: ForegroundMode, rawBinding?: unknown, ownerUserId?: string): Promise<FabricationJob> {
+    return this.submit(bytes, mode, rawBinding, false, ownerUserId)
+  }
+
+  private async submit(bytes: unknown, mode: ForegroundMode, rawBinding: unknown, retry: boolean, ownerUserId?: string): Promise<FabricationJob> {
     validateStart(bytes, mode)
     const binding = validateBinding(rawBinding)
-    if (this.active) throw new Error('已有图片正在处理，请等待本次完成。')
+    if (ownerUserId && binding && binding.scene.userId !== ownerUserId) throw new Error('任务来源不属于当前账号。')
+    const immutableBytes = new Uint8Array(bytes)
+    const operation = this.admission.then(async () => {
+    if(this.stopping) throw new Error('应用正在退出，未创建新任务。')
+    await this.initialize()
+    const inputHash = createHash('sha256').update(immutableBytes).digest('hex')
+    const key = createHash('sha256').update(JSON.stringify({ implementation: await this.implementationHash(), inputHash, mode, ownerUserId, source: elementSourceIdentity(binding) })).digest('hex')
+    const existing = [...this.jobs.values()].sort((a,b)=>b.startedAt-a.startedAt).find(job => this.requests.get(job.id)?.key === key && (!retry || !['failed','timeout'].includes(job.status)))
+    if (existing) return structuredClone(existing)
+    if ([...this.jobs.values()].filter(j=>j.status==='queued').length >= 20) throw new Error('等待处理的图片已达20张，请等待部分完成后重试。')
+    if (this.config.requireRuntimeFiles && !this.runtimeFilesPresent()) throw new Error(this.availability().message)
     if (!existsSync(this.config.python) || (mode === 'birefnet-general' &&
         (!existsSync(this.config.backgroundPython) || !existsSync(this.config.modelCache)))) {
       throw new Error('算法环境未配置：需要 Python 环境和已安装的 BiRefNet General 模型，不会自动下载或换模型。')
     }
-    this.active = true
-    try {
       const id = randomUUID()
       const folder = join(this.config.jobsRoot, id)
       await mkdir(folder, { recursive: true })
-      await writeFile(join(folder, 'input.bin'), bytes, { flag: 'wx' })
+      await writeFile(join(folder, 'input.bin'), immutableBytes, { flag: 'wx' })
       await writeFile(join(folder, 'scene-binding.json'), JSON.stringify(binding), { flag: 'wx' })
-      const job: FabricationJob = { id, status: 'background', message: '正在准备前景', startedAt: Date.now() }
+      const job: FabricationJob = { id, status: 'queued', message: '已排队，前一张结束后自动处理', startedAt: Date.now(), binding, mode, ...(ownerUserId ? { ownerUserId } : {}) }
+      const request = { key, mode, inputHash }
+      await this.persist(job)
+      await writeFile(join(folder, 'request.json'), JSON.stringify(request), { flag: 'wx' })
+      this.requests.set(id, request)
       this.jobs.set(id, job)
-      void this.run(job, mode, folder)
+      this.drain()
       return { ...job }
-    } catch (error) { this.active = false; throw error }
+    })
+    this.admission = operation.catch(() => undefined)
+    return operation
+  }
+
+  private drain(): void {
+    if (this.active || this.stopping) return
+    const next = [...this.jobs.values()].find(job=>job.status==='queued')
+    if (!next) return
+    this.active = true
+    this.running = this.run(next, this.requests.get(next.id)!.mode, join(this.config.jobsRoot, next.id))
   }
 
   status(id: string): FabricationJob {
     const job = this.jobs.get(id)
     if (!job) throw new Error('本次会话中不存在该处理任务。')
-    return { ...job }
+    return structuredClone(job)
   }
 
   /** Restore this app's completed local job for display, not a new algorithm PASS. */
   async resume(id: string): Promise<FabricationJob> {
+    await this.initialize()
     if (this.jobs.has(id)) return this.status(id)
+    return this.readCompleted(id)
+  }
+
+  private async readCompleted(id: string): Promise<FabricationJob> {
     if (!/^[a-f\d-]{36}$/i.test(id)) throw new Error('无效任务 ID。')
     const base = await realpath(this.config.jobsRoot)
     const folder = await realpath(join(base, id))
@@ -120,17 +246,20 @@ export class FabricationJobs {
         proc.kill(); fail(new Error(`无法保存运行日志：${error.message}`))
       })
       let timedOut = false
-      const timer = setTimeout(() => {
-        timedOut = true
+      const stop = () => {
         if (process.platform === 'win32' && proc.pid) {
           const killer = spawn('taskkill', ['/PID', String(proc.pid), '/T', '/F'], { windowsHide: true })
           killer.on('error', () => proc.kill())
         } else proc.kill('SIGKILL')
-      }, this.config.timeoutMs ?? 600_000)
+      }
+      this.stopWorker = stop
+      const timer = setTimeout(() => { timedOut = true; stop() }, this.config.timeoutMs ?? 600_000)
       proc.once('error', (error) => { clearTimeout(timer); stdout.end(); stderr.end(); fail(error) })
       proc.once('close', (code) => {
+        this.stopWorker = undefined
         clearTimeout(timer); stdout.end(); stderr.end()
-        if (timedOut) fail(new Error('TIMEOUT'))
+        if (this.stopping) fail(new Error('应用已关闭，处理被中断；输入已保留，可在任务列表重试。'))
+        else if (timedOut) fail(new Error('TIMEOUT'))
         else if (code !== 0) fail(new Error(`${stage} 阶段失败（退出码 ${code}），原始日志已保留。`))
         else done()
       })
@@ -139,9 +268,14 @@ export class FabricationJobs {
 
   private async run(job: FabricationJob, mode: ForegroundMode, folder: string): Promise<void> {
     try {
+      job.status = 'background'
       job.message = mode === 'birefnet-general' ? 'BiRefNet General 去背景中' : '检查已有透明前景'
+      await this.persist(job)
+      if(this.stopping) throw new Error('应用已关闭，处理被中断；输入已保留，可重试。')
       await this.stage(folder, 'background', mode)
       job.status = 'fabrication'; job.message = '计算设计色、完整底板、裁片与制作步骤，并独立回读验证'
+      await this.persist(job)
+      if(this.stopping) throw new Error('应用已关闭，处理被中断；输入已保留，可重试。')
       await this.stage(folder, 'fabrication', mode)
       const result = JSON.parse(await readFile(join(folder, 'view.json'), 'utf8')) as FabricationView
       if (result.schemaVersion !== 'desktop-fabrication-view/1' || result.geometryStatus !== 'PASS' ||
@@ -152,9 +286,10 @@ export class FabricationJobs {
       job.status = message === 'TIMEOUT' ? 'timeout' : 'failed'
       job.message = message === 'TIMEOUT' ? '超过统一阶段预算（600秒），未将部分结果当成成功。' : message
     } finally {
-      this.active = false
-      try { await writeFile(join(folder, 'desktop-job.json'), JSON.stringify(job, null, 2)) }
+      try { await this.persist(job) }
       catch { job.message += '；任务摘要保存失败，请保留当前窗口中的结果。' }
+      this.active = false
+      this.drain()
     }
   }
 

@@ -1,10 +1,13 @@
 <script setup lang="ts">
+import { getCurrentUserId } from '../services/plaza-session'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
-import type { DraftRecord, ProjectRecord } from '@shared/contracts'
+import type { AssetRecord, DraftRecord, ProjectRecord } from '@shared/contracts'
+import AssetQaSheet from '../components/editor/AssetQaSheet.vue'
+import AssetAudioControls from '../components/editor/AssetAudioControls.vue'
+import { audioService } from '../services/audio.service'
 import {
   CATALOG_ASSETS,
   createUnlockedAccess,
-  DEFAULT_USER_ID,
   isAssetUnlocked,
   listCatalogThemes
 } from '../catalog/ywn-catalog'
@@ -12,7 +15,7 @@ import {
   isAcceptanceAllThemesInEditorEnabled,
   prepareNewWorkScene
 } from '../catalog/library-new-work'
-import { openEditor } from '../app-nav'
+import { openEditor, openLearning, openSavedWork } from '../app-nav'
 import {
   AssetAccessStore,
   DraftStore,
@@ -23,8 +26,13 @@ import {
 } from '../persistence'
 import ProjectPreviewModal from '../components/library/ProjectPreviewModal.vue'
 import { friendlyRelativeTime } from '../util/friendly-time'
+import { themeLabel } from '../catalog/theme-labels'
+
+defineProps<{ displayPicker?: boolean }>()
 
 const drafts = ref<DraftRecord[]>([])
+const qaAsset = ref<AssetRecord | null>(null)
+const audioAsset = ref<AssetRecord | null>(null)
 const projects = ref<ProjectRecord[]>([])
 const favorites = ref<string[]>([])
 const unlockedIds = ref<Set<string>>(new Set())
@@ -51,10 +59,10 @@ const visibleAssets = computed(() => {
 
 async function refreshLists(): Promise<void> {
   const db = getFeltCraftDatabase()
-  drafts.value = await new DraftStore(db).list()
-  projects.value = await new ProjectStore(db).list()
-  favorites.value = (await new FavoriteStore(db).listForUser(DEFAULT_USER_ID)).map((row) => row.assetId)
-  const accessRows = await new AssetAccessStore(db).listForUser(DEFAULT_USER_ID)
+  drafts.value = (await new DraftStore(db).list()).filter(row => row.scene.userId === getCurrentUserId())
+  projects.value = (await new ProjectStore(db).list()).filter(row => row.scene.userId === getCurrentUserId())
+  favorites.value = (await new FavoriteStore(db).listForUser(getCurrentUserId())).map((row) => row.assetId)
+  const accessRows = await new AssetAccessStore(db).listForUser(getCurrentUserId())
   unlockedIds.value = new Set(accessRows.filter((row) => isAssetUnlocked(row)).map((row) => row.assetId))
 }
 
@@ -87,6 +95,15 @@ function openDraft(draft: DraftRecord): void {
 
 function openProject(project: ProjectRecord): void {
   openEditor({ mode: 'project', scene: project.scene, projectId: project.projectId })
+}
+
+async function openProjectFlow(projectId: string, target: 'story-card' | 'work-display'): Promise<void> {
+  if (busy.value) return
+  busy.value = true
+  message.value = ''
+  try { await openSavedWork(projectId, target) }
+  catch (error) { message.value = error instanceof Error ? error.message : String(error) }
+  finally { busy.value = false }
 }
 
 function continueProject(project: ProjectRecord): void {
@@ -154,10 +171,10 @@ function projectLabel(project: ProjectRecord): string {
 async function toggleFavorite(assetId: string): Promise<void> {
   const store = new FavoriteStore(getFeltCraftDatabase())
   if (favorites.value.includes(assetId)) {
-    await store.delete(DEFAULT_USER_ID, assetId)
+    await store.delete(getCurrentUserId(), assetId)
   } else {
     await store.save({
-      userId: DEFAULT_USER_ID,
+      userId: getCurrentUserId(),
       assetId,
       createdAt: new Date().toISOString()
     })
@@ -165,7 +182,7 @@ async function toggleFavorite(assetId: string): Promise<void> {
   await refreshLists()
 }
 
-const allowTestUnlock = import.meta.env.DEV
+const allowTestUnlock = import.meta.env.DEV && import.meta.env.VITE_ACCEPTANCE_UNLOCK_ALL_ASSETS === 'true'
 
 async function unlockForTest(assetId: string): Promise<void> {
   if (!allowTestUnlock) return
@@ -182,7 +199,9 @@ async function unlockForTest(assetId: string): Promise<void> {
   }
 }
 
+const syncRefresh = () => { void refreshLists() }
 onMounted(() => {
+  window.addEventListener('felt-workspace-synced', syncRefresh)
   void refreshLists()
 })
 
@@ -191,6 +210,8 @@ const stopRefresh = window.setInterval(() => {
 }, 4000)
 
 onUnmounted(() => {
+  window.removeEventListener('felt-workspace-synced', syncRefresh)
+  audioService.stop('primary')
   window.clearInterval(stopRefresh)
 })
 </script>
@@ -200,13 +221,13 @@ onUnmounted(() => {
     <div class="library-scroll">
       <header class="section-head">
         <div>
-          <h2>我的创作</h2>
-          <p class="muted">继续做以前的草稿，看看自己已经完成的作品。</p>
+          <h2>{{ displayPicker ? '选择要展示的作品' : '我的创作' }}</h2>
+          <p class="muted">{{ displayPicker ? '点击作品旁的“展示作品”，查看这件作品实际保存的画面和图层。' : '继续做以前的草稿，看看自己已经完成的作品。' }}</p>
         </div>
       </header>
 
       <section class="creation-cluster" aria-label="我的创作">
-        <div class="creation-cluster-toolbar">
+        <div v-if="!displayPicker" class="creation-cluster-toolbar">
           <label class="creation-cluster-name">
             新作品名
             <input v-model="newWorkName" type="text" maxlength="40" />
@@ -215,7 +236,7 @@ onUnmounted(() => {
             主题
             <select v-model="themeFilter">
               <option value="all">全部</option>
-              <option v-for="theme in themes" :key="theme" :value="theme">{{ theme }}</option>
+              <option v-for="theme in themes" :key="theme" :value="theme">{{ themeLabel(theme) }}</option>
             </select>
           </label>
           <button type="button" class="primary new-work-button" :disabled="busy" @click="startNewWork">
@@ -223,8 +244,8 @@ onUnmounted(() => {
           </button>
         </div>
 
-        <div class="creation-row">
-          <section class="creation-card-list" aria-label="继续制作">
+        <div class="creation-row" :style="displayPicker ? { gridTemplateColumns: '1fr' } : undefined">
+          <section v-if="!displayPicker" class="creation-card-list" aria-label="继续制作">
             <header class="creation-card-list-head">
               <h3>继续制作</h3>
               <span class="creation-card-list-count">{{ drafts.length }} 件</span>
@@ -268,6 +289,8 @@ onUnmounted(() => {
                   <div class="creation-card-actions">
                     <button type="button" class="primary" :disabled="busy" @click="continueProject(project)">打开作品</button>
                     <button type="button" class="ghost" :disabled="busy" @click="showProjectPreview(project)">预览</button>
+                    <button type="button" :disabled="busy" @click="openProjectFlow(project.projectId, 'story-card')">故事卡</button>
+                    <button type="button" :disabled="busy" @click="openProjectFlow(project.projectId, 'work-display')">展示作品</button>
                     <button type="button" class="ghost" :disabled="busy" @click="askRemoveProject(project)">删除</button>
                   </div>
                 </div>
@@ -279,7 +302,7 @@ onUnmounted(() => {
 
       <p v-if="message" class="error">{{ message }}</p>
 
-      <section class="material-library" aria-label="素材库">
+      <section v-if="!displayPicker" class="material-library" aria-label="素材库">
         <header class="section-head section-head-secondary">
           <div>
             <h2>素材库</h2>
@@ -296,6 +319,9 @@ onUnmounted(() => {
                 {{ unlockedIds.has(asset.assetId) ? '已解锁' : '锁定' }}
               </p>
               <div class="actions">
+                <button v-if="!unlockedIds.has(asset.assetId)" type="button" @click="audioService.stop('primary'); openLearning(asset.themeId)">前往解锁本主题</button>
+                <button type="button" @click="audioService.stop('primary'); qaAsset = asset">问问它</button>
+                <button type="button" @click="audioService.stop('primary'); audioAsset = audioAsset?.assetId === asset.assetId ? null : asset">听名称与介绍</button>
                 <button type="button" class="ghost" @click="toggleFavorite(asset.assetId)">
                   {{ favorites.includes(asset.assetId) ? '取消收藏' : '收藏' }}
                 </button>
@@ -309,6 +335,7 @@ onUnmounted(() => {
                   测试解锁
                 </button>
               </div>
+              <AssetAudioControls v-if="audioAsset?.assetId === asset.assetId" :asset="asset" :active="true" />
             </div>
           </article>
         </div>
@@ -337,6 +364,7 @@ onUnmounted(() => {
       @close="closeProjectPreview"
       @open="openProjectFromPreview"
     />
+    <AssetQaSheet :asset="qaAsset" :open="!!qaAsset" @close="qaAsset = null" />
   </section>
 </template>
 

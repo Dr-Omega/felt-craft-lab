@@ -1,0 +1,1918 @@
+{
+  "repository": "Dr-Omega/felt-craft-lab",
+  "branch": "content/material-assets-v2",
+  "commit": "1cdf77db19d99bc1446277c86783bb09c5f595d6",
+  "workbook": "素材库.xlsx",
+  "workbookBlobSha": "3d4d4a21be38289c12aece1f6acfd6600c924ffd",
+  "readyRows": 71,
+  "themes": 15,
+  "snapshotId": "snapshot_ywn_material_v2_1cdf77d",
+  "aliasEvidenceCommit": "c061b607ca6c6a0fecb93c57adb393c7f3b76e1d",
+  "aliasEvidencePath": "assets/generated/material/snapshot_ywn_20260925_latest/",
+  "aliases": [
+    {
+      "assetId": "sticker_osmanthus_001",
+      "sourcePath": "plants/stickers/sticker_plum_blossom_001.png",
+      "destinationPath": "plants/stickers/sticker_osmanthus_001.png",
+      "blobSha": "18010f892ca9de3009054049a610a51b31d4b669"
+    },
+    {
+      "assetId": "sticker_plum_blossom_001",
+      "sourcePath": "winter/stickers/sticker_plant_plum_002.png",
+      "destinationPath": "winter/stickers/sticker_plum_blossom_001.png",
+      "blobSha": "43c8175e10af4d876f4b732f78058f5e9a3321bf"
+    }
+  ],
+  "sourceFiles": [
+    {
+      "path": "animals/backgrounds/background_animal_riverbank_001.png",
+      "blobSha": "f953fd6978f0ac9346899ce779d107a2cab46a16",
+      "size": 179833
+    },
+    {
+      "path": "animals/feishu_fields_animals.xlsx",
+      "blobSha": "b21aeb0ce3ec105c091183690d9c44c8a8caf83b",
+      "size": 8374
+    },
+    {
+      "path": "animals/stickers/sticker_animal_swallow_001.png",
+      "blobSha": "8de28b8fbc1ef39654ec5b24748025f41dda9add",
+      "size": 159154
+    },
+    {
+      "path": "animals/stickers/sticker_ape_001.png",
+      "blobSha": "c2f72a1b88dbdebade685e94aa13fe4d00d44b70",
+      "size": 396527
+    },
+    {
+      "path": "animals/stickers/sticker_cuckoo_001.png",
+      "blobSha": "dea647aff1d0e1f18f59707959f509463c2af5dd",
+      "size": 207424
+    },
+    {
+      "path": "animals/stickers/sticker_wild_goose_001.png",
+      "blobSha": "d3659fc4c7d56a88ac40f131afa688fc17f23e01",
+      "size": 292735
+    },
+    {
+      "path": "animals/thumbnails/background_animal_riverbank_001_thumb.png",
+      "blobSha": "5257585f5ecfce53894fe718309f0cee92f15424",
+      "size": 73216
+    },
+    {
+      "path": "animals/thumbnails/sticker_animal_swallow_001_thumb.png",
+      "blobSha": "dd379cc06abb2b2d4e1eb7f1307c32415bc52ef5",
+      "size": 30620
+    },
+    {
+      "path": "animals/thumbnails/sticker_ape_001_thumb.png",
+      "blobSha": "36f9a0b882ebdbc3532655dee8cc71e02c2a55e2",
+      "size": 108360
+    },
+    {
+      "path": "animals/thumbnails/sticker_cuckoo_001_thumb.png",
+      "blobSha": "d6491d13680a19e06a81ec3f6bb61fbdcddea9e6",
+      "size": 57244
+    },
+    {
+      "path": "animals/thumbnails/sticker_wild_goose_001_thumb.png",
+      "blobSha": "3fb85efe709dc8036a98a115478da3cf3a140973",
+      "size": 59245
+    },
+    {
+      "path": "audio/background_ancient_opera_stage_001_intro_zh.mp3",
+      "blobSha": "c20370328543325e227bf931aec82f39272748b1",
+      "size": 469428
+    },
+    {
+      "path": "audio/background_ancient_opera_stage_001_name_en.mp3",
+      "blobSha": "7a613afecac838c90d499e1f534e3395bab7647d",
+      "size": 39156
+    },
+    {
+      "path": "audio/background_ancient_opera_stage_001_name_zh.mp3",
+      "blobSha": "e146f484b4fce63e446733296aafb181a0e32242",
+      "size": 29940
+    },
+    {
+      "path": "audio/background_animal_riverbank_001_intro_zh.mp3",
+      "blobSha": "94cfcefd900ede91a7e6c70825fe924abfc243f1",
+      "size": 338100
+    },
+    {
+      "path": "audio/background_animal_riverbank_001_name_en.mp3",
+      "blobSha": "5fdb998fabacbfbe55c89a83a0fcee5d4676c240",
+      "size": 28212
+    },
+    {
+      "path": "audio/background_animal_riverbank_001_name_zh.mp3",
+      "blobSha": "07ffc4a4d14ecb8543273a9350ea5addac13c438",
+      "size": 35700
+    },
+    {
+      "path": "audio/background_autumn_field_dusk_001_intro_zh.mp3",
+      "blobSha": "1744596f9b3f64aa09256638e24fc97404067dda",
+      "size": 455028
+    },
+    {
+      "path": "audio/background_autumn_field_dusk_001_name_en.mp3",
+      "blobSha": "55e9940636288032314f9d1c96acea3887f439a0",
+      "size": 33396
+    },
+    {
+      "path": "audio/background_autumn_field_dusk_001_name_zh.mp3",
+      "blobSha": "cdf81e5c27d8d5ecc3e6d0e4138c780cf617649c",
+      "size": 33972
+    },
+    {
+      "path": "audio/background_autumn_ginkgo_path_001_intro_zh.mp3",
+      "blobSha": "1744596f9b3f64aa09256638e24fc97404067dda",
+      "size": 455028
+    },
+    {
+      "path": "audio/background_autumn_ginkgo_path_001_name_en.mp3",
+      "blobSha": "773ec4171c9d5ccd5416f04c42722a3271c63adb",
+      "size": 35124
+    },
+    {
+      "path": "audio/background_autumn_ginkgo_path_001_name_zh.mp3",
+      "blobSha": "0e57dc1724bdc7bb35224d8ebdd62af3ef7d9ca0",
+      "size": 36852
+    },
+    {
+      "path": "audio/background_classical_tea_room_001_intro_zh.mp3",
+      "blobSha": "7abefccf7d270fbabd813d62c550b8052f9d4bc6",
+      "size": 469428
+    },
+    {
+      "path": "audio/background_classical_tea_room_001_name_en.mp3",
+      "blobSha": "371e51520fd8adf3063574ce85da675ab9438694",
+      "size": 35124
+    },
+    {
+      "path": "audio/background_classical_tea_room_001_name_zh.mp3",
+      "blobSha": "8e64c78f7119e12324d54d7c82300c65096850cb",
+      "size": 31668
+    },
+    {
+      "path": "audio/background_couplet_gate_001_intro_zh.mp3",
+      "blobSha": "f0a241f85775ec5bcc503a783c42ccccca6cdb33",
+      "size": 583476
+    },
+    {
+      "path": "audio/background_couplet_gate_001_name_en.mp3",
+      "blobSha": "5725afd9378db67000efeabc8c823b7272cab22b",
+      "size": 60468
+    },
+    {
+      "path": "audio/background_couplet_gate_001_name_zh.mp3",
+      "blobSha": "79c00ef214e5f7862c28e8b11c329e780038e61e",
+      "size": 42036
+    },
+    {
+      "path": "audio/background_dragon_boat_race_001_intro_zh.mp3",
+      "blobSha": "9c3f0e80ae92d0ee759fc38def65ba21063f6ed1",
+      "size": 513204
+    },
+    {
+      "path": "audio/background_dragon_boat_race_001_name_en.mp3",
+      "blobSha": "71fe4ce05ad0c120b99ec058e006574159462140",
+      "size": 33972
+    },
+    {
+      "path": "audio/background_dragon_boat_race_001_name_zh.mp3",
+      "blobSha": "2fdf830860074aeb38c9db05dc15440d463cf4b0",
+      "size": 33972
+    },
+    {
+      "path": "audio/background_elegant_hall_001_intro_zh.mp3",
+      "blobSha": "078b2f3a4347ea0875d99ff009826760c98083fc",
+      "size": 417012
+    },
+    {
+      "path": "audio/background_elegant_hall_001_name_en.mp3",
+      "blobSha": "361696abe460b9e2975b3a9eabab2f1f1d98347f",
+      "size": 39156
+    },
+    {
+      "path": "audio/background_elegant_hall_001_name_zh.mp3",
+      "blobSha": "bf9a95fa518d7bdb241d14d5dc7c5062c188b69b",
+      "size": 30516
+    },
+    {
+      "path": "audio/background_kite_meadow_001_intro_zh.mp3",
+      "blobSha": "ceb156f46bd62cd13216eba7b57d12ea22778a4e",
+      "size": 501684
+    },
+    {
+      "path": "audio/background_kite_meadow_001_name_en.mp3",
+      "blobSha": "8827a194882c8d0007a75f1572166a0fd8f05edc",
+      "size": 51252
+    },
+    {
+      "path": "audio/background_kite_meadow_001_name_zh.mp3",
+      "blobSha": "026d6807a482b045e97817b7af497d3d7b0a9997",
+      "size": 35124
+    },
+    {
+      "path": "audio/background_lake_moon_001_intro_zh.mp3",
+      "blobSha": "a65b8fdc55daa75a7f7773204c186f94d9964bdf",
+      "size": 479796
+    },
+    {
+      "path": "audio/background_lake_moon_001_name_en.mp3",
+      "blobSha": "0b48b4045f8fe82aa8e0c897188f30b967cf94f1",
+      "size": 50100
+    },
+    {
+      "path": "audio/background_lake_moon_001_name_zh.mp3",
+      "blobSha": "a4fb89f6604739a6ba364356270f105c983499c4",
+      "size": 44340
+    },
+    {
+      "path": "audio/background_lantern_street_001_intro_zh.mp3",
+      "blobSha": "3a3a4299be8ea1bdb7894385d78ca07a0218b63b",
+      "size": 527604
+    },
+    {
+      "path": "audio/background_lantern_street_001_name_en.mp3",
+      "blobSha": "8904f8b00c7b174d170bf201adf983e4adb2a7c4",
+      "size": 40884
+    },
+    {
+      "path": "audio/background_lantern_street_001_name_zh.mp3",
+      "blobSha": "fe951a9d1a804f5ae10a1a6199835ea38c467921",
+      "size": 36852
+    },
+    {
+      "path": "audio/background_osmanthus_moon_001_intro_zh.mp3",
+      "blobSha": "a65b8fdc55daa75a7f7773204c186f94d9964bdf",
+      "size": 479796
+    },
+    {
+      "path": "audio/background_osmanthus_moon_001_name_en.mp3",
+      "blobSha": "9962a7528cfe24ffb3e874756bb1fc1f2abb8c59",
+      "size": 66228
+    },
+    {
+      "path": "audio/background_osmanthus_moon_001_name_zh.mp3",
+      "blobSha": "4300a81292defd66cb0b4a96218c67182dccb367",
+      "size": 50100
+    },
+    {
+      "path": "audio/background_pastoral_courtyard_001_intro_zh.mp3",
+      "blobSha": "28466289e3eaf192d0a764e4b99eed106aed9402",
+      "size": 373812
+    },
+    {
+      "path": "audio/background_pastoral_courtyard_001_name_en.mp3",
+      "blobSha": "bca19657d21a6ad2576db00c30c01513d29cd4a3",
+      "size": 37428
+    },
+    {
+      "path": "audio/background_pastoral_courtyard_001_name_zh.mp3",
+      "blobSha": "8dbde4accedf87f8f2e176d1808ebfb980d0a9f2",
+      "size": 31668
+    },
+    {
+      "path": "audio/background_river_lantern_001_intro_zh.mp3",
+      "blobSha": "3a3a4299be8ea1bdb7894385d78ca07a0218b63b",
+      "size": 527604
+    },
+    {
+      "path": "audio/background_river_lantern_001_name_en.mp3",
+      "blobSha": "79fd9bdaf1e46fd79e357caf7bd8f88d39d46dd5",
+      "size": 61044
+    },
+    {
+      "path": "audio/background_river_lantern_001_name_zh.mp3",
+      "blobSha": "18b2f22f2f68b0aba9e01d17c5337127871f75fb",
+      "size": 40308
+    },
+    {
+      "path": "audio/background_snow_window_001_intro_zh.mp3",
+      "blobSha": "f0a241f85775ec5bcc503a783c42ccccca6cdb33",
+      "size": 583476
+    },
+    {
+      "path": "audio/background_snow_window_001_name_en.mp3",
+      "blobSha": "6b9185c60a491b40de14b23df7829c0afa656413",
+      "size": 44916
+    },
+    {
+      "path": "audio/background_snow_window_001_name_zh.mp3",
+      "blobSha": "544059150de6ae0bc2587ccc4b2ce34c45a73446",
+      "size": 42612
+    },
+    {
+      "path": "audio/background_spring_meadow_001_intro_zh.mp3",
+      "blobSha": "1f525046db563839aa53f5f40d0b73a2e6b84060",
+      "size": 560436
+    },
+    {
+      "path": "audio/background_spring_meadow_001_name_en.mp3",
+      "blobSha": "f69da7acdcc1931866939b7c405f7b58b2328069",
+      "size": 29940
+    },
+    {
+      "path": "audio/background_spring_meadow_001_name_zh.mp3",
+      "blobSha": "b3d73ab63a820427d9647ef1946839023be975a8",
+      "size": 25332
+    },
+    {
+      "path": "audio/background_study_desk_001_intro_zh.mp3",
+      "blobSha": "79e3f63483ebc6ab25d65834cb0883a8191b7a15",
+      "size": 425076
+    },
+    {
+      "path": "audio/background_study_desk_001_name_en.mp3",
+      "blobSha": "4554be84b87d80edbd8c51fac90df381d5cb3dbb",
+      "size": 30516
+    },
+    {
+      "path": "audio/background_study_desk_001_name_zh.mp3",
+      "blobSha": "fb4104d77fcb330fbd8be194c12268b665df8cf3",
+      "size": 32244
+    },
+    {
+      "path": "audio/background_summer_courtyard_001_intro_zh.mp3",
+      "blobSha": "1aa3d781282d312c35b2b09b5d80040f4932bbf0",
+      "size": 415860
+    },
+    {
+      "path": "audio/background_summer_courtyard_001_name_en.mp3",
+      "blobSha": "798514d292176d677cbc08d4c7224191e7725d1d",
+      "size": 31668
+    },
+    {
+      "path": "audio/background_summer_courtyard_001_name_zh.mp3",
+      "blobSha": "3c52aad13389ba36759bda1f741eceb18fe92639",
+      "size": 35124
+    },
+    {
+      "path": "audio/background_summer_lotus_pond_001_intro_zh.mp3",
+      "blobSha": "1aa3d781282d312c35b2b09b5d80040f4932bbf0",
+      "size": 415860
+    },
+    {
+      "path": "audio/background_summer_lotus_pond_001_name_en.mp3",
+      "blobSha": "50a001477e35db8e8d8e8184ad5a27f0a660ef5f",
+      "size": 32244
+    },
+    {
+      "path": "audio/background_summer_lotus_pond_001_name_zh.mp3",
+      "blobSha": "e1f7e724dcb4042acdb61f73cf2192bced68b34f",
+      "size": 25332
+    },
+    {
+      "path": "audio/background_willow_riverbank_001_intro_zh.mp3",
+      "blobSha": "ceb156f46bd62cd13216eba7b57d12ea22778a4e",
+      "size": 501684
+    },
+    {
+      "path": "audio/background_willow_riverbank_001_name_en.mp3",
+      "blobSha": "b5d6c140974ed26115c670740fd57088b38e0df6",
+      "size": 46068
+    },
+    {
+      "path": "audio/background_willow_riverbank_001_name_zh.mp3",
+      "blobSha": "8ddf45e2f38bfb20adb6e955ca99896726c3e5a2",
+      "size": 33972
+    },
+    {
+      "path": "audio/background_winter_snowman_field_001_intro_zh.mp3",
+      "blobSha": "5be8086a0c20154c1a8277551f8e29ab4aad5a56",
+      "size": 376116
+    },
+    {
+      "path": "audio/background_winter_snowman_field_001_name_en.mp3",
+      "blobSha": "34ac934831d8daa1217fb73327366d77be5c32e8",
+      "size": 40884
+    },
+    {
+      "path": "audio/background_winter_snowman_field_001_name_zh.mp3",
+      "blobSha": "1d10c378dbc984e0bbf2086fb2fdc037377a280a",
+      "size": 38004
+    },
+    {
+      "path": "audio/sticker_animal_swallow_001_intro_zh.mp3",
+      "blobSha": "98802f71f9b02f04868521bba47d93dc0fc86cf0",
+      "size": 354228
+    },
+    {
+      "path": "audio/sticker_animal_swallow_001_name_en.mp3",
+      "blobSha": "36be06c521121ce42199f925f54a89364bcb4772",
+      "size": 25332
+    },
+    {
+      "path": "audio/sticker_animal_swallow_001_name_zh.mp3",
+      "blobSha": "6b5c188fd6f7a16c5cd841607f6a0006234db635",
+      "size": 23604
+    },
+    {
+      "path": "audio/sticker_ape_001_intro_zh.mp3",
+      "blobSha": "f745fc50139c269487657b265e802a5db884dbc2",
+      "size": 321972
+    },
+    {
+      "path": "audio/sticker_ape_001_name_en.mp3",
+      "blobSha": "621db4faa23b0ea5101ac146b359cdc228a19771",
+      "size": 26484
+    },
+    {
+      "path": "audio/sticker_ape_001_name_zh.mp3",
+      "blobSha": "61380b06b533215e4c8929f60f5975574c12f6f0",
+      "size": 28212
+    },
+    {
+      "path": "audio/sticker_bamboo_001_intro_zh.mp3",
+      "blobSha": "4650936da0b50067c90266887aa664ff0aa40cf4",
+      "size": 282228
+    },
+    {
+      "path": "audio/sticker_bamboo_001_name_en.mp3",
+      "blobSha": "196e166cfcc6ccd2f21d1b0b57090a8c2c556097",
+      "size": 25332
+    },
+    {
+      "path": "audio/sticker_bamboo_001_name_zh.mp3",
+      "blobSha": "b8056a7791b364286915bef66924a342af35f10c",
+      "size": 24756
+    },
+    {
+      "path": "audio/sticker_bamboo_flute_001_intro_zh.mp3",
+      "blobSha": "08452e3b68aafe053bb182dbbc56b6620af15b8c",
+      "size": 292020
+    },
+    {
+      "path": "audio/sticker_bamboo_flute_001_name_en.mp3",
+      "blobSha": "4237e97a14f8d84bbddd279263e68745ae25509d",
+      "size": 32244
+    },
+    {
+      "path": "audio/sticker_bamboo_flute_001_name_zh.mp3",
+      "blobSha": "4a3aba152b9445d163fe8df616dae824ee76cfe4",
+      "size": 27060
+    },
+    {
+      "path": "audio/sticker_calligraphy_brush_001_intro_zh.mp3",
+      "blobSha": "8c786c3bb0ebfd81901fb0f96482ec4d9385f8e3",
+      "size": 388212
+    },
+    {
+      "path": "audio/sticker_calligraphy_brush_001_name_en.mp3",
+      "blobSha": "192a5853681f4b45d323e6c7c5e9db083304d68b",
+      "size": 37428
+    },
+    {
+      "path": "audio/sticker_calligraphy_brush_001_name_zh.mp3",
+      "blobSha": "4efe0a100aa915261732bc6414c143e08ccb4397",
+      "size": 23604
+    },
+    {
+      "path": "audio/sticker_chrysanthemum_001_intro_zh.mp3",
+      "blobSha": "81a8dd10f0c4f4996eaa66eb2596b7cfcc8b0617",
+      "size": 331764
+    },
+    {
+      "path": "audio/sticker_chrysanthemum_001_name_en.mp3",
+      "blobSha": "8f8eb10094d8aee62a963dbeb5cacafb99f504b8",
+      "size": 29940
+    },
+    {
+      "path": "audio/sticker_chrysanthemum_001_name_zh.mp3",
+      "blobSha": "fdbdcb44a65725669bfdaec98cec451400316b76",
+      "size": 25332
+    },
+    {
+      "path": "audio/sticker_cuckoo_001_intro_zh.mp3",
+      "blobSha": "132e36769371b0d564494ff12c9dce82fd74cc6e",
+      "size": 396852
+    },
+    {
+      "path": "audio/sticker_cuckoo_001_name_en.mp3",
+      "blobSha": "522a934a1a1071fbb0d037da2d9076693b0cdb45",
+      "size": 27060
+    },
+    {
+      "path": "audio/sticker_cuckoo_001_name_zh.mp3",
+      "blobSha": "a06169f56e822b6f7cb603a976ac9a0dee816dab",
+      "size": 26484
+    },
+    {
+      "path": "audio/sticker_dumpling_001_intro_zh.mp3",
+      "blobSha": "b76981e98ea2c4c25f54c6f0f581f5a15177cd23",
+      "size": 436020
+    },
+    {
+      "path": "audio/sticker_dumpling_001_name_en.mp3",
+      "blobSha": "2a30b6f289841f6751b3fd04324b0934e650f962",
+      "size": 25332
+    },
+    {
+      "path": "audio/sticker_dumpling_001_name_zh.mp3",
+      "blobSha": "fdae9018ee8e24c6b3250f1d7a9ea1aea798ecee",
+      "size": 23604
+    },
+    {
+      "path": "audio/sticker_fallen_leaf_001_intro_zh.mp3",
+      "blobSha": "5268148b0e0506717be729001cd4190936e7999b",
+      "size": 715956
+    },
+    {
+      "path": "audio/sticker_fallen_leaf_001_name_en.mp3",
+      "blobSha": "492dfb53da4dcfc650d318c30dc03d709aefb3d6",
+      "size": 32244
+    },
+    {
+      "path": "audio/sticker_fallen_leaf_001_name_zh.mp3",
+      "blobSha": "c10c911573db3d02c8269919355a2b83267fdbd9",
+      "size": 24756
+    },
+    {
+      "path": "audio/sticker_firecracker_001_intro_zh.mp3",
+      "blobSha": "440e000b704a4c92c6244bd808318f068d21d6ee",
+      "size": 613428
+    },
+    {
+      "path": "audio/sticker_firecracker_001_name_en.mp3",
+      "blobSha": "1771cb6f2c5c4879a97b596e4046e224266cf129",
+      "size": 30516
+    },
+    {
+      "path": "audio/sticker_firecracker_001_name_zh.mp3",
+      "blobSha": "04b6af000631a8f7c714a91903b7ed4bfdeae933",
+      "size": 25332
+    },
+    {
+      "path": "audio/sticker_flower_lantern_001_intro_zh.mp3",
+      "blobSha": "ff559517945b1a408fac39750a4bcf7402733748",
+      "size": 646836
+    },
+    {
+      "path": "audio/sticker_flower_lantern_001_name_en.mp3",
+      "blobSha": "430e63ee4910e8aa3da9b4bc6ae8025a5157b738",
+      "size": 44916
+    },
+    {
+      "path": "audio/sticker_flower_lantern_001_name_zh.mp3",
+      "blobSha": "ff9f60a96170882af1b58bb4c7137fb3c80ce246",
+      "size": 29940
+    },
+    {
+      "path": "audio/sticker_folding_fan_001_intro_zh.mp3",
+      "blobSha": "46f62d7aedd1592da20c4dee4d828872db2156be",
+      "size": 242484
+    },
+    {
+      "path": "audio/sticker_folding_fan_001_name_en.mp3",
+      "blobSha": "6be6913a398f6b3f40e06a0e99885341d9a0ba3e",
+      "size": 29940
+    },
+    {
+      "path": "audio/sticker_folding_fan_001_name_zh.mp3",
+      "blobSha": "1f35fd75638108698319eb3400dba672d9d21cb8",
+      "size": 25332
+    },
+    {
+      "path": "audio/sticker_fu_001_intro_zh.mp3",
+      "blobSha": "df892d8fdaa4273a02cb6f96a55ca3bcdae7cc0a",
+      "size": 444660
+    },
+    {
+      "path": "audio/sticker_fu_001_name_en.mp3",
+      "blobSha": "9e3cedec4f60cdb5f27f720e2d946415cbc1a8dd",
+      "size": 33396
+    },
+    {
+      "path": "audio/sticker_fu_001_name_zh.mp3",
+      "blobSha": "1e57ea7e87006f40a7179840ac19f5a0c6a1f75a",
+      "size": 26484
+    },
+    {
+      "path": "audio/sticker_guzheng_001_intro_zh.mp3",
+      "blobSha": "d82cdc55a83520a951f9252022ac906b1984c4a1",
+      "size": 334644
+    },
+    {
+      "path": "audio/sticker_guzheng_001_name_en.mp3",
+      "blobSha": "ebd5f1cfb26145cac52f3c11e27931830f1c11b1",
+      "size": 24756
+    },
+    {
+      "path": "audio/sticker_guzheng_001_name_zh.mp3",
+      "blobSha": "9470d8869bba6acb9bfa1b2ec25574c3e34fcd10",
+      "size": 23028
+    },
+    {
+      "path": "audio/sticker_inkstone_001_intro_zh.mp3",
+      "blobSha": "300a6416147202b715bb070c0fc4e65f34ac5e59",
+      "size": 303540
+    },
+    {
+      "path": "audio/sticker_inkstone_001_name_en.mp3",
+      "blobSha": "b25601d5e97f439745d26e5d4c251de9f7f601eb",
+      "size": 26484
+    },
+    {
+      "path": "audio/sticker_inkstone_001_name_zh.mp3",
+      "blobSha": "9151350cd9ecead338ac7301b9676f39a8b30864",
+      "size": 24756
+    },
+    {
+      "path": "audio/sticker_kite_001_intro_zh.mp3",
+      "blobSha": "624e4f22c132bc4bea750b829abad0347aa2b439",
+      "size": 687732
+    },
+    {
+      "path": "audio/sticker_kite_001_name_en.mp3",
+      "blobSha": "60c1b0402676ee6ff538c1a7dc42ee4505ed48e3",
+      "size": 28212
+    },
+    {
+      "path": "audio/sticker_kite_001_name_zh.mp3",
+      "blobSha": "0f6f7af4c049788a7a6d70e3c8f23134ab919c3d",
+      "size": 23604
+    },
+    {
+      "path": "audio/sticker_lantern_001_intro_zh.mp3",
+      "blobSha": "517782527e6540b542fdcdab8ab97d7bdf7dd180",
+      "size": 589236
+    },
+    {
+      "path": "audio/sticker_lantern_001_name_en.mp3",
+      "blobSha": "73dc7f882062d7216117ea7e081f5529da97bac2",
+      "size": 28788
+    },
+    {
+      "path": "audio/sticker_lantern_001_name_zh.mp3",
+      "blobSha": "4e5e894c1eb4f8f814e4cd11924e98be21f6425a",
+      "size": 25332
+    },
+    {
+      "path": "audio/sticker_lotus_001_intro_zh.mp3",
+      "blobSha": "f17f5b0919141836be7ad4bb13306c99d30519ff",
+      "size": 772404
+    },
+    {
+      "path": "audio/sticker_lotus_001_name_en.mp3",
+      "blobSha": "3310d77b05337e9fa0d5f542aabcec905893d8f2",
+      "size": 36852
+    },
+    {
+      "path": "audio/sticker_lotus_001_name_zh.mp3",
+      "blobSha": "cf82fb03cb8c36b3047dba2f85bdf84665ef4436",
+      "size": 30516
+    },
+    {
+      "path": "audio/sticker_maple_leaf_001_intro_zh.mp3",
+      "blobSha": "428fdb25e03635bfce2751721e7d877c562d8955",
+      "size": 724596
+    },
+    {
+      "path": "audio/sticker_maple_leaf_001_name_en.mp3",
+      "blobSha": "d6b8aa4980d17389020f66675d830523fea24fc0",
+      "size": 28788
+    },
+    {
+      "path": "audio/sticker_maple_leaf_001_name_zh.mp3",
+      "blobSha": "cb74161f87f6d730607e625ac0246f3a915f0a49",
+      "size": 27060
+    },
+    {
+      "path": "audio/sticker_moon_001_intro_zh.mp3",
+      "blobSha": "403b468070816d525ae36e50a340bfb6f29bfda3",
+      "size": 1187124
+    },
+    {
+      "path": "audio/sticker_moon_001_name_en.mp3",
+      "blobSha": "bcb4238dc4a232574f0cb409492582b4aaa0e65f",
+      "size": 28212
+    },
+    {
+      "path": "audio/sticker_moon_001_name_zh.mp3",
+      "blobSha": "159e65303b4982fd6b06c52db6d4e3d75c83d947",
+      "size": 24756
+    },
+    {
+      "path": "audio/sticker_mooncake_001_intro_zh.mp3",
+      "blobSha": "55809f68d8d456361876b41e6233d5b7c8e4f4aa",
+      "size": 521844
+    },
+    {
+      "path": "audio/sticker_mooncake_001_name_en.mp3",
+      "blobSha": "1e5815b542592bc119fc9eca77829b5247c79937",
+      "size": 26484
+    },
+    {
+      "path": "audio/sticker_mooncake_001_name_zh.mp3",
+      "blobSha": "12897c3907fb5d530b70bfd4f76bac104140e39f",
+      "size": 23604
+    },
+    {
+      "path": "audio/sticker_mugwort_001_intro_zh.mp3",
+      "blobSha": "80119ad00b13b2adabf024f9313d407399370630",
+      "size": 551796
+    },
+    {
+      "path": "audio/sticker_mugwort_001_name_en.mp3",
+      "blobSha": "2da843857c12dfbdb8ac179f5fdaf7a25f5706f1",
+      "size": 27060
+    },
+    {
+      "path": "audio/sticker_mugwort_001_name_zh.mp3",
+      "blobSha": "ab62d7babb99c7e5e5bd39393c201d4993cd032d",
+      "size": 25332
+    },
+    {
+      "path": "audio/sticker_oil_paper_umbrella_001_intro_zh.mp3",
+      "blobSha": "7668b1d670f00d2e4abf290f0d99f8165965cf0e",
+      "size": 462516
+    },
+    {
+      "path": "audio/sticker_oil_paper_umbrella_001_name_en.mp3",
+      "blobSha": "bc3b7b1fa3fed86571d7cd07b7424ff8e20fafac",
+      "size": 42036
+    },
+    {
+      "path": "audio/sticker_oil_paper_umbrella_001_name_zh.mp3",
+      "blobSha": "eb698552664f9813a1f12f9e1d86bcf7d8214df3",
+      "size": 28212
+    },
+    {
+      "path": "audio/sticker_osmanthus_001_intro_zh.mp3",
+      "blobSha": "5af2a453b0e5127fdfb63640d29d6503057f85b5",
+      "size": 346164
+    },
+    {
+      "path": "audio/sticker_osmanthus_001_name_en.mp3",
+      "blobSha": "9a6311f4a0d36bb3b3adbfe14114da18c16f84e4",
+      "size": 32244
+    },
+    {
+      "path": "audio/sticker_osmanthus_001_name_zh.mp3",
+      "blobSha": "4ebfa50b56a37e66f6b9e9d8dc576a021cdd19b3",
+      "size": 23028
+    },
+    {
+      "path": "audio/sticker_palm_fan_001_intro_zh.mp3",
+      "blobSha": "5335090021299bc21ce8447ac95949529ea62c90",
+      "size": 410100
+    },
+    {
+      "path": "audio/sticker_palm_fan_001_name_en.mp3",
+      "blobSha": "2ee778df06788072928372b044f9469ba131c3e8",
+      "size": 31668
+    },
+    {
+      "path": "audio/sticker_palm_fan_001_name_zh.mp3",
+      "blobSha": "f58b4a7ff99f5714c2a5969a7fa37d5baa594bbb",
+      "size": 25332
+    },
+    {
+      "path": "audio/sticker_peach_blossom_001_intro_zh.mp3",
+      "blobSha": "dd4aa8f94fedd3157c1f18e68057d9e397dc4d8e",
+      "size": 707316
+    },
+    {
+      "path": "audio/sticker_peach_blossom_001_name_en.mp3",
+      "blobSha": "c45e3a2b5cf3847c7678aeca5c9861854cf4a4fe",
+      "size": 30516
+    },
+    {
+      "path": "audio/sticker_peach_blossom_001_name_zh.mp3",
+      "blobSha": "cef8f42272e88bbef5bb096e569d47e01a3a5c80",
+      "size": 27060
+    },
+    {
+      "path": "audio/sticker_persimmon_001_intro_zh.mp3",
+      "blobSha": "fd2a70271a64a8125bc2c580c92a32a376beb05e",
+      "size": 337524
+    },
+    {
+      "path": "audio/sticker_persimmon_001_name_en.mp3",
+      "blobSha": "6fc2377b62998f5e7a6f393ee2edfa45a2e1d633",
+      "size": 26484
+    },
+    {
+      "path": "audio/sticker_persimmon_001_name_zh.mp3",
+      "blobSha": "b95e03d3ab409de728551c9c0f20e03fd7b89fb7",
+      "size": 27060
+    },
+    {
+      "path": "audio/sticker_pine_001_intro_zh.mp3",
+      "blobSha": "0de46276a80c37a41d887173726a1f03a7ceb482",
+      "size": 289716
+    },
+    {
+      "path": "audio/sticker_pine_001_name_en.mp3",
+      "blobSha": "201537b236d5e71d0d7c621a63d0093c48206052",
+      "size": 26484
+    },
+    {
+      "path": "audio/sticker_pine_001_name_zh.mp3",
+      "blobSha": "e9b2676fb74a8a42154330b18c6d9da7b418ee53",
+      "size": 26484
+    },
+    {
+      "path": "audio/sticker_plant_lotus_001_intro_zh.mp3",
+      "blobSha": "e85d5d5d9b333c3468ac3d9f51a24acca1bdc533",
+      "size": 365172
+    },
+    {
+      "path": "audio/sticker_plant_lotus_001_name_en.mp3",
+      "blobSha": "95dcd9276d1c89acc8544f624a0bc96544cf870c",
+      "size": 28212
+    },
+    {
+      "path": "audio/sticker_plant_lotus_001_name_zh.mp3",
+      "blobSha": "a0dd3a78101ce1d8e2cb7d852edd0caa451f7492",
+      "size": 23604
+    },
+    {
+      "path": "audio/sticker_plant_plum_001_intro_zh.mp3",
+      "blobSha": "df71bdeb6d6c93c5fe76e3d3f8d0ad093bfeebb6",
+      "size": 287412
+    },
+    {
+      "path": "audio/sticker_plant_plum_001_name_en.mp3",
+      "blobSha": "b917feca63eea667e2520052fb833f8298dbb71e",
+      "size": 31668
+    },
+    {
+      "path": "audio/sticker_plant_plum_001_name_zh.mp3",
+      "blobSha": "75d82320c8b35fa34b8b2e1fe5e4d684b01fc526",
+      "size": 23028
+    },
+    {
+      "path": "audio/sticker_plum_blossom_001_intro_zh.mp3",
+      "blobSha": "a36621ceae0020eb4513b11a76564899fbbec7b0",
+      "size": 521844
+    },
+    {
+      "path": "audio/sticker_plum_blossom_001_name_en.mp3",
+      "blobSha": "b917feca63eea667e2520052fb833f8298dbb71e",
+      "size": 31668
+    },
+    {
+      "path": "audio/sticker_plum_blossom_001_name_zh.mp3",
+      "blobSha": "75d82320c8b35fa34b8b2e1fe5e4d684b01fc526",
+      "size": 23028
+    },
+    {
+      "path": "audio/sticker_qingtuan_001_intro_zh.mp3",
+      "blobSha": "d22f12ea40373a39045a3d956ea5b22a13408b7a",
+      "size": 412980
+    },
+    {
+      "path": "audio/sticker_qingtuan_001_name_en.mp3",
+      "blobSha": "dc89929f8507496a781d935a723db8779dac5e63",
+      "size": 28788
+    },
+    {
+      "path": "audio/sticker_qingtuan_001_name_zh.mp3",
+      "blobSha": "70839648fdd25dc43e0e7debf13010e1c62d44bb",
+      "size": 25332
+    },
+    {
+      "path": "audio/sticker_rabbit_001_intro_zh.mp3",
+      "blobSha": "56c9594ea626aa827e8fe3b14e49e9b810068d9c",
+      "size": 447540
+    },
+    {
+      "path": "audio/sticker_rabbit_001_name_en.mp3",
+      "blobSha": "0b37563e2c7e1b2bb861f6043c5ab56da5b1dc5f",
+      "size": 30516
+    },
+    {
+      "path": "audio/sticker_rabbit_001_name_zh.mp3",
+      "blobSha": "0adeb20aa7af2030fce8847bd2c5667286d1f680",
+      "size": 24756
+    },
+    {
+      "path": "audio/sticker_red_envelope_001_intro_zh.mp3",
+      "blobSha": "39b8624f89cdd828647027aaf87e7047c3a46657",
+      "size": 461940
+    },
+    {
+      "path": "audio/sticker_red_envelope_001_name_en.mp3",
+      "blobSha": "45b4bb690fa17a7eb0644a5a47bb3c6765367216",
+      "size": 30516
+    },
+    {
+      "path": "audio/sticker_red_envelope_001_name_zh.mp3",
+      "blobSha": "48bf3ce869bc50edb4e5be4795f3cb19076af701",
+      "size": 24756
+    },
+    {
+      "path": "audio/sticker_sachet_001_intro_zh.mp3",
+      "blobSha": "195fb2a380d6f19a9ba1a895880d958f698c63e8",
+      "size": 426804
+    },
+    {
+      "path": "audio/sticker_sachet_001_name_en.mp3",
+      "blobSha": "9eefbf80ce3bfab9b67f31b19b620b473ef25ba8",
+      "size": 26484
+    },
+    {
+      "path": "audio/sticker_sachet_001_name_zh.mp3",
+      "blobSha": "84ca26c0102e7873d97fa0efa16bce75b5e2b70f",
+      "size": 26484
+    },
+    {
+      "path": "audio/sticker_small_boat_001_intro_zh.mp3",
+      "blobSha": "5478b90b50b09bf929e087b5b5351384fbf8c576",
+      "size": 635316
+    },
+    {
+      "path": "audio/sticker_small_boat_001_name_en.mp3",
+      "blobSha": "e5e03591d6a6ad9928d5693e0788b59404278370",
+      "size": 30516
+    },
+    {
+      "path": "audio/sticker_small_boat_001_name_zh.mp3",
+      "blobSha": "fd90cd3a5c96a5cbbf7e8c05e4fdafaf1c6ad60b",
+      "size": 28212
+    },
+    {
+      "path": "audio/sticker_small_drum_001_intro_zh.mp3",
+      "blobSha": "1d00b1061402b17bfd78bd34e701fcb70b1eac55",
+      "size": 196404
+    },
+    {
+      "path": "audio/sticker_small_drum_001_name_en.mp3",
+      "blobSha": "d52e8294b5a27a9d2f83dcc5554d537431b6168f",
+      "size": 28788
+    },
+    {
+      "path": "audio/sticker_small_drum_001_name_zh.mp3",
+      "blobSha": "2fedcd00a16f7e4db40d45d51b19fae816e250e2",
+      "size": 24756
+    },
+    {
+      "path": "audio/sticker_snowflake_001_intro_zh.mp3",
+      "blobSha": "5b3dfafe6d485e9d56ec5a4dc7a985471c55aca7",
+      "size": 645684
+    },
+    {
+      "path": "audio/sticker_snowflake_001_name_en.mp3",
+      "blobSha": "60842d460e6ffcda40692f245609b321efd25464",
+      "size": 29940
+    },
+    {
+      "path": "audio/sticker_snowflake_001_name_zh.mp3",
+      "blobSha": "717db85e6566503988c949706529101e43f4752a",
+      "size": 26484
+    },
+    {
+      "path": "audio/sticker_swallow_001_intro_zh.mp3",
+      "blobSha": "15271d3c69f96e70b302ad14289ea67843d89df2",
+      "size": 576564
+    },
+    {
+      "path": "audio/sticker_swallow_001_name_en.mp3",
+      "blobSha": "36be06c521121ce42199f925f54a89364bcb4772",
+      "size": 25332
+    },
+    {
+      "path": "audio/sticker_swallow_001_name_zh.mp3",
+      "blobSha": "6b5c188fd6f7a16c5cd841607f6a0006234db635",
+      "size": 23604
+    },
+    {
+      "path": "audio/sticker_tangyuan_001_intro_zh.mp3",
+      "blobSha": "dd7a0b500b81bf86cdc615b6ee2faaeb76c4fdcb",
+      "size": 612852
+    },
+    {
+      "path": "audio/sticker_tangyuan_001_name_en.mp3",
+      "blobSha": "4e96213dec3ecf47b657c1ced3d446039c4ccbbb",
+      "size": 29940
+    },
+    {
+      "path": "audio/sticker_tangyuan_001_name_zh.mp3",
+      "blobSha": "b4c0b9db4e24a58fd8a47d417d4d03be83878cef",
+      "size": 23028
+    },
+    {
+      "path": "audio/sticker_teacup_001_intro_zh.mp3",
+      "blobSha": "222b28cb74a0cb4bc4086bb84ae804c7e5017808",
+      "size": 229812
+    },
+    {
+      "path": "audio/sticker_teacup_001_name_en.mp3",
+      "blobSha": "46a88bd2b8d28f59e8e3c774c6794a0d188695e4",
+      "size": 27060
+    },
+    {
+      "path": "audio/sticker_teacup_001_name_zh.mp3",
+      "blobSha": "b723d5187baa3a511d2293f441c6bb713489d6f4",
+      "size": 26484
+    },
+    {
+      "path": "audio/sticker_teapot_001_intro_zh.mp3",
+      "blobSha": "ffa526f586b8d591d702e25d30735c1586677a97",
+      "size": 527028
+    },
+    {
+      "path": "audio/sticker_teapot_001_name_en.mp3",
+      "blobSha": "1eece57cc98a69d74a596ec565bdfe7bf204f221",
+      "size": 29940
+    },
+    {
+      "path": "audio/sticker_teapot_001_name_zh.mp3",
+      "blobSha": "a441fcc19885b59c08bf088179fdc91f9591ba8b",
+      "size": 26484
+    },
+    {
+      "path": "audio/sticker_watermelon_001_intro_zh.mp3",
+      "blobSha": "ecdc0caabc4459d0d3312fadd6a8bc10ce5894ac",
+      "size": 632436
+    },
+    {
+      "path": "audio/sticker_watermelon_001_name_en.mp3",
+      "blobSha": "793a4be846793ebc93cd5c1fe7b8cd9d87183557",
+      "size": 26484
+    },
+    {
+      "path": "audio/sticker_watermelon_001_name_zh.mp3",
+      "blobSha": "c61d619dd6d33f916ae9740aef3da2a9938956a2",
+      "size": 28212
+    },
+    {
+      "path": "audio/sticker_wild_goose_001_intro_zh.mp3",
+      "blobSha": "ae991fe1cb6333c5d9097c19d3cf6da19147459a",
+      "size": 370932
+    },
+    {
+      "path": "audio/sticker_wild_goose_001_name_en.mp3",
+      "blobSha": "9cde2169547c645cbd771d35f2db2886971cea1b",
+      "size": 30516
+    },
+    {
+      "path": "audio/sticker_wild_goose_001_name_zh.mp3",
+      "blobSha": "8f16b9d15cd62157962fd677528759fe99836a86",
+      "size": 25332
+    },
+    {
+      "path": "audio/sticker_willow_branch_001_intro_zh.mp3",
+      "blobSha": "e5827cd7f6cd992b317fdb34f588d9e33dc574ef",
+      "size": 738420
+    },
+    {
+      "path": "audio/sticker_willow_branch_001_name_en.mp3",
+      "blobSha": "837c9fb8d46c10c992863da2451ae726df87fc18",
+      "size": 30516
+    },
+    {
+      "path": "audio/sticker_willow_branch_001_name_zh.mp3",
+      "blobSha": "5b66cbbd6fb74fc5106ca6f25e627a72253fb190",
+      "size": 23604
+    },
+    {
+      "path": "audio/sticker_willow_leaf_001_intro_zh.mp3",
+      "blobSha": "56024f924cb46e8a22a1f540317532e9eec16d9f",
+      "size": 658356
+    },
+    {
+      "path": "audio/sticker_willow_leaf_001_name_en.mp3",
+      "blobSha": "c0dcca349b3a9e27f6c7cca9c235f06468a34404",
+      "size": 28788
+    },
+    {
+      "path": "audio/sticker_willow_leaf_001_name_zh.mp3",
+      "blobSha": "9447c03a850167607df415d3c8970abbda34c0e9",
+      "size": 23604
+    },
+    {
+      "path": "audio/sticker_window_flower_001_intro_zh.mp3",
+      "blobSha": "8b6618e3245460c0ed5eb19ffee29445cd9ecdc9",
+      "size": 482100
+    },
+    {
+      "path": "audio/sticker_window_flower_001_name_en.mp3",
+      "blobSha": "3721d07f565f00934d2cc8c666628dd6f4567751",
+      "size": 38004
+    },
+    {
+      "path": "audio/sticker_window_flower_001_name_zh.mp3",
+      "blobSha": "a80b9792c7ded52d64f06d9fa7e29e7959a659a7",
+      "size": 26484
+    },
+    {
+      "path": "audio/sticker_wooden_fish_001_intro_zh.mp3",
+      "blobSha": "25a0a0ff850a3f3a9cedf58b650fbb910fb1265f",
+      "size": 271284
+    },
+    {
+      "path": "audio/sticker_wooden_fish_001_name_en.mp3",
+      "blobSha": "9054c9834bd9864465eb3eefbfada15669588b84",
+      "size": 30516
+    },
+    {
+      "path": "audio/sticker_wooden_fish_001_name_zh.mp3",
+      "blobSha": "a0e56403cce16083e0d759342c43831a8565e483",
+      "size": 23604
+    },
+    {
+      "path": "audio/sticker_wutong_001_intro_zh.mp3",
+      "blobSha": "6aaaf570719e5f02afb2225e487616076f887b71",
+      "size": 363444
+    },
+    {
+      "path": "audio/sticker_wutong_001_name_en.mp3",
+      "blobSha": "7d8debc2bf905dcac1c8937a81598af6de5878ab",
+      "size": 27060
+    },
+    {
+      "path": "audio/sticker_wutong_001_name_zh.mp3",
+      "blobSha": "2378445206c7613d3be1bdeec4ecb199d178700a",
+      "size": 23604
+    },
+    {
+      "path": "audio/sticker_zongzi_001_intro_zh.mp3",
+      "blobSha": "4afbc8a8486f5bf53cccf82f72dfce455ce62851",
+      "size": 500532
+    },
+    {
+      "path": "audio/sticker_zongzi_001_name_en.mp3",
+      "blobSha": "033973239f34100e9467cfb61688bdb14533b566",
+      "size": 29940
+    },
+    {
+      "path": "audio/sticker_zongzi_001_name_zh.mp3",
+      "blobSha": "a18dcc6a2bdb1783a75d2dcc7e9d18f66bcb9a4b",
+      "size": 25332
+    },
+    {
+      "path": "autumn/backgrounds/background_autumn_field_dusk_001.png",
+      "blobSha": "528f9a6e981bda42b57be494d1e7a76b8eee9c3d",
+      "size": 172894
+    },
+    {
+      "path": "autumn/backgrounds/background_autumn_ginkgo_path_001.png",
+      "blobSha": "b2318a3857ffd7fc2e781acc685a65e8c4096cb3",
+      "size": 263485
+    },
+    {
+      "path": "autumn/feishu_fields_autumn.xlsx",
+      "blobSha": "0f59dd1b4e43231b370824e30f5fa23a5f17b83b",
+      "size": 8267
+    },
+    {
+      "path": "autumn/stickers/sticker_fallen_leaf_001.png",
+      "blobSha": "ffe68544c05bae2380217cdd78cb78481589c316",
+      "size": 304607
+    },
+    {
+      "path": "autumn/stickers/sticker_maple_leaf_001.png",
+      "blobSha": "f65083c35983bdf3a3df1db02d9589c2246ae65d",
+      "size": 329227
+    },
+    {
+      "path": "autumn/stickers/sticker_persimmon_001.png",
+      "blobSha": "00cf1ed95ad1de888838e9b77b58e42fdcde28b6",
+      "size": 207269
+    },
+    {
+      "path": "autumn/thumbnails/background_autumn_field_dusk_001_thumb.png",
+      "blobSha": "ad07147ef50c35e3e3d3a6276488a95f29cefdd3",
+      "size": 70561
+    },
+    {
+      "path": "autumn/thumbnails/background_autumn_ginkgo_path_001_thumb.png",
+      "blobSha": "274ba45c98706d07600b7d3ff668c2a378099b33",
+      "size": 98065
+    },
+    {
+      "path": "autumn/thumbnails/sticker_fallen_leaf_001_thumb.png",
+      "blobSha": "0987acd8ea60d805ac9bd48e8013811dc692f767",
+      "size": 90736
+    },
+    {
+      "path": "autumn/thumbnails/sticker_maple_leaf_001_thumb.png",
+      "blobSha": "996afce387c66fa24e0fa58dd4d56c9b10fd45ad",
+      "size": 92052
+    },
+    {
+      "path": "autumn/thumbnails/sticker_persimmon_001_thumb.png",
+      "blobSha": "c75afc2269ed42040c23efafbd65c8a1bcc854ba",
+      "size": 51706
+    },
+    {
+      "path": "brush_ink_painting/backgrounds/background_study_desk_001.png",
+      "blobSha": "f19456149855f4f6c4ab958e5699bca28ec1d916",
+      "size": 150416
+    },
+    {
+      "path": "brush_ink_painting/feishu_fields_brush_ink_painting.xlsx",
+      "blobSha": "1e25dce85573f2ba6cb3d31eedcdca2a66285f61",
+      "size": 7355
+    },
+    {
+      "path": "brush_ink_painting/stickers/sticker_calligraphy_brush_001.png",
+      "blobSha": "d5368193657f2de3ae097c008958911818e1d91e",
+      "size": 188462
+    },
+    {
+      "path": "brush_ink_painting/stickers/sticker_inkstone_001.png",
+      "blobSha": "2e14ddf019958cea01e5efabcb260158197ffb2c",
+      "size": 164029
+    },
+    {
+      "path": "brush_ink_painting/thumbnails/background_study_desk_001_thumb.png",
+      "blobSha": "46b4f49c90cb9792fb0473d7e7fbeab52302f39f",
+      "size": 61814
+    },
+    {
+      "path": "brush_ink_painting/thumbnails/sticker_calligraphy_brush_001_thumb.png",
+      "blobSha": "5ec6b6bf941f8849b38accf2baea89009119e453",
+      "size": 27972
+    },
+    {
+      "path": "brush_ink_painting/thumbnails/sticker_inkstone_001_thumb.png",
+      "blobSha": "047891c9497a8dbb16ffd182c57853c249e7c49d",
+      "size": 47345
+    },
+    {
+      "path": "chinese_tea_culture/backgrounds/background_classical_tea_room_001.png",
+      "blobSha": "6566ab212b95fe4b2753151b5756a5a58f35c69d",
+      "size": 174153
+    },
+    {
+      "path": "chinese_tea_culture/feishu_fields_chinese_tea_culture.xlsx",
+      "blobSha": "0b2d6bad5b8cfb8ffa4c78ff9230f10d395252a5",
+      "size": 7281
+    },
+    {
+      "path": "chinese_tea_culture/stickers/sticker_teacup_001.png",
+      "blobSha": "7b8868072abda8c1c72bcb074ba67324d013d7b3",
+      "size": 270036
+    },
+    {
+      "path": "chinese_tea_culture/stickers/sticker_teapot_001.png",
+      "blobSha": "1fa179c5550bfca3c9dbe225fe5e797ef8fdb918",
+      "size": 333690
+    },
+    {
+      "path": "chinese_tea_culture/thumbnails/background_classical_tea_room_001_thumb.png",
+      "blobSha": "b193678dc29922a8887a4f26eb8563180db567c8",
+      "size": 69868
+    },
+    {
+      "path": "chinese_tea_culture/thumbnails/sticker_teacup_001_thumb.png",
+      "blobSha": "9489faad922eeccad9e79f284bfb0e3e9927720f",
+      "size": 67241
+    },
+    {
+      "path": "chinese_tea_culture/thumbnails/sticker_teapot_001_thumb.png",
+      "blobSha": "8f0aad99378fa414bf48708f144612f812c7025d",
+      "size": 79834
+    },
+    {
+      "path": "dragon_boat_festival/backgrounds/background_dragon_boat_race_001.png",
+      "blobSha": "ba134cfe92816653ca13d72f577c16869421bda5",
+      "size": 209624
+    },
+    {
+      "path": "dragon_boat_festival/feishu_fields_dragon_boat_festival.xlsx",
+      "blobSha": "48315f3e5384a7f1e825c85e03aaaf13315721ed",
+      "size": 7905
+    },
+    {
+      "path": "dragon_boat_festival/stickers/sticker_mugwort_001.png",
+      "blobSha": "4e2ea41c1cf32f9e10c34d1a65617388d95577f0",
+      "size": 357037
+    },
+    {
+      "path": "dragon_boat_festival/stickers/sticker_sachet_001.png",
+      "blobSha": "c5384070e8cd3ad7a4c811eec35c175648599d32",
+      "size": 183810
+    },
+    {
+      "path": "dragon_boat_festival/stickers/sticker_zongzi_001.png",
+      "blobSha": "7177e3a248b3c6e07a5654cb9b8dba63a9630c15",
+      "size": 501742
+    },
+    {
+      "path": "dragon_boat_festival/thumbnails/background_dragon_boat_race_001_thumb.png",
+      "blobSha": "6ab5aaedb30c722605087ee18dcc62176a55a706",
+      "size": 87267
+    },
+    {
+      "path": "dragon_boat_festival/thumbnails/sticker_mugwort_001_thumb.png",
+      "blobSha": "dc8397b65be690d6232438780d455aa597cef7b7",
+      "size": 93063
+    },
+    {
+      "path": "dragon_boat_festival/thumbnails/sticker_sachet_001_thumb.png",
+      "blobSha": "898333fff3ee4e1ef2e056fb01cbf96226429005",
+      "size": 49179
+    },
+    {
+      "path": "dragon_boat_festival/thumbnails/sticker_zongzi_001_thumb.png",
+      "blobSha": "5e657f443daf6f146fd373ac10355db81cc12263",
+      "size": 125545
+    },
+    {
+      "path": "lantern_festival/backgrounds/background_lantern_street_001.png",
+      "blobSha": "2ceecfe9b13587aaf24d6c70263f5ed6b13de1c1",
+      "size": 183654
+    },
+    {
+      "path": "lantern_festival/backgrounds/background_river_lantern_001.png",
+      "blobSha": "b18bc901ac55c446c23a64648de19f8d48ca4c82",
+      "size": 279604
+    },
+    {
+      "path": "lantern_festival/feishu_fields_lantern_festival.xlsx",
+      "blobSha": "495e7d130798f6eeed5e760242267657d7733d09",
+      "size": 8084
+    },
+    {
+      "path": "lantern_festival/stickers/sticker_flower_lantern_001.png",
+      "blobSha": "a5bd861f53c5e1fab849db897a32a4cf90898d1f",
+      "size": 431376
+    },
+    {
+      "path": "lantern_festival/stickers/sticker_tangyuan_001.png",
+      "blobSha": "0c9f2fc50acee0580781719ecc1e63fcc09eb4c3",
+      "size": 117964
+    },
+    {
+      "path": "lantern_festival/thumbnails/background_lantern_street_001_thumb.png",
+      "blobSha": "dfa2a533e8432784fd3ea6b465b936b4fbbdf71d",
+      "size": 50717
+    },
+    {
+      "path": "lantern_festival/thumbnails/background_river_lantern_001_thumb.png",
+      "blobSha": "9f0223792af2c6bf67915556094fb5535c80eff6",
+      "size": 70182
+    },
+    {
+      "path": "lantern_festival/thumbnails/sticker_flower_lantern_001_thumb.png",
+      "blobSha": "ca9ef31d0f4366159a635ec137c0f6baf0e0dcd5",
+      "size": 144807
+    },
+    {
+      "path": "lantern_festival/thumbnails/sticker_tangyuan_001_thumb.png",
+      "blobSha": "c895d3ceeb6958e20fa090082696b47768ac8245",
+      "size": 38642
+    },
+    {
+      "path": "mid_autumn_festival/backgrounds/background_lake_moon_001.png",
+      "blobSha": "48568fbda138dd17e4ad7a5b40e6bc1b20b827ad",
+      "size": 146715
+    },
+    {
+      "path": "mid_autumn_festival/backgrounds/background_osmanthus_moon_001.png",
+      "blobSha": "4577458cdb857b09606a93e6863cf869e45d5c50",
+      "size": 135131
+    },
+    {
+      "path": "mid_autumn_festival/items/moon.png",
+      "blobSha": "ca314c3b38a8a95b6d188181b298fe192c01e001",
+      "size": 7913
+    },
+    {
+      "path": "mid_autumn_festival/items/mooncake.png",
+      "blobSha": "f4a5311d09b9bc397973c61d70da1fe59f6caeea",
+      "size": 780422
+    },
+    {
+      "path": "mid_autumn_festival/items/rabbit.png",
+      "blobSha": "ece7aadaefed9cdb06073fb839a96852ba55c815",
+      "size": 10608
+    },
+    {
+      "path": "mid_autumn_festival/stickers/sticker_moon_001.png",
+      "blobSha": "73b2e7eca60bedee1c8520a7df410c0ff6b2088c",
+      "size": 251339
+    },
+    {
+      "path": "mid_autumn_festival/stickers/sticker_mooncake_001.png",
+      "blobSha": "cfbc033f9ac5cb9688eac41b38bd101bcd85ede9",
+      "size": 473958
+    },
+    {
+      "path": "mid_autumn_festival/stickers/sticker_rabbit_001.png",
+      "blobSha": "83ff4ba76a44ca97432ddd56b79a3caa7d9952c2",
+      "size": 179543
+    },
+    {
+      "path": "mid_autumn_festival/thumbnails/background_lake_moon_001_thumb.png",
+      "blobSha": "02479941f2d948df72aa775344ef1705dd680c04",
+      "size": 43293
+    },
+    {
+      "path": "mid_autumn_festival/thumbnails/background_osmanthus_moon_001_thumb.png",
+      "blobSha": "50fdafb5f092cff977476dc935bc919d94ad7f48",
+      "size": 45110
+    },
+    {
+      "path": "mid_autumn_festival/thumbnails/sticker_moon_001_thumb.png",
+      "blobSha": "438228b31ed895173af28773f218c07a2357176d",
+      "size": 82686
+    },
+    {
+      "path": "mid_autumn_festival/thumbnails/sticker_mooncake_001_thumb.png",
+      "blobSha": "17f41ff219b327829c66e77a1501f17d43895c02",
+      "size": 138212
+    },
+    {
+      "path": "mid_autumn_festival/thumbnails/sticker_rabbit_001_thumb.png",
+      "blobSha": "2b1b6ae08f9fff92bbf74b9e71b4fc6c6b987b62",
+      "size": 71525
+    },
+    {
+      "path": "plants/backgrounds/background_pastoral_courtyard_001.png",
+      "blobSha": "23ba144c932d238a0a835cf4055f3c7e354484fd",
+      "size": 235612
+    },
+    {
+      "path": "plants/feishu_fields_plants.xlsx",
+      "blobSha": "02b757c298f3e916b510fc2316276cac2b4e555c",
+      "size": 9151
+    },
+    {
+      "path": "plants/stickers/sticker_bamboo_001.png",
+      "blobSha": "ed5c3d2cbd7d63a72e82ac50bae171f14d189ba2",
+      "size": 228397
+    },
+    {
+      "path": "plants/stickers/sticker_chrysanthemum_001.png",
+      "blobSha": "34f5dccf394b070e0ae2b730ae3e5d640653b46d",
+      "size": 362441
+    },
+    {
+      "path": "plants/stickers/sticker_pine_001.png",
+      "blobSha": "bed34ca81f54b118277ceaf9d9a859761ae84d10",
+      "size": 190022
+    },
+    {
+      "path": "plants/stickers/sticker_plant_lotus_001.png",
+      "blobSha": "f0b709e86d74278667f5545b36ca8f4d4a01c376",
+      "size": 216972
+    },
+    {
+      "path": "plants/stickers/sticker_plant_plum_001.png",
+      "blobSha": "1cd73bfbd125b1a4ff5eddc8faaf8df2a2dc8b3a",
+      "size": 264434
+    },
+    {
+      "path": "plants/stickers/sticker_plum_blossom_001.png",
+      "blobSha": "18010f892ca9de3009054049a610a51b31d4b669",
+      "size": 172220
+    },
+    {
+      "path": "plants/stickers/sticker_wutong_001.png",
+      "blobSha": "16ab15a2c5c84bbdac94e1bff79dfdffc36e1c35",
+      "size": 182894
+    },
+    {
+      "path": "plants/thumbnails/background_pastoral_courtyard_001_thumb.png",
+      "blobSha": "22add18594cefe299bb01f467fd391897218c2e3",
+      "size": 62362
+    },
+    {
+      "path": "plants/thumbnails/sticker_bamboo_001_thumb.png",
+      "blobSha": "4dbf552496873d73edd565fbe77456763d3ac68c",
+      "size": 75400
+    },
+    {
+      "path": "plants/thumbnails/sticker_chrysanthemum_001_thumb.png",
+      "blobSha": "c8ab5f476566bede1b2b12c1621c424d5f1a5613",
+      "size": 112934
+    },
+    {
+      "path": "plants/thumbnails/sticker_osmanthus_001_thumb.png",
+      "blobSha": "f112ca5695f5702490663f81c3c80ce34184a2c8",
+      "size": 59400
+    },
+    {
+      "path": "plants/thumbnails/sticker_pine_001_thumb.png",
+      "blobSha": "5149dd0ca02774d9adc105b16214d23030c9765c",
+      "size": 58642
+    },
+    {
+      "path": "plants/thumbnails/sticker_plant_lotus_001_thumb.png",
+      "blobSha": "66b3cf752b34999fe24090428e48f9f62c876e36",
+      "size": 70130
+    },
+    {
+      "path": "plants/thumbnails/sticker_plant_plum_001_thumb.png",
+      "blobSha": "9a18db4fcfd092ac9cd90b5413b2fff5024926e6",
+      "size": 71592
+    },
+    {
+      "path": "plants/thumbnails/sticker_wutong_001_thumb.png",
+      "blobSha": "9496e1d426df7f11eb4fa83344e43ebfafa3fb96",
+      "size": 52757
+    },
+    {
+      "path": "qingming_festival/backgrounds/background_kite_meadow_001.png",
+      "blobSha": "c71f28ab91d3fba71ce6064058ab16893a8ff45d",
+      "size": 139272
+    },
+    {
+      "path": "qingming_festival/backgrounds/background_willow_riverbank_001.png",
+      "blobSha": "e9e7ccab4d73f8714a5c77a23ee0c9293f3d4eb5",
+      "size": 270880
+    },
+    {
+      "path": "qingming_festival/feishu_fields_qingming_festival.xlsx",
+      "blobSha": "670648719faafea51b2091f9089e473ce125a7e9",
+      "size": 8473
+    },
+    {
+      "path": "qingming_festival/stickers/sticker_kite_001.png",
+      "blobSha": "dd5c46818d9f89f5dfa398c82c1b4666f4c8e08f",
+      "size": 201367
+    },
+    {
+      "path": "qingming_festival/stickers/sticker_oil_paper_umbrella_001.png",
+      "blobSha": "237e890f71dbef53822aae63163761399d85dff7",
+      "size": 410752
+    },
+    {
+      "path": "qingming_festival/stickers/sticker_qingtuan_001.png",
+      "blobSha": "2b96292ba58c951035bc313a78183eb24e00b2df",
+      "size": 237877
+    },
+    {
+      "path": "qingming_festival/stickers/sticker_swallow_001.png",
+      "blobSha": "9103d94e2d503759dd296c25e559b363509e75d0",
+      "size": 348453
+    },
+    {
+      "path": "qingming_festival/stickers/sticker_willow_leaf_001.png",
+      "blobSha": "e1fceb1473f2bbc303baf4c83f02aae457b54270",
+      "size": 164739
+    },
+    {
+      "path": "qingming_festival/thumbnails/background_kite_meadow_001_thumb.png",
+      "blobSha": "e021f322e98bc07559d969298c9744ae5ca6fc4f",
+      "size": 58996
+    },
+    {
+      "path": "qingming_festival/thumbnails/background_willow_riverbank_001_thumb.png",
+      "blobSha": "5426dd1f165714225730d706210a4e67f69fedf2",
+      "size": 102484
+    },
+    {
+      "path": "qingming_festival/thumbnails/sticker_kite_001_thumb.png",
+      "blobSha": "19cbb285486fdc524e6fd0ec45af3db41b2e02b9",
+      "size": 55281
+    },
+    {
+      "path": "qingming_festival/thumbnails/sticker_oil_paper_umbrella_001_thumb.png",
+      "blobSha": "49bd9ba6c5f460af643abe0b1271ec9b0c194326",
+      "size": 114046
+    },
+    {
+      "path": "qingming_festival/thumbnails/sticker_qingtuan_001_thumb.png",
+      "blobSha": "a222c895f7521b5fcc180e108f67008a56146968",
+      "size": 86739
+    },
+    {
+      "path": "qingming_festival/thumbnails/sticker_swallow_001_thumb.png",
+      "blobSha": "0c268411bfe3863a63aceede9715793c2befa379",
+      "size": 78987
+    },
+    {
+      "path": "qingming_festival/thumbnails/sticker_willow_leaf_001_thumb.png",
+      "blobSha": "44bcb5daa3f484bd02013b0998707b5419b36790",
+      "size": 52412
+    },
+    {
+      "path": "spring/backgrounds/background_spring_meadow_001.png",
+      "blobSha": "c7ceb0d68089020aee1644bde2e58d4d9347721e",
+      "size": 183887
+    },
+    {
+      "path": "spring/feishu_fields_spring.xlsx",
+      "blobSha": "cc1d39c12acdc2f48fdd2c89f6770bedf8eec2f1",
+      "size": 8108
+    },
+    {
+      "path": "spring/stickers/sticker_peach_blossom_001.png",
+      "blobSha": "7f6b8b5c77ee62003d76586045e4aa036ebc42df",
+      "size": 250194
+    },
+    {
+      "path": "spring/stickers/sticker_willow_branch_001.png",
+      "blobSha": "e0d89d913f51bf6a583204c34871ccc2339fa3a5",
+      "size": 270502
+    },
+    {
+      "path": "spring/thumbnails/background_spring_meadow_001_thumb.png",
+      "blobSha": "06307f9dbb7edac8a978753565529ee36bd0dbcb",
+      "size": 75097
+    },
+    {
+      "path": "spring/thumbnails/sticker_peach_blossom_001_thumb.png",
+      "blobSha": "b464c868d746588da226e213f4bc6dcf3735c7d9",
+      "size": 69704
+    },
+    {
+      "path": "spring/thumbnails/sticker_willow_branch_001_thumb.png",
+      "blobSha": "f2d2a36a85c7efc18ae0a5bdafe41fed3d3882cd",
+      "size": 36946
+    },
+    {
+      "path": "spring_festival/backgrounds/background_couplet_gate_001.png",
+      "blobSha": "a9071f854c351090cd728c78efe06d157652a971",
+      "size": 152896
+    },
+    {
+      "path": "spring_festival/backgrounds/background_snow_window_001.png",
+      "blobSha": "c89acf3c8bf2e231a669dc5999bcad99caa8f698",
+      "size": 240196
+    },
+    {
+      "path": "spring_festival/feishu_fields_spring_festival.xlsx",
+      "blobSha": "76b12b51c7b902941378f00e08bced78efab42a1",
+      "size": 9227
+    },
+    {
+      "path": "spring_festival/items/item_firecracker_001.png",
+      "blobSha": "cc0064ae1292cf6646865625fcbf0397fa4d2ff4",
+      "size": 8676
+    },
+    {
+      "path": "spring_festival/items/item_fu_001.png",
+      "blobSha": "b6cc56e5d254e802ad89e31fb51eabd33d88a382",
+      "size": 825830
+    },
+    {
+      "path": "spring_festival/items/item_lantern_001.png",
+      "blobSha": "579e664dda2d3ee6bae8a78a73c8c9eeabbad7aa",
+      "size": 7599
+    },
+    {
+      "path": "spring_festival/items/item_red_envelope_001.png",
+      "blobSha": "1f82e4a1f0e38f00cfa9f71eb27485cb4436dfe2",
+      "size": 10492
+    },
+    {
+      "path": "spring_festival/items/item_window_flower_001.png",
+      "blobSha": "0497f965df9312f9f7818e7a13ab77b4343e3f33",
+      "size": 798395
+    },
+    {
+      "path": "spring_festival/stickers/sticker_dumpling_001.png",
+      "blobSha": "b20e38d387887486cf44ac512026931a1d534855",
+      "size": 144576
+    },
+    {
+      "path": "spring_festival/stickers/sticker_firecracker_001.png",
+      "blobSha": "091631a0454bcc70bb194f66dd4b031340d666d5",
+      "size": 187691
+    },
+    {
+      "path": "spring_festival/stickers/sticker_fu_001.png",
+      "blobSha": "ae01d20c9c54068ab68a80a9839afed2c24cbc62",
+      "size": 377877
+    },
+    {
+      "path": "spring_festival/stickers/sticker_lantern_001.png",
+      "blobSha": "76b97dc28d438676c2610ba236ecc1b90a76d150",
+      "size": 308666
+    },
+    {
+      "path": "spring_festival/stickers/sticker_red_envelope_001.png",
+      "blobSha": "39ab5477d881426177ec60607bc36de28f64e4b8",
+      "size": 158848
+    },
+    {
+      "path": "spring_festival/stickers/sticker_window_flower_001.png",
+      "blobSha": "a20e25723e232003190bd4156a50ee85a81f7b16",
+      "size": 320447
+    },
+    {
+      "path": "spring_festival/thumbnails/background_couplet_gate_001_thumb.png",
+      "blobSha": "4d423770a83f9ff0ef3cfda4e63967762b63bef1",
+      "size": 49506
+    },
+    {
+      "path": "spring_festival/thumbnails/background_snow_window_001_thumb.png",
+      "blobSha": "c42fd675e399bb5aa9e05f17398d7b6c7466030e",
+      "size": 44657
+    },
+    {
+      "path": "spring_festival/thumbnails/sticker_dumpling_001_thumb.png",
+      "blobSha": "681ee04d327fdaca22d78058b450f32a867a938d",
+      "size": 38223
+    },
+    {
+      "path": "spring_festival/thumbnails/sticker_firecracker_001_thumb.png",
+      "blobSha": "10522aa3f38dd1fbe409db007a8f0763b7cc37bf",
+      "size": 47987
+    },
+    {
+      "path": "spring_festival/thumbnails/sticker_fu_001_thumb.png",
+      "blobSha": "4d41e312e9d81214f32efb9c7753a8ebf9e93d76",
+      "size": 116975
+    },
+    {
+      "path": "spring_festival/thumbnails/sticker_lantern_001_thumb.png",
+      "blobSha": "710cadd6c2c6a4cac467cc9cd9e51723f0981730",
+      "size": 80027
+    },
+    {
+      "path": "spring_festival/thumbnails/sticker_red_envelope_001_thumb.png",
+      "blobSha": "2da2261ebef9cad34f9b96fcb87044cebc12d3bb",
+      "size": 42819
+    },
+    {
+      "path": "spring_festival/thumbnails/sticker_window_flower_001_thumb.png",
+      "blobSha": "5c9149a1cd4ab80f04d77ac0e4c38e9c5a742cf6",
+      "size": 97751
+    },
+    {
+      "path": "summer/backgrounds/background_summer_courtyard_001.png",
+      "blobSha": "a3b89ae90306bfa6c8d8e700c70653c8f271872c",
+      "size": 180802
+    },
+    {
+      "path": "summer/backgrounds/background_summer_lotus_pond_001.png",
+      "blobSha": "f6ce0c01048379fd22d27d0b05f5232d6d37d56e",
+      "size": 190271
+    },
+    {
+      "path": "summer/feishu_fields_summer.xlsx",
+      "blobSha": "b914a756495e4f1c27479825e249e1249e32fcc8",
+      "size": 8355
+    },
+    {
+      "path": "summer/stickers/sticker_lotus_001.png",
+      "blobSha": "1ff76ff6266b8440789dd595c068ccfaa9e1055a",
+      "size": 323416
+    },
+    {
+      "path": "summer/stickers/sticker_palm_fan_001.png",
+      "blobSha": "e7e72200e5140982190ab206dc934e0a95029553",
+      "size": 481217
+    },
+    {
+      "path": "summer/stickers/sticker_small_boat_001.png",
+      "blobSha": "3a930363cbe39b5f6196d1c13893a9fa8e34307b",
+      "size": 122309
+    },
+    {
+      "path": "summer/stickers/sticker_watermelon_001.png",
+      "blobSha": "bb5bc569a63ae4307d828cb593a944c753ada2ae",
+      "size": 304249
+    },
+    {
+      "path": "summer/thumbnails/background_summer_courtyard_001_thumb.png",
+      "blobSha": "0bc9df251cff15622dfd4e558fb6937cf9d99689",
+      "size": 51080
+    },
+    {
+      "path": "summer/thumbnails/background_summer_lotus_pond_001_thumb.png",
+      "blobSha": "0863001e6989ffb13c4db821471b1355e932b2d1",
+      "size": 60262
+    },
+    {
+      "path": "summer/thumbnails/sticker_lotus_001_thumb.png",
+      "blobSha": "e6de59a95cd2f512dfc1e8aec904032ed66b27dc",
+      "size": 99294
+    },
+    {
+      "path": "summer/thumbnails/sticker_palm_fan_001_thumb.png",
+      "blobSha": "a3425b4cc8ae0fdc69c09c516264de6d8c87b712",
+      "size": 133682
+    },
+    {
+      "path": "summer/thumbnails/sticker_small_boat_001_thumb.png",
+      "blobSha": "68818237ace69b2f429a14ea79ad976f8199fcd9",
+      "size": 35690
+    },
+    {
+      "path": "summer/thumbnails/sticker_watermelon_001_thumb.png",
+      "blobSha": "3d19337882484a5bdd6e54bf58e74badb7488411",
+      "size": 117301
+    },
+    {
+      "path": "traditional_folk_music/backgrounds/background_elegant_hall_001.png",
+      "blobSha": "1916b962e00e04fe2e204c946e0ce0b13d361012",
+      "size": 176837
+    },
+    {
+      "path": "traditional_folk_music/feishu_fields_traditional_folk_music.xlsx",
+      "blobSha": "c1fb910546a5bece1f02363bbe0e224a2d9bfbbc",
+      "size": 7604
+    },
+    {
+      "path": "traditional_folk_music/stickers/sticker_bamboo_flute_001.png",
+      "blobSha": "434fadb5d083d4cfc186b8f47e9585117016566b",
+      "size": 133669
+    },
+    {
+      "path": "traditional_folk_music/stickers/sticker_guzheng_001.png",
+      "blobSha": "365bb1cc0467fb202e2fd86feb94efcb668fc897",
+      "size": 129413
+    },
+    {
+      "path": "traditional_folk_music/stickers/sticker_wooden_fish_001.png",
+      "blobSha": "50b65a443822867aaa0f122a243a4b5c649a5a9c",
+      "size": 159614
+    },
+    {
+      "path": "traditional_folk_music/thumbnails/background_elegant_hall_001_thumb.png",
+      "blobSha": "dc691eb81fc4163cefcef81ba4d1a4e6884c93cf",
+      "size": 47067
+    },
+    {
+      "path": "traditional_folk_music/thumbnails/sticker_bamboo_flute_001_thumb.png",
+      "blobSha": "1675a83b85a7982184b9a97f0644c1c1383353be",
+      "size": 17754
+    },
+    {
+      "path": "traditional_folk_music/thumbnails/sticker_guzheng_001_thumb.png",
+      "blobSha": "16c343cf0c3c4c2eeaf1e8d1588aa0c45ae8cbd3",
+      "size": 39145
+    },
+    {
+      "path": "traditional_folk_music/thumbnails/sticker_wooden_fish_001_thumb.png",
+      "blobSha": "000ac423f1b13ebb75863040d049846bd8bd22c8",
+      "size": 44897
+    },
+    {
+      "path": "traditional_opera/backgrounds/background_ancient_opera_stage_001.png",
+      "blobSha": "32ab24f2fd24bfadc9b92f1e7916cf9e6306f91a",
+      "size": 212006
+    },
+    {
+      "path": "traditional_opera/feishu_fields_traditional_opera.xlsx",
+      "blobSha": "df1b3c0a22fc096d5bb464c77503259516d1e8d8",
+      "size": 7286
+    },
+    {
+      "path": "traditional_opera/stickers/sticker_folding_fan_001.png",
+      "blobSha": "0db57452ebb63ac0c9c2dd4e36c1a36130dbf6b8",
+      "size": 322311
+    },
+    {
+      "path": "traditional_opera/stickers/sticker_small_drum_001.png",
+      "blobSha": "26630d31ca3d8501d3127165b1cec2137288ff7e",
+      "size": 259471
+    },
+    {
+      "path": "traditional_opera/thumbnails/background_ancient_opera_stage_001_thumb.png",
+      "blobSha": "46ccde1f11be69fe3c5f3b9304f3d907d2e6aaea",
+      "size": 56073
+    },
+    {
+      "path": "traditional_opera/thumbnails/sticker_folding_fan_001_thumb.png",
+      "blobSha": "6a267d31ace835b72b730a340b1893351478bf37",
+      "size": 68960
+    },
+    {
+      "path": "traditional_opera/thumbnails/sticker_small_drum_001_thumb.png",
+      "blobSha": "ea21bf7ab7cbd437765a4ebc91a30aeef9c3738a",
+      "size": 73549
+    },
+    {
+      "path": "winter/backgrounds/background_winter_snowman_field_001.png",
+      "blobSha": "8d2327e7d9ebbe3d2246e11f3016c1e5015c09c9",
+      "size": 149935
+    },
+    {
+      "path": "winter/feishu_fields_winter.xlsx",
+      "blobSha": "f2622facd74634284b91343445b2e00385b1c96b",
+      "size": 7781
+    },
+    {
+      "path": "winter/stickers/sticker_plant_plum_002.png",
+      "blobSha": "43c8175e10af4d876f4b732f78058f5e9a3321bf",
+      "size": 295938
+    },
+    {
+      "path": "winter/stickers/sticker_snowflake_001.png",
+      "blobSha": "53f65927940d1017561b4f79d25444890b394299",
+      "size": 276016
+    },
+    {
+      "path": "winter/thumbnails/background_winter_snowman_field_001_thumb.png",
+      "blobSha": "45825f10c20059871330729cd612debd94adbc50",
+      "size": 61442
+    },
+    {
+      "path": "winter/thumbnails/sticker_plum_blossom_001_thumb.png",
+      "blobSha": "b4172d6c0d54c180918479dbc66d238dbb17051c",
+      "size": 84624
+    },
+    {
+      "path": "winter/thumbnails/sticker_snowflake_001_thumb.png",
+      "blobSha": "22fa5f69e21bdf1d2b7e41959b0ca32c3b84e9de",
+      "size": 95019
+    },
+    {
+      "path": "素材库.xlsx",
+      "blobSha": "3d4d4a21be38289c12aece1f6acfd6600c924ffd",
+      "size": 45457
+    }
+  ]
+}

@@ -10,9 +10,9 @@ describe('formal catalog load boundary', () => {
   it('loads Manifest only after validateAssetRecord + snapshot context checks', () => {
     const raw = JSON.parse(readFileSync(manifestPath, 'utf8'))
     const catalog = loadFormalCatalog(raw)
-    expect(catalog.assets).toHaveLength(17)
+    expect(catalog.assets).toHaveLength(71)
     expect(catalog.assetSnapshotId.startsWith('snapshot_ywn_')).toBe(true)
-    expect(catalog.snapshotContext.snapshots[catalog.assetSnapshotId]).toHaveLength(17)
+    expect(catalog.snapshotContext.snapshots[catalog.assetSnapshotId]).toHaveLength(71)
   })
 
   it('rejects bare type assertions by failing invalid Manifest roots', () => {

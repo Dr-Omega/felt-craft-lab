@@ -8,16 +8,18 @@ import {
   gatewayAsrMultipart,
   gatewayJson,
   gatewayQaAsk,
+  gatewayStoryRewrite,
   gatewayTtsSynthesize,
   type GatewayAuth,
   type GatewayJsonResult
 } from './gateway-client'
-import { validateAsrIpcInput, validateQaIpcInput, validateTtsIpcInput, withValidatedIpcInput } from './input-guards'
+import { validateAsrIpcInput, validateQaIpcInput, validateStoryRewriteIpcInput, validateTtsIpcInput, withValidatedIpcInput } from './input-guards'
 import { materializeGatewayTts } from './materialize-tts'
 import {
   normalizeAsrEnvelope,
   normalizeGatewayFailure,
   normalizeQaEnvelope,
+  normalizeStoryRewriteEnvelope,
   normalizeTtsResult
 } from './normalize-envelope'
 import { getValidSessionToken } from './session-token'
@@ -134,17 +136,34 @@ export function registerAiIpc(): void {
     )
   })
 
+  ipcMain.handle(IPC_CHANNELS.AI_STORY_REWRITE, async (event, raw: unknown) => {
+    if (!isTrustedIpcEvent(event)) return deny()
+    const input = asRecord(raw)
+    const workId = typeof input.workId === 'string' ? input.workId.trim() : ''
+    const text = typeof input.text === 'string' ? input.text.trim() : ''
+    const context = asRecord(input.context)
+    const guarded = validateStoryRewriteIpcInput({ workId, text, context })
+    return withValidatedIpcInput(guarded, () =>
+      withPaidAuth(
+        packaged,
+        (auth) => gatewayStoryRewrite({ workId, text, context, isPackaged: packaged, auth }),
+        (body) => normalizeStoryRewriteEnvelope(body, workId)
+      )
+    )
+  })
+
   ipcMain.handle(IPC_CHANNELS.AI_QA_ASK, async (event, raw: unknown) => {
     if (!isTrustedIpcEvent(event)) return deny()
     const input = asRecord(raw)
     const question = typeof input.question === 'string' ? input.question : ''
-    const guarded = validateQaIpcInput(question)
+    const guarded = validateQaIpcInput(question, input.history)
     return withValidatedIpcInput(guarded, () =>
       withPaidAuth(
         packaged,
         (auth) =>
           gatewayQaAsk({
             question,
+            history: input.history as import('@shared/qa-history').QaHistoryMessage[] | undefined,
             asset: asRecord(input.asset),
             provider: typeof input.provider === 'string' ? input.provider : undefined,
             isPackaged: packaged,

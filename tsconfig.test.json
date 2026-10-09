@@ -7,6 +7,12 @@
   },
   "include": [
     "tests/**/*.ts",
+    "src/renderer/src/projection/**/*",
+    "src/renderer/src/story-card/**/*",
+    "src/renderer/src/learning-zone/**/*",
+    "src/renderer/src/components/editor/asset-qa.controller.ts",
+    "src/renderer/src/workflows/**/*",
+    "src/renderer/src/ui/**/*",
     "src/renderer/src/editor/**/*",
     "src/renderer/src/fabrication/**/*",
     "src/renderer/src/services/**/*",

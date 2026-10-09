@@ -378,6 +378,27 @@ describe('FabricEditorAdapter', () => {
     expect(exported).toMatchObject({ objectId, left: 480, top: 480, scaleX: expectedScale, scaleY: expectedScale, angle: 0 })
   })
 
+  it('fits task stickers to the existing lesson box, retaining drag but not resize controls', async () => {
+    const scene = cloneFixture(validScene)
+    scene.backgroundAssetId = null
+    scene.objects = []
+    const { adapter, canvas } = createHarness(scene, new Set(), { width: 800, height: 400 })
+    await adapter.importScene(scene, resolver())
+    const objectId = await adapter.addSticker(materialAsset('sticker'), validAccess, { left: 500, top: 400, fitBox: { width: 200, height: 120 } })
+    expect(canvas.getObjects().find(item => item.objectId === objectId)).toMatchObject({
+      scaleX: .25, scaleY: .25, lockMovementX: false, lockMovementY: false, lockScalingX: true, lockScalingY: true, lockRotation: true
+    })
+    expect(adapter.exportScene().objects[0]).toMatchObject({ left: 500, top: 400, scaleX: .25, scaleY: .25 })
+  })
+
+  it('rejects invalid task fit boxes without adding a sticker', async () => {
+    const scene = cloneFixture(validScene); scene.backgroundAssetId = null; scene.objects = []
+    const { adapter, canvas } = createHarness(scene)
+    await adapter.importScene(scene, resolver())
+    await expect(adapter.addSticker(materialAsset('sticker'), validAccess, { left: 200, top: 200, fitBox: { width: -1, height: 50 } })).rejects.toMatchObject({ code: 'INVALID_ARGUMENT' })
+    expect(canvas.getObjects()).toHaveLength(0)
+  })
+
   it('keeps an explicit Sticker position on the existing scale=1 path', async () => {
     const scene = cloneFixture(validScene)
     scene.backgroundAssetId = null

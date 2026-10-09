@@ -11,6 +11,7 @@ from typing import Any
 import requests
 
 from services.qa_types import err_qa, ok_qa
+from services.qa_history import valid_qa_history
 
 from .base import QaProvider
 
@@ -67,7 +68,9 @@ def _build_system_prompt(asset: dict[str, Any]) -> str:
 class DeepSeekQaProvider(QaProvider):
     name = "deepseek"
 
-    def ask(self, *, question: str, asset: dict[str, Any]) -> dict[str, Any]:
+    def ask(self, *, question: str, asset: dict[str, Any], history=None) -> dict[str, Any]:
+        if not valid_qa_history(history):
+            return err_qa(code="INVALID_ARGUMENT")
         key = os.getenv("DEEPSEEK_API_KEY", "").strip()
         if not key:
             return err_qa(code="QA_MISSING_API_KEY")
@@ -89,6 +92,7 @@ class DeepSeekQaProvider(QaProvider):
             "model": MODEL,
             "messages": [
                 {"role": "system", "content": _build_system_prompt(asset or {})},
+                *({"role": entry["role"], "content": entry["content"]} for entry in (history or [])),
                 {"role": "user", "content": q[:500]},
             ],
             "temperature": 0.6,

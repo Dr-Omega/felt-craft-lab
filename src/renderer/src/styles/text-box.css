@@ -1,0 +1,13 @@
+/* From personal-center-growth-ui 010da910; skins stay in hand-drawn-ui.css. */
+:root {
+  --text-box-border: #d4a843;
+  --text-box-fill: #f5ecd8;
+  --text-box-outline: #5c4030;
+  --text-box-radius: 18px;
+  --text-box-shadow: none;
+}
+.text-box-surface__footer,
+.text-box-surface__strip {
+  background: transparent;
+  border-top: 0;
+}

@@ -205,7 +205,7 @@ export class EditorSessionService {
     this.runSyncMutation('INVALID_ARGUMENT', () => this.requireAdapter().resizeCanvas(width, height))
   }
 
-  async addSticker(asset: AssetRecord, access: AssetAccessState, position?: { left: number; top: number }): Promise<string> {
+  async addSticker(asset: AssetRecord, access: AssetAccessState, position?: { left: number; top: number; fitBox?: { width: number; height: number } }): Promise<string> {
     return this.runAsyncMutation('INVALID_ARGUMENT', () => this.requireAdapter().addSticker(asset, access, position))
   }
 
@@ -277,6 +277,14 @@ export class EditorSessionService {
 
   getRecoveryIssues(): readonly SceneRecoveryIssue[] {
     return this.recoveryIssues.map((issue) => ({ ...issue }))
+  }
+
+  selectObject(objectId: string): void {
+    const adapter = this.requireAdapter('INVALID_ARGUMENT')
+    if (this.status !== 'ready' || this.pendingTokens.size > 0 || !adapter.selectObject) {
+      throw sessionError('INVALID_ARGUMENT', 'Editor session is not ready to select an element.')
+    }
+    adapter.selectObject(objectId)
   }
 
   subscribeSelection(listener: EditorSelectionListener): () => void {

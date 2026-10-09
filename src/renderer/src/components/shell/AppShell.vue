@@ -21,7 +21,7 @@ const brownBearStyle = computed(() => psdBoxStyle('brown-bear-button'))
   <div class="psd-shell">
     <img class="psd-shell__background" :src="psd160Assets.background" alt="" aria-hidden="true" />
 
-    <button type="button" class="psd-shell__back-plaza primary" @click="emit('backToPlaza')">返回作品</button>
+    <button type="button" class="psd-shell__back-plaza primary" @click="emit('backToPlaza')">返回大厅</button>
 
     <main class="psd-shell__content">
       <slot />
@@ -56,7 +56,7 @@ const brownBearStyle = computed(() => psdBoxStyle('brown-bear-button'))
         class="psd-shell__nav-btn"
         :class="{ 'is-active': activeView === 'projection' }"
         :style="brownBearStyle"
-        aria-label="去背景与分层"
+        aria-label="选择作品查看图层展示"
         @click="emit('navigate', 'projection')"
       >
         <img :src="psd160Assets.brownBearButton" alt="" />

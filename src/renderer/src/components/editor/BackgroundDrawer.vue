@@ -14,6 +14,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   select: [assetId: string]
   apply: [asset: AssetRecord | null]
+  unlock: [themeId: string]
   close: []
 }>()
 
@@ -60,6 +61,8 @@ function unlocked(asset: AssetRecord): boolean {
       :asset="selectedAsset()"
       :active="open"
     />
+    <p v-if="selectedAsset() && !unlocked(selectedAsset()!)">该主题尚未解锁。</p>
+    <button v-if="selectedAsset() && !unlocked(selectedAsset()!)" :disabled="busy" @click="emit('unlock', selectedAsset()!.themeId)">前往解锁本主题</button>
     <button
       class="drawer-apply"
       type="button"

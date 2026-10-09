@@ -5,9 +5,11 @@ import type { PreparedProjectSave } from '../editor/editor-session.types'
 import { getFeltCraftDatabase, type FeltCraftDatabase } from './db'
 import { asPersistenceError, persistenceError } from './errors'
 import { cleanupPreviewRef, deleteProjectPreviewRef, saveProjectPreviewBytes } from './preview-bridge'
-import { ProjectStore } from './stores'
+import { DraftStore, ProjectStore } from './stores'
 
 export type SaveNewProjectOptions = {
+  /** Consume only this matching draft, atomically with the new saved work. */
+  draftId?: string
   projectId?: string
   createdAt?: string
   db?: FeltCraftDatabase
@@ -77,8 +79,18 @@ export async function saveNewProject(
       throw persistenceError('PROJECT_SAVE_FAILED', '作品记录未通过 Shared Contract 校验。')
     }
 
-    const store = new ProjectStore(options.db ?? getFeltCraftDatabase())
-    return await store.save(validated.value)
+    const db = options.db ?? getFeltCraftDatabase()
+    const store = new ProjectStore(db)
+    if (!options.draftId) return await store.save(validated.value)
+    return await db.transaction('rw', db.projects, db.drafts, async () => {
+      const draft = await new DraftStore(db).get(options.draftId!)
+      if (!draft || draft.scene.sceneId !== record.scene.sceneId || draft.scene.userId !== record.scene.userId) {
+        throw persistenceError('PROJECT_SAVE_FAILED', '原草稿不存在或与当前作品不匹配，请保留画布并重试。')
+      }
+      const saved = await store.save(validated.value)
+      await db.drafts.delete(draft.draftId)
+      return saved
+    })
   } catch (error) {
     await cleanupPreviewRef(newPreviewRef)
     throw asPersistenceError(error, 'PROJECT_SAVE_FAILED')
@@ -119,8 +131,14 @@ export async function updateExistingProject(
       throw persistenceError('PROJECT_SAVE_FAILED', '作品记录未通过 Shared Contract 校验。')
     }
 
-    const store = new ProjectStore(options.db ?? getFeltCraftDatabase())
-    const saved = await store.save(validated.value)
+    const db = options.db ?? getFeltCraftDatabase()
+    const store = new ProjectStore(db)
+    const saved = await db.transaction('rw', db.projects, db.storyCards, async () => {
+      const project = await store.save(validated.value)
+      const card = await db.storyCards.get(existing.projectId)
+      if (card) await db.storyCards.put({ ...card, artworkImageRef: project.previewUrl })
+      return project
+    })
 
     if (previousPreview && previousPreview !== newPreviewRef) {
       try {
@@ -168,7 +186,11 @@ export async function deleteExistingProject(
   }
 
   try {
-    await store.delete(projectId)
+    const db = options.db ?? getFeltCraftDatabase()
+    await db.transaction('rw', db.projects, db.storyCards, async () => {
+      await store.delete(projectId)
+      await db.storyCards.delete(projectId)
+    })
   } catch (error) {
     // Dexie failed — preview must remain.
     throw asPersistenceError(error, 'PROJECT_SAVE_FAILED')

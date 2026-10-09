@@ -1,0 +1,192 @@
+{
+  "schemaVersion": 1,
+  "purpose": "故事整理 Mock 结果与回归测试样例",
+  "cases": [
+    {
+      "id": "zh-ready",
+      "description": "中文口语输入应整理为连贯故事，并保留孩子的表达语气。",
+      "input": {
+        "workId": "work-zh-ready",
+        "kind": "manual_text",
+        "text": "嗯，我把小兔子放在月夜花园，因为它要去找朋友，然后灯笼亮亮的，它们一起玩。",
+        "baseOriginalAudioRef": "felt-resource://audio/work-zh-ready-original.mp3"
+      },
+      "context": {
+        "workId": "work-zh-ready",
+        "completionStatus": "completed",
+        "artworkImageRef": "felt-resource://preview/work-zh-ready.png",
+        "background": {
+          "name": "月夜花园",
+          "themeName": "中秋"
+        },
+        "subject": {
+          "name": "小兔子"
+        },
+        "stickers": [
+          {
+            "name": "灯笼",
+            "themeName": "中秋"
+          }
+        ]
+      },
+      "expected": {
+        "status": "ready_for_review",
+        "suggestedTitle": "小兔子的月夜花园",
+        "suggestedStoryText": "我把小兔子放在月夜花园，因为它要去找朋友。灯笼亮亮的，它们一起玩。"
+      }
+    },
+    {
+      "id": "en-ready",
+      "description": "英文输入应保持英文，不翻译为中文。",
+      "input": {
+        "workId": "work-en-ready",
+        "kind": "manual_text",
+        "text": "My bunny is in the garden because it wants to find a friend. The light is bright and they play together.",
+        "baseOriginalAudioRef": "felt-resource://audio/work-en-ready-original.mp3"
+      },
+      "context": {
+        "workId": "work-en-ready",
+        "completionStatus": "completed",
+        "artworkImageRef": "felt-resource://preview/work-en-ready.png",
+        "background": {
+          "name": "Garden",
+          "themeName": "Moon Festival"
+        },
+        "subject": {
+          "name": "Bunny"
+        },
+        "stickers": []
+      },
+      "expected": {
+        "status": "ready_for_review",
+        "suggestedTitle": "Bunny's Garden Story",
+        "suggestedStoryText": "My bunny is in the garden because it wants to find a friend. The light is bright, and they play together."
+      }
+    },
+    {
+      "id": "mixed-ready",
+      "description": "中英混合输入应保持原有语言结构，不翻译英文词。",
+      "input": {
+        "workId": "work-mixed-ready",
+        "kind": "manual_text",
+        "text": "我的小兔子在 night garden 里面找朋友，灯笼像 little stars 一样亮。",
+        "baseOriginalAudioRef": "felt-resource://audio/work-mixed-ready-original.mp3"
+      },
+      "context": {
+        "workId": "work-mixed-ready",
+        "completionStatus": "completed",
+        "artworkImageRef": "felt-resource://preview/work-mixed-ready.png",
+        "background": {
+          "name": "夜晚花园",
+          "themeName": "中秋"
+        },
+        "subject": {
+          "name": "小兔子"
+        },
+        "stickers": [
+          {
+            "name": "灯笼",
+            "themeName": "中秋"
+          }
+        ]
+      },
+      "expected": {
+        "status": "ready_for_review",
+        "suggestedTitle": "小兔子的 Night Garden",
+        "suggestedStoryText": "我的小兔子在 night garden 里面找朋友，灯笼像 little stars 一样亮。"
+      }
+    },
+    {
+      "id": "needs-more-input",
+      "description": "过短输入不得被扩写为完整故事，应返回三个补充问题。",
+      "input": {
+        "workId": "work-needs-more-input",
+        "kind": "manual_text",
+        "text": "小兔子。",
+        "baseOriginalAudioRef": "felt-resource://audio/work-needs-more-input-original.mp3"
+      },
+      "context": {
+        "workId": "work-needs-more-input",
+        "completionStatus": "completed",
+        "artworkImageRef": "felt-resource://preview/work-needs-more-input.png",
+        "background": null,
+        "subject": {
+          "name": "小兔子"
+        },
+        "stickers": []
+      },
+      "expected": {
+        "status": "needs_more_input",
+        "followUpQuestions": [
+          "小兔子在做什么呢？",
+          "你最喜欢这幅画里的哪里？",
+          "你想让小兔子和谁一起玩？"
+        ]
+      }
+    },
+    {
+      "id": "child-friendly-rewrite",
+      "description": "不适宜措辞应替换为儿童友好表达，且不增加画面外情节。",
+      "input": {
+        "workId": "work-child-friendly",
+        "kind": "manual_text",
+        "text": "这个笨蛋小兔子在花园里找朋友，它有点坏，可是后来它一起玩了。",
+        "baseOriginalAudioRef": "felt-resource://audio/work-child-friendly-original.mp3"
+      },
+      "context": {
+        "workId": "work-child-friendly",
+        "completionStatus": "completed",
+        "artworkImageRef": "felt-resource://preview/work-child-friendly.png",
+        "background": {
+          "name": "花园",
+          "themeName": "自然"
+        },
+        "subject": {
+          "name": "小兔子"
+        },
+        "stickers": []
+      },
+      "expected": {
+        "status": "ready_for_review",
+        "suggestedTitle": "花园里的小兔子",
+        "suggestedStoryText": "这个小兔子在花园里找朋友。它有点调皮，后来开心地玩了起来。"
+      }
+    },
+    {
+      "id": "story-rewrite-failed",
+      "description": "故事整理服务暂时失败时，应保留输入并返回可重试的规范化错误。",
+      "input": {
+        "workId": "work-story-rewrite-failed",
+        "kind": "manual_text",
+        "text": "小兔子在花园里找朋友，后来和朋友一起看灯笼。",
+        "baseOriginalAudioRef": "felt-resource://audio/work-story-rewrite-failed-original.mp3"
+      },
+      "context": {
+        "workId": "work-story-rewrite-failed",
+        "completionStatus": "completed",
+        "artworkImageRef": "felt-resource://preview/work-story-rewrite-failed.png",
+        "background": {
+          "name": "花园",
+          "themeName": "自然"
+        },
+        "subject": {
+          "name": "小兔子"
+        },
+        "stickers": [
+          {
+            "name": "灯笼",
+            "themeName": "中秋"
+          }
+        ]
+      },
+      "expected": {
+        "status": "failed",
+        "error": {
+          "code": "QA_TIMEOUT",
+          "message": "故事暂时没有整理好，请稍后再试。",
+          "retryable": true
+        }
+      }
+    }
+  ]
+}

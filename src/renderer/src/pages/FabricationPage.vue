@@ -47,7 +47,7 @@ const screen = ref<'images' | 'explode'>('images')
 const urls = new Set<string>()
 let timer: ReturnType<typeof setTimeout> | undefined
 let disposed = false
-const busy = computed(() => starting.value || ['background', 'fabrication'].includes(job.value?.status || ''))
+const busy = computed(() => starting.value || ['queued', 'background', 'fabrication'].includes(job.value?.status || ''))
 const result = computed(() => job.value?.result)
 const visibleLayers = computed(() => showFirstStep.value ? layers.value : layers.value.slice(1))
 const assemblies = computed(() => Object.keys(assets.value).filter(key => key.startsWith('assembly-')))
@@ -132,7 +132,7 @@ async function poll(): Promise<void> {
     job.value = await window.electronAPI.fabrication.status(job.value.id)
     if (job.value.status !== 'background') await asset('foreground').catch(() => '')
     if (job.value.status === 'complete') await loadResult()
-    else if (['background', 'fabrication'].includes(job.value.status)) timer = setTimeout(poll, 1000)
+    else if (['queued', 'background', 'fabrication'].includes(job.value.status)) timer = setTimeout(poll, 1000)
   } catch (e) { if (!disposed) { error.value = String(e); pollingFailed.value = true } }
 }
 async function start(): Promise<void> {
@@ -144,6 +144,17 @@ async function start(): Promise<void> {
     sessionStorage.removeItem(SESSION)
     original.value = objectUrl(bytes.value, bytes.value[0] === 137 ? 'image/png' : 'image/jpeg')
     job.value = await window.electronAPI.fabrication.start(bytes.value, mode.value, binding)
+    sessionStorage.setItem(SESSION, job.value.id)
+    localStorage.setItem(SESSION, job.value.id)
+    void poll()
+  } catch (e) { error.value = String(e) }
+  finally { starting.value = false }
+}
+async function retry(): Promise<void> {
+  if (!job.value || busy.value) return
+  starting.value = true; error.value = ''
+  try {
+    job.value = await window.electronAPI.fabrication.retry(job.value.id)
     sessionStorage.setItem(SESSION, job.value.id)
     localStorage.setItem(SESSION, job.value.id)
     void poll()
@@ -184,6 +195,7 @@ onUnmounted(() => { window.removeEventListener('resize', updatePanelAnchor); dis
     <p v-if="error" role="alert" class="error">{{ error }}</p>
     <button v-if="pollingFailed" @click="poll">重新读取任务状态（不重新计算）</button>
     <p v-if="job && ['failed', 'timeout'].includes(job.status)" role="alert" class="error">本次未完成，未用示例或旧结果替代。可更换图片重试；日志保留在本地任务目录。</p>
+    <button v-if="job && ['failed', 'timeout'].includes(job.status)" :disabled="starting" @click="retry">使用此任务保留的原图和前景模式重试</button>
     <div class="images">
       <figure v-if="original"><img :src="original" alt="未经修改的输入原图" /><figcaption>输入原图</figcaption></figure>
       <figure v-if="assets.foreground"><img :src="assets.foreground" alt="实际透明前景" /><figcaption>实际前景（颜色未做去混色恢复）</figcaption></figure>

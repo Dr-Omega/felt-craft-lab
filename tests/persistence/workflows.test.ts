@@ -107,6 +107,69 @@ describe('project workflow', () => {
     }
   }
 
+  function story(work = validFeltProject()) {
+    return { workId: work.projectId, artworkImageRef: work.previewUrl, title: '我的故事',
+      storyText: '我画了一幅画。', originalAudioRef: 'felt-resource://audio/dynamic/story-card/confirmed/abc.webm', confirmedAt: fixtureTime }
+  }
+
+  it('promotes only the matching draft and does not leave a stale continue-editing copy', async () => {
+    const input = prepared()
+    const draft = await saveDraftFromPreparedScene(input.scene, { db })
+    const other = await saveDraftFromPreparedScene(input.scene, { db })
+    const saved = await saveNewProject(input, { db, draftId: draft.draftId })
+    expect(await db.projects.get(saved.projectId)).toEqual(saved)
+    expect(await db.drafts.get(draft.draftId)).toBeUndefined()
+    expect(await db.drafts.get(other.draftId)).toBeDefined()
+  })
+
+  it('preserves the draft and rolls back the project if draft promotion fails', async () => {
+    const input = prepared(), { saved, deleted } = installPreviewApi()
+    const draft = await saveDraftFromPreparedScene(input.scene, { db })
+    db.drafts.hook('deleting', () => { throw new Error('draft delete failed') })
+    await expect(saveNewProject(input, { db, draftId: draft.draftId })).rejects.toBeInstanceOf(PersistenceError)
+    expect(await db.projects.count()).toBe(0)
+    expect(await db.drafts.get(draft.draftId)).toEqual(draft)
+    expect(deleted).toEqual(saved)
+  })
+
+  it('never consumes a draft belonging to another scene', async () => {
+    const input = prepared()
+    const draft = await saveDraftFromPreparedScene({ ...input.scene, sceneId: crypto.randomUUID() }, { db })
+    await expect(saveNewProject(input, { db, draftId: draft.draftId })).rejects.toBeInstanceOf(PersistenceError)
+    expect(await db.projects.count()).toBe(0)
+    expect(await db.drafts.get(draft.draftId)).toEqual(draft)
+  })
+
+  it('updates the linked story image with the project without changing confirmed text or audio', async () => {
+    const existing = validFeltProject()
+    await new ProjectStore(db).save(existing)
+    await db.storyCards.put(story(existing))
+    const updated = await updateExistingProject(existing, prepared(), { db })
+    expect(await db.storyCards.get(existing.projectId)).toEqual({ ...story(existing), artworkImageRef: updated.previewUrl })
+  })
+
+  it('rolls back both project and story if updating the story image fails', async () => {
+    const { saved, deleted } = installPreviewApi()
+    const existing = validFeltProject()
+    await new ProjectStore(db).save(existing)
+    await db.storyCards.put(story(existing))
+    db.storyCards.hook('updating', () => { throw new Error('story disk failure') })
+    await expect(updateExistingProject(existing, prepared(), { db })).rejects.toBeInstanceOf(PersistenceError)
+    expect(await new ProjectStore(db).get(existing.projectId)).toEqual(existing)
+    expect(await db.storyCards.get(existing.projectId)).toEqual(story(existing))
+    expect(deleted).toEqual(saved)
+    expect(deleted).not.toContain(existing.previewUrl)
+  })
+
+  it('deletes the target project and its story without deleting another story', async () => {
+    const existing = validFeltProject()
+    await new ProjectStore(db).save(existing)
+    await db.storyCards.bulkPut([story(existing), { ...story(existing), workId: 'another-work' }])
+    await deleteExistingProject(existing.projectId, { db })
+    expect(await db.storyCards.get(existing.projectId)).toBeUndefined()
+    expect(await db.storyCards.get('another-work')).toBeDefined()
+  })
+
   it('creates a new project with local_only sync and matching projectName', async () => {
     const input = prepared()
     const project = await saveNewProject(input, {

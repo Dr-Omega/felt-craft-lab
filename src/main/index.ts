@@ -5,10 +5,14 @@ import { pathToFileURL } from 'node:url'
 import { APP_DISPLAY_NAME, IPC_CHANNELS } from '@shared/constants/app'
 import { isAllowedExternalUrl } from './external-url'
 import { resolveRuntimeAssetPath } from './paths'
+import { registerPlazaIpc } from './plaza/ipc'
+import { registerWorkspaceSync } from './plaza/workspace-sync'
 import { registerAiIpc } from './ai/ipc'
+import { registerLearningIpc } from './learning/ipc'
 import { registerFabricationIpc } from './fabrication/ipc'
 import { registerCreationIntentIpc, CreationIntentHost, createLiveCreationIntentParser } from './creation-intent'
 import { generateCandidatePng } from './image-generation'
+import { registerStoryCardAudioIpc } from './story-card-audio'
 import { registerPreviewIpc } from './preview'
 import { readPreviewPng, savePreviewPng, deletePreviewPng } from './preview/write'
 import {
@@ -135,9 +139,13 @@ app.whenReady().then(() => {
   const resourceRoots = createResourceRoots()
   attachFeltResourceProtocol(resourceRoots)
   registerResourceIpc(resourceRoots)
+  registerPlazaIpc(resourceRoots)
+  registerWorkspaceSync(resourceRoots)
+  registerStoryCardAudioIpc(resourceRoots)
   registerPreviewIpc(resourceRoots)
   registerBootstrapIpc()
   registerAiIpc()
+  registerLearningIpc()
   registerFabricationIpc()
   registerCreationIntentIpc(
     new CreationIntentHost({

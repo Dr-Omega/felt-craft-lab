@@ -1,5 +1,5 @@
+import { getCurrentUserId } from '../services/plaza-session'
 import type { CreationIntentAccepted } from '@shared/creation-intent'
-import { DEFAULT_USER_ID } from '../catalog/asset-access-helpers'
 import { getFeltCraftDatabase, type FeltCraftDatabase } from './db'
 import { PersonalAssetStore, PersonalAssetVersionStore } from './stores'
 
@@ -31,7 +31,7 @@ export async function persistAcceptedGeneration(
   }
   const asset = {
     personalAssetId: accepted.personalAssetId,
-    userId: options.userId ?? DEFAULT_USER_ID,
+    userId: options.userId ?? getCurrentUserId(),
     role: accepted.role,
     sourceType: 'ai_generated' as const,
     name: accepted.name,

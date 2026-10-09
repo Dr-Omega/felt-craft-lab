@@ -69,6 +69,7 @@ export async function gatewayJson(
     isPackaged?: boolean
     auth?: GatewayAuth
     skipAuth?: boolean
+    plazaUserToken?: string
   } = {}
 ): Promise<GatewayJsonResult> {
   const resolved = resolveAiGatewayBaseUrlResult({ isPackaged: init.isPackaged })
@@ -90,7 +91,7 @@ export async function gatewayJson(
   try {
     const headers: Record<string, string> = {
       ...(init.headers || {}),
-      ...(init.skipAuth ? {} : authHeaders(init.auth))
+      ...(init.plazaUserToken ? { Authorization: `Bearer ${init.plazaUserToken}` } : init.skipAuth ? {} : authHeaders(init.auth))
     }
     const response = await fetch(url, {
       method: init.method || 'GET',
@@ -227,6 +228,7 @@ export async function gatewayAsrMultipart(input: {
 }
 
 export async function gatewayQaAsk(input: {
+  history?: readonly import('@shared/qa-history').QaHistoryMessage[]
   question: string
   asset?: Record<string, unknown>
   provider?: string
@@ -239,6 +241,7 @@ export async function gatewayQaAsk(input: {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       question: input.question,
+      ...(input.history?.length ? { history: input.history } : {}),
       asset: input.asset || {},
       ...(input.provider ? { provider: input.provider } : {})
     }),
@@ -352,5 +355,23 @@ export async function gatewayImageFinalize(input: {
     isPackaged: input.isPackaged,
     auth: input.auth,
     timeoutMs: 60_000
+  })
+}
+
+export async function gatewayStoryRewrite(input: {
+  workId: string
+  text: string
+  context: Record<string, unknown>
+  signal?: AbortSignal
+  isPackaged?: boolean
+  auth?: GatewayAuth
+}): Promise<GatewayJsonResult> {
+  return gatewayJson('/api/story/rewrite', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ workId: input.workId, text: input.text, context: input.context }),
+    signal: input.signal,
+    isPackaged: input.isPackaged,
+    auth: input.auth
   })
 }

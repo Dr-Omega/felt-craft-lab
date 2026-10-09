@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import type { AssetRecord } from '@shared/contracts'
 import { audioService } from '../../services/audio.service'
 
@@ -29,12 +29,18 @@ const audioButtons = computed<AudioButton[]>(() => {
 
 watch(
   () => [props.asset?.assetId, props.active] as const,
-  ([, active]) => {
-    if (!active) playingUrl.value = null
-  }
+  () => stopOwnedAudio()
 )
 
+function stopOwnedAudio(): void {
+  if (playingUrl.value) audioService.stop('primary')
+  playingUrl.value = null
+}
+
+onBeforeUnmount(stopOwnedAudio)
+
 function playAudio(button: AudioButton): void {
+  if (!props.active) return
   playingUrl.value = button.url
   void audioService.play(button.url, 'primary')
 }

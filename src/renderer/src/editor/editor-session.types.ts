@@ -41,9 +41,10 @@ export interface EditorSessionAdapter {
   setSolidBackground(color: string): void
   setTransparentBackground(): void
   resizeCanvas(width: number, height: number): void
-  addSticker(asset: AssetRecord, access: AssetAccessState, position?: { left: number; top: number }): Promise<string>
+  addSticker(asset: AssetRecord, access: AssetAccessState, position?: { left: number; top: number; fitBox?: { width: number; height: number } }): Promise<string>
   addPersonalElement(asset: PersonalAssetRecord, version: PersonalAssetVersionRecord, position?: { left: number; top: number }): Promise<string>
   deleteObject(objectId: string): void
+  selectObject?(objectId: string): void
   deleteSelected(): void
   bringForward(objectId: string): void
   sendBackward(objectId: string): void

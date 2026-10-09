@@ -120,7 +120,7 @@ class RecoveryStubAdapter implements EditorSessionAdapter {
 describe('historical Scene Editor catalog selection', () => {
   it('exposes formal latest assets via getCatalogAssetsForSnapshot(latest)', () => {
     const assets = getCatalogAssetsForSnapshot(YWN_SNAPSHOT_ID)
-    expect(assets.length).toBe(17)
+    expect(assets.length).toBe(71)
     expect(assets.every((asset) => asset.imageUrl.includes(`/${YWN_SNAPSHOT_ID}/`))).toBe(true)
   })
 

@@ -26,12 +26,17 @@ export interface FabricationView {
 }
 export interface FabricationJob {
   id: string
-  status: 'background' | 'fabrication' | 'complete' | 'failed' | 'timeout'
+  /** Main-process authenticated owner; legacy unowned jobs are not auto-claimed. */
+  ownerUserId?: string
+  status: 'queued' | 'background' | 'fabrication' | 'complete' | 'failed' | 'timeout'
+  binding?: import('./fabrication-colors').SceneBinding | null
+  mode?: ForegroundMode
   message: string
   startedAt: number
   result?: FabricationView
 }
 export const FABRICATION_CHANNELS = {
+  list: 'fabrication:list', retry: 'fabrication:retry', availability: 'fabrication:availability',
   start: 'fabrication:start', status: 'fabrication:status', asset: 'fabrication:asset',
   colors: 'fabrication:colors', saveColors: 'fabrication:save-colors', resume: 'fabrication:resume'
 } as const

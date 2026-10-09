@@ -14,6 +14,14 @@ const removeToast = readFileSync(resolve('src/renderer/src/components/editor/Rem
 const selectionTypes = readFileSync(resolve('src/renderer/src/editor/editor-selection.types.ts'), 'utf8')
 
 describe('SXY recent shell with preserved Editor behavior contract', () => {
+  it('initializes microphone cleanup slots before the immediate closed-sheet watcher', () => {
+    const qa = readFileSync(resolve('src/renderer/src/components/editor/AssetQaSheet.vue'), 'utf8')
+    const firstWatch = qa.indexOf('watch(')
+    for (const slot of ['activeStream', 'activeRecorder', 'activeChunks', 'activeVoiceToken']) {
+      expect(qa.indexOf(`let ${slot}`)).toBeGreaterThan(-1)
+      expect(qa.indexOf(`let ${slot}`)).toBeLessThan(firstWatch)
+    }
+  })
   it('uses runtime dirty state for the return gate and explicit persistence baselines', () => {
     expect(page).toContain('sessionState.value?.isDirty === false')
     expect(page).toContain("launch.mode === 'draft' || launch.mode === 'project'")
@@ -78,9 +86,9 @@ describe('SXY recent shell with preserved Editor behavior contract', () => {
   it('keeps acceptance unlock-all explicit and refreshes through normal access rows', () => {
     expect(page).toContain('VITE_ACCEPTANCE_UNLOCK_ALL_ASSETS')
     expect(page).toContain('seedAcceptanceUnlockedAccess')
-    expect(page).toContain('seedThemeUnlockedAccess')
+    expect(page).not.toContain('seedThemeUnlockedAccess')
     expect(page).toContain('launch.fromGeneration')
-    expect(page).toContain('点下面的花，用贴纸打扮它')
+    expect(page).toContain('图片已确认，正在准备图层。等待时可以继续布置画布。')
     expect(page).toContain('await refreshAccess()')
     expect(sheet).toContain('isAssetUnlocked')
     expect(drawer).toContain('isAssetUnlocked')

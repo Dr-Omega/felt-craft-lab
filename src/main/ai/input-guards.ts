@@ -1,4 +1,5 @@
 import { toSharedError, type SharedError } from '@shared/contracts/error'
+import { validQaHistory } from '@shared/qa-history'
 
 /** Keep in sync with backend guards (or more conservative). */
 export const MAX_ASR_AUDIO_BYTES = 5 * 1024 * 1024
@@ -60,7 +61,8 @@ export function validateAsrIpcInput(input: {
   return { ok: true }
 }
 
-export function validateQaIpcInput(question: string): IpcGuardResult {
+export function validateQaIpcInput(question: string, history?: unknown): IpcGuardResult {
+  if (!validQaHistory(history)) return invalid('对话记录无效或过长。')
   const text = question || ''
   if (!text.trim()) return invalid('问题不能为空。')
   if (text.length > MAX_QA_CHARS) return invalid('文本过长。')
@@ -84,4 +86,29 @@ export async function withValidatedIpcInput<T>(
 ): Promise<T | { ok: false; error: SharedError }> {
   if (!guard.ok) return { ok: false, error: guard.error }
   return networkCall()
+}
+
+export const MAX_STORY_REWRITE_CHARS = 3000
+
+export function validateStoryRewriteIpcInput(input: {
+  workId: string
+  text: string
+  context: Record<string, unknown>
+}): IpcGuardResult {
+  if (!input.workId.trim() || input.workId.length > 128) return invalid('故事整理作品标识无效。')
+  if (!input.text.trim() || input.text.length > MAX_STORY_REWRITE_CHARS) return invalid('故事整理文本无效。')
+  const context = input.context
+  const subject = context.subject
+  const subjectName = subject && typeof subject === 'object'
+    ? (subject as Record<string, unknown>).name
+    : undefined
+  if (
+    context.workId !== input.workId ||
+    context.completionStatus !== 'completed' ||
+    typeof subjectName !== 'string' ||
+    !subjectName.trim()
+  ) {
+    return invalid('故事整理必须使用当前已完成作品的上下文。')
+  }
+  return { ok: true }
 }

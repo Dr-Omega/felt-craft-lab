@@ -1,3 +1,4 @@
+import type { StoryCard, StoryCardRepository } from '@shared/contracts'
 import type {
   AssetAccessState,
   DraftRecord,
@@ -354,5 +355,38 @@ export class FavoriteStore {
 
   async delete(userId: string, assetId: string): Promise<void> {
     await this.db.favorites.delete([userId, assetId])
+  }
+}
+
+export class StoryCardStore implements StoryCardRepository {
+  constructor(private readonly db: FeltCraftDatabase) {}
+
+  async create(card: StoryCard): Promise<StoryCard> {
+    const record = storyCardRecord(card)
+    await this.db.storyCards.add(record)
+    return Object.freeze(structuredClone(record)) as StoryCard
+  }
+
+  async getByWorkId(workId: string): Promise<StoryCard | undefined> {
+    const card = await this.db.storyCards.get(workId)
+    if (card === undefined) return undefined
+    return Object.freeze(structuredClone(card)) as StoryCard
+  }
+
+  async replace(card: StoryCard): Promise<StoryCard> {
+    const record = storyCardRecord(card)
+    await this.db.storyCards.put(record)
+    return Object.freeze(structuredClone(record)) as StoryCard
+  }
+}
+
+function storyCardRecord(card: StoryCard): StoryCard {
+  return {
+    workId: card.workId,
+    artworkImageRef: card.artworkImageRef,
+    title: card.title,
+    storyText: card.storyText,
+    originalAudioRef: card.originalAudioRef,
+    confirmedAt: card.confirmedAt
   }
 }

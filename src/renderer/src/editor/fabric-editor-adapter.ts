@@ -804,7 +804,7 @@ export class FabricEditorAdapter {
     this.captureHistory()
   }
 
-  async addSticker(asset: AssetRecord, access: AssetAccessState, position?: { left: number; top: number }): Promise<string> {
+  async addSticker(asset: AssetRecord, access: AssetAccessState, position?: { left: number; top: number; fitBox?: { width: number; height: number } }): Promise<string> {
     const canvas = this.requireReadyCanvas()
     const metadata = this.requireMetadata()
     throwIfInvalidAsset(asset, this.allowTestAssets)
@@ -840,6 +840,17 @@ export class FabricEditorAdapter {
       lockMovementX: false,
       lockMovementY: false
     }, operation, canvas)
+    if (position?.fitBox) {
+      try {
+        const { width, height } = position.fitBox
+        const scale = Math.min(width / loaded.object.width!, height / loaded.object.height!)
+        if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0 || !Number.isFinite(scale) || scale <= 0) {
+          throw editorError('INVALID_ARGUMENT', 'Task sticker fit box must be positive and finite.')
+        }
+        loaded.object.set({ scaleX: scale, scaleY: scale, lockScalingX: true, lockScalingY: true, lockRotation: true, hasControls: false })
+        loaded.object.setCoords()
+      } catch (error) { loaded.release(); throw error }
+    }
     if (position === undefined) {
       try {
         const scale = calculateStickerInitialScale(
@@ -1675,7 +1686,9 @@ export class FabricEditorAdapter {
     if (this.sceneGeneration !== operation.sceneGeneration || this.canvas !== operation.canvas) return false
     if (operation.kind === 'import') return this.importRequestGeneration === operation.requestGeneration
     if (operation.kind === 'background') return this.backgroundRequestGeneration === operation.requestGeneration
-    if (operation.kind === 'sticker') return this.stickerRequestGeneration === operation.requestGeneration
+    // Adds are independent, unlike replacement of the single background.
+    // Scene generation above still cancels loads after import/dispose.
+    if (operation.kind === 'sticker') return true
     return this.personalRequestGeneration === operation.requestGeneration
   }
 

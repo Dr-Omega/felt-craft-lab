@@ -68,3 +68,6 @@ backend/cache/
 backend/data/generated/
 backend/data/logs/
 backend/data/*.jsonl
+backend/data/*.db
+backend/data/*.db-*
+backend/data/uploads/

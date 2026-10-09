@@ -417,16 +417,33 @@ def load_ready_rows(source_root: Path) -> tuple[list[dict], list[dict]]:
     rows_out: list[dict] = []
     issues: list[dict] = []
     seen_ids: set[str] = set()
-    xlsx_files = sorted(source_root.rglob("feishu_fields_*.xlsx"))
+    # The complete v2 pack has one authoritative workbook. Theme exports are
+    # older copies and must not silently override or duplicate its rows.
+    master = source_root / "素材库.xlsx"
+    xlsx_files = [master] if master.is_file() else sorted(source_root.rglob("feishu_fields_*.xlsx"))
     for path in xlsx_files:
         wb = load_workbook(path, data_only=True)
-        if "01_正式素材_可填" not in wb.sheetnames:
+        if path == master:
+            if len(wb.worksheets) != 1:
+                issues.append({"sourceSheet": path.name, "errors": ["master workbook must contain exactly one material sheet"]})
+                wb.close()
+                continue
+            ws = wb.worksheets[0]
+        elif "01_正式素材_可填" in wb.sheetnames:
+            ws = wb["01_正式素材_可填"]
+        else:
+            wb.close()
             continue
-        ws = wb["01_正式素材_可填"]
         data = list(ws.iter_rows(values_only=True))
+        wb.close()
         if not data:
+            issues.append({"sourceSheet": str(path.relative_to(source_root)), "errors": ["empty material sheet"]})
             continue
         idx = header_index([str(c) if c is not None else "" for c in data[0]])
+        required = {"assetId", "type", "themeId", "status", "licenseStatus", "imageFileName"}
+        if not required.issubset(idx):
+            issues.append({"sourceSheet": str(path.relative_to(source_root)), "errors": ["missing required columns: " + ", ".join(sorted(required - idx.keys()))]})
+            continue
         for row in data[1:]:
             if not row:
                 continue
@@ -1018,8 +1035,9 @@ def build_manifest(
     if sample_row and sample_asset:
         sample_md = f"""# YWN 单条试转复核：sticker_fu_001
 
-**来源包：** {pack_label}  
-**assetSnapshotId：** `{planned_snapshot}`  
+**来源包：** {pack_label}
+
+**assetSnapshotId：** `{planned_snapshot}`
 **生成时间：** `{generated_at}`
 
 ## 1. 原始飞书行（春节表）

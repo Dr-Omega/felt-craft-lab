@@ -15,9 +15,9 @@ const snapA = 'snapshot_ywn_20260805_112922'
 describe('historical snapshot registry + resolver', () => {
   it('loads registry and exposes latest-only Library catalog', () => {
     const registry = loadSnapshotRegistry(JSON.parse(readFileSync(registryPath, 'utf8')))
-    expect(registry.latestSnapshotId).toBe(snapA)
+    expect(registry.latestSnapshotId).toBe('snapshot_ywn_material_v2_1cdf77d')
     expect(YWN_SNAPSHOT_ID).toBe(registry.latestSnapshotId)
-    expect(CATALOG_ASSETS).toHaveLength(17)
+    expect(CATALOG_ASSETS).toHaveLength(71)
     expect(YWN_SNAPSHOT_CONTEXT.snapshots[snapA]).toHaveLength(17)
   })
 
@@ -40,6 +40,11 @@ describe('historical snapshot registry + resolver', () => {
     const latest = await resolver.resolveAsset('sticker_fu_001', snapA)
     expect(latest.assetId).toBe('sticker_fu_001')
     expect(latest.imageUrl).toContain(`material/${snapA}/`)
+    const oldMoon = await resolver.resolveAsset('sticker_crescent_moon_001', snapA)
+    expect(oldMoon.imageUrl).toContain(`material/${snapA}/`)
+    const newMoon = await resolver.resolveAsset('sticker_moon_001', YWN_SNAPSHOT_ID)
+    expect(newMoon.imageUrl).toContain(`material/${YWN_SNAPSHOT_ID}/`)
+    await expect(resolver.resolveAsset('sticker_crescent_moon_001', YWN_SNAPSHOT_ID)).rejects.toThrow('Catalog missing asset')
 
     await expect(resolver.resolveAsset('sticker_fu_001', 'snapshot_missing_zzz')).rejects.toThrow(
       /Asset snapshot not found/

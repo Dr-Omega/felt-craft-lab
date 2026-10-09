@@ -58,7 +58,7 @@ describe('CreateAssetPage surface', () => {
     expect(page).toContain('create-guide')
     expect(page).toContain('再试一次')
     expect(page).toContain('retryLastFailure')
-    expect(page).toContain('仍可以点「去编辑器装饰」')
+    expect(page).toContain('仍可以点「确认图片并开始拆分」')
     expect(page).not.toContain('画图说明')
     expect(page).not.toContain('不要出现')
     expect(page).not.toContain('positiveText')

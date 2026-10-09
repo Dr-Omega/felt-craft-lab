@@ -7,17 +7,18 @@ import type { CanvasRecolorLink } from '../../fabrication/canvas-recolor'
 import { recolorLayers } from '../../fabrication/recolor'
 import type { ScreenBox } from '../../fabrication/panel-placement'
 import LayerEditorPanel from './LayerEditorPanel.vue'
+import { sameElementSource } from '@shared/fabrication-task-identity'
 
-const props = defineProps<{ input: Uint8Array; binding: SceneBinding | null; anchor: ScreenBox; savedEdit?: CanvasRecolorLink;
+const props = defineProps<{ input: Uint8Array; binding: SceneBinding | null; anchor: ScreenBox; savedEdit?: CanvasRecolorLink; foregroundMode?: ForegroundMode;
   apply: (png: string, colors: LayerColors, jobId: string, sourceSha256: string) => Promise<void> }>()
 const emit = defineEmits<{ close: []; preview: [png: string] }>()
 const job = ref<FabricationJob>(), colors = ref<LayerColors>(), selected = ref(0)
-const mode = ref<ForegroundMode>('embedded-alpha')
+const mode = ref<ForegroundMode>(props.foregroundMode || 'birefnet-general')
 const saving = ref(false), dirty = ref(false), rendering = ref(false), starting = ref(false)
 const error = ref(''), message = ref('正在准备这个元素的可编辑图层，作品留在原画布。')
 const painted = ref<Awaited<ReturnType<typeof recolorLayers>>>()
 const images: string[] = []
-const busy = computed(() => starting.value || ['background','fabrication'].includes(job.value?.status || ''))
+const busy = computed(() => starting.value || ['queued','background','fabrication'].includes(job.value?.status || ''))
 let key = '', sourceHash = '', generation = 0, disposed = false
 let timer: ReturnType<typeof setTimeout> | undefined
 
@@ -35,7 +36,7 @@ async function load(): Promise<void> {
   const current = job.value
   if (!current?.result) throw new Error('没有完整分层结果。')
   let doc = await window.electronAPI.fabrication.colors(current.id)
-  if (current.result.sourceSha256 !== sourceHash || JSON.stringify(doc.binding) !== JSON.stringify(props.binding)) {
+  if (current.result.sourceSha256 !== sourceHash || !sameElementSource(doc.binding, props.binding)) {
     throw new Error('保存的分层与当前元素不一致，未载入其他元素的图层。')
   }
   if (props.savedEdit) doc = { ...validateColors(props.savedEdit.colors, doc), revision: doc.revision }
@@ -53,20 +54,28 @@ async function load(): Promise<void> {
 }
 async function poll(): Promise<void> {
   if (disposed || !job.value) return
+  let next: FabricationJob
   try {
-    const next = await window.electronAPI.fabrication.status(job.value.id)
-    if (disposed) return
-    job.value = next; message.value = next.message
-    if (next.status === 'complete') await load()
-    else if (['background','fabrication'].includes(next.status)) timer = setTimeout(poll, 1000)
-    else error.value = '此元素未完成分层，未使用示例图层替代。可关闭后重新尝试。'
-  } catch (e) { if (!disposed) error.value = String(e) }
+    next = await window.electronAPI.fabrication.status(job.value.id)
+  } catch (e) {
+    if (!disposed) { error.value = `读取进度失败，将自动重试：${String(e)}`; timer = setTimeout(poll, 3000) }
+    return
+  }
+  if (disposed) return
+  error.value = ''; job.value = next; message.value = next.message
+  if (next.status === 'complete') {
+    try { await load() }
+    catch (e) { if (!disposed) error.value = `分层结果未能载入：${String(e)}` }
+  } else if (['queued','background','fabrication'].includes(next.status)) timer = setTimeout(poll, 1000)
+  else error.value = '此元素未完成分层，未使用示例图层替代。请点击重试准备图层。'
 }
-async function start(): Promise<void> {
+async function start(retry = false): Promise<void> {
   if (busy.value || !key) return
   starting.value = true; error.value = ''
   try {
-    const next = await window.electronAPI.fabrication.start(props.input, mode.value, props.binding ? JSON.parse(JSON.stringify(props.binding)) : undefined)
+    const next = retry && job.value && ['failed','timeout'].includes(job.value.status)
+      ? await window.electronAPI.fabrication.retry(job.value.id)
+      : await window.electronAPI.fabrication.start(props.input, mode.value, props.binding ? JSON.parse(JSON.stringify(props.binding)) : undefined)
     localStorage.setItem(key, next.id)
     if (disposed) return
     job.value = next; void poll()
@@ -98,23 +107,16 @@ onMounted(async () => {
     const identity = new TextEncoder().encode(JSON.stringify({ sourceHash, binding: props.binding }))
     const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', identity))].map(x => x.toString(16).padStart(2,'0')).join('')
     key = `felt-element-layers:${hash}`
-    const id = props.savedEdit?.jobId || localStorage.getItem(key)
+    if (disposed) return
+    // Main owns durable identity/queue. The legacy scene-timestamp localStorage key is not authoritative.
+    const id = props.savedEdit?.jobId
     if (id) {
       job.value = await window.electronAPI.fabrication.resume(id)
       if (disposed) return
       if (job.value.status === 'complete') await load()
-      else if (['background','fabrication'].includes(job.value.status)) void poll()
+      else if (['queued','background','fabrication'].includes(job.value.status)) void poll()
       else error.value = '上次未完成，可以重试准备图层。'
     } else {
-      // Source opacity selects an existing foreground mode, never an inferred RGB encoding.
-      const url = URL.createObjectURL(new Blob([new Uint8Array(props.input).buffer], {type:'image/png'}))
-      try {
-        const image = new Image(); image.src = url; await image.decode()
-        const canvas = document.createElement('canvas'); canvas.width = image.width; canvas.height = image.height
-        const ctx = canvas.getContext('2d')!; ctx.drawImage(image, 0, 0)
-        const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data
-        mode.value = data.some((alpha, i) => i % 4 === 3 && alpha < 255) ? 'embedded-alpha' : 'birefnet-general'
-      } finally { URL.revokeObjectURL(url) }
       if (!disposed) await start()
     }
   } catch (e) { if (!disposed) error.value = String(e) }
@@ -128,7 +130,7 @@ onUnmounted(() => { disposed = true; generation++; clearTimeout(timer); images.f
     @select="selected = $event" @color="changeColor" @save="save" @close="emit('close')">
     <div v-if="!colors" class="process-controls">
       <p>{{ busy ? '正在准备图层…' : '暂无可编辑图层' }}</p>
-      <button v-if="error && !busy && !savedEdit" @click="start">重试准备图层</button>
+      <button v-if="error && !busy && !savedEdit" @click="start(true)">重试准备图层</button>
       <small v-if="busy">关闭面板不会取消正在进行的处理。</small>
     </div>
   </LayerEditorPanel>
