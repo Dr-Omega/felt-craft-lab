@@ -426,6 +426,18 @@ def rewards_feed_bear():
     return _json_ok({"result": result}, 201)
 
 
+@app.put("/api/rewards/bear/room")
+def rewards_save_room():
+    user, err = _require_plaza_user()
+    if err:
+        return err
+    try:
+        result = REWARD_SYSTEM.save_room(user, request.get_json(silent=True))
+    except RewardError as exc:
+        return _reward_fail(exc)
+    return _json_ok({"result": result})
+
+
 @app.get("/api/rewards/admin/config")
 def rewards_get_admin_config():
     user, err = _require_plaza_user()

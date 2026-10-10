@@ -197,6 +197,12 @@ class RewardSystem:
                   config_json TEXT NOT NULL,
                   updated_at TEXT NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS bear_room_settings (
+                  user_id TEXT PRIMARY KEY REFERENCES plaza_users(user_id),
+                  character TEXT NOT NULL,
+                  furniture TEXT NOT NULL,
+                  revision INTEGER NOT NULL
+                );
                 """
             )
             now = _utc_now_iso()
@@ -358,7 +364,30 @@ class RewardSystem:
                 "teacher": teacher,
                 "products": list(PRODUCTS),
                 "foods": list(FOODS),
+                "room": self._room_settings(conn, user.user_id),
             }
+
+    @staticmethod
+    def _room_settings(conn: sqlite3.Connection, user_id: str) -> dict[str, Any]:
+        row = conn.execute("SELECT character, furniture, revision FROM bear_room_settings WHERE user_id = ?", (user_id,)).fetchone()
+        return dict(row) if row else {"character": "小熊", "furniture": "原木色", "revision": 0}
+
+    def save_room(self, user: PlazaUserRow, body: Any) -> dict[str, Any]:
+        if user.role != "child":
+            raise RewardError("FORBIDDEN", "仅儿童账号可设置房间", 403)
+        if (not isinstance(body, dict) or set(body) != {"character", "furniture", "revision"}
+                or body.get("character") not in ("小熊", "小兔", "小猫")
+                or body.get("furniture") not in ("原木色", "薄荷绿", "樱花粉")
+                or type(body.get("revision")) is not int or body["revision"] < 0):
+            raise RewardError("INVALID_ARGUMENT", "房间设置无效")
+        with self._connect() as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            current = self._room_settings(conn, user.user_id)
+            if current["revision"] != body["revision"]:
+                raise RewardError("CONFLICT", "房间已在其他终端更改，请重新载入后再选择", 409)
+            conn.execute("INSERT INTO bear_room_settings VALUES (?, ?, ?, ?) ON CONFLICT(user_id) DO UPDATE SET character=excluded.character, furniture=excluded.furniture, revision=excluded.revision",
+                         (user.user_id, body["character"], body["furniture"], body["revision"] + 1))
+            return self._room_settings(conn, user.user_id)
 
     @staticmethod
     def _teacher_level(review_count: int, thresholds: list[int]) -> str:

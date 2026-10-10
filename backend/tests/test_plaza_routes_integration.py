@@ -50,6 +50,18 @@ def test_account_publish_read_withdraw_and_owner_isolation(client):
     assert client.get("/api/plaza/posts", headers=auth).json["result"]["posts"] == []
 
 
+def test_room_route_uses_authenticated_account_and_conflict_version(client):
+    a, b = register(client, "roomA"), register(client, "roomB")
+    auth = {"Authorization": "Bearer " + a["token"]}
+    other = {"Authorization": "Bearer " + b["token"]}
+    body = {"character": "小猫", "furniture": "樱花粉", "revision": 0}
+    assert client.put("/api/rewards/bear/room", json=body).status_code == 401
+    assert client.put("/api/rewards/bear/room", headers=auth, json=body).status_code == 200
+    assert client.put("/api/rewards/bear/room", headers=auth, json=body).status_code == 409
+    assert client.get("/api/rewards/dashboard", headers=auth).json["result"]["room"]["character"] == "小猫"
+    assert client.get("/api/rewards/dashboard", headers=other).json["result"]["room"]["character"] == "小熊"
+
+
 def test_bad_login_and_shared_wallet_identity(client):
     first = register(client, "accountA")
     assert client.post("/api/plaza/auth/login", json={"username": "accountA", "password": "wrong"}).status_code == 401

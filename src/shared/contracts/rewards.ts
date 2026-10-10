@@ -12,6 +12,7 @@ export type RewardAction =
   | 'recharge'
   | 'redeem'
   | 'feed'
+  | 'saveRoom'
   | 'adminConfig'
   | 'updateAdminConfig'
 
@@ -53,6 +54,12 @@ export interface BearFood {
   diamondPrice: number
 }
 
+export interface BearRoomSettings {
+  character: string
+  furniture: string
+  revision: number
+}
+
 export interface RewardDashboard {
   user: { userId: string; username: string; role: UserRole }
   wallet: WalletSnapshot
@@ -61,6 +68,7 @@ export interface RewardDashboard {
   teacher: TeacherProgress | null
   products: StoreProduct[]
   foods: BearFood[]
+  room: BearRoomSettings
 }
 
 export interface InboxMessage {

@@ -1,4 +1,5 @@
 import type {
+  BearRoomSettings,
   Currency,
   InboxMessage,
   RewardAction,
@@ -27,6 +28,7 @@ async function browserRewardAction<T>(token: string, name: RewardAction, payload
     recharge: { path: '/api/rewards/recharge', method: 'POST' },
     redeem: { path: '/api/rewards/store/redeem', method: 'POST' },
     feed: { path: '/api/rewards/bear/feed', method: 'POST' },
+    saveRoom: { path: '/api/rewards/bear/room', method: 'PUT' },
     adminConfig: { path: '/api/rewards/admin/config', method: 'GET' },
     updateAdminConfig: { path: '/api/rewards/admin/config', method: 'PUT' }
   }
@@ -63,6 +65,10 @@ export async function action<T>(token: string, name: RewardAction, payload: Reco
 
 export function loadRewardDashboard(token: string): Promise<RewardDashboard> {
   return action(token, 'dashboard')
+}
+
+export function saveBearRoom(token: string, room: BearRoomSettings): Promise<BearRoomSettings> {
+  return action(token, 'saveRoom', { ...room })
 }
 
 export async function loadRewardInbox(token: string): Promise<InboxMessage[]> {

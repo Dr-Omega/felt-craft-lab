@@ -15,6 +15,7 @@ import { openPlaza, openPersonalCenter } from '../app-nav'
 import { showCenterToast } from '../composables/center-toast'
 import { loadPlazaSession } from '../services/plaza-session'
 import {
+  saveBearRoom,
   claimInboxReward,
   convertDiamonds,
   feedBear,
@@ -41,6 +42,8 @@ const rechargeOpen = ref(false)
 const blindBoxReveal = ref<(typeof rewardAssets.blindBox)[number] | null>(null)
 const selectedIp = ref('小熊')
 const selectedFurniture = ref('原木色')
+const roomRevision = ref(0)
+const roomLoaded = ref(false)
 const ipActionMessage = ref('')
 const furnitureColors = ['原木色', '薄荷绿', '樱花粉']
 const ipVariants = [
@@ -78,6 +81,12 @@ function applyWallet(next: { coins: number; diamonds: number; updatedAt: string 
 async function refreshDashboard(): Promise<void> {
   if (!session?.token) return
   dashboard.value = await loadRewardDashboard(session.token)
+  if (!roomLoaded.value && dashboard.value.room) {
+    selectedIp.value = dashboard.value.room.character
+    selectedFurniture.value = dashboard.value.room.furniture
+    roomRevision.value = dashboard.value.room.revision
+    roomLoaded.value = true
+  }
 }
 
 async function refreshInbox(): Promise<void> {
@@ -132,6 +141,25 @@ async function convert(): Promise<void> {
 function runIpAction(): void {
   const ip = ipVariants.find((item) => item.name === selectedIp.value)
   ipActionMessage.value = ip ? `${ip.name}正在${ip.action}` : ''
+}
+
+async function saveRoom(): Promise<void> {
+  if (!session?.token || !roomLoaded.value) return
+  await run('room', async () => {
+    const saved = await saveBearRoom(session.token, {
+      character: selectedIp.value, furniture: selectedFurniture.value, revision: roomRevision.value
+    })
+    roomRevision.value = saved.revision
+    showCenterToast('房间偏好已保存到当前账号')
+  })
+}
+
+async function reloadRoom(): Promise<void> {
+  await run('room', async () => {
+    roomLoaded.value = false
+    await refreshDashboard()
+    showCenterToast('已载入服务器房间设置')
+  })
 }
 
 async function claim(message: InboxMessage): Promise<void> {
@@ -369,9 +397,12 @@ onMounted(() => void loadPage())
       <div class="food-tray">
         <section class="bear-customizer" aria-label="小熊房间动态内容">
           <h2>房间与 IP</h2>
-          <label>IP 角色<select v-model="selectedIp"><option v-for="ip in ipVariants" :key="ip.name" :value="ip.name">{{ ip.name }}</option></select></label>
+          <label>IP 角色<select v-model="selectedIp" :disabled="Boolean(busyKey)"><option v-for="ip in ipVariants" :key="ip.name" :value="ip.name">{{ ip.name }}</option></select></label>
           <button type="button" class="custom-action" @click="runIpAction">执行动作</button>
-          <div class="furniture-choice"><span>家具颜色</span><button v-for="color in furnitureColors" :key="color" type="button" :class="{ selected: selectedFurniture === color }" @click="selectedFurniture = color">{{ color }}</button></div>
+          <div class="furniture-choice"><span>房间配色预览</span><button v-for="color in furnitureColors" :key="color" type="button" :disabled="Boolean(busyKey)" :class="{ selected: selectedFurniture === color }" @click="selectedFurniture = color">{{ color }}</button></div>
+          <button type="button" class="primary" :disabled="Boolean(busyKey) || !roomLoaded" @click="saveRoom">保存房间设置</button>
+          <button type="button" :disabled="Boolean(busyKey)" @click="reloadRoom">重新载入房间设置</button>
+          <p>当前沿用小熊房间原画；角色动作是文字反馈，配色是整图预览，不代表独立家具或角色动画已制作。</p>
         </section>
         <article v-for="food in dashboard?.foods" :key="food.foodId" class="food-item">
           <img :src="foodImage(food.foodId)" :alt="food.name" />

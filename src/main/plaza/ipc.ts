@@ -217,6 +217,7 @@ export function registerPlazaIpc(roots: ResourceRoots): void {
       'recharge',
       'redeem',
       'feed',
+      'saveRoom',
       'adminConfig',
       'updateAdminConfig'
     ])

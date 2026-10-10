@@ -34,6 +34,34 @@ def domain(tmp_path: Path):
     return db, rewards, author, parent, art_teacher, chinese_teacher, post, story
 
 
+def test_room_persists_without_spending_or_cross_account_overwrite(domain):
+    db, rewards, author, parent, *_ = domain
+    other = db.create_user("另一个孩子", generate_password_hash("111"), "child")
+    before = rewards.dashboard(author)
+    saved = rewards.save_room(author, {"character": "小兔", "furniture": "薄荷绿", "revision": 0})
+    restarted = RewardSystem(db.db_path)
+    assert restarted.dashboard(author)["room"] == saved
+    assert restarted.dashboard(author)["wallet"] == before["wallet"]
+    assert restarted.dashboard(author)["ledger"] == []
+    assert restarted.dashboard(other)["room"]["revision"] == 0
+    with pytest.raises(RewardError, match="其他终端"):
+        restarted.save_room(author, {"character": "小猫", "furniture": "樱花粉", "revision": 0})
+    assert restarted.dashboard(author)["room"] == saved
+    with pytest.raises(RewardError, match="仅儿童"):
+        rewards.save_room(parent, saved)
+
+
+@pytest.mark.parametrize("body", [None, [], {}, {"character": [], "furniture": "原木色", "revision": 0},
+    {"character": "小熊", "furniture": "原木色", "revision": True},
+    {"character": "小熊", "furniture": "原木色", "revision": -1},
+    {"character": "小熊", "furniture": "原木色", "revision": 0, "userId": "other"}])
+def test_room_rejects_invalid_settings(domain, body):
+    _, rewards, author, *_ = domain
+    with pytest.raises(RewardError):
+        rewards.save_room(author, body)
+    assert rewards.dashboard(author)["room"]["revision"] == 0
+
+
 def test_daily_login_grants_only_one_diamond(domain):
     _, rewards, author, *_ = domain
     assert rewards.on_login(author) is True

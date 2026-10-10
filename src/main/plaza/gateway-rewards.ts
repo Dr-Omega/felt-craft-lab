@@ -26,6 +26,7 @@ export async function plazaRewardAction(input: {
   isPackaged?: boolean
 }): Promise<GatewayJsonResult> {
   const { token, action, payload, isPackaged } = input
+  if (action === 'saveRoom') return jsonRequest('/api/rewards/bear/room', 'PUT', token, payload, isPackaged)
   if (action === 'paymentCapabilities') return gatewayJson('/api/payments/capabilities', { method: 'GET', plazaUserToken: token, isPackaged })
   if (action === 'paymentCreate') return jsonRequest('/api/payments/orders', 'POST', token, payload, isPackaged)
   const orderPath = `/api/payments/orders/${encodeURIComponent(String(payload.orderId || ''))}`
