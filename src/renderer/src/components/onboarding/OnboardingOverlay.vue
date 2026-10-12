@@ -2,7 +2,7 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import mascotUrl from '../../assets/onboarding/guide-mascot.png'
 import {
-  advanceOnboardingAfterTargetClick,
+  advanceOnboardingStep,
   bindOnboardingNavRefresh,
   getOnboardingStep,
   getOnboardingStepIndex,
@@ -21,37 +21,52 @@ const targetReady = ref(false)
 const bubbleStyle = ref<Record<string, string>>({})
 
 const step = computed(() => getOnboardingStep())
-const viewReady = computed(
-  () => visible.value && Boolean(step.value) && onboardingViewMatches() && targetReady.value
-)
+const onCorrectView = computed(() => visible.value && Boolean(step.value) && onboardingViewMatches())
+const spotlightReady = computed(() => onCorrectView.value && targetReady.value)
 const progressLabel = computed(() => {
   const total = ONBOARDING_STEPS.length
   const current = Math.min(stepIndex.value + 1, total)
   return `${current} / ${total}`
 })
+const bodyText = computed(() => {
+  if (!step.value) return ''
+  if (spotlightReady.value) return step.value.body
+  if (onCorrectView.value) return `${step.value.body}（找不到按钮也没关系，点「下一步」继续。）`
+  return `${step.value.waitingHint} 也可以先点「下一步」，稍后再去点那个按钮试试。`
+})
 
 let resizeObserver: ResizeObserver | undefined
-let targetClickCleanup: (() => void) | undefined
 let navUnsub: (() => void) | undefined
+let measureRetryTimer: ReturnType<typeof setInterval> | undefined
 
 function syncState(): void {
   visible.value = isOnboardingActive()
   stepIndex.value = getOnboardingStepIndex()
   queueMeasure()
+  scheduleMeasureRetries()
 }
 
 function queueMeasure(): void {
   requestAnimationFrame(measureTarget)
 }
 
+function scheduleMeasureRetries(): void {
+  if (measureRetryTimer) clearInterval(measureRetryTimer)
+  let attempts = 0
+  measureRetryTimer = setInterval(() => {
+    attempts += 1
+    measureTarget()
+    if (targetReady.value || attempts >= 12) {
+      clearInterval(measureRetryTimer!)
+      measureRetryTimer = undefined
+    }
+  }, 400)
+}
+
 function measureTarget(): void {
-  targetClickCleanup?.()
-  targetClickCleanup = undefined
   hole.value = null
   targetReady.value = false
-  if (!visible.value || !step.value) return
-
-  if (!onboardingViewMatches()) return
+  if (!visible.value || !step.value || !onboardingViewMatches()) return
 
   const el = document.querySelector(step.value.targetSelector) as HTMLElement | null
   if (!el) return
@@ -59,27 +74,13 @@ function measureTarget(): void {
 
   const pad = 10
   const rect = el.getBoundingClientRect()
+  if (rect.width < 2 || rect.height < 2) return
+
   hole.value = {
     x: Math.max(0, rect.left - pad),
     y: Math.max(0, rect.top - pad),
     w: rect.width + pad * 2,
     h: rect.height + pad * 2
-  }
-
-  el.classList.add('onboarding-tour-target')
-  el.style.position = el.style.position || 'relative'
-  el.style.zIndex = '10001'
-
-  const onTargetClick = (): void => {
-    el.classList.remove('onboarding-tour-target')
-    el.style.zIndex = ''
-    advanceOnboardingAfterTargetClick()
-  }
-  el.addEventListener('click', onTargetClick, { once: true, capture: true })
-  targetClickCleanup = () => {
-    el.removeEventListener('click', onTargetClick, { capture: true })
-    el.classList.remove('onboarding-tour-target')
-    el.style.zIndex = ''
   }
 
   layoutBubble(rect)
@@ -102,19 +103,16 @@ function layoutBubble(targetRect: DOMRect): void {
   } else if (s.bubbleSide === 'bottom') {
     left = targetRect.left
     top = targetRect.bottom + margin
-  } else {
-    left = targetRect.right + margin
-    top = targetRect.top
   }
 
   left = Math.min(Math.max(12, left), window.innerWidth - bubbleWidth - 12)
-  top = Math.min(Math.max(12, top), window.innerHeight - 200)
+  top = Math.min(Math.max(12, top), window.innerHeight - 220)
   bubbleStyle.value = { left: `${left}px`, top: `${top}px`, width: `${bubbleWidth}px` }
 }
 
 const maskId = `onboarding-hole-${Math.random().toString(36).slice(2)}`
 
-watch([visible, stepIndex, viewReady], () => queueMeasure())
+watch([visible, stepIndex, onCorrectView], () => queueMeasure())
 
 let unsubOnboarding: (() => void) | undefined
 
@@ -132,18 +130,22 @@ onUnmounted(() => {
   navUnsub?.()
   window.removeEventListener('resize', queueMeasure)
   resizeObserver?.disconnect()
-  targetClickCleanup?.()
+  if (measureRetryTimer) clearInterval(measureRetryTimer)
 })
 
 async function onSkipAll(): Promise<void> {
   await skipOnboardingTour()
+}
+
+function onNext(): void {
+  advanceOnboardingStep()
 }
 </script>
 
 <template>
   <Teleport to="body">
     <div v-if="visible && step" class="onboarding-root" aria-live="polite">
-      <svg v-if="viewReady && hole" class="onboarding-mask" aria-hidden="true">
+      <svg v-if="spotlightReady && hole" class="onboarding-mask" aria-hidden="true">
         <defs>
           <mask :id="maskId">
             <rect width="100%" height="100%" fill="white" />
@@ -155,14 +157,26 @@ async function onSkipAll(): Promise<void> {
 
       <div v-else class="onboarding-wait-scrim" aria-hidden="true" />
 
-      <div class="onboarding-panel" :class="{ 'is-waiting': !viewReady }" :style="viewReady ? bubbleStyle : undefined">
+      <div
+        class="onboarding-panel"
+        :class="{ 'is-floating': !spotlightReady }"
+        :style="spotlightReady ? bubbleStyle : undefined"
+      >
         <img class="onboarding-mascot" :src="mascotUrl" alt="" aria-hidden="true" />
         <div class="onboarding-copy">
           <p class="onboarding-progress">{{ progressLabel }}</p>
-          <h2 class="onboarding-title">{{ viewReady ? step.title : '等等我哦' }}</h2>
-          <p class="onboarding-body">{{ viewReady ? step.body : step.waitingHint }}</p>
-          <div v-if="stepIndex === 0 && !isOnboardingReplay()" class="onboarding-actions">
-            <button type="button" class="onboarding-skip" @click="onSkipAll">暂时不要，跳过全部</button>
+          <h2 class="onboarding-title">{{ step.title }}</h2>
+          <p class="onboarding-body">{{ bodyText }}</p>
+          <div class="onboarding-actions">
+            <button type="button" class="onboarding-next" @click="onNext">下一步</button>
+            <button
+              v-if="stepIndex === 0 && !isOnboardingReplay()"
+              type="button"
+              class="onboarding-skip"
+              @click="onSkipAll"
+            >
+              跳过全部
+            </button>
           </div>
         </div>
       </div>
@@ -184,7 +198,10 @@ async function onSkipAll(): Promise<void> {
   inset: 0;
   width: 100%;
   height: 100%;
-  pointer-events: auto;
+}
+
+.onboarding-mask {
+  pointer-events: none;
 }
 
 .onboarding-wait-scrim {
@@ -207,7 +224,7 @@ async function onSkipAll(): Promise<void> {
   pointer-events: auto;
 }
 
-.onboarding-panel.is-waiting {
+.onboarding-panel.is-floating {
   left: 50% !important;
   bottom: 48px !important;
   top: auto !important;
@@ -242,6 +259,20 @@ async function onSkipAll(): Promise<void> {
 
 .onboarding-actions {
   margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.onboarding-next {
+  border: 2px solid #71351c;
+  border-radius: 999px;
+  background: #ffe566;
+  color: #513018;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 8px 20px;
+  cursor: pointer;
 }
 
 .onboarding-skip {
@@ -252,10 +283,5 @@ async function onSkipAll(): Promise<void> {
   font-size: 15px;
   padding: 6px 14px;
   cursor: pointer;
-}
-
-:global(.onboarding-tour-target) {
-  outline: 3px solid #ffe566;
-  outline-offset: 3px;
 }
 </style>

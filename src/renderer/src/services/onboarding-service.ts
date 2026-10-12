@@ -63,10 +63,13 @@ export function onboardingViewMatches(): boolean {
 
 export function maybeStartOnboardingAfterAuth(user: PlazaUser): void {
   if ((user.onboardingCompletedVersion ?? 0) >= ONBOARDING_VERSION) return
-  active = true
-  replayMode = false
-  stepIndex = 0
-  notify()
+  window.setTimeout(() => {
+    if ((loadPlazaSession()?.user.onboardingCompletedVersion ?? 0) >= ONBOARDING_VERSION) return
+    active = true
+    replayMode = false
+    stepIndex = 0
+    notify()
+  }, 400)
 }
 
 export function replayOnboardingTour(): void {
@@ -105,7 +108,7 @@ export async function finishOnboardingTour(): Promise<void> {
   await persistOnboardingCompleteIfNeeded()
 }
 
-export function advanceOnboardingAfterTargetClick(): void {
+export function advanceOnboardingStep(): void {
   if (!active) return
   let next = effectiveStepIndex() + 1
   while (next < ONBOARDING_STEPS.length && ONBOARDING_STEPS[next].skipWhen?.(currentRole())) {
@@ -117,6 +120,11 @@ export function advanceOnboardingAfterTargetClick(): void {
   }
   stepIndex = next
   notify()
+}
+
+/** @deprecated Use advanceOnboardingStep; kept for optional target-click advance. */
+export function advanceOnboardingAfterTargetClick(): void {
+  advanceOnboardingStep()
 }
 
 /** Re-render overlay when navigation changes while tour is active. */
