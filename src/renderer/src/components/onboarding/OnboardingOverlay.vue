@@ -20,8 +20,15 @@ const hole = ref<{ x: number; y: number; w: number; h: number } | null>(null)
 const targetReady = ref(false)
 const bubbleStyle = ref<Record<string, string>>({})
 
-const step = computed(() => getOnboardingStep())
-const onCorrectView = computed(() => visible.value && Boolean(step.value) && onboardingViewMatches())
+// stepIndex ref must be read here: getOnboardingStep() uses module state Vue cannot track.
+const step = computed(() => {
+  void stepIndex.value
+  return getOnboardingStep()
+})
+const onCorrectView = computed(() => {
+  void stepIndex.value
+  return visible.value && Boolean(step.value) && onboardingViewMatches()
+})
 const spotlightReady = computed(() => onCorrectView.value && targetReady.value)
 const progressLabel = computed(() => {
   const total = ONBOARDING_STEPS.length
