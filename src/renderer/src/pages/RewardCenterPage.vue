@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import PaymentDialog from '../components/plaza/PaymentDialog.vue'
 import type {
   Currency,
@@ -27,6 +27,7 @@ import {
 } from '../services/reward-api'
 import { rewardAssets } from '../ui/reward-assets'
 import { profileAssets } from '../ui/profile-assets'
+import { ONBOARDING_PREPARE_EVENT, type OnboardingPrepareDetail } from '../services/onboarding-nav'
 
 type TabId = 'account' | 'inbox' | 'teacher' | 'store' | 'bear' | 'admin'
 
@@ -234,7 +235,16 @@ function teacherLevelAsset(level: string): string {
   return rewardAssets.teacherLevels[level as keyof typeof rewardAssets.teacherLevels] ?? rewardAssets.teacherLevels.ordinary
 }
 
-onMounted(() => void loadPage())
+function onOnboardingPrepare(event: Event): void {
+  const detail = (event as CustomEvent<OnboardingPrepareDetail>).detail
+  if (detail?.rewardsTab === 'bear') activeTab.value = 'bear'
+}
+
+onMounted(() => {
+  void loadPage()
+  window.addEventListener(ONBOARDING_PREPARE_EVENT, onOnboardingPrepare)
+})
+onUnmounted(() => window.removeEventListener(ONBOARDING_PREPARE_EVENT, onOnboardingPrepare))
 </script>
 
 <template>

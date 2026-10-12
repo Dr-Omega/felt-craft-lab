@@ -38,8 +38,8 @@ const progressLabel = computed(() => {
 const bodyText = computed(() => {
   if (!step.value) return ''
   if (spotlightReady.value) return step.value.body
-  if (onCorrectView.value) return `${step.value.body}（找不到按钮也没关系，点「下一步」继续。）`
-  return `${step.value.waitingHint} 也可以先点「下一步」，稍后再去点那个按钮试试。`
+  if (onCorrectView.value) return step.value.body
+  return step.value.waitingHint
 })
 
 let resizeObserver: ResizeObserver | undefined
@@ -63,7 +63,7 @@ function scheduleMeasureRetries(): void {
   measureRetryTimer = setInterval(() => {
     attempts += 1
     measureTarget()
-    if (targetReady.value || attempts >= 12) {
+    if (targetReady.value || attempts >= 25) {
       clearInterval(measureRetryTimer!)
       measureRetryTimer = undefined
     }

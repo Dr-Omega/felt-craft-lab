@@ -3,6 +3,7 @@ import { ONBOARDING_VERSION } from '@shared/contracts/plaza'
 import { getAppView, subscribeAppNav } from '../app-nav'
 import { completePlazaOnboarding } from './plaza-api'
 import { loadPlazaSession, patchPlazaUser } from './plaza-session'
+import { navigateForOnboardingStep } from './onboarding-nav'
 import { ONBOARDING_STEPS, type OnboardingStep } from './onboarding-steps'
 
 type Listener = () => void
@@ -61,6 +62,11 @@ export function onboardingViewMatches(): boolean {
   return getAppView() === step.view
 }
 
+function activateCurrentStepNavigation(): void {
+  const step = getOnboardingStep()
+  if (step) navigateForOnboardingStep(step)
+}
+
 export function maybeStartOnboardingAfterAuth(user: PlazaUser): void {
   if ((user.onboardingCompletedVersion ?? 0) >= ONBOARDING_VERSION) return
   window.setTimeout(() => {
@@ -68,6 +74,7 @@ export function maybeStartOnboardingAfterAuth(user: PlazaUser): void {
     active = true
     replayMode = false
     stepIndex = 0
+    activateCurrentStepNavigation()
     notify()
   }, 400)
 }
@@ -76,6 +83,7 @@ export function replayOnboardingTour(): void {
   active = true
   replayMode = true
   stepIndex = 0
+  activateCurrentStepNavigation()
   notify()
 }
 
@@ -119,6 +127,7 @@ export function advanceOnboardingStep(): void {
     return
   }
   stepIndex = next
+  activateCurrentStepNavigation()
   notify()
 }
 

@@ -18,6 +18,7 @@ import { authAssets, authFullLayerStyle } from '../ui/auth-assets'
 import { friendlyRelativeTime } from '../util/friendly-time'
 import { showCenterToast } from '../composables/center-toast'
 import { replayOnboardingTour } from '../services/onboarding-service'
+import { ONBOARDING_PREPARE_EVENT, type OnboardingPrepareDetail } from '../services/onboarding-nav'
 
 type Filter = 'draft' | 'drawing' | 'story' | 'blueprint' | 'completed'
 type ProfileSection = 'works' | 'account'
@@ -160,8 +161,22 @@ async function convert(): Promise<void> {
 }
 
 const syncRefresh = () => { void refresh() }
-onMounted(() => { void refresh(); window.addEventListener('felt-workspace-synced', syncRefresh) })
-onUnmounted(() => window.removeEventListener('felt-workspace-synced', syncRefresh))
+
+function onOnboardingPrepare(event: Event): void {
+  const detail = (event as CustomEvent<OnboardingPrepareDetail>).detail
+  if (detail?.profileSection) profileSection.value = detail.profileSection
+  if (detail?.profileFilter) filter.value = detail.profileFilter
+}
+
+onMounted(() => {
+  void refresh()
+  window.addEventListener('felt-workspace-synced', syncRefresh)
+  window.addEventListener(ONBOARDING_PREPARE_EVENT, onOnboardingPrepare)
+})
+onUnmounted(() => {
+  window.removeEventListener('felt-workspace-synced', syncRefresh)
+  window.removeEventListener(ONBOARDING_PREPARE_EVENT, onOnboardingPrepare)
+})
 </script>
 
 <template>
