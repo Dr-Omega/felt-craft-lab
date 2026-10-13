@@ -1,0 +1,152 @@
+{
+  "designSize": {
+    "width": 1920,
+    "height": 1080
+  },
+  "layers": [
+    {
+      "slug": "role-child",
+      "archive": "2026-10/选择ui(1).zip",
+      "entry": "选择ui/学生.png",
+      "sha256": "1efbfe0a2cb79ce2fae6f7b3b236a2ca24b5d3dca250db7a8c6836b92ee51c68",
+      "bounds": [
+        774,
+        440,
+        1172,
+        527
+      ]
+    },
+    {
+      "slug": "role-parent",
+      "archive": "2026-10/选择ui(1).zip",
+      "entry": "选择ui/家长.png",
+      "sha256": "b2635fb3ed05d405e841bd3309ab16a51b9294a29e5d18a9982dcdd2b0fb9b4d",
+      "bounds": [
+        774,
+        554,
+        1172,
+        641
+      ]
+    },
+    {
+      "slug": "role-art-teacher",
+      "archive": "2026-10/选择ui(1).zip",
+      "entry": "选择ui/美术老师.png",
+      "sha256": "293d8bf1faf62d7f4a86de6afd66258041f59dfe035163a56338d27ac37f9b27",
+      "bounds": [
+        774,
+        662,
+        1172,
+        749
+      ]
+    },
+    {
+      "slug": "role-chinese-teacher",
+      "archive": "2026-10/选择ui(1).zip",
+      "entry": "选择ui/语文老师.png",
+      "sha256": "2d6ebaa7d7d54b33960bec94d53b073cc9b9b6350e124a6bf4834591c9d86f1b",
+      "bounds": [
+        774,
+        766,
+        1172,
+        853
+      ]
+    },
+    {
+      "slug": "role-panel",
+      "archive": "2026-10/选择ui(1).zip",
+      "entry": "选择ui/请选择你的身份.png",
+      "sha256": "2c8e65dfa82b0cd4389d33a2c8e833755cf217ab679225e30d8610f28d184bce",
+      "bounds": [
+        596,
+        182,
+        1244,
+        898
+      ]
+    },
+    {
+      "slug": "qa-assistant",
+      "archive": "2026-10/提问区.zip",
+      "entry": "提问区/ai发言框.png",
+      "sha256": "67d3ff6b9f1dd9119d0607bb7fa6d5881a7903a695208bd8cf211258d36d884f",
+      "bounds": [
+        480,
+        363,
+        959,
+        512
+      ]
+    },
+    {
+      "slug": "qa-panel",
+      "archive": "2026-10/提问区.zip",
+      "entry": "提问区/总框.png",
+      "sha256": "b938f73c77d0aeca0f7c6a474b6851edf55e1ae873b5436c7f216caf55113454",
+      "bounds": [
+        440,
+        157,
+        1486,
+        868
+      ]
+    },
+    {
+      "slug": "qa-user",
+      "archive": "2026-10/提问区.zip",
+      "entry": "提问区/我方发言框.png",
+      "sha256": "c9e1028c6f51a34e297f332088b2d3c891d08684051ad6eb8e2502aca6bcaaf6",
+      "bounds": [
+        959,
+        207,
+        1438,
+        356
+      ]
+    },
+    {
+      "slug": "qa-input",
+      "archive": "2026-10/提问区.zip",
+      "entry": "提问区/文本输入框.png",
+      "sha256": "4ac9e206b4b1b913b5e6f1899531b06268d8d5a51ef58443d0db2ebd11abe083",
+      "bounds": [
+        494,
+        566,
+        1426,
+        836
+      ]
+    },
+    {
+      "slug": "qa-voice",
+      "archive": "2026-10/提问区.zip",
+      "entry": "提问区/语音输入键.png",
+      "sha256": "6afb7d6d861a0e8d319dbbb90f6f7e584eded2b81d060bf47af0acc522f1f7dc",
+      "bounds": [
+        1175,
+        745,
+        1374,
+        814
+      ]
+    },
+    {
+      "slug": "qa-entry",
+      "archive": "2026-10/提问区.zip",
+      "entry": "提问区/进入提问按钮.png",
+      "sha256": "18473d9373cf4f93a540957dda47a928465f999cd24e9f304ed0b35800eb00cf",
+      "bounds": [
+        1037,
+        816,
+        1219,
+        892
+      ]
+    },
+    {
+      "slug": "material-panel",
+      "archive": "2026-09/ui (3)(1).zip",
+      "entry": "ui/绘画页/素材框弹窗11.png",
+      "sha256": "9cf6729c2b3798ddcf15cc4fc9f16607790def08c402f323bf2b8562ca122e34",
+      "bounds": [
+        329,
+        142,
+        1592,
+        914
+      ]
+    }
+  ]
+}

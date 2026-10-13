@@ -88,7 +88,7 @@ describe('SXY recent shell with preserved Editor behavior contract', () => {
     expect(page).toContain('seedAcceptanceUnlockedAccess')
     expect(page).not.toContain('seedThemeUnlockedAccess')
     expect(page).toContain('launch.fromGeneration')
-    expect(page).toContain('图片已确认，正在准备图层。等待时可以继续布置画布。')
+    expect(page).toContain('正在准备图层，可继续拼贴。')
     expect(page).toContain('await refreshAccess()')
     expect(sheet).toContain('isAssetUnlocked')
     expect(drawer).toContain('isAssetUnlocked')

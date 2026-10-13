@@ -47,8 +47,8 @@ const emit = defineEmits<{
   display: grid;
   gap: 6px;
   padding: 8px;
-  background: var(--panel, #fff);
-  border: 1px solid var(--line, #c5d5d0);
+  background: #fff1b7;
+  border: 2px solid #71351c;
   border-radius: 16px;
   box-shadow: 0 8px 24px rgba(89, 71, 56, 0.18);
   pointer-events: auto;
@@ -67,19 +67,22 @@ const emit = defineEmits<{
 
 .object-quick-tools button {
   appearance: none;
-  border: 1px solid var(--line, #c5d5d0);
-  background: #fff;
-  color: var(--ink, #16302b);
+  border: 0;
+  background: transparent url('../../../../../assets/ui/hand-drawn/btn-primary.png') center / 100% 100% no-repeat;
+  color: #71351c;
   font: inherit;
-  padding: 6px 12px;
+  padding: 8px 12px;
+  min-height: 38px;
+  font-weight: 700;
   border-radius: 12px;
   cursor: pointer;
   white-space: nowrap;
 }
 
-.object-quick-tools button:hover {
-  background: var(--paper, #eef4f2);
+.object-quick-tools button:hover:not(:disabled) {
+  filter: brightness(1.06);
 }
+.object-quick-tools button:focus-visible { outline: 3px solid #71351c; outline-offset: 2px; }
 
 .object-quick-tools button:disabled {
   opacity: 0.45;
@@ -87,13 +90,7 @@ const emit = defineEmits<{
 }
 
 .object-quick-tools .oqt-remove {
-  background: var(--danger, #9b2c2c);
-  border-color: var(--danger, #9b2c2c);
-  color: #fff;
-}
-
-.object-quick-tools .oqt-remove:hover {
-  background: #7f2222;
-  border-color: #7f2222;
+  background-image: url('../../../../../assets/ui/hand-drawn/btn-secondary.png');
+  color: #8e2516;
 }
 </style>

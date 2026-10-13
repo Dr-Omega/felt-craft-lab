@@ -7,9 +7,9 @@ export type ContentSufficiencyResult =
 export const MIN_MEANINGFUL_STORY_CHARACTER_COUNT = 12
 
 const FOLLOW_UP_QUESTIONS: [string, string, string] = [
-  '小兔子在做什么呢？',
+  '画里发生了什么？',
   '你最喜欢这幅画里的哪里？',
-  '你想让小兔子和谁一起玩？'
+  '接下来会发生什么？'
 ]
 
 function meaningfulCharacterCount(text: string): number {

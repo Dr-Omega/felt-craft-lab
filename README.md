@@ -37,6 +37,8 @@ SXY 对接说明：**`docs/ai-services/SXY对接指南.md`**
 
 ## 常用命令（完整工程）
 
+Windows 本地完整启动（含网关、桌面及算法路径检查）：先按 [本地配置说明](docs/LOCAL_TEST_SETUP.md) 完成首次安装，再双击根目录 `Start-Felt-Craft.cmd`。更新代码不要覆盖自己的 `backend/.env`、`.env.local` 和持久数据；密钥、Python 环境与模型不随 GitHub 分发。
+
 ```bash
 npm install
 npm run typecheck

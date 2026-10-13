@@ -10,7 +10,7 @@ import saveImage from '../../../../../assets/ui/drawing/save.png'
 
 const drawingContentStyle = drawingPaperLayoutStyle()
 
-defineProps<{ busy: boolean; canUndo: boolean; canRedo: boolean; canSave: boolean; taskMode?: boolean }>()
+defineProps<{ busy: boolean; canUndo: boolean; canRedo: boolean; canSave: boolean; taskMode?: boolean; backLabel?: string }>()
 defineEmits<{ back: []; undo: []; redo: []; save: [] }>()
 </script>
 
@@ -22,7 +22,7 @@ defineEmits<{ back: []; undo: []; redo: []; save: [] }>()
       <main class="drawing-content" :style="drawingContentStyle" aria-label="绘画画框"><slot /></main>
       <img class="drawing-art drawing-border" :src="border" alt="" />
       <div class="drawing-toolbar"><slot name="tools" /></div>
-      <button class="drawing-button drawing-back" aria-label="返回书本" @click="$emit('back')">
+      <button class="drawing-button drawing-back" :aria-label="backLabel || '返回'" @click="$emit('back')">
         <svg viewBox="39 35 208 112" aria-hidden="true"><image :href="back" width="1920" height="1080" /></svg>
       </button>
       <button v-if="!taskMode" class="drawing-button drawing-undo" aria-label="撤销" :disabled="busy || !canUndo" @click="$emit('undo')">

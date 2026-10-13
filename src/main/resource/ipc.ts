@@ -6,7 +6,7 @@ import type {
   ResourceRoots
 } from '@shared/resource'
 import { isTrustedIpcEvent } from '../security/ipc-guard'
-import { ingestPersonalAssetPng } from './personal-ingestion'
+import { ingestPersonalAssetPng, ingestPersonalAssetImage } from './personal-ingestion'
 import { inspectResource } from './inspect'
 
 function denyIngest(message: string): PersonalAssetPngIngestResult {
@@ -17,6 +17,10 @@ function denyIngest(message: string): PersonalAssetPngIngestResult {
 }
 
 export function registerResourceIpc(roots: ResourceRoots): void {
+  ipcMain.handle(IPC_CHANNELS.PERSONAL_ASSET_IMAGE_INGEST, async (event, raw: unknown) => {
+    if (!isTrustedIpcEvent(event)) return denyIngest('不受信任的页面不得写入个人素材资源。')
+    return ingestPersonalAssetImage(raw, roots)
+  })
   ipcMain.handle(IPC_CHANNELS.RESOURCE_INSPECT, async (event, rawRef: unknown) => {
     try {
       if (!isTrustedIpcEvent(event)) {

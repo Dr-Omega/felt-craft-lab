@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch, type CSSProperties } from 'vue'
 import { CATALOG_ASSETS, createBlankScene } from '../catalog/ywn-catalog'
-import { getLearningThemeId, openEditor, openLibrary, openLobby } from '../app-nav'
+import { getLearningThemeId, openEditor, openLobby } from '../app-nav'
+import AuthArtboard from '../components/auth/AuthArtboard.vue'
 import AssetQaSheet from '../components/editor/AssetQaSheet.vue'
+import ArtworkButton from '../components/editor/ArtworkButton.vue'
+import { suppliedArt } from '../ui/supplied-controls'
 import type { AssetRecord } from '@shared/contracts'
 import {
   createGameSession,
@@ -47,6 +50,7 @@ const initialUnit = units.find(unit => unit.topics.some(topic => topic.themeId =
 const selectedUnit = ref(initialUnit)
 const selectedTopic = ref(initialUnit.topics.find(topic => topic.themeId === initialTheme) ?? initialUnit.topics[0])
 const qaAsset = ref<AssetRecord | null>(null)
+const questionAssetId = ref('')
 const unlockedThemeIds = ref<string[]>([])
 let pageEpoch = 0
 let activeAudio: HTMLAudioElement | null = null
@@ -57,6 +61,7 @@ const background = computed(() => selectedAssets.value.find(asset => asset.type 
 const stickers = computed(() => selectedAssets.value.filter(asset => asset.type === 'sticker'))
 const isUnlocked = computed(() => unlockedThemeIds.value.includes(selectedTopic.value.themeId))
 const unlockedAssets = computed(() => [...selectedAssets.value].sort((a, b) => a.type === b.type ? 0 : a.type === 'background' ? -1 : 1))
+const questionAsset = computed(() => unlockedAssets.value.find(asset => asset.assetId === questionAssetId.value) ?? unlockedAssets.value[0])
 
 function imageFor(file: string): string {
   return files[`../assets/learning-zone/${file}`] ?? ''
@@ -74,45 +79,30 @@ function box(x: number, y: number, width: number, height: number, zIndex: number
   return { left: `${x / 1920 * 100}%`, top: `${y / 1080 * 100}%`, width: `${width / 1920 * 100}%`, height: `${height / 1080 * 100}%`, zIndex }
 }
 
+// All dimensions below are in the same 1920 × 1080 artboard as the team's artwork.
+// AuthArtboard scales the artwork and content together, not each control separately.
 function topicListStyle(): CSSProperties {
-  return {
-    ...box(575, 150, 415, 880, 32),
-    transform: 'scale(.8)',
-    transformOrigin: 'top left',
-    gridTemplateRows: `repeat(${selectedUnit.value.topics.length}, 84px)`
-  }
+  return { ...box(590, 150, 340, 730, 32), gridTemplateRows: 'repeat(5, 108px)' }
 }
 
 function unitListStyle(): CSSProperties {
-  return {
-    ...box(400, 145, 180, 570, 31),
-    transform: 'scale(.8)',
-    transformOrigin: 'top left'
-  }
+  return box(400, 145, 155, 660, 31)
 }
 
 function unlockPanelStyle(): CSSProperties {
-  return {
-    ...box(1080, 205, 450, 730, 90),
-    transform: 'scale(.8)',
-    transformOrigin: 'top left'
-  }
+  return box(1062, 184, 400, 690, 90)
 }
 
 function unlockFrameStyle(): CSSProperties {
   return {
     ...box(0, 0, 1920, 1080, 5),
-    transform: 'translateY(12px) scaleY(1.15)',
-    transformOrigin: '50% 31%'
+    transform: 'scaleY(1.22)',
+    transformOrigin: '50% 158px'
   }
 }
 
 function unlockedPanelStyle(): CSSProperties {
-  return {
-    ...box(1020, 155, 560, 825, 90),
-    transform: 'scale(.8)',
-    transformOrigin: 'top left'
-  }
+  return box(1040, 170, 500, 710, 90)
 }
 
 function selectUnit(unit: Unit): void {
@@ -172,7 +162,8 @@ onBeforeUnmount(() => { pageEpoch++; stopActiveAudio() })
 </script>
 
 <template>
-  <section class="learning-zone-page" aria-label="学习区">
+  <AuthArtboard class="learning-artboard">
+  <section class="learning-zone-page art-scrollbars" aria-label="学习区">
     <img class="layer" :src="imageFor('learning-background.png')" alt="" :style="box(0, 0, 1920, 1080, 1)">
     <img class="layer" :src="imageFor('learning-book.png')" alt="" :style="box(0, 0, 1920, 1080, 2)">
 
@@ -192,26 +183,34 @@ onBeforeUnmount(() => { pageEpoch++; stopActiveAudio() })
     <template v-if="!isUnlocked">
       <img class="layer" :src="imageFor('素材展示页05.png')" alt="" :style="unlockFrameStyle()">
       <section class="unlock-panel" :style="unlockPanelStyle()" :aria-label="`${selectedTopic.name}待解锁内容`">
+      <div class="theme-preview-card">
       <div class="unlock-heading"><span class="status-label">待解锁</span><h2>{{ selectedTopic.name }}</h2></div>
-      <p class="unlock-copy">前往创作画布，按引导完成摆放与讲解，解锁整个主题。</p>
+      <p class="unlock-copy">完成引导创作后解锁。</p>
       <div class="background-preview" aria-label="主题背景预览">
         <img v-if="background" :src="previewUrl(background.thumbnailUrl ?? background.imageUrl)" :alt="background.nameZh">
       </div>
-      <div class="theme-preview-stickers"><img v-for="asset in stickers" :key="asset.assetId" :src="previewUrl(asset.thumbnailUrl ?? asset.imageUrl)" :alt="asset.nameZh"></div>
+      </div>
+      <section class="theme-preview-stickers" aria-label="本主题贴纸预览">
+        <h3>主题贴纸</h3>
+        <div class="theme-sticker-grid">
+          <figure v-for="asset in stickers" :key="asset.assetId">
+            <img :src="previewUrl(asset.thumbnailUrl ?? asset.imageUrl)" :alt="asset.nameZh">
+            <figcaption>{{ asset.nameZh }}</figcaption>
+          </figure>
+        </div>
+      </section>
       <button class="begin-guided" type="button" :disabled="loadingGame" @click="beginGuidedCreation">{{ loadingGame ? '正在准备…' : '进入引导创作，解锁本主题' }}</button>
       <p v-if="gameError" role="alert">{{ gameError }}</p>
       </section>
     </template>
     <section v-else class="unlocked-panel" :style="unlockedPanelStyle()" :aria-label="`${selectedTopic.name}已解锁内容`">
       <header><span class="status-label">已解锁</span><h2>{{ selectedTopic.name }}的素材</h2></header>
-      <p class="unlocked-copy">背景和主题贴纸均已收集，可随时播放名称与介绍音频。</p>
       <div class="material-list">
-        <article v-for="asset in unlockedAssets" :key="asset.assetId" class="material-card" :class="{ 'background-card': asset.type === 'background' }">
+        <article v-for="asset in unlockedAssets" :key="asset.assetId" class="material-card" :class="{ 'background-card': asset.type === 'background', 'question-selected': questionAsset?.assetId === asset.assetId }">
           <img :src="previewUrl(asset.thumbnailUrl ?? asset.imageUrl)" :alt="asset.nameZh">
           <div>
-            <div class="material-title"><h3>{{ asset.nameZh }} <span>/ {{ asset.nameEn }}</span></h3><button class="audio-button name-audio-button" type="button" :aria-label="`播放${asset.nameZh}的中英文名称`" @click="playCatalogAudio([asset.audio.nameZhUrl, asset.audio.nameEnUrl])"><img :src="imageFor('audio-button.png')" alt="">中英文名称</button></div>
+            <div class="material-title"><h3><button class="question-select" type="button" :aria-label="`选择${asset.nameZh}用于提问`" :aria-pressed="questionAsset?.assetId === asset.assetId" @click="questionAssetId = asset.assetId">{{ asset.nameZh }} <span>/ {{ asset.nameEn }}</span></button></h3><button class="audio-button name-audio-button" type="button" :aria-label="`播放${asset.nameZh}的中英文名称`" @click="playCatalogAudio([asset.audio.nameZhUrl, asset.audio.nameEnUrl])"><img :src="imageFor('audio-button.png')" alt="">中英文名称</button></div>
             <p>{{ asset.introZh }}</p>
-            <button type="button" @click="stopActiveAudio(); qaAsset = asset">问问它</button>
             <div class="audio-actions" :aria-label="`${asset.nameZh}的音频`">
               <button class="audio-button" type="button" :aria-label="`播放${asset.nameZh}的中文介绍`" @click="playCatalogAudio([asset.audio.introZhUrl])"><img :src="imageFor('audio-button.png')" alt="">中文介绍</button>
             </div>
@@ -219,47 +218,74 @@ onBeforeUnmount(() => { pageEpoch++; stopActiveAudio() })
         </article>
       </div>
     </section>
-
-
+    <ArtworkButton v-if="isUnlocked && questionAsset" class="question-source-entry" :image="suppliedArt.qaEntry" bounds="1037 816 182 76" :label="`提问：${questionAsset.nameZh}`" @click="stopActiveAudio(); qaAsset = questionAsset" />
     <img class="layer" :src="imageFor('learning-border.png')" alt="" :style="box(0, 0, 1920, 1080, 70)">
     <button class="back-button" type="button" aria-label="返回大厅" :style="box(39, 35, 208, 112, 100)" @click="openLobby"><img :src="imageFor('back-button.png')" alt=""></button>
   </section>
+  </AuthArtboard>
   <AssetQaSheet :asset="qaAsset" :open="!!qaAsset" @close="qaAsset = null" />
 </template>
 
 <style scoped>
-.learning-zone-page { position: relative; width: 100vw; min-height: 100vh; overflow: hidden; aspect-ratio: 16 / 9; background: #fff2be; color: #6c210e; font-family: "Microsoft YaHei", "PingFang SC", sans-serif; }
+.question-source-entry { position: absolute; left: 1037px; top: 816px; width: 182px; height: 76px; z-index: 95; }
+.question-select { border: 0; padding: 0; background: transparent; color: inherit; font: inherit; text-align: left; }
+.question-selected { outline: 3px solid #71331d; outline-offset: -3px; }
+.learning-artboard { z-index: 80; }
+.learning-zone-page {
+  position: relative; width: 1920px; height: 1080px; background: #fff2be;
+  color: #6c210e; font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+}
+.learning-zone-page *, .learning-zone-page *::before, .learning-zone-page *::after { box-sizing: border-box; }
 .layer { position: absolute; display: block; pointer-events: none; }
 .unit-list, .topic-list, .unlock-panel, .unlocked-panel, .back-button { position: absolute; }
-.unit-list, .topic-list { display: grid; align-content: start; gap: 12px; }
+.unit-list, .topic-list { display: grid; align-content: start; gap: 18px; }
 .unit-button, .topic-button { position: relative; display: grid; place-items: center; border: 0; color: #6c210e; background: transparent; cursor: pointer; font-family: inherit; }
-.unit-button { width: 100%; height: 116px; padding: clamp(5px, 1vw, 20px) clamp(6px, 1.2vw, 24px); gap: 2px; font-size: clamp(10px, 1.05vw, 20px); }
-.topic-button { width: 100%; height: 100%; padding: 10px 36px; overflow: hidden; border-radius: 24px; font-size: clamp(17px, 1.6vw, 31px); }
-.frame-image { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; pointer-events: none; }.topic-button .frame-image { transform: scale(1.035); }
+.unit-button { width: 100%; height: 136px; padding: 20px 12px; gap: 8px; font-size: 22px; }
+.topic-button { width: 100%; height: 100%; padding: 12px 30px; border-radius: 24px; font-size: 30px; }
+.frame-image { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; pointer-events: none; }
 .unit-button > span, .unit-button > strong, .topic-button > strong { position: relative; z-index: 1; }
-.unit-button > span { font-size: clamp(13px, 1.35vw, 26px); }
-.unit-button strong { font-size: clamp(17px, 1.6vw, 30px); transform: translateY(-8px); }
+.unit-button > span { font-size: 23px; }
+.unit-button strong { white-space: nowrap; font-size: 27px; }
 .unit-button.selected > span, .unit-button.selected > strong, .topic-button.selected > strong { color: #a53c14; }
-.unit-button.selected, .topic-button.selected { filter: drop-shadow(0 0 8px rgba(232, 159, 41, 0.58)); }
-.unlock-panel { display: grid; grid-template-rows: auto auto 1fr auto; gap: 7px; padding: clamp(7px, .95vw, 18px) clamp(10px, 1.35vw, 26px); }.unlock-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; transform: translateY(-20px); }.unlock-panel h2, .unlock-copy, .status-label { margin: 0; }.status-label { color: #a53c14; font-weight: 800; font-size: clamp(11px, 1.2vw, 22px); }.unlock-panel h2 { font-size: clamp(20px, 2vw, 38px); }.unlock-copy { font-size: clamp(10px, 1.1vw, 21px); line-height: 1.4; transform: translateY(-20px); }
-.background-preview { position: relative; width: calc(100% + 40px); aspect-ratio: 902 / 516; margin-left: -20px; overflow: hidden; border: 3px dashed #a9632c; border-radius: 20px; background: #fff7d7; transform: translateY(-14px); }.background-preview > img { width: 100%; height: 100%; object-fit: cover; }.target-shadow { position: absolute; display: block; transform: translate(-50%, -50%); pointer-events: none; }.target-shadow::after { position: absolute; inset: 4%; box-sizing: border-box; border: 3px dashed rgba(112, 57, 28, .9); border-radius: 50%; content: ''; }.target-shadow img { width: 100%; height: 100%; object-fit: contain; filter: grayscale(1) brightness(.35); opacity: .42; }.placed-sticker { position: absolute; width: 24%; height: 24%; transform: translate(-50%, -50%); pointer-events: none; }.placed-sticker img { width: 100%; height: 100%; object-fit: contain; }
-.sticker-tray { position: absolute; top: 330px; left: -12px; width: calc(100% + 52px); min-width: 0; }.sticker-tray > p { margin: 0 0 4px; font-weight: 800; font-size: clamp(12px, 1.3vw, 24px); }.sticker-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(4px, .65vw, 12px); overflow: visible; }.sticker-card { min-width: 0; text-align: center; font-weight: 700; font-size: clamp(12px, 1.18vw, 22px); cursor: grab; }.sticker-card.locked { opacity: .45; cursor: not-allowed; }.sticker-card img { display: block; width: clamp(38px, 4.5vw, 68px); height: clamp(38px, 4.5vw, 68px); margin: 0 auto 2px; object-fit: contain; }.game-message { color: #a53c14; }
-.retry-audio-button { padding: 3px 8px; border: 1px solid #a45e25; border-radius: 8px; background: #fff9de; color: #6c210e; font: inherit; font-weight: 800; cursor: pointer; }
-.unlocked-panel { display: grid; grid-template-rows: auto auto 1fr; gap: 9px; padding: 0; background: transparent; }.unlocked-panel header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }.unlocked-panel h2, .unlocked-panel h3, .unlocked-panel p { margin: 0; }.unlocked-panel h2 { font-size: clamp(16px, 1.65vw, 32px); }.unlocked-copy { font-size: clamp(8px, .85vw, 16px); line-height: 1.5; }.material-list { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; padding: 2px 6px 2px 2px; }.material-card { display: flex; flex: 0 0 auto; align-items: flex-start; gap: 10px; width: 100%; aspect-ratio: auto; padding: 10px; border: 3px solid #a45e25; border-radius: 22px; background: #fff9de; }.material-card > div { min-width: 0; flex: 1 1 auto; }.material-card > img { flex: 0 0 auto; width: clamp(58px, 6.5vw, 110px); height: 126px; object-fit: contain; border-radius: 14px; background: #f1e0ae; }.background-card { flex-direction: column; }.background-card > img { width: 100%; height: 140px; }.material-title { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }.material-card h3 { font-size: clamp(12px, 1.3vw, 24px); }.material-card h3 span { font-size: .68em; font-weight: 600; }.material-card p { margin-top: 4px; color: #71331d; font-size: clamp(8px, .8vw, 15px); line-height: 1.4; white-space: pre-line; }.audio-actions { display: flex; margin-top: 8px; }.audio-button { display: inline-flex; align-items: center; gap: 4px; padding: 0; border: 0; background: transparent; color: #6c210e; font-weight: 800; font-size: clamp(8px, .8vw, 15px); }.name-audio-button { flex: 0 0 auto; }.audio-button img { width: clamp(18px, 2vw, 38px); height: auto; }
-.back-button { border: 0; padding: 0; background: transparent; cursor: pointer; }.back-button img { width: 100%; height: 100%; object-fit: contain; }
-.celebration-video { position: fixed; inset: 15% 25%; z-index: 200; width: 50%; max-height: 70%; border: 4px solid #a45e25; border-radius: 20px; background: #fff9de; }
-/* PS artboards scale to .8; keep the rendered reading size at least 12px. */
-.unlock-copy, .unlocked-copy, .material-card p, .audio-button { font-size: clamp(15px, 1.1vw, 21px); }
-.unit-button strong { white-space: nowrap; font-size: clamp(15px, 1.6vw, 30px); }
-.material-title { flex-wrap: wrap; }
-.audio-actions { flex-wrap: wrap; gap: 6px; }
-.background-preview > img { object-fit: contain; }
-.theme-preview-stickers { display: flex; flex-wrap: wrap; gap: 6px; }
-.unlock-panel { display: flex; flex-direction: column; height: auto !important; gap: 12px; }
-.unlock-heading, .unlock-copy { transform: none; }
-.background-preview { flex: none; width: 100%; margin: 0; transform: none; }
-.background-preview > img { display: block; }
-.theme-preview-stickers img { width: 48px; height: 48px; object-fit: contain; }
-.begin-guided { border: 2px solid #a45e25; border-radius: 12px; padding: 10px; background: #ffe390; color: #6c210e; font: inherit; font-weight: bold; cursor: pointer; }
-.begin-guided:focus-visible { outline: 3px solid #6c210e; outline-offset: 3px; }
+.unit-button.selected, .topic-button.selected { filter: drop-shadow(0 0 8px rgba(232, 159, 41, .58)); }
+.unlock-panel { display: flex; flex-direction: column; align-items: stretch; gap: 24px; }
+.theme-preview-card { display: grid; gap: 12px; padding: 8px 0 0; }
+.unlock-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.unlock-panel h2, .unlock-copy, .status-label { margin: 0; }
+.status-label { color: #a53c14; font-weight: 800; font-size: 22px; }
+.unlock-panel h2 { font-size: 34px; line-height: 1.3; }
+.unlock-copy { font-size: 22px; line-height: 1.4; }
+.background-preview { width: 100%; aspect-ratio: 902 / 516; border: 3px dashed #a9632c; border-radius: 20px; background: #fff7d7; overflow: hidden; }
+.background-preview > img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.theme-preview-stickers { margin-top: 16px; }
+.theme-preview-stickers h3 { margin: 0 0 10px; font-size: 22px; }
+.theme-sticker-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+.theme-sticker-grid figure { min-width: 0; margin: 0; text-align: center; }
+.theme-sticker-grid img { display: block; width: 100%; height: 68px; object-fit: contain; }
+.theme-sticker-grid figcaption { margin-top: 6px; font-size: 18px; line-height: 1.35; overflow-wrap: anywhere; }
+.begin-guided { border: 2px solid #a45e25; border-radius: 12px; padding: 14px 10px; background: #ffe390; color: #6c210e; font: inherit; font-size: 22px; font-weight: bold; cursor: pointer; }
+.begin-guided:disabled { cursor: wait; opacity: .65; }
+.unlock-panel > [role="alert"] { margin: 0; font-size: 20px; line-height: 1.4; overflow-wrap: anywhere; }
+.unlocked-panel { display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 14px; padding-bottom: 76px; }
+.unlocked-panel header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.unlocked-panel h2, .unlocked-panel h3, .unlocked-panel p { margin: 0; }
+.unlocked-panel h2 { font-size: 30px; }
+.material-list { display: flex; flex-direction: column; gap: 14px; min-height: 0; overflow-y: auto; padding: 4px 8px 4px 4px; }
+.material-card { display: flex; flex: 0 0 auto; align-items: flex-start; gap: 12px; width: 100%; padding: 14px; border: 3px solid #a45e25; border-radius: 22px; background: #fff9de; }
+.material-card > div { min-width: 0; flex: 1 1 auto; }
+.material-card > img { flex: 0 0 auto; width: 100px; height: 126px; object-fit: contain; border-radius: 14px; background: #f1e0ae; }
+.background-card { flex-direction: column; }
+.background-card > img { width: 100%; height: 170px; }
+.material-title { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.material-card h3 { font-size: 25px; }
+.material-card h3 span { font-size: .75em; font-weight: 600; }
+.material-card p { margin-top: 8px; color: #71331d; font-size: 21px; line-height: 1.5; white-space: pre-line; }
+.material-card button { cursor: pointer; }
+.audio-actions { display: flex; flex-wrap: wrap; margin-top: 12px; gap: 8px; }
+.audio-button { display: inline-flex; align-items: center; gap: 6px; padding: 4px; border: 0; background: transparent; color: #6c210e; font-weight: 800; font-size: 21px; }
+.name-audio-button { flex: 0 0 auto; }
+.audio-button img { width: 32px; height: auto; }
+.back-button { border: 0; padding: 0; background: transparent; cursor: pointer; }
+.back-button img { width: 100%; height: 100%; object-fit: contain; }
+.learning-zone-page button:focus-visible { outline: 3px solid #6c210e; outline-offset: 4px; }
 </style>

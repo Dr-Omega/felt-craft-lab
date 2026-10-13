@@ -1,5 +1,6 @@
 import type { GenerationSpec } from '../contracts/generation-spec'
 import type { PersonalAssetRole } from '../contracts/personal-asset'
+import { colorAttributes } from './color-attributes'
 
 /** Virtual path: at least one subject still lacks a color attribute. */
 export const SUBJECT_COLORS_FIELD = 'content.subjectColors' as const
@@ -47,7 +48,7 @@ function subjectsDisplay(spec: GenerationSpec): string {
 function colorsDisplay(spec: GenerationSpec): string {
   const bound = spec.content.primarySubjects
     .map((subject) => {
-      const attrs = (subject.attributes ?? []).map((item) => item.trim()).filter(Boolean)
+      const attrs = colorAttributes(subject.attributes)
       if (!attrs.length) return ''
       return `${attrs.join('、')}→${subject.name.trim()}`
     })
@@ -67,7 +68,7 @@ export function subjectsNeedColors(spec: GenerationSpec): boolean {
   const subjects = spec.content.primarySubjects.filter((subject) => subject.name.trim().length > 0)
   if (!subjects.length) return false
   if ((spec.content.preferredColors ?? []).some((item) => item.trim())) return false
-  return subjects.some((subject) => !(subject.attributes ?? []).some((item) => item.trim()))
+  return subjects.some((subject) => !colorAttributes(subject.attributes).length)
 }
 
 function fieldSlotsForRole(role: PersonalAssetRole): Array<{

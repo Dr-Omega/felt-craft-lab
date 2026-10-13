@@ -19,9 +19,9 @@ export interface ClarificationDecision {
 const QUESTION_TEXT: Record<string, string> = {
   'content.primarySubjects': '你最想画的是谁，或者是什么东西呢？',
   'content.actionOrRelationship': '它在做什么，还是和谁在一起呢？',
-  'content.preferredColors': '想用什么颜色呢？可以说：黑白熊猫、红色皮球。',
+  'content.preferredColors': '想用什么颜色呢？',
   'content.requiredElements': '画面里还必须有什么吗？没有也可以说「没有」。',
-  'content.environmentDescription': '它在什么地方呢？比如地上、草地上。没有也可以说「没有」。',
+  'content.environmentDescription': '它在什么地方？也可以不指定。',
   'content.forbiddenElements': '有什么是不要画出来的吗？'
 }
 

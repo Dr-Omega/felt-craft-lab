@@ -71,3 +71,16 @@ def test_cancel_and_provider_timeout_retry_same_order(service):
     assert pay.cancel(a.user_id,order['orderId'])['status']=='CANCELLED'
     with pytest.raises(RewardError): pay.settle(VerifiedPayment(order['orderId'],'late-trade',100,'CNY'))
     assert pay.rewards.dashboard(a)['wallet']['diamonds']==0
+
+
+@pytest.mark.parametrize('role', ['parent', 'admin'])
+def test_non_wallet_roles_cannot_create_orders_or_reach_provider(service, role):
+    pay, _ = service
+    user = PlazaDb(pay.rewards.db_path).create_user('blocked-' + role, 'not-used', role)
+    calls = []
+    pay.provider.create = lambda order: calls.append(order)
+    with pytest.raises(RewardError, match='不能充值'):
+        pay.create(user.user_id, 'diamonds_10', 'blocked-request')
+    assert calls == []
+    with pay.rewards._connect() as conn:
+        assert conn.execute('SELECT count(*) FROM payment_orders WHERE user_id=?', (user.user_id,)).fetchone()[0] == 0

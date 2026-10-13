@@ -48,6 +48,12 @@ function rgbChange(index: number, event: Event): void {
 .wheel { width: 110px; height: 110px; border-radius: 50%; background: conic-gradient(red,yellow,lime,cyan,blue,magenta,red); display: grid; place-items: center; touch-action: none; cursor: crosshair; }
 .wheel span { width: 65px; height: 65px; border: 4px solid white; border-radius: 50%; display: grid; place-items: center; font-size: 11px; color: white; text-shadow: 0 1px 3px black; }
 label { display: grid; gap: 4px; font-size: 13px; } input { max-width: 100%; min-width: 0; }
+input[type=number], input[type=color] { color: #652415; background: #fff1b7; border: 1px solid #855637; border-radius: 6px; padding: 4px; }
+input[type=range] { appearance: none; width: 100%; height: 24px; margin: 0; background: transparent; }
+input[type=range]::-webkit-slider-runnable-track { height: 5px; border-radius: 5px; background: rgba(96,96,96,.4); }
+input[type=range]::-webkit-slider-thumb { appearance: none; width: 16px; height: 16px; margin-top: -5.5px; border: 2px solid #fff1b7; border-radius: 50%; background: #855637; }
+input[type=range]::-moz-range-track { height: 5px; border-radius: 5px; background: rgba(96,96,96,.4); }
+input[type=range]::-moz-range-thumb { width: 12px; height: 12px; border: 2px solid #fff1b7; border-radius: 50%; background: #855637; }
 .rgb { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
 .palette { display: flex; flex-wrap: wrap; gap: 8px; }
 .palette button { width: 28px; height: 28px; padding: 0; border: 1px solid #777; }

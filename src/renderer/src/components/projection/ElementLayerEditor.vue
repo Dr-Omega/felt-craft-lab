@@ -15,10 +15,15 @@ const emit = defineEmits<{ close: []; preview: [png: string] }>()
 const job = ref<FabricationJob>(), colors = ref<LayerColors>(), selected = ref(0)
 const mode = ref<ForegroundMode>(props.foregroundMode || 'birefnet-general')
 const saving = ref(false), dirty = ref(false), rendering = ref(false), starting = ref(false)
-const error = ref(''), message = ref('正在准备这个元素的可编辑图层，作品留在原画布。')
+const error = ref(''), message = ref('')
+const environmentIssue = ref('')
 const painted = ref<Awaited<ReturnType<typeof recolorLayers>>>()
+const sourcePreview = URL.createObjectURL(new Blob([new Uint8Array(props.input).buffer]))
 const images: string[] = []
 const busy = computed(() => starting.value || ['queued','background','fabrication'].includes(job.value?.status || ''))
+const processMessage = computed(() => busy.value
+  ? job.value?.status === 'queued' ? '排队中…' : '正在准备图层…'
+  : error.value ? '' : message.value)
 let key = '', sourceHash = '', generation = 0, disposed = false
 let timer: ReturnType<typeof setTimeout> | undefined
 
@@ -47,10 +52,10 @@ async function load(): Promise<void> {
   }
   if (disposed) return
   colors.value = doc; selected.value = 0
-  message.value = '选中一层调色，效果直接显示在作品中。'
+  message.value = ''
   await paint(false)
   // A newly decomposed source can be applied without forcing a gratuitous color change.
-  if (!props.savedEdit) { dirty.value = true; message.value = '真实分层已完成，可按层换色或直接应用到原画布。' }
+  if (!props.savedEdit) { dirty.value = true; message.value = '' }
 }
 async function poll(): Promise<void> {
   if (disposed || !job.value) return
@@ -67,12 +72,19 @@ async function poll(): Promise<void> {
     try { await load() }
     catch (e) { if (!disposed) error.value = `分层结果未能载入：${String(e)}` }
   } else if (['queued','background','fabrication'].includes(next.status)) timer = setTimeout(poll, 1000)
-  else error.value = '此元素未完成分层，未使用示例图层替代。请点击重试准备图层。'
+  else error.value = '拆分未完成，请重试。'
 }
 async function start(retry = false): Promise<void> {
   if (busy.value || !key) return
   starting.value = true; error.value = ''
   try {
+    const availability = await window.electronAPI.fabrication.availability()
+    if (!availability.available) {
+      environmentIssue.value = availability.message
+      message.value = '暂时无法拆分。图片已保留，可继续拼贴。'
+      return
+    }
+    environmentIssue.value = ''
     const next = retry && job.value && ['failed','timeout'].includes(job.value.status)
       ? await window.electronAPI.fabrication.retry(job.value.id)
       : await window.electronAPI.fabrication.start(props.input, mode.value, props.binding ? JSON.parse(JSON.stringify(props.binding)) : undefined)
@@ -95,7 +107,7 @@ async function save(): Promise<void> {
     if (!disposed) {
       colors.value = saved
       await props.apply(painted.value.composite, saved, job.value.id, sourceHash)
-      dirty.value = false; message.value = '已应用到画布，关闭面板不会恢复原色。保存作品后可继续编辑。'
+      dirty.value = false; message.value = '已应用，请保存作品。'
     }
   } catch (e) { if (!disposed) error.value = String(e) }
   finally { saving.value = false }
@@ -121,17 +133,19 @@ onMounted(async () => {
     }
   } catch (e) { if (!disposed) error.value = String(e) }
 })
-onUnmounted(() => { disposed = true; generation++; clearTimeout(timer); images.forEach(url => URL.revokeObjectURL(url)) })
+onUnmounted(() => { disposed = true; generation++; clearTimeout(timer); URL.revokeObjectURL(sourcePreview); images.forEach(url => URL.revokeObjectURL(url)) })
 </script>
 
 <template>
   <LayerEditorPanel :anchor="anchor" :colors="colors" :selected="selected" :images="painted?.layers"
-    :saving="saving" :dirty="dirty" :rendering="rendering" :message="message" :error="error" save-label="应用到画布"
+    :preparing="busy" :source-preview="sourcePreview"
+    :saving="saving" :dirty="dirty" :rendering="rendering" :message="processMessage" :error="error ? '图层处理未完成，请重试。' : ''" save-label="应用到画布"
     @select="selected = $event" @color="changeColor" @save="save" @close="emit('close')">
     <div v-if="!colors" class="process-controls">
-      <p>{{ busy ? '正在准备图层…' : '暂无可编辑图层' }}</p>
-      <button v-if="error && !busy && !savedEdit" @click="start(true)">重试准备图层</button>
-      <small v-if="busy">关闭面板不会取消正在进行的处理。</small>
+      <template v-if="environmentIssue">
+        <button class="hand-btn-primary" :disabled="busy" @click="start(true)">重试</button>
+      </template>
+      <button v-if="error && !busy && !savedEdit" class="hand-btn-primary" @click="start(true)">重试准备图层</button>
     </div>
   </LayerEditorPanel>
 </template>

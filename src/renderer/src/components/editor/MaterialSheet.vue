@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import type { AssetAccessState, AssetRecord } from '@shared/contracts'
 import { isAssetUnlocked } from '../../catalog/ywn-catalog'
 import {
   deriveCategoriesFromAssets,
   filterAssetsByCategoryAndQuery
 } from '../../catalog/category-display'
+import SourceArtboard from '../artwork/SourceArtboard.vue'
+import { suppliedArt } from '../../ui/supplied-controls'
 import { handDrawnAssets } from '../../ui/hand-drawn-assets'
 import AssetAudioControls from './AssetAudioControls.vue'
+import AssetFavoriteButton from './AssetFavoriteButton.vue'
 
 const props = defineProps<{
   assets: readonly AssetRecord[]
@@ -28,6 +31,15 @@ const emit = defineEmits<{
 const ALL_CATEGORY_ID = 'all'
 const searchQuery = ref('')
 const activeCategoryId = ref(ALL_CATEGORY_ID)
+const panel = ref<HTMLElement>()
+let opener: HTMLElement | null = null
+function panelKeys(event: KeyboardEvent): void {
+  if (event.key === 'Escape') { event.preventDefault(); emit('close') }
+  if (event.key !== 'Tab') return
+  const items = [...(panel.value?.querySelectorAll<HTMLElement>('button:not(:disabled),input') || [])]
+  if (event.shiftKey && document.activeElement === items[0]) { event.preventDefault(); items.at(-1)?.focus() }
+  else if (!event.shiftKey && document.activeElement === items.at(-1)) { event.preventDefault(); items[0]?.focus() }
+}
 
 const categories = computed(() => deriveCategoriesFromAssets(props.assets))
 
@@ -59,10 +71,14 @@ watch(selectedStillVisible, (stillVisible) => {
 
 // Reset filter inputs when the sheet is reopened so a previous filter does
 // not silently hide every asset for the next session.
-watch(() => props.open, (open) => {
+watch(() => props.open, async (open) => {
   if (open) {
+    opener = document.activeElement as HTMLElement
     searchQuery.value = ''
     activeCategoryId.value = ALL_CATEGORY_ID
+    await nextTick(); panel.value?.querySelector<HTMLInputElement>('input')?.focus()
+  } else {
+    opener?.isConnected && opener.focus()
   }
 })
 
@@ -93,7 +109,7 @@ function addSelection(): void {
 
 <template>
   <Teleport to="body">
-    <div class="material-sheet-layer" :class="{ 'is-open': open }">
+    <div v-if="open" class="material-sheet-layer is-open">
       <button
         class="sheet-backdrop"
         type="button"
@@ -101,13 +117,12 @@ function addSelection(): void {
         :class="{ 'is-open': open }"
         @click="emit('close')"
       ></button>
-      <aside class="material-sheet" :class="{ 'is-open': open }" aria-label="素材盒">
-      <button class="sheet-handle" type="button" aria-label="关闭素材盒" @click="emit('close')"></button>
+      <SourceArtboard>
+      <img class="material-source-art" :src="suppliedArt.materialPanel" alt="" />
+      <aside ref="panel" class="supplied-material-panel art-scrollbars" role="dialog" aria-modal="true" aria-label="素材盒" @keydown="panelKeys">
       <header class="sheet-header">
         <h2>素材盒</h2>
-        <button class="hand-icon-btn hand-icon-btn--close sheet-close" type="button" aria-label="关闭素材盒" @click="emit('close')">
-          <img :src="handDrawnAssets.btnClose" alt="" />
-        </button>
+        <button class="sheet-close hand-icon-btn" type="button" aria-label="关闭素材盒" @click="emit('close')"><img :src="handDrawnAssets.btnClose" alt="" /></button>
       </header>
       <div class="sheet-toolbar">
         <label class="sheet-search">
@@ -167,7 +182,7 @@ function addSelection(): void {
           </span>
           <span class="material-card-name">{{ asset.nameZh }}</span>
         </button>
-        <p v-if="visibleAssets.length === 0" class="material-empty">这里还没有符合的素材，换个词或换个分类试试。</p>
+        <p v-if="visibleAssets.length === 0" class="material-empty">没有找到素材。</p>
       </div>
       <div v-if="selectedAsset()" class="sheet-footer">
         <div class="sheet-footer-name">
@@ -175,14 +190,14 @@ function addSelection(): void {
           <p v-if="selectedAsset()?.nameEn" class="sheet-footer-name-en">{{ selectedAsset()?.nameEn }}</p>
         </div>
         <div class="sheet-footer-secondary">
-          <button type="button" @click="emit('ask', selectedAsset()!)">问问它</button>
+          <AssetFavoriteButton :asset-id="selectedAsset()!.assetId" />
+          <button class="hand-btn-secondary" type="button" @click="emit('ask', selectedAsset()!)">问问它</button>
           <AssetAudioControls :asset="selectedAsset()" :active="open" />
         </div>
         <div class="sheet-footer-primary">
-          <p v-if="!unlocked(selectedAsset()!)">该主题尚未解锁，完成主题引导后才能使用。</p>
-          <button v-if="!unlocked(selectedAsset()!)" type="button" :disabled="busy" @click="emit('unlock', selectedAsset()!.themeId)">前往解锁本主题</button>
+          <button v-if="!unlocked(selectedAsset()!)" class="hand-btn-primary" type="button" :disabled="busy" @click="emit('unlock', selectedAsset()!.themeId)">前往解锁本主题</button>
           <button
-            class="hand-btn-primary sheet-add"
+            class="sheet-add hand-btn-primary"
             type="button"
             :disabled="busy || !unlocked(selectedAsset()!)"
             @click="addSelection"
@@ -192,6 +207,7 @@ function addSelection(): void {
         </div>
       </div>
     </aside>
+    </SourceArtboard>
     </div>
   </Teleport>
 </template>
@@ -224,20 +240,18 @@ function addSelection(): void {
   pointer-events: auto;
 }
 
-.material-sheet {
-  position: fixed;
-  left: 50%;
-  bottom: 20px;
+.material-source-art { position: absolute; inset: 0; width: 1920px; height: 1080px; pointer-events: none; }
+.supplied-material-panel {
+  position: absolute;
+  left: 329px;
+  top: 142px;
   z-index: 1;
   display: flex;
   flex-direction: column;
-  width: calc(100% - 80px);
-  max-width: 1280px;
-  max-height: 70vh;
-  min-height: 360px;
+  width: 1263px;
+  height: 772px;
+  padding: 28px;
   overflow: hidden;
-  transform: translate(-50%, calc(100% + 24px));
-  transition: transform 280ms cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: auto;
 }
 
@@ -273,7 +287,7 @@ function addSelection(): void {
 
 .sheet-header h2 {
   margin: 0;
-  font-size: 16px;
+  font-size: 26px;
   font-weight: 700;
 }
 
@@ -300,7 +314,7 @@ function addSelection(): void {
   margin: 0 auto;
   padding: 4px 30px 12px;
   flex: 1 1 auto;
-  min-height: 180px;
+  min-height: 0;
   overflow-y: auto;
   align-content: start;
 }
@@ -352,7 +366,7 @@ function addSelection(): void {
   padding: 0 4px;
   background: var(--text-box-fill, #f5ecd8);
   color: var(--color-text, #594738);
-  font-size: 11px;
+  font-size: 19px;
   line-height: 1.1;
   text-align: center;
   text-overflow: ellipsis;
@@ -369,17 +383,7 @@ function addSelection(): void {
   font-size: 12px;
 }
 
-@media (max-width: 1439px) {
-  .material-grid {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 1920px) {
-  .material-grid {
-    grid-template-columns: repeat(8, minmax(0, 1fr));
-  }
-}
+/* The whole source artboard scales; no viewport-dependent re-layout of its frame. */
 
 /* MaterialSheet — visuals aligned with EditorPage wood/apricot tokens. */
 .sheet-toolbar {
@@ -407,6 +411,7 @@ function addSelection(): void {
   background: transparent;
   outline: none;
   font: inherit;
+  font-size: 24px;
   color: inherit;
   min-width: 0;
   padding: 0;
@@ -446,7 +451,7 @@ function addSelection(): void {
   color: var(--color-text, #594738);
   cursor: pointer;
   font: inherit;
-  font-size: 0.85rem;
+  font-size: 20px;
 }
 
 .category-chip-count {
@@ -490,7 +495,7 @@ function addSelection(): void {
   gap: 4px;
   padding: 8px 24px 12px;
   border-top: 1px solid rgba(89, 71, 56, 0.08);
-  background: var(--wood-light, #f0e2c5);
+  background: transparent;
   text-align: center;
 }
 
@@ -504,23 +509,27 @@ function addSelection(): void {
 
 .sheet-footer-name-zh {
   margin: 0;
-  font-size: 14px;
+  font-size: 24px;
   font-weight: 700;
   color: var(--color-text, #594738);
 }
 
 .sheet-footer-name-en {
   margin: 0;
-  font-size: 10px;
-  color: var(--color-text-faint, #b8a48a);
+  font-size: 18px;
+  color: var(--color-text, #594738);
   letter-spacing: 0.04em;
-  opacity: 0.85;
 }
 
 .sheet-footer-secondary {
   display: flex;
   justify-content: center;
+  align-items: center;
+  gap: 10px;
 }
+
+.sheet-footer { font-size: 20px; }
+.sheet-footer-secondary :deep(.asset-audio-button) { font-size: 18px; }
 
 .sheet-footer-primary {
   display: flex;

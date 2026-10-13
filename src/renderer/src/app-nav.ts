@@ -2,6 +2,7 @@ import type { ProjectRecord, SceneDocument, StoryCardWorkContext } from '@shared
 import { loadSavedWork, savedWorkStoryContext } from './workflows/saved-work'
 import type { SceneBinding } from '@shared/fabrication-colors'
 import { clearPlazaSession, getCurrentUserId, loadPlazaSession } from './services/plaza-session'
+import { createBlankScene } from './catalog/ywn-catalog'
 
 export type AppView = 'splash' | 'login' | 'lobby' | 'profile' | 'plaza' | 'rewards' | 'library' | 'learning' | 'editor' | 'status' | 'create' | 'fabrication' | 'story-card' | 'work-display'
 export type MainAppView = 'library' | 'editor' | 'projection'
@@ -20,14 +21,30 @@ export function openFabrication(input?: { bytes: Uint8Array; name: string; bindi
 }
 
 export type EditorLaunchMode = 'new' | 'draft' | 'project'
+export type PersonalWorksFilter = 'draft' | 'drawing' | 'story' | 'blueprint' | 'completed'
+export type PersonalSection = 'account' | 'works' | 'inbox' | 'store'
+let personalSection: PersonalSection = 'account'
+export function getPersonalSection(): PersonalSection { return personalSection }
+let personalWorksFilter: PersonalWorksFilter = 'completed'
+export function getPersonalWorksFilter(): PersonalWorksFilter { return personalWorksFilter }
+export function setPersonalWorksFilter(filter: PersonalWorksFilter): void { personalWorksFilter = filter }
+export function openPersonalWorks(filter: PersonalWorksFilter = personalWorksFilter): void {
+  personalSection = 'works'
+  personalWorksFilter = filter
+  openAccountPage('profile')
+}
 
 export interface EditorLaunchContext {
   mode: EditorLaunchMode
   scene: SceneDocument
   draftId?: string
   projectId?: string
+  returnTo?: 'lobby' | 'profile'
+  returnFilter?: PersonalWorksFilter
   /** Starts processing the accepted personal image; never grants theme permissions. */
   fromGeneration?: boolean
+  /** Open the image chooser only for a fresh lobby creation, never a restored work. */
+  chooseImage?: boolean
   /** Separate task scene; never persisted as a free-creation work. */
   guidedTheme?: { sessionId: string; themeId: string }
 }
@@ -55,10 +72,19 @@ export function openLogin(): void { openAccountPage('login') }
 export function completeLogin(): void { openAccountPage('lobby') }
 export function openLobby(): void { openAccountPage('lobby') }
 export function openPlaza(): void { openAccountPage('plaza') }
-export function openPersonalCenter(): void { openAccountPage('profile') }
-export function openRewards(): void { openAccountPage('rewards') }
-/** Both creation entrances use the same explicit theme/work picker. */
-export function enterCreationStudio(): void { openLibrary() }
+export function openPersonalCenter(): void {
+  personalSection = 'account'
+  openAccountPage('profile')
+}
+export type RewardEntry = 'account' | 'inbox' | 'store' | 'bear'
+let rewardEntry: RewardEntry = 'account'
+export function getRewardEntry(): RewardEntry { return rewardEntry }
+export function openRewards(entry: RewardEntry = 'account'): void { rewardEntry = entry; openAccountPage('rewards') }
+/** Personal uploads do not grant access to any locked catalog theme. */
+export function enterCreationStudio(): void {
+  if (!loadPlazaSession()) { openLogin(); return }
+  openEditor({ mode: 'new', scene: createBlankScene('我的新作品'), chooseImage: true, returnTo: 'lobby' })
+}
 export async function logout(): Promise<void> {
   await window.electronAPI.plaza.logout()
   clearPlazaSession()
@@ -80,10 +106,8 @@ export function subscribeAppNav(listener: () => void): () => void {
 }
 
 export function openLibrary(): void {
-  navigationGeneration++
-  launch = undefined
-  currentView = 'library'
-  notify()
+  // Compatibility for old callers: never reopen the retired mixed library UI.
+  openPersonalWorks()
 }
 
 let learningThemeId: string | undefined
@@ -104,9 +128,16 @@ export function openStatus(): void {
 }
 
 export function openCreate(): void {
-  navigationGeneration++
-  currentView = 'create'
-  notify()
+  enterCreationStudio()
+}
+
+/** Called only after the editor's save/discard guard has finished. */
+export function returnFromEditor(): void {
+  const context = launch
+  if (context?.guidedTheme) { openLearning(context.guidedTheme.themeId); return }
+  if (context?.returnTo === 'profile' || (context?.returnTo !== 'lobby' && context?.mode !== 'new')) {
+    openPersonalWorks(context?.returnFilter ?? (context?.mode === 'draft' ? 'draft' : 'drawing'))
+  } else openLobby()
 }
 
 export function openEditor(context: EditorLaunchContext): void {
@@ -139,7 +170,8 @@ export async function openSavedWork(
 export async function returnFromSavedWork(): Promise<void> {
   if (workReturn === 'editor' && savedWork) {
     const work = await loadSavedWork(savedWork.projectId)
-    openEditor({ mode: 'project', projectId: work.projectId, scene: work.scene })
-  } else if (workReturn === 'profile') openPersonalCenter()
+    openEditor({ mode: 'project', projectId: work.projectId, scene: work.scene,
+      returnTo: launch?.returnTo, returnFilter: launch?.returnFilter })
+  } else if (workReturn === 'profile') openPersonalWorks()
   else openLibrary()
 }

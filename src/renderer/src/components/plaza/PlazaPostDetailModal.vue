@@ -49,11 +49,12 @@ function errorMessage(error: unknown): string {
 async function like(): Promise<void> {
   const session = loadPlazaSession()
   if (!session?.token || !props.post || busy.value) return
+  const post = props.post
   busy.value = true
   try {
-    const stats = await likePlazaPost(session.token, props.post.postId)
-    emit('updated', { postId: props.post.postId, ...stats })
-    showCenterToast('点赞成功，作者会在反馈邮箱收到奖励')
+    const stats = await likePlazaPost(session.token, post.postId)
+    emit('updated', { postId: post.postId, ...stats })
+    showCenterToast('已点赞')
   } catch (error) {
     showCenterToast(errorMessage(error))
   } finally {
@@ -64,6 +65,7 @@ async function like(): Promise<void> {
 async function review(): Promise<void> {
   const session = loadPlazaSession()
   if (!session?.token || !props.post || busy.value) return
+  const post = props.post
   const cleanComment = comment.value.trim()
   if (!cleanComment || score.value < 1 || score.value > 10) {
     showCenterToast('请填写评语并给出 1-10 分评分')
@@ -72,17 +74,17 @@ async function review(): Promise<void> {
   busy.value = true
   try {
     const result = await submitTeacherReview(session.token, {
-      postId: props.post.postId,
+      postId: post.postId,
       score: score.value,
       comment: cleanComment
     })
     emit('updated', {
-      postId: props.post.postId,
-      likeCount: props.post.likeCount,
-      likedByMe: props.post.likedByMe,
-      reviewCount: props.post.reviewCount + 1
+      postId: post.postId,
+      likeCount: post.likeCount,
+      likedByMe: post.likedByMe,
+      reviewCount: post.reviewCount + 1
     })
-    comment.value = ''
+    if (props.post?.postId === post.postId) comment.value = ''
     showCenterToast(`点评已提交，获得 ${result.teacherRewardCoins} 金币`)
   } catch (error) {
     showCenterToast(errorMessage(error))
@@ -97,6 +99,8 @@ function handleKey(event: KeyboardEvent): void {
 
 onMounted(() => window.addEventListener('keydown', handleKey))
 onUnmounted(() => window.removeEventListener('keydown', handleKey))
+
+watch(() => props.post?.postId, () => { comment.value = ''; score.value = 8 })
 
 watch(
   () => props.open,

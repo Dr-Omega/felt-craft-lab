@@ -15,6 +15,7 @@ import type {
 } from '@shared/creation-intent'
 import type {
   PersonalAssetPngIngestRequest,
+  PersonalAssetImageIngestRequest,
   PersonalAssetPngIngestResult,
   ResourceInspectResult
 } from '@shared/resource'
@@ -29,9 +30,9 @@ type StoryCardAudioReadIpcResult =
 type PreviewSaveIpcResult = { ok: true; ref: ResourceRef } | { ok: false; error: SharedError }
 type PreviewDeleteIpcResult = { ok: true } | { ok: false; error: SharedError }
 
-async function invokePersonalAssetPngIngest(input: PersonalAssetPngIngestRequest): Promise<ResourceRef> {
+async function invokePersonalAssetPngIngest(input: PersonalAssetPngIngestRequest | PersonalAssetImageIngestRequest): Promise<ResourceRef> {
   const result = (await ipcRenderer.invoke(
-    IPC_CHANNELS.PERSONAL_ASSET_RESOURCE_INGEST,
+    'imageBytes' in input ? IPC_CHANNELS.PERSONAL_ASSET_IMAGE_INGEST : IPC_CHANNELS.PERSONAL_ASSET_RESOURCE_INGEST,
     input
   )) as PersonalAssetPngIngestResult
   if (!result?.ok) {
@@ -182,6 +183,8 @@ const electronAPI = {
    * supplies IDs and bytes only; Main derives the destination ResourceRef.
    */
   ingestPersonalAssetPng: (input: PersonalAssetPngIngestRequest): Promise<ResourceRef> =>
+    invokePersonalAssetPngIngest(input),
+  ingestPersonalAssetImage: (input: PersonalAssetImageIngestRequest): Promise<ResourceRef> =>
     invokePersonalAssetPngIngest(input),
   /**
    * Persist a project preview PNG via Main. Pass bytes only — never OS paths.

@@ -21,7 +21,7 @@ class ImageProfileTests(unittest.TestCase):
         self.assertEqual(profile.provider, "seedream_ark")
         self.assertEqual(profile.model, "endpoint-id")
         self.assertEqual(profile.reference_set_id, "felt-style-ref-v1")
-        self.assertEqual((profile.generation_width, profile.generation_height), (1024, 1024))
+        self.assertEqual((profile.generation_width, profile.generation_height), (2048, 2048))
 
     def test_unknown_profile_fails_closed(self):
         with mock.patch.dict(os.environ, {"IMAGE_PROFILE_CORE_PATTERN": "unknown"}, clear=False):

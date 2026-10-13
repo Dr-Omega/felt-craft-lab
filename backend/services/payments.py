@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from typing import Protocol
 import sqlite3
 import uuid
-from services.reward_system import RewardSystem, RewardError, _utc_now_iso
+from services.reward_system import RewardSystem, RewardError, REWARDED_ROLES, _utc_now_iso
 
 PACKAGES = {"diamonds_10": (100, 10), "diamonds_60": (600, 60), "diamonds_100": (1000, 100)}
 
@@ -69,6 +69,8 @@ class Payments:
         amount, diamonds = PACKAGES[package_id]
         with self.rewards._connect() as conn:
             conn.execute("BEGIN IMMEDIATE")
+            if self.rewards._user_role(conn, user_id) not in REWARDED_ROLES:
+                raise RewardError("FORBIDDEN", "当前账号不能充值。", 403)
             row = conn.execute("SELECT * FROM payment_orders WHERE user_id=? AND request_id=?", (user_id, request_id)).fetchone()
             if row is not None and row["package_id"] != package_id:
                 raise RewardError("CONFLICT", "相同请求不能更换支付套餐。", 409)

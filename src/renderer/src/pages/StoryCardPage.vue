@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onUnmounted, ref, watch, type CSSProperties } from 'vue'
+import { conciseCopy } from '../ui/concise-copy'
 import type {
   ResourceRef,
   StoryCard,
@@ -28,6 +29,7 @@ import { GatewaySpeechRecognitionAdapter } from '../story-card/speech-recognitio
 import { GatewayStoryRewriteAdapter } from '../story-card/story-rewrite.adapter'
 import { StoryProcessingService } from '../story-card/story-processing.service'
 import { MAX_RECORDING_DURATION_MS, RecordingSession, type RecordingSessionState } from '../story-card/recording-session.service'
+import { microphoneFailureMessage } from '../services/voice-input'
 
 const props = defineProps<{ workContext?: StoryCardWorkContext }>()
 const emit = defineEmits<{ back: []; saved: [card: StoryCard] }>()
@@ -52,6 +54,7 @@ const editText = ref('')
 const confirmedCard = ref<StoryCard>()
 const busy = ref(false)
 const errorMessage = ref('')
+const speechFailed = ref(false)
 const notice = ref('')
 const confirmLeave = ref(false)
 const audioElement = ref<HTMLAudioElement>()
@@ -255,12 +258,17 @@ async function startRecording(replace = false): Promise<void> {
   if (busy.value) return
   busy.value = true
   errorMessage.value = ''
+  speechFailed.value = false
   let microphone: MediaStream | undefined
   try {
     if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
       throw new Error('当前设备暂时不能使用麦克风。')
     }
-    microphone = await navigator.mediaDevices.getUserMedia({ audio: true })
+    try {
+      microphone = await navigator.mediaDevices.getUserMedia({ audio: true })
+    } catch (error) {
+      throw new Error(microphoneFailureMessage(error))
+    }
     if (replace && recorder && recorder.state !== 'inactive') {
       clearTimers()
       await stopRecorder()
@@ -361,7 +369,7 @@ async function finishRecording(): Promise<void> {
   }
 }
 
-async function processStory(): Promise<void> {
+async function processStory(textOnly = false): Promise<void> {
   const context = props.workContext
   if (!context || busy.value && phase.value !== 'processing') return
   const returnPhase = phase.value === 'insufficient' ? 'insufficient' : 'supplement'
@@ -369,6 +377,7 @@ async function processStory(): Promise<void> {
   phase.value = 'processing'
   errorMessage.value = ''
   try {
+    if (textOnly && !supplementText.value.trim()) throw new Error('请先输入完整的故事内容。')
     let result: StoryCardDraft
     if (purpose.value === 'partial-update') {
       const partial = partialRecording.value
@@ -379,13 +388,14 @@ async function processStory(): Promise<void> {
         store,
         {
           process: async () => {
-            const recognized = await speech.transcribe(partial)
-            if (!recognized.ok) {
+            const recognized = textOnly ? null : await speech.transcribe(partial)
+            if (recognized && !recognized.ok) {
+              speechFailed.value = true
               return { workId: context.workId, status: 'failed', error: recognized.error }
             }
             return processor.processTranscript({
               workId: context.workId,
-              text: current.storyText + '\n' + recognized.transcript.text + '\n' + supplementText.value.trim(),
+              text: current.storyText + '\n' + (recognized?.ok ? recognized.transcript.text : '') + '\n' + supplementText.value.trim(),
               context
             })
           }
@@ -394,9 +404,10 @@ async function processStory(): Promise<void> {
     } else {
       const full = fullRecording.value
       if (!full) throw new Error('请先完成一段录音。')
-      if (!transcript.value) {
+      if (!textOnly && !transcript.value) {
         const recognized = await speech.transcribe(full)
         if (!recognized.ok) {
+          speechFailed.value = true
           result = { workId: context.workId, status: 'failed', error: recognized.error }
           showDraft(result)
           phase.value = returnPhase
@@ -409,7 +420,8 @@ async function processStory(): Promise<void> {
         const manual = adaptManualTextSupplement({ workId: context.workId, text: extra, fullRecording: full })
         if (!manual.ok) throw new Error(manual.error.message)
       }
-      const text = transcript.value + (extra ? '\n' + extra : '')
+      // Explicit text-only choice after ASR failure: do not silently discard recorded speech.
+      const text = textOnly ? extra : transcript.value + (extra ? '\n' + extra : '')
       result = purpose.value === 'full-update'
         ? await processFullRerecording(
           { recording: full, context },
@@ -493,6 +505,7 @@ function chooseUpdate(choice: StoryCardContentUpdateChoice): void {
   durationMs.value = 0
   transcript.value = ''
   supplementText.value = ''
+  speechFailed.value = false
   fullRecording.value = undefined
   partialRecording.value = undefined
   draft.value = undefined
@@ -533,7 +546,7 @@ function saveFeedback(): void {
 
 function requestBack(): void {
   if (busy.value || phase.value === 'processing') {
-    notice.value = '正在处理，请完成后再返回；作品和已保存故事不会丢失。'
+    notice.value = '正在处理，请稍后返回。'
     return
   }
   if (fullRecording.value || partialRecording.value || phase.value === 'recording' || phase.value === 'review' || phase.value === 'supplement') {
@@ -556,7 +569,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <section class="story-card-page" aria-label="作品故事卡">
+  <section class="story-card-page art-scrollbars" aria-label="作品故事卡">
     <div v-if="confirmLeave" class="leave-shade" role="dialog" aria-modal="true" aria-label="离开故事编辑">
       <div><p>这次未确认的录音和故事草稿不会保存。已保存的作品和故事卡不受影响。</p>
         <button autofocus @click="confirmLeave = false">继续编辑</button>
@@ -583,7 +596,7 @@ onUnmounted(() => {
           <span class="recording-title">讲述你的故事吧：</span>
         </div>
         <div class="recording-status" :style="box(610, 455, 700, 58, 2.5)" role="status">
-          {{ recordingState === 'paused' ? '录音已暂停' : recordingState === 'ended' ? '录音已结束，可以重新录音' : '正在录音' }} · {{ durationLabel }} / 5:00
+          {{ recordingState === 'paused' ? '录音已暂停' : recordingState === 'ended' ? '录音已结束' : '正在录音' }} · {{ durationLabel }} / 5:00
         </div>
         <button v-if="recordingState === 'recording' || recordingState === 'rerecording'" class="recording-action" :style="box(520, 540, 230, 220, 3.2)" aria-label="暂停录音" :disabled="busy" @click="pauseRecording"><span>暂停<br />录音</span></button>
         <button v-if="recordingState === 'paused'" class="recording-action" :style="box(520, 540, 230, 220, 6.2)" aria-label="继续录音" :disabled="busy" @click="resumeRecording"><span>继续<br />录音</span></button>
@@ -603,13 +616,18 @@ onUnmounted(() => {
           aria-label="故事补充内容"
           :disabled="busy"
         />
-        <button v-if="phase === 'supplement'" class="hotspot" :style="box(985, 697, 320, 86, 9.2)" aria-label="没有补充，跳过" :disabled="busy" @click="processStory" />
-        <button class="added-button supplement-submit" :style="box(620, 704, 300, 82, 9.2)" :disabled="busy || !supplementText.trim()" @click="processStory">
-          完成补充，生成故事
+        <button v-if="phase === 'supplement'" class="hotspot" :style="box(985, 697, 320, 86, 9.2)" aria-label="没有补充，跳过" :disabled="busy" @click="processStory()" />
+        <button class="added-button supplement-submit" :style="box(620, 704, 300, 82, 9.2)" :disabled="busy || (!supplementText.trim() && !transcript.trim())" @click="processStory(speechFailed)">
+          {{ speechFailed ? '仅用文字生成' : '生成故事' }}
         </button>
+        <p v-if="speechFailed" class="feedback" :style="box(940, 800, 390, 100, 9.2)">识别未完成，请输入完整故事。录音仍保留。</p>
         <button class="added-button" :style="box(620, 800, 300, 72, 9.2)" :disabled="busy" @click="startRecording(true)">
           重新录音
         </button>
+        <details v-if="transcript && purpose !== 'partial-update'" class="transcript-review" :style="box(940, 800, 390, 140, 10)">
+          <summary>检查识别文字</summary>
+          <textarea v-model="transcript" :disabled="busy" aria-label="录音识别文字" />
+        </details>
       </template>
 
       <template v-if="phase === 'review'">
@@ -628,8 +646,7 @@ onUnmounted(() => {
 
       <div v-if="phase === 'update-choice'" class="update-panel" :style="box(1120, 235, 490, 560, 8.5)">
         <h2>更新故事内容</h2>
-        <p>使用作品最新保存的画面，文字不会自动改写。</p>
-        <p>想怎样更新故事内容？</p>
+        <p>更新画面不会改写故事。</p>
         <button class="added-button" @click="chooseUpdate('keep_current_story')">保持当前故事</button>
         <button class="added-button" @click="chooseUpdate('full_rerecording')">重新录完整故事</button>
         <button class="added-button" @click="chooseUpdate('partial_supplement')">补录修改内容</button>
@@ -654,8 +671,8 @@ onUnmounted(() => {
         </div>
       </template>
 
-      <div v-if="errorMessage" class="feedback error" :style="box(430, 953, 1060, 65, 20)" role="alert">{{ errorMessage }}</div>
-      <div v-else-if="phase === 'processing'" class="feedback" :style="box(430, 953, 1060, 65, 20)" role="status">正在整理你的故事，请稍等…</div>
+      <div v-if="errorMessage" class="feedback error" :style="box(430, 953, 1060, 65, 20)" role="alert">{{ conciseCopy(errorMessage) }}</div>
+      <div v-else-if="phase === 'processing'" class="feedback" :style="box(430, 953, 1060, 65, 20)" role="status">正在整理故事…</div>
       <div v-else-if="notice" class="feedback" :style="box(430, 953, 1060, 65, 20)" role="status">{{ notice }}</div>
     </div>
   </section>
@@ -766,9 +783,9 @@ onUnmounted(() => {
 .added-button {
   display: grid;
   place-items: center;
-  border: 5px solid #5a1709;
-  border-radius: 28px;
-  background: #fff0b5;
+  border: 0;
+  border-radius: 0;
+  background: transparent url('../../../../assets/ui/hand-drawn/btn-primary.png') center / 100% 100% no-repeat;
   color: #5a1709;
   font: 700 clamp(11px, 1.5vw, 25px) "Microsoft YaHei", sans-serif;
   cursor: pointer;
@@ -780,7 +797,14 @@ onUnmounted(() => {
 .detail-story { overflow-y: auto; white-space: pre-wrap; text-align: left; font-size: clamp(12px, 1.5vw, 24px); line-height: 1.55; }
 .detail-date { font-size: clamp(11px, 1.5vw, 24px); }
 .audio-progress { display: grid; gap: 2px; align-content: center; font-size: clamp(10px, 1.2vw, 18px); }
-.audio-progress input { width: 100%; accent-color: #5a1709; }
+.audio-progress input { appearance: none; width: 100%; height: 24px; padding: 0; margin: 0; background: transparent; cursor: pointer; }
+.audio-progress input::-webkit-slider-runnable-track { height: 5px; border-radius: 8px; background: rgba(90,23,9,.3); }
+.audio-progress input::-webkit-slider-thumb { appearance: none; width: 15px; height: 15px; margin-top: -5px; border-radius: 50%; background: #71351c; border: 2px solid #fff1b7; }
+.audio-progress input:focus-visible { outline: 2px solid #71351c; outline-offset: 3px; }
+.audio-progress input:disabled { opacity: .5; cursor: default; }
+.transcript-review { position: absolute; font-size: 1.2cqw; color: #591608; }
+.transcript-review summary { cursor: pointer; }
+.transcript-review textarea { width: 100%; height: 78%; resize: none; box-sizing: border-box; font: inherit; color: inherit; background: #fff1b7; border: 2px solid #71351c; border-radius: 8px; padding: 6px; }
 .update-panel { display: flex; flex-direction: column; justify-content: center; gap: 3%; text-align: center; font-size: clamp(13px, 1.7vw, 27px); }
 .update-panel .added-button { position: static; min-height: 15%; }
 .feedback { display: grid; place-items: center; border-radius: 14px; background: #fff0b5; font-size: clamp(11px, 1.4vw, 22px); font-weight: 700; }

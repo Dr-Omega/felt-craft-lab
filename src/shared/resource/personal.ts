@@ -16,10 +16,11 @@ function isUuid(value: unknown): value is string {
 /** Build the only persisted source-image ref allowed for a Personal Asset Version. */
 export function buildPersonalAssetSourceRef(
   personalAssetId: string,
-  versionId: string
+  versionId: string,
+  format: 'png' | 'jpg' = 'png'
 ): string | undefined {
-  if (!isUuid(personalAssetId) || !isUuid(versionId)) return undefined
-  return `${FELT_RESOURCE_PROTOCOL}//personal/${personalAssetId}/${versionId}/source.png`
+  if (!isUuid(personalAssetId) || !isUuid(versionId) || !['png', 'jpg'].includes(format)) return undefined
+  return `${FELT_RESOURCE_PROTOCOL}//personal/${personalAssetId}/${versionId}/source.${format}`
 }
 
 /** Parse and verify the canonical Personal Asset source-image ref shape. */
@@ -28,9 +29,9 @@ export function parsePersonalAssetSourceRef(value: unknown): PersonalAssetSource
   if (!parsed || parsed.kind !== 'personal') return undefined
 
   const parts = parsed.relativePath.split('/')
-  if (parts.length !== 3 || parts[2] !== 'source.png') return undefined
+  if (parts.length !== 3 || !['source.png', 'source.jpg'].includes(parts[2])) return undefined
   const [personalAssetId, versionId] = parts
-  const ref = buildPersonalAssetSourceRef(personalAssetId, versionId)
+  const ref = buildPersonalAssetSourceRef(personalAssetId, versionId, parts[2] === 'source.jpg' ? 'jpg' : 'png')
   if (!ref || ref !== parsed.ref) return undefined
 
   return { ref, personalAssetId, versionId }

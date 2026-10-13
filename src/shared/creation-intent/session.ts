@@ -10,6 +10,7 @@ import { evaluateGenerationSpecCompleteness } from './completeness'
 import type { CreationIntentParser } from './parser'
 import { applyGenerationSpecPatch } from './patch'
 import { enrichPatchForPendingField } from './pending-field'
+import { isSoundOnlyAction } from './action-evidence'
 
 export const CREATION_SESSION_PHASES = [
   'collecting',
@@ -89,6 +90,12 @@ export class CreationIntentSession {
       ...(pendingField ? { pendingField } : {})
     })
     patch = enrichPatchForPendingField(pendingField, trimmed, patch, this.spec)
+    // Local fallback and cloud extraction must both pass this final check.
+    // Leave the action absent so the existing clarification flow asks the user.
+    if (patch.content?.actionOrRelationship && isSoundOnlyAction(patch.content.actionOrRelationship)) {
+      patch = { ...patch, content: { ...patch.content } }
+      delete patch.content!.actionOrRelationship
+    }
     this.spec = applyGenerationSpecPatch(this.spec, patch)
     this.prompt = null
     this.candidate = null

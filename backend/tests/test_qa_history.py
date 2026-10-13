@@ -11,6 +11,24 @@ from providers.qa.deepseek_provider import DeepSeekQaProvider
 
 
 class QaHistoryTests(unittest.TestCase):
+    def test_broken_output_is_failure_not_successful_material_boilerplate(self):
+        invalid = ['not json', '{}', '[]', '{"answer":123,"safetyAction":"allow"}',
+                   '{"answer":"","safetyAction":"allow"}',
+                   '{"answer":"你好","safetyAction":"wrong"}', None]
+        with patch.dict(os.environ, {'DEEPSEEK_API_KEY': 'test-not-real'}):
+            for content in invalid:
+                response = Mock(status_code=200)
+                response.json.return_value = {'choices': [{'message': {'content': content}}]}
+                with self.subTest(content=content), patch('providers.qa.deepseek_provider.requests.post', return_value=response):
+                    result = DeepSeekQaProvider().ask(question='你是？', asset={'nameZh': '月亮'})
+                    self.assertFalse(result['ok'])
+
+    def test_truncated_output_fails_even_when_json_looks_complete(self):
+        response = Mock(status_code=200)
+        response.json.return_value = {'choices': [{'finish_reason': 'length', 'message': {'content': '{"answer":"你好","safetyAction":"allow"}'}}]}
+        with patch.dict(os.environ, {'DEEPSEEK_API_KEY': 'test-not-real'}), patch('providers.qa.deepseek_provider.requests.post', return_value=response):
+            self.assertFalse(DeepSeekQaProvider().ask(question='你好', asset={})['ok'])
+
     def setUp(self):
         self.pair = [{'role': 'user', 'content': '这是什么？'}, {'role': 'assistant', 'content': '这是月亮。'}]
 
@@ -37,6 +55,7 @@ class QaHistoryTests(unittest.TestCase):
             result = DeepSeekQaProvider().ask(question='什么颜色？', asset={'nameZh': '月亮'}, history=history)
             self.assertTrue(result['ok'])
             messages = post.call_args.kwargs['json']['messages']
+            self.assertEqual(post.call_args.kwargs['json']['response_format'], {'type': 'json_object'})
             self.assertEqual(messages[0]['role'], 'system')
             self.assertEqual(messages[1:3], self.pair)
             self.assertEqual(messages[-1], {'role': 'user', 'content': '什么颜色？'})

@@ -32,7 +32,7 @@ async function create() {
     localStorage.setItem(key, JSON.stringify(attempt))
     const response = await action<{ order: Order; checkout?: { displayText?: string } }>(props.token, 'paymentCreate', attempt)
     order.value = response.order
-    checkout.value = response.checkout?.displayText || '订单已创建。请按已配置渠道完成付款，再查询结果。'
+    checkout.value = response.checkout?.displayText || '订单已创建，请完成付款后查询结果。'
     if (response.order.status !== 'PENDING') localStorage.removeItem(key)
     if (response.order.status === 'PAID') emit('paid')
   })
@@ -62,7 +62,7 @@ onMounted(() => run(async () => {
       </template>
       <template v-if="order">
         <p>订单 {{ order.orderId }} · {{ order.amountMinor / 100 }} 元</p>
-        <p role="status">{{ order.status === 'PAID' ? '服务端已确认支付到账' : order.status === 'CANCELLED' ? '订单已取消' : '等待支付确认（未到账）' }}</p>
+        <p role="status">{{ order.status === 'PAID' ? '支付成功，已到账' : order.status === 'CANCELLED' ? '订单已取消' : '等待支付确认（未到账）' }}</p>
         <p v-if="order.status === 'PENDING'">{{ checkout }}</p>
         <button v-if="order.status === 'PENDING'" :disabled="busy" @click="update()">查询支付结果</button>
         <button v-if="order.status === 'PENDING'" :disabled="busy" @click="update(true)">取消订单</button>

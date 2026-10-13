@@ -1,10 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 vi.mock('../../src/renderer/src/workflows/saved-work', () => ({ loadSavedWork: vi.fn(), savedWorkStoryContext: vi.fn() }))
 import { clearPlazaSession, getCurrentUserId, savePlazaSession } from '../../src/renderer/src/services/plaza-session'
-import { completeLogin, enterCreationStudio, getAppView, getEditorLaunch, logout, openEditor, openLearning, openLobby, openLogin, openPersonalCenter, openPlaza, openRewards } from '../../src/renderer/src/app-nav'
+import { completeLogin, enterCreationStudio, getAppView, getEditorLaunch, getRewardEntry, logout, openEditor, openLearning, openLobby, openLogin, openPersonalCenter, openPlaza, openRewards } from '../../src/renderer/src/app-nav'
 import { validFeltProject } from '../persistence/fixtures'
 import { bindWindowUser, clearWindowUser, requireWindowUser } from '../../src/main/plaza/window-session'
 import { createUnlockedAccess } from '../../src/renderer/src/catalog/asset-access-helpers'
+import { openLibrary, openCreate, openPersonalWorks, getPersonalWorksFilter, getPersonalSection, returnFromEditor } from '../../src/renderer/src/app-nav'
 
 beforeEach(() => {
   const data = new Map<string,string>()
@@ -14,6 +15,31 @@ beforeEach(() => {
 afterEach(() => { vi.unstubAllGlobals() })
 function login(userId = 'user_demo_001') { savePlazaSession({ token: 'test-token', user: { userId, username: '测试', role: 'child' } }); completeLogin() }
 describe('authenticated lobby connections', () => {
+  it('always opens account from the avatar, while explicit work routes preserve works', () => {
+    login(); openPersonalWorks('story'); expect(getPersonalSection()).toBe('works')
+    openLobby(); openPersonalCenter(); expect(getPersonalSection()).toBe('account')
+    openPersonalWorks('draft'); expect(getPersonalSection()).toBe('works')
+    openEditor({ mode: 'draft', scene: validFeltProject().scene, returnTo: 'profile', returnFilter: 'draft' })
+    returnFromEditor(); expect(getPersonalSection()).toBe('works')
+    openLobby(); openPersonalCenter(); expect(getPersonalSection()).toBe('account')
+  })
+  it('retires the mixed library and standalone generation routes', () => {
+    login(); openLibrary(); expect(getAppView()).toBe('profile')
+    openCreate(); expect(getAppView()).toBe('editor')
+    expect(getEditorLaunch()).toMatchObject({ chooseImage: true, returnTo: 'lobby' })
+    returnFromEditor(); expect(getAppView()).toBe('lobby')
+  })
+  it('returns restored works to their original personal category', () => {
+    login(); openPersonalWorks('draft')
+    openEditor({ mode: 'draft', scene: validFeltProject().scene, returnTo: 'profile', returnFilter: 'draft' })
+    returnFromEditor(); expect(getAppView()).toBe('profile'); expect(getPersonalWorksFilter()).toBe('draft')
+    openEditor({ mode: 'project', scene: validFeltProject().scene, returnTo: 'profile', returnFilter: 'completed' })
+    returnFromEditor(); expect(getAppView()).toBe('profile'); expect(getPersonalWorksFilter()).toBe('completed')
+  })
+  it('keeps guided creation returning to learning rather than personal works', () => {
+    login(); openEditor({ mode: 'new', scene: validFeltProject().scene, guidedTheme: { sessionId: 'guided', themeId: 'mid-autumn' } })
+    returnFromEditor(); expect(getAppView()).toBe('learning')
+  })
   it('binds temporary guided asset allowances to the real account, not the demo owner', () => {
     login('account-a')
     expect(createUnlockedAccess('sticker-moon', undefined, getCurrentUserId()).userId).toBe('account-a')
@@ -26,7 +52,20 @@ describe('authenticated lobby connections', () => {
     openPersonalCenter(); expect(getAppView()).toBe('profile')
     openLobby(); openPlaza(); expect(getAppView()).toBe('plaza')
     openLobby(); openLearning(); expect(getAppView()).toBe('learning')
-    enterCreationStudio(); expect(getAppView()).toBe('library')
+    enterCreationStudio(); expect(getAppView()).toBe('editor')
+    expect(getEditorLaunch()).toMatchObject({ mode: 'new', chooseImage: true, scene: { userId: 'user_demo_001', objects: [] } })
+    expect(getEditorLaunch()?.guidedTheme).toBeUndefined()
+  })
+  it('creates a separate lobby work each time and does not force image choice on restored work', () => {
+    login(); enterCreationStudio(); const first = getEditorLaunch()!.scene.sceneId
+    openLobby(); enterCreationStudio(); expect(getEditorLaunch()!.scene.sceneId).not.toBe(first)
+    openEditor({mode: 'project', scene: validFeltProject().scene})
+    expect(getEditorLaunch()?.chooseImage).toBeUndefined()
+  })
+  it('keeps bear and personal reward destinations explicit', () => {
+    login(); openRewards('bear'); expect(getAppView()).toBe('rewards'); expect(getRewardEntry()).toBe('bear')
+    openPersonalCenter(); openRewards('inbox'); expect(getRewardEntry()).toBe('inbox')
+    openRewards(); expect(getRewardEntry()).toBe('account')
   })
   it('rejects another account scene instead of changing its owner', () => {
     login('account-b')

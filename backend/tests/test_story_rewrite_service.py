@@ -42,6 +42,15 @@ class _Response:
 
 
 class StoryRewriteServiceTests(unittest.TestCase):
+    def test_missing_story_credentials_does_not_call_upstream_or_blame_network(self):
+        with mock.patch.dict(os.environ, {"QWEN_STORY_API_KEY": "", "QWEN_ASR_API_KEY": "", "DASHSCOPE_API_KEY": ""}, clear=False):
+            with mock.patch("services.story_rewrite_service.requests.post") as post:
+                result = rewrite_story(work_id="work-001", text="小兔子在月夜花园找朋友。", context=CONTEXT)
+        self.assertFalse(result["ok"])
+        self.assertFalse(result["error"]["retryable"])
+        self.assertIn("故事整理服务尚未配置", result["error"]["message"])
+        post.assert_not_called()
+
     def test_prompt_requires_a_source_only_semantic_check_before_rewrite(self):
         prompt = _build_system_prompt({"background": "月夜花园", "subject": "小兔子", "stickers": ["灯笼"]})
         self.assertIn("内部逐项核对候选稿是否只来自孩子原话", prompt)

@@ -82,6 +82,11 @@
       }
     ],
     "asar": true,
+    "mac": {
+      "extendInfo": {
+        "NSMicrophoneUsageDescription": "用于录制故事、语音提问和语音描述创作图片。仅在你点击录音后使用麦克风。"
+      }
+    },
     "win": {
       "target": [
         {

@@ -38,7 +38,7 @@ function onConfirm(): void {
     <div v-if="open" class="plaza-upload-backdrop" role="presentation" @click.self="onCancel">
       <form class="plaza-upload-dialog text-box-surface" @submit.prevent="onConfirm" @click.stop>
         <h3>上传到分享广场</h3>
-        <p class="muted">确认标题后，仅分享预览图与作者信息。</p>
+        <p class="muted">将公开预览图与作者信息。</p>
         <label class="plaza-upload-field">
           <span>作品标题</span>
           <input

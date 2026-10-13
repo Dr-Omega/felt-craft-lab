@@ -9,6 +9,7 @@ import type {
 import { gatewayImageGenerate } from '../ai/gateway-client'
 import { getValidSessionToken } from '../ai/session-token'
 import { decodeGatewayImagePng } from './decode-gateway-png'
+import { toSharedError } from '@shared/contracts/error'
 
 export type GeneratedCandidateImage = {
   bytes: Uint8Array
@@ -55,6 +56,12 @@ export async function generateCandidatePng(
   if (!generated.ok) {
     throw new Error(generated.error.message || '画图暂时无法完成，请稍后重试。')
   }
+
+  const envelope = generated.body as { ok?: unknown; error?: unknown } | null
+  if (envelope?.ok === false) {
+    throw new Error(toSharedError(envelope.error).message)
+  }
+  if (generated.status >= 400) throw new Error('生图服务暂时无法完成请求，请联系管理员检查服务配置。')
 
   const decoded = decodeGatewayImagePng(generated.body)
   if (!decoded.ok) {

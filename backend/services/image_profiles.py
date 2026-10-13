@@ -62,6 +62,10 @@ def _profiles() -> dict[str, GenerationProfile]:
             hidden_prompt_addon=_HIDDEN_FELT_CONSTRAINT_V1,
             transform_prompt_addon=_I2I_CONTENT_AND_STYLE_CONSTRAINT_V1,
             reference_set_id="felt-style-ref-v1",
+            # Seedream 4.5 requires >= 3,686,400 pixels. Canvas normalization
+            # remains separate; never send its 512/1024 preview size upstream.
+            generation_width=2048,
+            generation_height=2048,
         )
     }
 

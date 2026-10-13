@@ -1,4 +1,5 @@
 import type { GenerationSpec } from '../contracts/generation-spec'
+import { colorAttributes } from './color-attributes'
 
 /** Fixed plan columns shown on the creation page, regardless of how much was said. */
 export const PLAN_FIELD_KEYS = [
@@ -19,6 +20,7 @@ export interface CreationPlanField {
   label: string
   value: string
   status: PlanFieldStatus
+  optional: boolean
 }
 
 export const PLAN_FIELD_LABELS: Record<PlanFieldKey, string> = {
@@ -49,7 +51,7 @@ export function colorLinesFromSpec(spec: GenerationSpec): string[] {
   for (const subject of spec.content.primarySubjects) {
     const name = subject.name.trim()
     if (!name) continue
-    const attrs = (subject.attributes ?? []).map((item) => item.trim()).filter(Boolean)
+    const attrs = colorAttributes(subject.attributes)
     if (attrs.length) lines.push(`${attrs.join('、')}${name}`)
   }
   const bound = new Set(
@@ -91,7 +93,8 @@ export function buildCreationPlanFields(
       key,
       label: PLAN_FIELD_LABELS[key],
       value,
-      status
+      status,
+      optional: key !== 'content.primarySubjects' && key !== pendingField
     }
   })
 }

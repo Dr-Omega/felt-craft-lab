@@ -12,10 +12,11 @@ import {
 } from '../../../projection/subject-size'
 import type { LayoutLayerInput } from '../../../projection/pdf-layout'
 
-defineProps<{
+const props = defineProps<{
   layers: LayoutLayerInput[]
   subjectSize: SubjectSizeChoice
   workName: string
+  busy?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -31,6 +32,13 @@ const heightCm = ref('')
 const metaphorId = ref('apple')
 
 function toggleModal(): void {
+  if(props.busy || !props.layers.length) return
+  if(!modalOpen.value) {
+    mode.value=props.subjectSize.mode
+    widthCm.value=props.subjectSize.boundsMm ? String(props.subjectSize.boundsMm.width/10) : ''
+    heightCm.value=props.subjectSize.boundsMm ? String(props.subjectSize.boundsMm.height/10) : ''
+    metaphorId.value=SIZE_METAPHOR_OPTIONS.find(option=>option.longEdgeCm*10===props.subjectSize.targetLongEdgeMm)?.id ?? 'apple'
+  }
   modalOpen.value = !modalOpen.value
 }
 
@@ -39,6 +47,7 @@ function selectMode(next: SubjectSizeMode): void {
 }
 
 function onConfirm(): void {
+  if(props.busy || !props.layers.length) return
   if (mode.value === 'specific') {
     const choice = choiceFromSpecificCm(Number(widthCm.value), Number(heightCm.value))
     if (!choice) {
@@ -136,6 +145,7 @@ function onConfirm(): void {
       class="hit z-40"
       :style="boxStyle(exportV2HitAreas.exportToggle)"
       aria-label="导出"
+      :disabled="busy || !layers.length"
       @click="toggleModal"
     />
     <button
@@ -143,6 +153,7 @@ function onConfirm(): void {
       class="hit z-40"
       :style="boxStyle(exportV2HitAreas.finish)"
       aria-label="完成作品"
+      :disabled="busy || modalOpen"
       @click="emit('finish')"
     />
     <button
@@ -150,6 +161,7 @@ function onConfirm(): void {
       class="hit z-40"
       :style="boxStyle(exportV2HitAreas.back)"
       aria-label="返回展开页"
+      :disabled="busy || modalOpen"
       @click="emit('back')"
     />
   </div>

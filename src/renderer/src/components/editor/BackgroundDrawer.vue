@@ -2,6 +2,7 @@
 import type { AssetAccessState, AssetRecord } from '@shared/contracts'
 import { isAssetUnlocked } from '../../catalog/ywn-catalog'
 import AssetAudioControls from './AssetAudioControls.vue'
+import AssetFavoriteButton from './AssetFavoriteButton.vue'
 
 const props = defineProps<{
   assets: readonly AssetRecord[]
@@ -28,8 +29,8 @@ function unlocked(asset: AssetRecord): boolean {
 </script>
 
 <template>
-  <aside class="background-drawer" :class="{ 'is-open': open }" :inert="!open" :aria-hidden="!open" aria-label="背景选择">
-    <button type="button" aria-label="关闭背景选择" @click="emit('close')">关闭</button>
+  <aside class="background-drawer art-scrollbars" :class="{ 'is-open': open }" :inert="!open" :aria-hidden="!open" aria-label="背景选择">
+    <button class="hand-btn-secondary" type="button" aria-label="关闭背景选择" @click="emit('close')">关闭</button>
     <div class="drawer-title">选个背景</div>
     <div class="background-list">
       <button
@@ -56,15 +57,19 @@ function unlocked(asset: AssetRecord): boolean {
       </button>
       <p v-if="assets.length === 0" class="background-empty">暂时没有可选背景</p>
     </div>
+    <details v-if="selectedAsset()" class="background-details">
+    <summary>收藏与介绍</summary>
+    <AssetFavoriteButton :asset-id="selectedAsset()!.assetId" />
     <AssetAudioControls
       v-if="selectedAsset()"
       :asset="selectedAsset()"
       :active="open"
     />
+    </details>
     <p v-if="selectedAsset() && !unlocked(selectedAsset()!)">该主题尚未解锁。</p>
-    <button v-if="selectedAsset() && !unlocked(selectedAsset()!)" :disabled="busy" @click="emit('unlock', selectedAsset()!.themeId)">前往解锁本主题</button>
+    <button class="hand-btn-primary" v-if="selectedAsset() && !unlocked(selectedAsset()!)" :disabled="busy" @click="emit('unlock', selectedAsset()!.themeId)">前往解锁本主题</button>
     <button
-      class="drawer-apply"
+      class="drawer-apply hand-btn-primary"
       type="button"
       :disabled="busy || (selectedAssetId !== '' && !unlocked(selectedAsset()!))"
       @click="emit('apply', selectedAsset())"
@@ -85,7 +90,8 @@ function unlocked(asset: AssetRecord): boolean {
   flex-direction: column;
   width: 168px;
   height: min(320px, 70vh);
-  max-height: 320px;
+  max-height: 70vh;
+  overflow-y: auto;
   gap: 8px;
   padding: 12px 10px 10px;
   border-radius: var(--text-box-radius, 18px);
@@ -115,8 +121,8 @@ function unlocked(asset: AssetRecord): boolean {
 }
 
 .background-list {
-  flex: 1 1 auto;
-  min-height: 0;
+  flex: 1 0 120px;
+  min-height: 120px;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   grid-auto-rows: min-content;
@@ -124,6 +130,11 @@ function unlocked(asset: AssetRecord): boolean {
   gap: 8px;
   overflow-y: auto;
 }
+
+.background-drawer > * { flex-shrink: 0; }
+.background-details summary { cursor: pointer; }
+.background-details button { max-width: 100%; }
+.background-drawer > p { margin: 0; font-size: 12px; }
 
 .background-empty {
   grid-column: 1 / -1;
@@ -198,10 +209,6 @@ function unlocked(asset: AssetRecord): boolean {
 .drawer-apply {
   flex-shrink: 0;
   min-height: 42px;
-  border: 0;
-  border-radius: var(--radius-pill, 999px);
-  background: var(--color-primary, #e8a572);
-  color: var(--color-on-primary, #fff);
   font: inherit;
   font-size: 13px;
   font-weight: 700;

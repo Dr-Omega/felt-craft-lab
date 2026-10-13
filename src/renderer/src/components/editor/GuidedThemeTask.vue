@@ -3,6 +3,7 @@ import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
 import type { EditorSessionService } from '../../editor'
 import { CATALOG_ASSETS, createUnlockedAccess } from '../../catalog/ywn-catalog'
 import { themeLabel } from '../../catalog/theme-labels'
+import { playNarration } from '../../learning-zone/narration-playback'
 import { openLearning } from '../../app-nav'
 import { getCurrentUserId } from '../../services/plaza-session'
 import { readGameSession, submitGuidedStep, saveUnlockedThemeId, gameResourceUrl, type GameSession } from '../../learning-zone/game-client'
@@ -18,7 +19,7 @@ const error = ref('')
 const complete = ref(false)
 let alive = true
 let audio: HTMLAudioElement | undefined
-let cancelAudio: (() => void) | undefined
+let narrationAbort: AbortController | undefined
 const current = computed(() => task.value?.level.stickers[index.value])
 const targetStyle = computed(() => {
   const level = task.value?.level, sticker = current.value
@@ -33,7 +34,7 @@ async function initialize(): Promise<void> {
   try {
     const value = await readGameSession(props.sessionId)
     if (!alive) return
-    if (value.level.themeId !== props.themeId || value.allFinished) throw new Error('任务身份不一致，请返回主题页重新开始。')
+    if (value.level.themeId !== props.themeId || value.allFinished) throw new Error('任务已变化，请返回主题页重试。')
     const background = CATALOG_ASSETS.find(asset => asset.type === 'background' && asset.imageUrl === value.level.backgroundAssetUrl && asset.themeId === props.themeId)
     if (!background) throw new Error('任务背景缺失。')
     // Session-local capability only. Never save this access record to the database.
@@ -47,21 +48,17 @@ async function narrate(): Promise<void> {
   const sticker = current.value
   if (!sticker || listening.value || !added.value) return
   heard.value = []; listening.value = true; error.value = ''
+  narrationAbort = new AbortController()
   try {
     for (const part of sticker.narrationAudio) {
       if (!alive) return
-      await new Promise<void>((resolve, reject) => {
-        const player = new Audio(gameResourceUrl(part.assetUrl)); audio = player
-        cancelAudio = () => reject(new Error('已退出任务。'))
-        player.onended = () => resolve()
-        player.onerror = () => reject(new Error('讲解播放失败，请重播当前讲解。'))
-        void player.play().catch(reject)
-      })
+      audio = new Audio(gameResourceUrl(part.assetUrl))
+      await playNarration(audio, narrationAbort.signal)
       if (!alive) return
       heard.value.push(part.assetUrl)
     }
   } catch (e) { if (alive) error.value = e instanceof Error ? e.message : '讲解播放失败。' }
-  finally { if (alive) { listening.value = false; audio = undefined; cancelAudio = undefined } }
+  finally { if (alive) { listening.value = false; audio = undefined; narrationAbort = undefined } }
 }
 
 async function addCurrent(): Promise<void> {
@@ -107,7 +104,7 @@ async function finishUnlock(): Promise<void> {
 }
 
 onMounted(initialize)
-onBeforeUnmount(() => { alive = false; audio?.pause(); cancelAudio?.() })
+onBeforeUnmount(() => { alive = false; narrationAbort?.abort() })
 </script>
 
 <template>
@@ -117,13 +114,13 @@ onBeforeUnmount(() => { alive = false; audio?.pause(); cancelAudio?.() })
     <div class="guided-instructions" aria-live="polite">
       <strong>{{ themeLabel(themeId) }} · {{ complete ? '整个主题已解锁' : '引导创作' }}</strong>
       <p v-if="current">第 {{ index + 1 }} / {{ task?.level.stickers.length }} 步：添加{{ current.name }}，拖到虚线提示位置，并听完讲解。</p>
-      <p v-else-if="complete">本主题背景和贴纸已全部开放，可返回自由创作使用。</p>
-      <p v-else>{{ task ? '操作已完成，正在保存主题解锁权限。' : '正在准备任务画布…' }}</p>
+      <p v-else-if="complete">主题已解锁。</p>
+      <p v-else>{{ task ? '正在保存学习进度…' : '正在准备…' }}</p>
       <p v-if="error" role="alert">{{ error }}</p>
     </div>
     <div class="guided-actions">
       <button v-if="current && !added" :disabled="busy" @click="addCurrent">添加{{ current.name }}</button>
-      <button v-if="current && added" :disabled="busy || listening" @click="narrate">{{ listening ? '正在讲解…' : '重播讲解' }}</button>
+      <button v-if="current && added" :disabled="busy" @click="listening ? narrationAbort?.abort() : narrate()">{{ listening ? '停止讲解' : '重播讲解' }}</button>
       <button v-if="current" :disabled="busy || !added || listening || heard.length !== current.narrationAudio.length" @click="checkStep">检查这一步</button>
       <button v-if="task && !current && !complete" :disabled="busy" @click="finishUnlock">重试保存主题解锁</button>
       <button v-if="!task && error" :disabled="busy" @click="initialize">重试加载</button>

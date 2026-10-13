@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import PaymentDialog from '../components/plaza/PaymentDialog.vue'
+import RewardCenterPage from './RewardCenterPage.vue'
+import WorkspaceSyncStatus from '../components/shell/WorkspaceSyncStatus.vue'
+import { syncState } from '../persistence/workspace-sync'
 import type { DraftRecord, ProjectRecord } from '@shared/contracts'
 import type { RewardDashboard } from '@shared/contracts/rewards'
 import AuthArtboard from '../components/auth/AuthArtboard.vue'
 import ProjectPreviewModal from '../components/library/ProjectPreviewModal.vue'
 import PlazaUploadDialog from '../components/plaza/PlazaUploadDialog.vue'
-import { openLobby, openPlaza, openEditor, openRewards, openSavedWork, logout } from '../app-nav'
-import { getFeltCraftDatabase, DraftStore, ProjectStore, StoryCardStore } from '../persistence'
+import { openLobby, openPlaza, openEditor, openRewards, openSavedWork, logout, getPersonalWorksFilter, setPersonalWorksFilter, getPersonalSection } from '../app-nav'
+import { getFeltCraftDatabase, DraftStore, ProjectStore, StoryCardStore, deleteExistingProject } from '../persistence'
 import { listMySharedProjectIds, publishPlazaPost, withdrawPlazaPost } from '../services/plaza-api'
 import { loadPlazaSession } from '../services/plaza-session'
 import { loadRewardDashboard, convertDiamonds } from '../services/reward-api'
@@ -19,7 +22,7 @@ import { friendlyRelativeTime } from '../util/friendly-time'
 import { showCenterToast } from '../composables/center-toast'
 
 type Filter = 'draft' | 'drawing' | 'story' | 'blueprint' | 'completed'
-type ProfileSection = 'works' | 'account'
+type ProfileSection = 'works' | 'account' | 'inbox' | 'store'
 type WorkItem = { kind: 'draft' | 'project'; id: string; title: string; updatedAt: string; previewUrl?: string; record: DraftRecord | ProjectRecord }
 
 const session = loadPlazaSession()
@@ -28,8 +31,9 @@ const drafts = ref<DraftRecord[]>([])
 const projects = ref<ProjectRecord[]>([])
 const storyWorkIds = ref(new Set<string>())
 const sharedIds = ref<Set<string>>(new Set())
-const filter = ref<Filter>('completed')
-const profileSection = ref<ProfileSection>('works')
+const sharedStateReady = ref(false)
+const filter = ref<Filter>(getPersonalWorksFilter())
+const profileSection = ref<ProfileSection>(getPersonalSection())
 const loading = ref(true)
 const busy = ref(false)
 const message = ref('')
@@ -37,10 +41,13 @@ const rechargeOpen = ref(false)
 const convertAmount = ref(1)
 const previewProject = ref<ProjectRecord | null>(null)
 const uploadTarget = ref<ProjectRecord | null>(null)
+const removal = ref<WorkItem | null>(null)
 
 const wallet = computed(() => dashboard.value?.wallet ?? { coins: 0, diamonds: 0, updatedAt: '' })
 const profileUsername = computed(() => dashboard.value?.user.username ?? session?.user.username ?? '用户')
 const profileAvatar = computed(() => plazaAvatarForRole(dashboard.value?.user.role ?? session?.user.role ?? 'child'))
+const profileRole = computed(() => dashboard.value?.user.role ?? session?.user.role ?? 'child')
+const canUseWallet = computed(() => ['child', 'art_teacher', 'chinese_teacher'].includes(profileRole.value))
 const visibleWorks = computed<WorkItem[]>(() => {
   const draftItems: WorkItem[] = drafts.value.map((record) => ({
     kind: 'draft', id: record.draftId, title: record.scene.workName?.trim() || '未命名草稿', updatedAt: record.updatedAt, record
@@ -63,23 +70,25 @@ const visibleWorks = computed<WorkItem[]>(() => {
 })
 
 function isShared(project: ProjectRecord): boolean { return sharedIds.value.has(project.projectId) }
-function selectFilter(nextFilter: Filter): void { filter.value = nextFilter }
+function selectFilter(nextFilter: Filter): void { filter.value = nextFilter; setPersonalWorksFilter(nextFilter) }
 function projectTitle(project: ProjectRecord): string { return project.projectName?.trim() || '我的作品' }
 function draftTitle(draft: DraftRecord): string { return draft.scene.workName?.trim() || '未命名草稿' }
 function projectFor(item: WorkItem): ProjectRecord | null { return item.kind === 'project' ? item.record as ProjectRecord : null }
-function canPublish(item: WorkItem): boolean { const project = projectFor(item); return Boolean(project && !isShared(project)) }
+function canPublish(item: WorkItem): boolean { const project = projectFor(item); return Boolean(sharedStateReady.value && project && !isShared(project)) }
 function publishItem(item: WorkItem): void { const project = projectFor(item); if (project) askUpload(project) }
 function withdrawItem(item: WorkItem): void { const project = projectFor(item); if (project) void withdraw(project) }
 
 function uploadFirstAvailable(): void {
+  if (!sharedStateReady.value || busy.value) { showCenterToast('分享状态尚未加载完成，请稍后再试。'); return }
   const project = projects.value.find((item) => item.previewUrl && !sharedIds.value.has(item.projectId))
   if (project) askUpload(project)
-  else showCenterToast('暂时没有可上传的新作品')
+  else showCenterToast('暂无可上传作品')
 }
 
 async function refresh(): Promise<void> {
   if (!session?.token) { openPlaza(); return }
   loading.value = true
+  sharedStateReady.value = false
   try {
     const db = getFeltCraftDatabase()
     drafts.value = (await new DraftStore(db).list()).filter(row => row.scene.userId === session.user.userId)
@@ -87,10 +96,11 @@ async function refresh(): Promise<void> {
     storyWorkIds.value = new Set((await Promise.all(projects.value.map(async project => (await new StoryCardStore(db).getByWorkId(project.projectId)) ? project.projectId : null))).filter((id): id is string => id !== null))
     const [nextDashboard, ids] = await Promise.all([
       loadRewardDashboard(session.token),
-      listMySharedProjectIds(session.token).catch(() => [])
+      listMySharedProjectIds(session.token)
     ])
     dashboard.value = nextDashboard
     sharedIds.value = new Set(ids)
+    sharedStateReady.value = true
   } catch (error) {
     message.value = error instanceof Error ? error.message : '个人中心载入失败。'
   } finally { loading.value = false }
@@ -103,20 +113,52 @@ async function openWork(item: WorkItem): Promise<void> {
   }
   if (item.kind === 'draft') {
     const draft = item.record as DraftRecord
-    openEditor({ mode: 'draft', scene: draft.scene, draftId: draft.draftId })
+    openEditor({ mode: 'draft', scene: draft.scene, draftId: draft.draftId, returnTo: 'profile', returnFilter: filter.value })
   } else {
     const project = item.record as ProjectRecord
-    openEditor({ mode: 'project', scene: project.scene, projectId: project.projectId })
+    editProject(project)
   }
 }
 
+function editProject(project: ProjectRecord): void {
+  previewProject.value = null
+  openEditor({ mode: 'project', scene: project.scene, projectId: project.projectId, returnTo: 'profile', returnFilter: filter.value })
+}
+
+async function openProjectFlow(project: ProjectRecord, target: 'story-card' | 'work-display'): Promise<void> {
+  if (busy.value) return
+  busy.value = true; message.value = ''
+  try { await openSavedWork(project.projectId, target, 'profile') }
+  catch (error) { message.value = (error as Error).message }
+  finally { busy.value = false }
+}
+
+async function removeWork(): Promise<void> {
+  const item = removal.value
+  if (!item || busy.value) return
+  busy.value = true; message.value = ''
+  try {
+    // Recheck ownership on the persisted record; never trust an old card alone.
+    const db = getFeltCraftDatabase()
+    const record = item.kind === 'draft'
+      ? await new DraftStore(db).get(item.id) : await new ProjectStore(db).get(item.id)
+    if (!record || record.scene.userId !== session?.user.userId) throw new Error('作品不存在或不属于当前账号。')
+    if (item.kind === 'draft') await new DraftStore(db).delete(item.id)
+    else await deleteExistingProject(item.id)
+    removal.value = null; previewProject.value = null
+    await refresh()
+  } catch (error) { message.value = (error as Error).message }
+  finally { busy.value = false }
+}
+
 function showDetails(item: WorkItem): void {
+  message.value = ''
   if (item.kind === 'project') previewProject.value = item.record as ProjectRecord
-  else showCenterToast('草稿可以继续编辑，保存后即可查看详情。')
+  else showCenterToast('请先保存草稿。')
 }
 
 function askUpload(project: ProjectRecord): void {
-  if (!project.previewUrl || isShared(project)) return
+  if (!sharedStateReady.value || busy.value || !project.previewUrl || isShared(project)) return
   uploadTarget.value = project
 }
 
@@ -142,7 +184,7 @@ async function withdraw(project: ProjectRecord): Promise<void> {
 
 
 async function convert(): Promise<void> {
-  if (!session?.token) return
+  if (!session?.token || busy.value || !canUseWallet.value) return
   busy.value = true
   try {
     const amount = Math.max(1, Math.floor(convertAmount.value || 1))
@@ -159,7 +201,7 @@ onUnmounted(() => window.removeEventListener('felt-workspace-synced', syncRefres
 </script>
 
 <template>
-  <AuthArtboard>
+  <AuthArtboard :inert="Boolean(previewProject) || undefined">
     <img class="profile-layer" :style="authFullLayerStyle" :src="authAssets.background" alt="" aria-hidden="true" />
     <img class="profile-layer profile-layer--frame" :style="authFullLayerStyle" :src="profileAssets.frameFull" alt="" aria-hidden="true" />
     <button type="button" class="profile-back" aria-label="返回游戏大厅" @click="openLobby"><img :src="profileAssets.back" alt="" /></button>
@@ -171,6 +213,8 @@ onUnmounted(() => window.removeEventListener('felt-workspace-synced', syncRefres
       <button type="button" :class="{ active: profileSection === 'works' }" aria-label="作品" @click="profileSection = 'works'">
         <img :src="profileAssets.works" alt="作品" />
       </button>
+      <button v-if="profileRole === 'child'" type="button" class="profile-text-tab" :class="{ active: profileSection === 'inbox' }" @click="profileSection = 'inbox'">邮箱</button>
+      <button v-if="!['parent','admin'].includes(profileRole)" type="button" class="profile-text-tab" :class="{ active: profileSection === 'store' }" @click="profileSection = 'store'">商城</button>
     </nav>
 
     <nav v-if="profileSection === 'works'" class="profile-filter-nav" aria-label="作品筛选">
@@ -183,29 +227,35 @@ onUnmounted(() => window.removeEventListener('felt-workspace-synced', syncRefres
 
     <button v-if="profileSection === 'works'" type="button" class="profile-upload" aria-label="上传作品" @click="uploadFirstAvailable"><img :src="profileAssets.upload" alt="上传" /></button>
 
-    <main class="profile-panel" :aria-label="profileSection === 'works' ? '作品列表' : '账号信息'">
+    <main class="profile-panel art-scrollbars" :aria-label="({ works: '作品列表', account: '账号信息', inbox: '反馈邮箱', store: '商城' })[profileSection]">
       <section v-if="profileSection === 'works'" class="works-section">
+        <p v-if="syncState.conflict" role="alert">作品在其他终端有更新。<button @click="profileSection = 'account'">前往账号处理同步冲突</button></p>
         <p v-if="loading" role="status">正在加载我的作品…</p>
-        <p v-else-if="!visibleWorks.length" class="empty-state">{{ filter === 'blueprint' ? '尚无已保存的制作图纸；普通拼贴不会被自动归类为图纸。' : '此分类暂无作品。' }}</p>
+        <p v-else-if="!visibleWorks.length" class="empty-state">{{ filter === 'blueprint' ? '暂无制作图纸。' : '此分类暂无作品。' }}</p>
         <ul v-if="!loading && visibleWorks.length" class="work-grid">
           <li v-for="item in visibleWorks" :key="`${item.kind}-${item.id}`" class="work-card" :style="{ backgroundImage: `url(${rewardAssets.communityCard})` }">
             <button type="button" class="work-preview" @click="showDetails(item)"><img v-if="item.previewUrl" :src="item.previewUrl" :alt="item.title" /><span v-else>草稿</span></button>
-            <div class="work-info"><strong>{{ item.title }}</strong><span>{{ friendlyRelativeTime(item.updatedAt) }} · {{ item.kind === 'draft' ? '草稿' : (sharedIds.has(item.id) ? '已发布' : '未发布') }}</span></div>
-            <div class="work-actions"><button type="button" @click="openWork(item)">{{ item.kind === 'draft' ? '继续编辑' : '打开' }}</button><button v-if="canPublish(item)" type="button" :disabled="!item.previewUrl" @click="publishItem(item)">发布</button><button v-else-if="item.kind === 'project'" type="button" @click="withdrawItem(item)">撤回</button></div>
+            <div class="work-info"><strong>{{ item.title }}</strong><span>{{ friendlyRelativeTime(item.updatedAt) }} · {{ item.kind === 'draft' ? '草稿' : !sharedStateReady ? '分享状态待确认' : (sharedIds.has(item.id) ? '已发布' : '未发布') }}</span></div>
+            <div class="work-actions"><button type="button" @click="openWork(item)">{{ item.kind === 'draft' ? '继续编辑' : '打开' }}</button><button v-if="canPublish(item)" type="button" :disabled="busy || !item.previewUrl" @click="publishItem(item)">发布</button><button v-else-if="sharedStateReady && item.kind === 'project'" type="button" :disabled="busy" @click="withdrawItem(item)">撤回</button><button type="button" :disabled="busy" @click="removal = item">删除</button></div>
+            <div v-if="removal?.id === item.id && removal.kind === item.kind" class="work-removal" role="group" aria-label="删除确认">
+              <p>确定删除“{{ item.title }}”{{ item.kind === 'draft' ? '草稿' : '作品' }}？{{ item.kind === 'project' ? '分享广场中的发布不会自动撤回。' : '' }}</p>
+              <button :disabled="busy" @click="removeWork">确定删除</button><button :disabled="busy" @click="removal = null">取消</button>
+            </div>
           </li>
         </ul>
       </section>
+      <RewardCenterPage v-else-if="profileSection === 'inbox' || profileSection === 'store'" :key="profileSection" :initial-tab="profileSection" embedded @account="profileSection = 'account'" />
       <section v-else class="account-section">
         <header class="profile-header">
           <div class="profile-identity" :aria-label="`当前用户 ${profileUsername}`">
             <span class="profile-avatar-frame"><img class="profile-avatar" :src="profileAvatar" alt="用户头像" /></span>
             <strong class="profile-username" :title="profileUsername">{{ profileUsername }}</strong>
           </div>
-          <button type="button" class="wallet-detail" @click="openRewards">成长中心</button>
-          <button type="button" class="wallet-detail" @click="logout">退出登录</button>
+          <button type="button" class="wallet-detail hand-btn-secondary" @click="openRewards()">账户流水与规则</button>
+          <button type="button" class="wallet-detail hand-btn-secondary" @click="logout">退出登录</button>
         </header>
 
-        <div class="profile-wallet" aria-label="账户余额">
+        <div v-if="canUseWallet" class="profile-wallet" aria-label="账户余额">
           <article class="wallet-card">
             <img :src="rewardAssets.diamond" alt="钻石" />
             <div><span>钻石</span><strong>{{ wallet.diamonds }}</strong></div>
@@ -217,19 +267,23 @@ onUnmounted(() => window.removeEventListener('felt-workspace-synced', syncRefres
           </article>
         </div>
 
-        <div class="profile-convert">
+        <div v-if="canUseWallet" class="profile-convert">
           <strong>钻石转换金币</strong>
           <span class="rate">1 钻石 = 10 金币</span>
           <label>数量 <input v-model.number="convertAmount" type="number" min="1" :max="wallet.diamonds" aria-label="转换钻石数量" /></label>
-          <button type="button" class="small-action" :disabled="busy || wallet.diamonds < 1" @click="convert">转换</button>
+          <button type="button" class="small-action hand-btn-primary" :disabled="busy || wallet.diamonds < 1" @click="convert">转换</button>
         </div>
+        <WorkspaceSyncStatus display-only />
       </section>
       <p v-if="message" class="profile-message">{{ message }}</p>
     </main>
   </AuthArtboard>
 
-  <PaymentDialog v-if="rechargeOpen && session" :token="session.token" :user-id="session.user.userId" @close="rechargeOpen = false" @paid="refresh" />
-  <ProjectPreviewModal :project="previewProject" :open="Boolean(previewProject)" @close="previewProject = null" @open="project => { previewProject = null; openEditor({ mode: 'project', scene: project.scene, projectId: project.projectId }) }" />
+  <PaymentDialog v-if="rechargeOpen && session && canUseWallet" :token="session.token" :user-id="session.user.userId" @close="rechargeOpen = false" @paid="refresh" />
+  <ProjectPreviewModal :project="previewProject" :open="Boolean(previewProject)" @close="previewProject = null" @open="editProject">
+    <template #feedback><p v-if="message" role="alert">{{ message }}</p></template>
+    <template #actions><button v-if="previewProject" :disabled="busy" @click="openProjectFlow(previewProject, 'story-card')">讲故事</button><button v-if="previewProject" :disabled="busy" @click="openProjectFlow(previewProject, 'work-display')">查看图层展示</button></template>
+  </ProjectPreviewModal>
   <PlazaUploadDialog :open="Boolean(uploadTarget)" :default-title="uploadTarget ? projectTitle(uploadTarget) : ''" :busy="busy" @close="uploadTarget = null" @confirm="confirmUpload" />
 </template>
 
@@ -257,7 +311,10 @@ onUnmounted(() => window.removeEventListener('felt-workspace-synced', syncRefres
 .profile-filter-nav { position: absolute; inset: 0; z-index: 6; pointer-events: none; }
 .profile-side-nav button { left: 312px; width: 209px; height: 101px; pointer-events: auto; }
 .profile-side-nav button:first-child { top: 280px; }
-.profile-side-nav button:last-child { top: 412px; }
+.profile-side-nav button:nth-child(2) { top: 412px; }
+.profile-side-nav button:nth-child(3) { top: 544px; }
+.profile-side-nav button:nth-child(4) { top: 676px; }
+.profile-side-nav .profile-text-tab { border: 5px solid #71351c; border-radius: 20px; background: #f6cc79; color: #71351c; font-size: 48px; font-weight: 900; }
 .profile-filter-nav button { top: 140px; width: 212px; height: 77px; pointer-events: auto; }
 .profile-filter-nav button:nth-child(1) { left: 500px; }
 .profile-filter-nav button:nth-child(2) { left: 736px; top: 139px; }
@@ -301,6 +358,19 @@ onUnmounted(() => window.removeEventListener('felt-workspace-synced', syncRefres
 .work-info { display: grid; gap: 8px; padding: 12px 0; overflow-wrap: anywhere; }
 .work-info strong { font-size: 22px; }.work-info span { color: #8b684e; font-size: 17px; }
 .work-actions { display: flex; flex-wrap: wrap; gap: 10px; }.work-actions button { padding: 9px 14px; }
+.work-actions button, .work-removal button {
+  border: 0; background: transparent url('../../../../assets/ui/hand-drawn/btn-primary.png') center / 100% 100% no-repeat;
+  color: #71351c; min-height: 44px; padding: 9px 14px; font-weight: 700;
+}
+.work-removal button { background-image: url('../../../../assets/ui/hand-drawn/btn-secondary.png'); }
+.wallet-detail, .small-action { border: 0; background-color: transparent; background-size: 100% 100%; background-repeat: no-repeat; }
+.wallet-detail { background-image: url('../../../../assets/ui/hand-drawn/btn-secondary.png'); }
+.small-action { background-image: url('../../../../assets/ui/hand-drawn/btn-primary.png'); }
+.profile-username { border: 0; background: transparent; padding: 0; }
+.profile-convert { flex-wrap: wrap; border: 0; background: transparent; padding: 12px 0; }
+.profile-convert .rate { color: #71351c; }
+.profile-convert input { color: #563c2d; background: #fff4bd; border: 2px solid #71351c; }
+.work-actions button:focus-visible, .work-removal button:focus-visible { outline: 3px solid #71351c; outline-offset: 2px; }
 .profile-modal-backdrop {
   position: fixed;
   inset: 0;

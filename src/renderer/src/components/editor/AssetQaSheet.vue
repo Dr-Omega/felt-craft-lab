@@ -30,7 +30,10 @@ import {
   AssetQaController,
   type AssetQaSnapshot
 } from './asset-qa.controller'
+import SourceArtboard from '../artwork/SourceArtboard.vue'
+import { suppliedArt } from '../../ui/supplied-controls'
 import { handDrawnAssets } from '../../ui/hand-drawn-assets'
+import { conciseCopy } from '../../ui/concise-copy'
 
 const props = defineProps<{
   asset: AssetRecord | null
@@ -299,7 +302,7 @@ async function finishRecording(ctx: RecorderContext): Promise<void> {
   } catch (err) {
     if (!controller.isVoiceTokenCurrent(ctx.token)) return
     void err
-    controller.failTranscription()
+    controller.failTranscription(err)
   }
 }
 
@@ -373,7 +376,7 @@ const voiceBarText = computed(() => {
       ? `${props.asset.nameZh}正在听你说……`
       : '正在听你说……'
   }
-  return '可以打字，也可以说给它听。'
+  return ''
 })
 
 const emptyTitleCopy = computed(() => {
@@ -389,351 +392,83 @@ const loadingCopy = computed(() => {
 const inputPlaceholder = computed(() => {
   if (isMicStarting.value) return '准备听你说……'
   if (isRecording.value) return '说完点“停止”'
-  if (isAsrBusy.value) return '正在听你刚才说的……'
-  if (props.asset?.nameZh) return `问${props.asset.nameZh}一个问题吧`
-  return '问它一个问题吧'
+  if (isAsrBusy.value) return '正在识别录音…'
+  return ''
+})
+// One conversation turn occupies the original two bubble slots. History scrolls by turn;
+ // source geometry is not stretched to fit message length (each text area scrolls).
+const thread = ref<HTMLElement>()
+const turns = computed(() => {
+  const rows: { question: string; answer: string }[] = []
+  for (const message of snapshot.value.history) {
+    if (message.role === 'user') rows.push({ question: message.content, answer: '' })
+    else { if (!rows.length) rows.push({ question: '', answer: '' }); rows[rows.length - 1].answer += message.content }
+  }
+  return rows.length ? rows : [{ question: '', answer: emptyTitleCopy.value }]
+})
+watch(() => snapshot.value.history.length, async () => {
+  await nextTick()
+  if (thread.value) thread.value.scrollTop = thread.value.scrollHeight
 })
 </script>
 
+
 <template>
   <Teleport to="body">
-    <button
-      v-if="open"
-      class="asset-qa-backdrop"
-      type="button"
-      aria-label="关闭问问它"
-      tabindex="-1"
-      @click="onClose"
-    ></button>
-    <aside
-      v-if="open"
-      ref="panel"
-      class="asset-qa-sheet"
-      :class="{ 'is-open': open }"
-      role="dialog"
-      aria-modal="true"
-      aria-label="问问它"
-    >
-    <header class="asset-qa-header">
-      <div class="asset-qa-avatar" aria-hidden="true">
-        <img v-if="asset" :src="asset.thumbnailUrl || asset.imageUrl" :alt="''" />
-        <span v-else>?</span>
-      </div>
-      <div class="asset-qa-titles">
-        <p class="asset-qa-eyebrow">问问它</p>
-        <h2 class="asset-qa-name">{{ asset?.nameZh ?? '素材' }}</h2>
-      </div>
-      <button
-        class="hand-icon-btn hand-icon-btn--close asset-qa-close"
-        type="button"
-        aria-label="关闭问问它"
-        @click="onClose"
-      >
-        <img :src="handDrawnAssets.btnClose" alt="" />
-      </button>
-    </header>
-
-    <p v-if="asset?.introZh" class="asset-qa-intro">{{ asset.introZh }}</p>
-
-    <div
-      class="asset-qa-voicebar"
-      :class="{ 'is-live': isRecording, 'is-starting': isMicStarting && !isRecording }"
-      :aria-live="(isRecording || isMicStarting) ? 'polite' : 'off'"
-    >
-      <span class="asset-qa-voicebar-dot" aria-hidden="true"></span>
-      <span class="asset-qa-voicebar-text">{{ voiceBarText }}</span>
+    <div v-if="open" class="supplied-qa-overlay">
+      <button class="qa-backdrop" aria-label="关闭问问它" tabindex="-1" @click="onClose"></button>
+      <SourceArtboard>
+        <aside ref="panel" class="supplied-qa-panel art-scrollbars" role="dialog" aria-modal="true" aria-label="问问它">
+          <div class="qa-panel-hit" aria-hidden="true"></div>
+          <img class="qa-source" :src="suppliedArt.qaPanel" alt="" />
+          <img class="qa-source" :src="suppliedArt.qaInput" alt="" />
+          <h2 class="qa-heading">提问 · {{ asset?.nameZh ?? '素材' }}</h2>
+          <button class="qa-close" aria-label="关闭问问它" @click="onClose"><img :src="handDrawnAssets.btnClose" alt="" /></button>
+          <div ref="thread" class="qa-turns" role="log" aria-live="polite" aria-label="对话记录" tabindex="0">
+            <section v-for="(turn, index) in turns" :key="index" class="qa-turn">
+              <svg class="qa-question-art" viewBox="959 207 479 149" aria-hidden="true"><image :href="suppliedArt.qaUser" width="1920" height="1080" /></svg>
+              <svg class="qa-answer-art" viewBox="480 363 479 149" aria-hidden="true"><image :href="suppliedArt.qaAssistant" width="1920" height="1080" /></svg>
+              <p class="qa-question-text" tabindex="0" aria-label="我的提问">{{ turn.question }}</p>
+              <p class="qa-answer-text" tabindex="0" aria-label="回答">{{ turn.answer || (isBusy ? loadingCopy : '') }}</p>
+            </section>
+          </div>
+          <p class="qa-feedback" :role="snapshot.errorMessage ? 'alert' : 'status'">{{ conciseCopy(snapshot.errorMessage || snapshot.micHint || voiceBarText) }}</p>
+          <form @submit.prevent="sendTextQuestion">
+            <textarea :value="snapshot.input" class="qa-text-entry" :maxlength="ASSET_QA_MAX_QUESTION" :placeholder="inputPlaceholder" :disabled="isBusy || isRecording || isAsrBusy || isMicStarting" aria-label="问问它的问题"
+              @input="event => controller.setInput((event.target as HTMLTextAreaElement).value)"
+              @keydown.ctrl.enter.prevent="sendTextQuestion"></textarea>
+            <button type="button" class="qa-voice-art" :aria-label="voiceButtonAria" :aria-pressed="isRecording" :disabled="isBusy || isAsrBusy || isMicStarting" @click="toggleRecording">
+              <svg viewBox="1175 745 199 69" aria-hidden="true"><image :href="suppliedArt.qaVoice" width="1920" height="1080" /></svg>
+              <span v-if="isRecording" class="qa-record-state">停止录音</span>
+            </button>
+            <button class="qa-send" type="submit" :disabled="!canSend" aria-label="发送"><img :src="handDrawnAssets.btnSend" alt="" /></button>
+          </form>
+        </aside>
+      </SourceArtboard>
     </div>
-
-    <div class="asset-qa-thread" role="log" aria-live="polite">
-      <p v-if="snapshot.history.length === 0" class="asset-qa-empty">
-        <span class="asset-qa-empty-title">{{ emptyTitleCopy }}</span>
-      </p>
-      <ul v-else class="asset-qa-messages">
-        <li
-          v-for="(message, index) in snapshot.history"
-          :key="index"
-          class="asset-qa-bubble"
-          :class="message.role === 'user' ? 'qa-bubble-question is-user' : `is-${message.role}`"
-        >
-          <span class="asset-qa-bubble-text">{{ message.content }}</span>
-        </li>
-      </ul>
-      <p v-if="isBusy" class="asset-qa-loading" role="status">
-        <span class="asset-qa-loading-dots" aria-hidden="true">
-          <span></span><span></span><span></span>
-        </span>
-        {{ loadingCopy }}
-      </p>
-    </div>
-
-    <p v-if="snapshot.errorMessage" class="asset-qa-error" role="alert">{{ snapshot.errorMessage }}</p>
-    <p v-if="snapshot.micHint" class="asset-qa-mic-hint" role="status">{{ snapshot.micHint }}</p>
-
-    <form
-      class="asset-qa-form"
-      @submit.prevent="sendTextQuestion"
-    >
-      <textarea
-        :value="snapshot.input"
-        class="asset-qa-input qa-input-field"
-        rows="2"
-        :maxlength="ASSET_QA_MAX_QUESTION"
-        :placeholder="inputPlaceholder"
-        :disabled="isBusy || isRecording || isAsrBusy || isMicStarting"
-        aria-label="问问它的问题"
-        @input="(event) => controller.setInput((event.target as HTMLTextAreaElement).value)"
-      ></textarea>
-      <div class="asset-qa-actions">
-        <button
-          type="button"
-          class="hand-btn-img asset-qa-voice"
-          :class="{ 'is-live': isRecording, 'is-starting': isMicStarting && !isRecording }"
-          :aria-pressed="isRecording"
-          :disabled="isBusy || isAsrBusy || isMicStarting"
-          :aria-label="voiceButtonAria"
-          :title="voiceButtonAria"
-          @click="toggleRecording"
-        >
-          <img :src="handDrawnAssets.btnVoice" alt="" />
-          <span class="sr-only">{{ voiceButtonAria }}</span>
-        </button>
-        <button
-          type="submit"
-          class="hand-btn-img asset-qa-send"
-          :disabled="!canSend"
-          aria-label="发送"
-        >
-          <img :src="handDrawnAssets.btnSend" alt="" />
-        </button>
-      </div>
-    </form>
-    </aside>
   </Teleport>
 </template>
-
 <style scoped>
-/* Visuals are aligned with the EditorPage wood/apricot design tokens. */
-.asset-qa-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: var(--ui-qa-sheet-z-index, 92);
-  background: rgba(89, 71, 56, 0.18);
-  border: 0;
-  padding: 0;
-  margin: 0;
-  cursor: pointer;
-}
-
-.asset-qa-sheet {
-  position: fixed;
-  z-index: calc(var(--ui-qa-sheet-z-index, 92) + 1);
-  display: flex;
-  flex-direction: column;
-  color: var(--color-text, #594738);
-  transform: translateX(0);
-}
-
-.asset-qa-header {
-  display: grid;
-  grid-template-columns: 56px 1fr auto;
-  align-items: center;
-  gap: 12px;
-}
-
-.asset-qa-avatar {
-  width: 56px;
-  height: 56px;
-  border-radius: var(--radius-md, 20px);
-  background: #fffef8;
-  border: 1px solid rgba(89, 71, 56, 0.18);
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-  font-size: 1.4rem;
-  color: var(--color-text-soft, #8b7355);
-  box-shadow: var(--shadow-soft, 0 2px 8px rgba(89, 71, 56, 0.08));
-}
-
-.asset-qa-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.asset-qa-titles { min-width: 0; }
-.asset-qa-eyebrow {
-  margin: 0;
-  font-weight: 600;
-  font-size: 0.75rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--color-text-soft, #8b7355);
-}
-.asset-qa-name {
-  margin: 2px 0 0;
-  font-size: 1.15rem;
-  font-weight: 650;
-  color: var(--color-text, #594738);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.asset-qa-close {
-  justify-self: end;
-}
-
-.asset-qa-intro {
-  margin: 0;
-  font-size: 0.88rem;
-  line-height: 1.5;
-  padding: 8px 12px;
-  border-radius: var(--radius-sm, 16px);
-  background: rgba(255, 254, 248, 0.7);
-  border: 1px dashed rgba(89, 71, 56, 0.18);
-  color: var(--color-text-soft, #8b7355);
-  font-style: italic;
-}
-
-.asset-qa-voicebar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 4px;
-  font-size: 0.78rem;
-  color: var(--color-text-soft, #8b7355);
-}
-.asset-qa-voicebar-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: var(--radius-pill, 999px);
-  background: var(--wood-mid, #d9b98a);
-  display: inline-block;
-}
-.asset-qa-voicebar.is-live .asset-qa-voicebar-dot {
-  background: var(--color-primary, #e8a572);
-  animation: asset-qa-pulse 1.2s ease-in-out infinite;
-}
-.asset-qa-voicebar.is-live { color: var(--color-text, #594738); }
-
-@keyframes asset-qa-pulse {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.4); opacity: 0.55; }
-}
-
-.asset-qa-thread {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-  padding: 4px 4px 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  justify-content: flex-start;
-}
-
-.asset-qa-empty {
-  margin: 4px 0 0;
-  padding: 12px 4px 0;
-  text-align: left;
-  color: var(--color-text-soft, #8b7355);
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 0.92rem;
-  line-height: 1.5;
-}
-.asset-qa-empty-title { color: var(--color-text, #594738); font-weight: 700; font-size: 1.02rem; }
-
-.asset-qa-messages {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.asset-qa-bubble {
-  max-width: 88%;
-  font-size: 0.95rem;
-  line-height: 1.5;
-  color: var(--color-text, #594738);
-  word-break: break-word;
-}
-
-.asset-qa-bubble.is-assistant {
-  align-self: flex-start;
-  padding: 10px 14px;
-  border-radius: var(--radius-md, 20px);
-  border: 1px solid rgba(89, 71, 56, 0.12);
-  background: #fffef8;
-  box-shadow: var(--shadow-soft, 0 2px 8px rgba(89, 71, 56, 0.08));
-  border-bottom-left-radius: var(--radius-xs, 14px);
-}
-
-.asset-qa-loading {
-  margin: 4px 0 0;
-  color: var(--color-text-soft, #8b7355);
-  font-size: 0.85rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-.asset-qa-loading-dots {
-  display: inline-flex;
-  gap: 3px;
-}
-.asset-qa-loading-dots span {
-  width: 4px;
-  height: 4px;
-  border-radius: var(--radius-pill, 999px);
-  background: var(--color-text-soft, #8b7355);
-  animation: asset-qa-bounce 1.1s ease-in-out infinite;
-}
-.asset-qa-loading-dots span:nth-child(2) { animation-delay: 0.15s; }
-.asset-qa-loading-dots span:nth-child(3) { animation-delay: 0.3s; }
-@keyframes asset-qa-bounce {
-  0%, 100% { transform: translateY(0); opacity: 0.55; }
-  50% { transform: translateY(-3px); opacity: 1; }
-}
-
-.asset-qa-error,
-.asset-qa-mic-hint {
-  margin: 0;
-  padding: 8px 12px;
-  border-radius: var(--radius-sm, 16px);
-  font-size: 0.85rem;
-  line-height: 1.4;
-}
-.asset-qa-error {
-  background: rgba(244, 213, 192, 0.7);
-  border: 1px solid rgba(168, 112, 76, 0.32);
-  color: var(--wood-deeper, #7e6244);
-}
-.asset-qa-mic-hint {
-  background: rgba(255, 254, 248, 0.78);
-  border: 1px solid rgba(89, 71, 56, 0.14);
-  color: var(--color-text-soft, #8b7355);
-}
-
-.asset-qa-form {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding-top: 8px;
-}
-
-.asset-qa-input {
-  font-size: 0.95rem;
-  line-height: 1.5;
-}
-
-.asset-qa-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  justify-content: flex-end;
-}
+.supplied-qa-overlay { position: fixed; inset: 0; z-index: 1100; }
+.qa-backdrop { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; padding: 0; background: transparent; }
+.supplied-qa-panel { position: absolute; inset: 0; pointer-events: none; color: #652415; }
+.qa-source { position: absolute; inset: 0; width: 1920px; height: 1080px; pointer-events: none; }
+.qa-panel-hit { position: absolute; left: 440px; top: 157px; width: 1046px; height: 711px; pointer-events: auto; }
+.qa-heading { position: absolute; left: 494px; top: 168px; width: 860px; height: 32px; font-size: 24px; line-height: 32px; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.qa-close { position: absolute; left: 1438px; top: 165px; width: 36px; height: 36px; padding: 0; pointer-events: auto; border: 0; background: transparent; }
+.qa-close img { width: 100%; height: 100%; object-fit: contain; }
+.qa-turns { position: absolute; left: 480px; top: 207px; width: 976px; height: 305px; overflow-x: hidden; overflow-y: auto; pointer-events: auto; scroll-snap-type: y mandatory; }
+.qa-turn { position: relative; width: 958px; height: 305px; scroll-snap-align: start; }
+.qa-question-art, .qa-answer-art { position: absolute; width: 479px; height: 149px; pointer-events: none; }
+.qa-question-art { left: 479px; top: 0; }.qa-answer-art { left: 0; top: 156px; }
+.qa-question-text, .qa-answer-text { position: absolute; width: 419px; height: 80px; overflow-x: hidden; overflow-y: auto; margin: 0; font-size: 24px; line-height: 1.4; white-space: pre-wrap; overflow-wrap: anywhere; }
+.qa-question-text { left: 504px; top: 17px; }.qa-answer-text { left: 30px; top: 169px; }
+.qa-feedback { position: absolute; left: 494px; top: 522px; width: 932px; height: 38px; margin: 0; font-size: 22px; overflow: auto; pointer-events: auto; }
+.qa-text-entry { position: absolute; left: 514px; top: 586px; width: 892px; height: 143px; resize: none; border: 0; padding: 8px; background: transparent; color: inherit; font: inherit; font-size: 26px; pointer-events: auto; }
+.qa-voice-art { position: absolute; left: 1175px; top: 745px; width: 199px; height: 69px; padding: 0; border: 0; background: transparent; pointer-events: auto; }
+.qa-voice-art svg { width: 100%; height: 100%; display: block; }
+.qa-record-state { position: absolute; inset: 10px 12px; background: #ffe8a8; display: grid; place-items: center; font-size: 26px; }
+.qa-send { position: absolute; left: 995px; top: 750px; width: 150px; height: 58px; pointer-events: auto; padding: 0; border: 0; background: transparent; }
+.qa-send img { display: block; width: 100%; height: 100%; object-fit: contain; }
+button:focus-visible, textarea:focus-visible, [tabindex]:focus-visible { outline: 4px solid #71331d; outline-offset: 3px; }
 </style>

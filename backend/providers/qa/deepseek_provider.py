@@ -62,6 +62,7 @@ def _build_system_prompt(asset: dict[str, Any]) -> str:
 3. 若问题跑题，温和拉回素材。
 4. 不要输出 Markdown 标题或代码块。
 5. 必须只输出一个 JSON 对象：{{"answer":"...","safetyAction":"allow|redirect|reject"}}
+6. 先回答用户实际提出的问题。问“你是谁”时说明你是美育小助手；意思不清时请用户补充，不要用固定素材介绍代替回答。
 """
 
 
@@ -97,6 +98,8 @@ class DeepSeekQaProvider(QaProvider):
             ],
             "temperature": 0.6,
             "max_tokens": 300,
+            # Existing upstream fix/material-library/deepseek-multiturn-json-output.
+            "response_format": {"type": "json_object"},
         }
         headers = {
             "Authorization": f"Bearer {key}",
@@ -122,17 +125,44 @@ class DeepSeekQaProvider(QaProvider):
             return err_qa(code="QA_UPSTREAM_ERROR", retryable=resp.status_code >= 500)
 
         try:
-            content = data["choices"][0]["message"]["content"]
+            choice = data["choices"][0]
+            content = choice["message"]["content"]
+            if choice.get("finish_reason") not in (None, "stop"):
+                return err_qa(code="QA_UPSTREAM_ERROR")
         except (KeyError, IndexError, TypeError):
             return err_qa(code="QA_UPSTREAM_ERROR")
 
-        answer, safety = postprocess_model_content(content, asset or {})
+        # A broken model response is a service failure, not a successful canned answer.
+        parsed = parse_model_answer(content)
+        if parsed is None:
+            return err_qa(code="QA_UPSTREAM_ERROR")
+        answer, safety = parsed
         request_id = str(data.get("id") or "").strip()
         return ok_qa(answer=answer, safety_action=safety, request_id=request_id)
 
 
+def parse_model_answer(content: Any) -> tuple[str, str] | None:
+    if not isinstance(content, str):
+        return None
+    try:
+        obj = json.loads(content)
+    except (json.JSONDecodeError, ValueError):
+        return None
+    if not isinstance(obj, dict):
+        return None
+    answer, safety = obj.get("answer"), obj.get("safetyAction")
+    if not isinstance(answer, str) or not isinstance(safety, str):
+        return None
+    answer, safety = answer.strip(), safety.strip().lower()
+    if not answer or len(answer) > 300 or safety not in {"allow", "redirect", "reject"}:
+        return None
+    if _is_dangerous_output(answer):
+        return "这次回答不适合展示。我们可以换个安全的问题，聊聊素材的颜色、形状或做法。", "reject"
+    return answer, safety
+
+
 def postprocess_model_content(content: str, asset: dict[str, Any]) -> tuple[str, str]:
-    """解析失败 / 危险输出 → redirect|reject，绝不把原文标为 allow。"""
+    """Legacy safety probe only; live requests use parse_model_answer and fail explicitly."""
     text = (content or "").strip()
     fallback = _fallback_answer(asset)
 

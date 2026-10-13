@@ -15,6 +15,7 @@ export const IPC_CHANNELS = {
   PING: 'felt:bootstrap:ping',
   RESOURCE_INSPECT: 'felt:resource:inspect',
   PERSONAL_ASSET_RESOURCE_INGEST: 'felt:personal-asset-resource:ingest',
+  PERSONAL_ASSET_IMAGE_INGEST: 'felt:personal-asset-image:ingest',
   PREVIEW_SAVE: 'felt:preview:save',
   PREVIEW_DELETE: 'felt:preview:delete',
   STORY_CARD_AUDIO_SAVE: 'felt:story-card-audio:save',

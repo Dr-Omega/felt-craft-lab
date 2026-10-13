@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import type { ProjectRecord } from '@shared/contracts'
 import { friendlyShortDate } from '../../util/friendly-time'
 
@@ -14,12 +14,19 @@ const emit = defineEmits<{
 }>()
 
 const dialogEl = ref<HTMLDivElement | null>(null)
+let opener: HTMLElement | null = null
 
 const title = computed(() => props.project?.projectName ?? '作品预览')
 const updatedLabel = computed(() => props.project ? `更新于 ${friendlyShortDate(props.project.updatedAt)}` : '')
 
 function handleKey(event: KeyboardEvent): void {
-  if (event.key === 'Escape' && props.open) emit('close')
+  if (!props.open) return
+  if (event.key === 'Escape') { event.preventDefault(); emit('close') }
+  if (event.key === 'Tab') {
+    const buttons = [...(dialogEl.value?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)') ?? [])]
+    if (event.shiftKey && (document.activeElement === buttons[0] || document.activeElement === dialogEl.value)) { event.preventDefault(); buttons.at(-1)?.focus() }
+    else if (!event.shiftKey && document.activeElement === buttons.at(-1)) { event.preventDefault(); buttons[0]?.focus() }
+  }
 }
 
 onMounted(() => {
@@ -30,14 +37,16 @@ onUnmounted(() => {
   window.removeEventListener('keydown', handleKey)
 })
 
-watch(() => props.open, (open) => {
+watch(() => props.open, async (open) => {
   if (open) {
-    void Promise.resolve().then(() => dialogEl.value?.focus())
-  }
+    opener = document.activeElement as HTMLElement
+    await nextTick(); dialogEl.value?.focus()
+  } else { await nextTick(); if (opener?.isConnected) opener.focus() }
 })
 </script>
 
 <template>
+  <Teleport to="body">
   <button
     v-if="open && project"
     class="project-preview-backdrop"
@@ -76,10 +85,13 @@ watch(() => props.open, (open) => {
       <p v-else class="project-preview-empty">这件作品还没有缩略图</p>
     </div>
     <footer class="project-preview-actions">
+      <slot name="feedback" />
+      <slot name="actions" />
       <button type="button" class="ghost" @click="emit('close')">关闭</button>
       <button type="button" class="primary" @click="emit('open', project!)">打开作品</button>
     </footer>
   </div>
+  </Teleport>
 </template>
 
 <style scoped>
@@ -89,7 +101,7 @@ watch(() => props.open, (open) => {
   background: rgba(89, 71, 56, 0.45);
   border: 0;
   padding: 0;
-  z-index: 60;
+  z-index: 400;
   cursor: default;
 }
 
@@ -106,7 +118,7 @@ watch(() => props.open, (open) => {
   box-shadow: 0 16px 48px rgba(89, 71, 56, 0.28);
   display: grid;
   grid-template-rows: auto 1fr auto;
-  z-index: 61;
+  z-index: 401;
   outline: none;
   overflow: hidden;
 }
@@ -172,6 +184,7 @@ watch(() => props.open, (open) => {
 
 .project-preview-actions {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
   gap: 12px;
   padding: 16px 24px 20px;

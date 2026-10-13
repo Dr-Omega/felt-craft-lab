@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { layoutLayersOnPages, type LayoutLayerInput } from '../../src/renderer/src/projection/pdf-layout'
+import { exportLayoutPdf, layoutLayersOnPages, type LayoutLayerInput } from '../../src/renderer/src/projection/pdf-layout'
+import { choiceFromMetaphor, choiceFromSpecificCm, layoutOptionsForSubject } from '../../src/renderer/src/projection/subject-size'
 import type { ProjectionLayerDescriptor } from '../../src/renderer/src/projection/projection-layers'
 
 function makeLayer(
@@ -22,6 +23,22 @@ function makeLayer(
 }
 
 describe('layoutLayersOnPages', () => {
+  it.each([[400,800],[800,400],[400,400]])('uses the longer edge, not width, for %s × %s images', (w,h) => {
+    const item=layoutLayersOnPages([makeLayer(1,w,h)],'a4',layoutOptionsForSubject(choiceFromMetaphor('apple')!))[0].placed[0]
+    expect(Math.max(item.width,item.height)).toBeCloseTo(80)
+    expect(item.width/item.height).toBeCloseTo(w/h)
+  })
+  it('honors both specific dimensions without stretching or imposing a 24 mm minimum',()=>{
+    const choice=choiceFromSpecificCm(1,3)!
+    const item=layoutLayersOnPages([makeLayer(1,400,800)],'a4',layoutOptionsForSubject(choice))[0].placed[0]
+    expect(item.width).toBeCloseTo(10);expect(item.height).toBeCloseTo(20)
+  })
+  it('rejects oversized physical dimensions instead of silently shrinking them',()=>{
+    expect(()=>layoutLayersOnPages([makeLayer(1,400,400)],'a4',layoutOptionsForSubject(choiceFromSpecificCm(50,50)!))).toThrow('未自动缩小')
+  })
+  it('does not export a misleading empty PDF',async()=>{
+    await expect(exportLayoutPdf({workName:'empty',paper:'a4',layers:[]})).rejects.toThrow('没有可导出的图层')
+  })
   it('keeps tall layers inside the printable page instead of clipping', () => {
     const placed=layoutLayersOnPages([makeLayer(1,1,1000)],'a4')[0].placed[0]
     expect(placed.y+placed.height).toBeLessThanOrEqual(285)

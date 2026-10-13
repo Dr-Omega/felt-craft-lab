@@ -6,6 +6,7 @@
     "composite": true
   },
   "include": [
+    "electron.vite.config.ts",
     "tests/**/*.ts",
     "src/renderer/src/projection/**/*",
     "src/renderer/src/story-card/**/*",

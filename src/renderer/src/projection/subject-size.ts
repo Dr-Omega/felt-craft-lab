@@ -4,6 +4,8 @@ export interface SubjectSizeChoice {
   mode: SubjectSizeMode
   /** Longer edge target in millimeters on paper. */
   targetLongEdgeMm: number
+  /** Specific dimensions are a bounding box; the image is never stretched. */
+  boundsMm?: { width: number; height: number }
   label: string
 }
 
@@ -42,6 +44,7 @@ export function choiceFromSpecificCm(widthCm: number, heightCm: number): Subject
   return {
     mode: 'specific',
     targetLongEdgeMm: longEdgeCm * CM_TO_MM,
+    boundsMm: { width: widthCm * CM_TO_MM, height: heightCm * CM_TO_MM },
     label: `${widthCm}×${heightCm} cm`
   }
 }
@@ -62,11 +65,9 @@ export function choiceFromMetaphor(optionId: string): SubjectSizeChoice | undefi
   }
 }
 
-/** Map desired long edge to layout cell width (clamped for A4 packing). */
-export function maxLayerWidthMmForSubject(choice: SubjectSizeChoice): number {
-  const innerW = 210 - 24
-  const raw = choice.targetLongEdgeMm
-  return Math.max(24, Math.min(innerW, raw))
+/** Both preview and PDF use the same physical size, independent of orientation. */
+export function layoutOptionsForSubject(choice: SubjectSizeChoice) {
+  return { maxLayerLongEdgeMm: choice.targetLongEdgeMm, boundsMm: choice.boundsMm }
 }
 
 export const DEFAULT_METAPHOR_ID = 'apple'

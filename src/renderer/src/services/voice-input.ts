@@ -4,7 +4,7 @@ export type AsrParseResult =
   | { ok: true; transcript: string }
   | { ok: false; message: string; reason: AsrFailReason }
 
-export type AsrFailReason = 'empty' | 'mic' | 'network' | 'unknown'
+export type AsrFailReason = 'empty' | 'mic' | 'network' | 'unavailable' | 'cancelled' | 'unknown'
 
 /** Child-facing copy for create-asset voice failures. */
 export const ASR_EMPTY_VOICE_MESSAGE =
@@ -13,6 +13,16 @@ export const ASR_FAIL_VOICE_MESSAGE =
   '语音识别暂时用不了。请稍后再试，或先在上面打字。'
 export const ASR_MIC_VOICE_MESSAGE = '打不开麦克风。请允许使用麦克风，或先在上面打字。'
 
+export function microphoneFailureMessage(error: unknown): string {
+  const name = error && typeof error === 'object' ? (error as { name?: unknown }).name : undefined
+  if (name === 'NotFoundError' || name === 'DevicesNotFoundError') return '没有找到麦克风，请连接麦克风，也可以先打字。'
+  if (name === 'NotReadableError' || name === 'TrackStartError') return '麦克风正被其他应用占用或无法读取，请关闭占用它的应用后再试。'
+  if (name === 'NotAllowedError' || name === 'PermissionDeniedError' || name === 'SecurityError') {
+    return '麦克风权限未开启。请在系统隐私设置中允许 Felt Craft Lab 使用麦克风；也可以先打字。'
+  }
+  return ASR_MIC_VOICE_MESSAGE
+}
+
 export function parseAsrEnvelope(raw: unknown): AsrParseResult {
   if (!raw || typeof raw !== 'object') {
     return { ok: false, message: ASR_FAIL_VOICE_MESSAGE, reason: 'unknown' }
@@ -20,7 +30,7 @@ export function parseAsrEnvelope(raw: unknown): AsrParseResult {
   const env = raw as {
     ok?: unknown
     result?: { transcript?: unknown; empty?: unknown }
-    error?: { code?: unknown; message?: unknown }
+    error?: { code?: unknown; message?: unknown; retryable?: unknown }
   }
   if (env.ok === false) {
     const code = env.error?.code
@@ -30,11 +40,17 @@ export function parseAsrEnvelope(raw: unknown): AsrParseResult {
     if (code === 'MIC_PERMISSION_DENIED') {
       return { ok: false, message: ASR_MIC_VOICE_MESSAGE, reason: 'mic' }
     }
+    if (code === 'REQUEST_CANCELLED') return { ok: false, message: '语音识别已取消。', reason: 'cancelled' }
+    // Configuration/authentication failures use the frozen UNKNOWN code too.
+    // Preserve their safe gateway explanation instead of calling all UNKNOWN errors a network failure.
+    if (env.error?.retryable === false) {
+      const message = typeof env.error.message === 'string' ? env.error.message.trim() : ''
+      return { ok: false, message: message || '语音服务尚未准备好，请联系管理员；也可以先打字。', reason: 'unavailable' }
+    }
     if (
       code === 'ASR_TIMEOUT' ||
       code === 'ASR_NETWORK_ERROR' ||
-      code === 'UNKNOWN' ||
-      code === 'REQUEST_CANCELLED'
+      code === 'UNKNOWN'
     ) {
       return { ok: false, message: ASR_FAIL_VOICE_MESSAGE, reason: 'network' }
     }
@@ -79,8 +95,8 @@ export class MicRecorder {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       if (generation !== this.generation) { stream.getTracks().forEach(track => track.stop()); throw new Error('录音已取消。') }
       this.stream = stream
-    } catch {
-      throw new Error(ASR_MIC_VOICE_MESSAGE)
+    } catch (error) {
+      throw new Error(microphoneFailureMessage(error))
     }
     const mimeType = pickRecorderMime()
     const chunks: Blob[] = []

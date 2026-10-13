@@ -2,7 +2,8 @@
 import { computed, onMounted, ref } from 'vue'
 import type { RewardDashboard } from '@shared/contracts/rewards'
 import AuthArtboard from '../components/auth/AuthArtboard.vue'
-import { enterCreationStudio, openLearning, openPersonalCenter, openPlaza } from '../app-nav'
+import { enterCreationStudio, openLearning, openPersonalCenter, openPlaza, openRewards } from '../app-nav'
+import { syncState } from '../persistence/workspace-sync'
 import { loadPlazaSession } from '../services/plaza-session'
 import { loadRewardDashboard } from '../services/reward-api'
 import { authFullLayerStyle } from '../ui/auth-assets'
@@ -48,6 +49,7 @@ function openCreate(): void {
     <button class="lobby-zone lobby-zone--share" type="button" aria-label="打开分享社区动态" @mouseenter="hoveredZone = 'share'" @mouseleave="hoveredZone = null" @click="openPlaza"></button>
     <button class="lobby-zone lobby-zone--learning" type="button" aria-label="进入学习区" @mouseenter="hoveredZone = 'learning'" @mouseleave="hoveredZone = null" @click="openLearning()"></button>
     <button class="lobby-zone lobby-zone--create" type="button" aria-label="进入创作区" @mouseenter="hoveredZone = 'create'" @mouseleave="hoveredZone = null" @click="openCreate"></button>
+    <button v-if="(dashboard?.user.role ?? session?.user.role) === 'child'" class="lobby-zone lobby-zone--bear" type="button" aria-label="进入小熊的家" title="小熊的家" @click="openRewards('bear')"></button>
     <button class="lobby-avatar-hitbox" type="button" aria-label="进入个人空间" @click="openPersonalCenter"></button>
 
     <img v-if="hoveredZone === 'share'" class="lobby-tip lobby-tip--share" :style="authFullLayerStyle" :src="lobbyAssets.shareTip" alt="分享社区" />
@@ -58,7 +60,7 @@ function openCreate(): void {
       <span><img :src="rewardAssets.diamond" alt="钻石" /><strong>{{ wallet.diamonds }}</strong></span>
       <span><img :src="rewardAssets.coin" alt="金币" /><strong>{{ wallet.coins }}</strong></span>
     </div>
-    <div class="lobby-user" aria-label="当前用户" :title="session?.user.username ?? '用户'">{{ session?.user.username ?? '用户' }}</div>
+    <div class="lobby-user" aria-label="当前用户" :title="session?.user.username ?? '用户'">{{ session?.user.username ?? '用户' }}<span v-if="syncState.conflict" class="sync-attention" role="status"> · 同步待处理</span></div>
     <div class="lobby-actions"><button type="button" class="lobby-action" @click="enterCreationStudio">开始创作</button></div>
   </AuthArtboard>
 </template>
@@ -67,12 +69,13 @@ function openCreate(): void {
 .lobby-layer, .lobby-tip { position: absolute; display: block; pointer-events: none; user-select: none; }
 .lobby-layer--share, .lobby-layer--tree, .lobby-layer--mushroom { z-index: 2; }
 .lobby-layer--frame { z-index: 3; }
-.lobby-layer--avatar { z-index: 4; transform: scale(.75); transform-origin: 1710px 190px; }
+.lobby-layer--avatar { z-index: 4; transform: translate(40px, -28px) scale(.58); transform-origin: 1710px 190px; }
 .lobby-zone { position: absolute; z-index: 8; margin: 0; padding: 0; border: 0; background: transparent; }
 .lobby-zone--share { left: 0; top: 137px; width: 940px; height: 900px; }
 .lobby-zone--learning { left: 1480px; top: 330px; width: 425px; height: 580px; }
 .lobby-zone--create { left: 810px; top: 450px; width: 720px; height: 600px; }
-.lobby-avatar-hitbox { position: absolute; left: 1585px; top: 55px; z-index: 9; width: 250px; height: 285px; margin: 0; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.lobby-zone--bear { left: 570px; top: 390px; width: 320px; height: 380px; z-index: 10; }
+.lobby-avatar-hitbox { position: absolute; left: 1645px; top: 55px; z-index: 9; width: 210px; height: 220px; margin: 0; padding: 0; border: 0; background: transparent; cursor: pointer; }
 .lobby-avatar-hitbox:hover { filter: brightness(1.06); }
 .lobby-avatar-hitbox:active { transform: translateY(2px); }
 .lobby-tip { z-index: 12; }
@@ -80,7 +83,8 @@ function openCreate(): void {
 .lobby-account span { display: flex; align-items: center; gap: 12px; min-width: 162px; min-height: 82px; padding: 12px 20px; border: 4px solid rgba(105, 69, 40, .32); border-radius: 15px; background: rgba(255, 252, 238, .95); color: #71351c; font-size: 32px; }
 .lobby-account img { width: 54px; height: 54px; flex: 0 0 54px; object-fit: contain; }
 .lobby-account strong { line-height: 1; }
-.lobby-user { position: absolute; right: 350px; top: 154px; z-index: 15; display: block; width: max-content; max-width: 360px; min-height: 42px; padding: 4px 9px; overflow: hidden; border: 3px solid #71351c; border-radius: 9px; background: rgba(255, 248, 213, .94); color: #71351c; box-shadow: 0 3px 0 rgba(113, 53, 28, .14); font-size: 28px; font-weight: 700; line-height: 1; text-align: center; text-overflow: ellipsis; white-space: nowrap; }
+.lobby-user { position: absolute; right: 275px; top: 120px; z-index: 15; display: block; width: max-content; max-width: 330px; min-height: 42px; padding: 4px 9px; overflow: hidden; border: 3px solid #71351c; border-radius: 9px; background: rgba(255, 248, 213, .94); color: #71351c; box-shadow: 0 3px 0 rgba(113, 53, 28, .14); font-size: 34px; font-weight: 700; line-height: 1; text-align: center; text-overflow: ellipsis; white-space: nowrap; }
+.sync-attention { font-size: 18px; }
 .lobby-actions { position: absolute; right: 58px; bottom: 48px; z-index: 15; display: flex; gap: 12px; }
 .lobby-action { min-width: 170px; min-height: 54px; border: 3px solid #71351c; border-radius: 14px; background: #fff4bd; color: #71351c; font-size: 22px; }
 </style>

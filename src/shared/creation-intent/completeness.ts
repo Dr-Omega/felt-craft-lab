@@ -1,6 +1,7 @@
 import type { GenerationSpec } from '../contracts/generation-spec'
 import type { PersonalAssetRole } from '../contracts/personal-asset'
 import type { PlanFieldKey } from './plan-card'
+import { colorAttributes } from './color-attributes'
 
 export type CompletenessStatus = 'READY_TO_CONFIRM' | 'NEEDS_CLARIFICATION' | 'USE_DEFAULTS'
 
@@ -26,7 +27,7 @@ function hasAnyColor(spec: GenerationSpec): boolean {
   }
   if ((spec.content.preferredColors ?? []).some(looksLikeColor)) return true
   return spec.content.primarySubjects.some(
-    (subject) => (subject.attributes ?? []).some((item) => looksLikeColor(item))
+    (subject) => colorAttributes(subject.attributes).length > 0
   )
 }
 

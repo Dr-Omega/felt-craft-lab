@@ -128,7 +128,7 @@ def rewrite_story(*, work_id: Any, text: Any, context: Any) -> dict[str, Any]:
 
     key = _story_key()
     if not key:
-        return fail(code="QA_MISSING_API_KEY")
+        return fail(code="STORY_MISSING_API_KEY")
 
     base_url = (os.getenv("QWEN_STORY_BASE_URL") or DEFAULT_BASE_URL).rstrip("/")
     model = (os.getenv("QWEN_STORY_MODEL") or DEFAULT_MODEL).strip()

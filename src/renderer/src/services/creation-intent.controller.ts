@@ -135,7 +135,7 @@ export class CreationIntentController {
       return
     }
     if (this.hasPlan && next === this.lastSubmittedText) {
-      this.error = '这句话已经记过了。请换一句要补的，比如：坐在地上。'
+      this.error = '这句话已记下，请补充新内容。'
       this.retryAction = null
       return
     }
@@ -158,7 +158,7 @@ export class CreationIntentController {
       this.lastSubmittedText = text
       // Clear the box so “再补一句” means typing a new supplement, not resubmitting the same line.
       this.text = ''
-    }, '正在听懂你想画什么…')
+    }, '正在整理描述…')
   }
 
   async confirmPlan(): Promise<void> {
@@ -174,7 +174,7 @@ export class CreationIntentController {
     }
     await this.run('confirm', async () => {
       this.applyResult(await this.client.confirm({ sessionId: this.sessionId }))
-    }, '正在画图，大约要等十几秒…')
+    }, '正在画图…')
   }
 
   async decideForMe(): Promise<void> {

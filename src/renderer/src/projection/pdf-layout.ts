@@ -24,6 +24,8 @@ export interface PageLayout {
 
 export interface LayoutPackOptions {
   maxLayerWidthMm?: number
+  maxLayerLongEdgeMm?: number
+  boundsMm?: { width: number; height: number }
 }
 
 export const PAGE_MM: Record<PaperSize, { width: number; height: number }> = {
@@ -43,6 +45,7 @@ export function layoutLayersOnPages(
 ): PageLayout[] {
   const requested = options.maxLayerWidthMm ?? MAX_LAYER_WIDTH_MM
   if (!Number.isFinite(requested) || requested <= 0 || layers.some(layer=>!Number.isFinite(layer.image.width)||!Number.isFinite(layer.image.height)||layer.image.width<=0||layer.image.height<=0)) throw new Error('无效排版尺寸。')
+  if([options.maxLayerLongEdgeMm,options.boundsMm?.width,options.boundsMm?.height].some(value=>value!==undefined && (!Number.isFinite(value)||value<=0))) throw new Error('无效排版尺寸。')
   const pageSize = PAGE_MM[paper]
   const maxLayerWidthMm = Math.min(requested, pageSize.width - MARGIN_MM * 2)
   const innerW = pageSize.width - MARGIN_MM * 2
@@ -58,7 +61,8 @@ export function layoutLayersOnPages(
     const remaining: LayoutLayerInput[] = []
 
     for (const layer of queue) {
-      const size = fitLayerSize(layer, maxLayerWidthMm)
+      const size = requestedLayerSize(layer, maxLayerWidthMm, options)
+      if((options.maxLayerLongEdgeMm!==undefined || options.boundsMm) && (size.width>innerW+1e-6 || size.height>innerH+1e-6)) throw new Error('所选尺寸超过纸张可打印区域，请选择较小尺寸；未自动缩小。')
       if (cursorX + size.width > MARGIN_MM + innerW && cursorX > MARGIN_MM) {
         cursorX = MARGIN_MM
         cursorY += rowHeight + GAP_MM
@@ -101,9 +105,22 @@ export function layoutLayersOnPages(
   return pages
 }
 
+function requestedLayerSize(layer: LayoutLayerInput, width: number, options: LayoutPackOptions) {
+  const {width: w,height: h}=layer.image
+  if(options.boundsMm) {
+    const scale=Math.min(options.boundsMm.width/w,options.boundsMm.height/h)
+    return {width:w*scale,height:h*scale}
+  }
+  if(options.maxLayerLongEdgeMm!==undefined) {
+    const scale=options.maxLayerLongEdgeMm/Math.max(w,h)
+    return {width:w*scale,height:h*scale}
+  }
+  return fitLayerSize(layer,width)
+}
+
 function fitLayerSize(layer: LayoutLayerInput, maxWidthMm: number): { width: number; height: number } {
   const aspect = layer.image.width / Math.max(1, layer.image.height)
-  const width = Math.min(maxWidthMm, maxWidthMm)
+  const width = maxWidthMm
   const height = width / aspect
   return { width, height }
 }
@@ -127,10 +144,15 @@ export async function exportLayoutPdf(options: {
   paper: PaperSize
   layers: LayoutLayerInput[]
   maxLayerWidthMm?: number
+  maxLayerLongEdgeMm?: number
+  boundsMm?: { width: number; height: number }
 }): Promise<Blob> {
+  if(!options.layers.length) throw new Error('没有可导出的图层，请返回选择至少一个图层。')
   await ensurePdfTextFont()
   const pages = layoutLayersOnPages(options.layers, options.paper, {
-    maxLayerWidthMm: options.maxLayerWidthMm
+    maxLayerWidthMm: options.maxLayerWidthMm,
+    maxLayerLongEdgeMm: options.maxLayerLongEdgeMm,
+    boundsMm: options.boundsMm
   })
   const firstSize = PAGE_MM[options.paper]
   const doc = new jsPDF({

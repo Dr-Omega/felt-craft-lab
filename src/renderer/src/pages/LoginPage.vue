@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import AuthArtboard from '../components/auth/AuthArtboard.vue'
+import RoleArtworkPicker from '../components/auth/RoleArtworkPicker.vue'
+import { suppliedRoles } from '../ui/supplied-controls'
 import { completeLogin } from '../app-nav'
 import { loginPlazaUser, registerPlazaUser } from '../services/plaza-api'
 import { savePlazaSession } from '../services/plaza-session'
@@ -14,6 +16,8 @@ const password = ref('')
 const mode = ref<'login' | 'register'>('login')
 const busy = ref(false)
 const role = ref<UserRole>('child')
+const choosingRole = ref(false)
+const roleLabel = computed(() => suppliedRoles.find(item => item.value === role.value)?.label)
 const PASSWORD_MIN = 3
 const PASSWORD_MAX = 20
 
@@ -25,6 +29,7 @@ const panelSrc = computed(() => (mode.value === 'register' ? authAssets.register
 
 function toggleMode(): void {
   mode.value = mode.value === 'login' ? 'register' : 'login'
+  choosingRole.value = mode.value === 'register'
 }
 
 function validatePasswordLength(password: string): boolean {
@@ -39,14 +44,13 @@ function validatePasswordLength(password: string): boolean {
 function authErrorMessage(error: unknown): string {
   const shared = error as SharedError
   const msg = typeof shared?.message === 'string' ? shared.message.trim() : ''
-  if (msg && !/无法连接 AI 服务|AI 网关/.test(msg)) return msg
-  if (/分享广场|backend|8788/.test(msg)) return msg
-  if (/无法连接 AI 服务|AI 网关/.test(msg)) return '分享广场服务未连接，请先启动 backend（8788 端口）。'
+  if (/无法连接 AI 服务|AI 网关|backend|8788/.test(msg)) return '连接失败，请联系老师或稍后重试。'
   if (msg) return msg
   return '刚刚遇到一点小问题，请稍后再试。'
 }
 
 async function submit(): Promise<void> {
+  if (choosingRole.value || busy.value) return
   const name = username.value.trim()
   if (!name) return
   if (!validatePasswordLength(password.value)) return
@@ -58,7 +62,7 @@ async function submit(): Promise<void> {
         ? await registerPlazaUser(name, password.value, role.value)
         : await loginPlazaUser(name, password.value)
     savePlazaSession({ token: auth.token, user: auth.user })
-    if (auth.dailyRewardGranted) showCenterToast('今日登录奖励：1 钻石已到账')
+    if (auth.dailyRewardGranted) showCenterToast('今日登录奖励已到账')
     const { syncWorkspace } = await import('../persistence/workspace-sync')
     await syncWorkspace()
     completeLogin()
@@ -74,6 +78,8 @@ async function submit(): Promise<void> {
   <AuthArtboard>
     <form class="login-form" @submit.prevent="submit">
       <img class="auth-layer" :style="authFullLayerStyle" :src="authAssets.background" alt="" aria-hidden="true" />
+      <RoleArtworkPicker v-if="choosingRole" :disabled="busy" @select="value => { role = value; choosingRole = false }" @cancel="choosingRole = false" />
+      <template v-else>
       <img class="auth-layer" :style="authFullLayerStyle" :src="panelSrc" alt="" aria-hidden="true" />
       <img class="auth-layer" :style="authFullLayerStyle" :src="authAssets.nameInput" alt="" aria-hidden="true" />
       <img class="auth-layer" :style="authFullLayerStyle" :src="authAssets.passwordInput" alt="" aria-hidden="true" />
@@ -113,17 +119,10 @@ async function submit(): Promise<void> {
         :disabled="busy"
       />
 
-      <label v-if="mode === 'register'" class="login-role">
-        <span>账号身份</span>
-        <select v-model="role" :disabled="busy">
-          <option value="child">儿童</option>
-          <option value="parent">家长</option>
-          <option value="art_teacher">美术教师</option>
-          <option value="chinese_teacher">语文教师</option>
-        </select>
-      </label>
+      <button v-if="mode === 'register'" type="button" class="login-role" :disabled="busy" @click="choosingRole = true">账号身份：{{ roleLabel }}（更换）</button>
+      </template>
 
-      <button type="button" class="login-mode-toggle linkish" :disabled="busy" @click="toggleMode">
+      <button v-if="!choosingRole" type="button" class="login-mode-toggle hand-btn-secondary" :disabled="busy" @click="toggleMode">
         {{ mode === 'login' ? '没有账号？注册' : '已有账号？登录' }}
       </button>
     </form>
@@ -187,24 +186,27 @@ async function submit(): Promise<void> {
   top: 828px;
   z-index: 3;
   font-size: 22px;
-  padding: 8px 12px;
-  background: rgba(255, 254, 248, 0.82);
-  border-radius: 999px;
+  min-width: 250px;
+  min-height: 58px;
+  padding: 8px 22px;
 }
 
 .login-role {
   position: absolute;
-  left: 720px;
-  top: 742px;
+  left: 780px;
+  top: 664px;
+  max-width: 381px;
+  height: 32px;
   z-index: 3;
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 12px;
-  border: 2px solid rgba(132, 91, 49, 0.35);
-  border-radius: 8px;
-  background: rgba(255, 254, 248, 0.92);
+  padding: 2px 6px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
   font-size: 18px;
+  text-decoration: underline;
 }
 
 .login-role select {

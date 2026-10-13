@@ -19,7 +19,7 @@ export interface ResourceRoots {
    */
   audioDynamicRoot: string
   previewRoot: string
-  /** User-owned Personal Asset PNGs under Electron userData/personal-assets. */
+  /** User-owned immutable PNG/JPEG sources under Electron userData/personal-assets. */
   personalRoot: string
 }
 
@@ -60,6 +60,13 @@ export interface PersonalAssetPngIngestRequest {
   personalAssetId: string
   versionId: string
   pngBytes: ArrayBuffer | Uint8Array
+}
+
+/** Original encoded JPEG/PNG, never a Canvas preview. Format is detected by Main. */
+export interface PersonalAssetImageIngestRequest {
+  personalAssetId: string
+  versionId: string
+  imageBytes: ArrayBuffer | Uint8Array
 }
 
 export type PersonalAssetPngIngestResult =

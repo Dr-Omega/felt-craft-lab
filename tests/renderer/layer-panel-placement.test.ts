@@ -3,6 +3,16 @@ import { readFileSync } from 'node:fs'
 import { placeLayerPanel } from '../../src/renderer/src/fabrication/panel-placement'
 
 describe('Element-anchored layer panel', () => {
+  it('shows the source while preparing, without presenting nonexistent layers as editable', () => {
+    const panel = readFileSync('src/renderer/src/components/projection/LayerEditorPanel.vue', 'utf8')
+    const editor = readFileSync('src/renderer/src/components/projection/ElementLayerEditor.vue', 'utf8')
+    expect(panel).toContain('v-if="!colors" class="preparation-state"')
+    expect(panel).toContain('v-else class="panel-columns"')
+    expect(panel).toContain('handDrawnAssets.btnClose')
+    expect(panel).toContain('alt="待处理的原图"')
+    expect(editor).toContain(':preparing="busy" :source-preview="sourcePreview"')
+    expect(editor).toContain('URL.revokeObjectURL(sourcePreview)')
+  })
   it('uses free space on the right of a left-side element', () => {
     const p = placeLayerPanel({ left: 100, top: 200, width: 220, height: 300 }, { width: 1440, height: 900 })
     expect(p.side).toBe('right'); expect(p.left).toBeGreaterThan(320)

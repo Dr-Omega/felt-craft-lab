@@ -3,11 +3,14 @@ import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 const { fetchMock } = vi.hoisted(() => ({ fetchMock: vi.fn() }))
+const { decodeMock } = vi.hoisted(() => ({ decodeMock: vi.fn(() => ({ isEmpty: (): boolean => false, getSize: () => ({width:1024,height:1024}) })) }))
 vi.mock('electron', () => ({
+  nativeImage: { createFromBuffer: decodeMock },
   net: { fetch: fetchMock },
   protocol: {}
 }))
-import { ingestPersonalAssetPng, MAX_PERSONAL_ASSET_PNG_BYTES } from '../../src/main/resource/personal-ingestion'
+import { ingestPersonalAssetImage, ingestPersonalAssetPng, MAX_PERSONAL_ASSET_PNG_BYTES } from '../../src/main/resource/personal-ingestion'
+import { isPersonalAssetSourceRefFor } from '../../src/shared/resource'
 import { inspectResource } from '../../src/main/resource/inspect'
 import { handleFeltResourceRequest } from '../../src/main/resource/protocol'
 import { resolveFeltResourcePath } from '../../src/shared/resource/resolve-path'
@@ -47,6 +50,29 @@ afterEach(() => {
 })
 
 describe('Personal Asset PNG ingestion', () => {
+  it('persists original JPEG bytes and rejects replacement or encoding changes for the same version', () => {
+    const roots = makeRoots(), bytes = Buffer.from([255,216,255,224,17,23,255,217])
+    const input = {personalAssetId:ASSET_A,versionId:VERSION_A,imageBytes:bytes}
+    const result = ingestPersonalAssetImage(input,roots)
+    expect(result).toEqual({ok:true,ref:`felt-resource://personal/${ASSET_A}/${VERSION_A}/source.jpg`})
+    if (!result.ok) return
+    expect(isPersonalAssetSourceRefFor(result.ref,ASSET_A,VERSION_A)).toBe(true)
+    expect(readFileSync(join(roots.personalRoot,ASSET_A,VERSION_A,'source.jpg'))).toEqual(bytes)
+    expect(ingestPersonalAssetImage(input,roots)).toEqual(result)
+    expect(ingestPersonalAssetImage({...input,imageBytes:Buffer.from([255,216,255,224,18,23,255,217])},roots).ok).toBe(false)
+    expect(ingestPersonalAssetPng(request(),roots).ok).toBe(false)
+    expect(ingestPersonalAssetPng(request(ASSET_B,VERSION_B,bytes),roots).ok).toBe(false)
+  })
+  it('rejects malformed, oversized and path-controlled original-image requests', () => {
+    const roots=makeRoots(), input={personalAssetId:ASSET_A,versionId:VERSION_A,imageBytes:MINIMAL_PNG_BYTES}
+    for (const bad of [{...input,imageBytes:[]},{...input,imageBytes:new Uint8Array(10*1024*1024+1)},
+      {...input,imageBytes:new Uint8Array([1,2,3])},{...input,personalAssetId:'../escape'}, {...input,destinationPath:'escape'}]) {
+      expect(ingestPersonalAssetImage(bad,roots).ok).toBe(false)
+    }
+    decodeMock.mockReturnValueOnce({isEmpty:()=>true,getSize:()=>({width:0,height:0})})
+    expect(ingestPersonalAssetImage(input,roots).ok).toBe(false)
+    expect(existsSync(join(roots.personalRoot,ASSET_A))).toBe(false)
+  })
   it('writes canonical personal source.png bytes and returns no filesystem metadata', () => {
     const roots = makeRoots()
     const result = ingestPersonalAssetPng(request(), roots)

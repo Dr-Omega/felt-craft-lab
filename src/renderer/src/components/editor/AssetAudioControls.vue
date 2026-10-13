@@ -51,13 +51,13 @@ function playAudio(button: AudioButton): void {
     <button
       v-for="button in audioButtons"
       :key="button.key"
-      class="asset-audio-button"
+      class="asset-audio-button hand-btn-secondary"
       type="button"
       :class="{ 'is-playing': playingUrl === button.url }"
       :aria-label="playingUrl === button.url ? '正在播放' : button.label"
       @click="playAudio(button)"
     >
-      {{ playingUrl === button.url ? '🔊正在播放' : `🔊${button.label}` }}
+      {{ playingUrl === button.url ? '正在播放' : button.label }}
     </button>
   </div>
 </template>
@@ -71,20 +71,15 @@ function playAudio(button: AudioButton): void {
 }
 
 .asset-audio-button {
-  min-height: 30px;
-  padding: 0 11px;
-  border: 1px solid var(--wood-mid, #d9b98a);
-  border-radius: 999px;
-  background: var(--wood-surface, #efe2c9);
-  color: var(--color-text, #594738);
+  min-height: 40px;
+  padding: 6px 16px;
   font: inherit;
-  font-size: 12px;
+  font-size: 14px;
   cursor: pointer;
 }
 
 .asset-audio-button:hover,
 .asset-audio-button.is-playing {
-  border-color: var(--color-primary, #e8a572);
-  background: var(--color-primary-soft, #f4c9a4);
+  filter: brightness(1.06);
 }
 </style>

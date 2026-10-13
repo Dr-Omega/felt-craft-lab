@@ -72,17 +72,33 @@ function defaultSnapshot(partial: Partial<AssetQaSnapshot> = {}): AssetQaSnapsho
 }
 
 /**
- * Map any unknown failure to a single, child-friendly text. We must not leak
+ * Map unknown failures to child-friendly text. We must not leak
  * any IPC / Gateway / HTTP / provider / requestId / "Invalid AI response" / etc.
  */
 export function friendlyQaErrorMessage(err: unknown): string {
+  if (isMissingService(err, '问答服务尚未配置，请联系管理员。')) return '问答服务尚未配置，请联系管理员。'
+  if (errorCode(err) === 'QA_TIMEOUT') return '回答等得有点久，请稍后再试。你的问题还在。'
   return QA_ERROR_TEXT
+}
+
+function errorCode(err: unknown): unknown {
+  return err && typeof err === 'object' ? (err as { code?: unknown }).code : undefined
+}
+
+// Only allow exact public messages produced by our error mapper. Never echo
+// arbitrary upstream text, which may contain credentials or internal paths.
+function isMissingService(err: unknown, message: string): boolean {
+  if (!err || typeof err !== 'object') return false
+  const value = err as { code?: unknown; retryable?: unknown; message?: unknown }
+  return value.code === 'UNKNOWN' && value.retryable === false && value.message === message
 }
 
 /**
  * Map any ASR failure to a single, child-friendly text.
  */
-export function friendlyAsrErrorMessage(_err?: unknown): string {
+export function friendlyAsrErrorMessage(err?: unknown): string {
+  if (isMissingService(err, '语音识别服务尚未配置，请联系管理员；也可以先打字。')) return '语音识别服务尚未配置，请联系管理员；也可以先打字。'
+  if (errorCode(err) === 'ASR_TIMEOUT') return '语音识别等得有点久，请稍后再试，也可以先打字。'
   return TRANSCRIPT_FAIL_TEXT
 }
 
@@ -215,8 +231,8 @@ export class AssetQaController {
     this.emit()
   }
 
-  failTranscription(): void {
-    this.micHint = TRANSCRIPT_FAIL_TEXT
+  failTranscription(error?: unknown): void {
+    this.micHint = friendlyAsrErrorMessage(error)
     this.isAsrBusy = false
     this.emit()
   }

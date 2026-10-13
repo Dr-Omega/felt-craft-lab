@@ -130,7 +130,7 @@ class ImageGenerateTests(unittest.TestCase):
         self.assertIn(result["quality"]["verdict"], ("PASS", "WARN", "FAIL"))
         self.assertEqual(len(provider.calls), 1)
         call = provider.calls[0]
-        self.assertEqual((call["width"], call["height"]), (1024, 1024))
+        self.assertEqual((call["width"], call["height"]), (2048, 2048))
         self.assertEqual(len(call["reference_images"]), 8)
         self.assertIn("我想要一只熊猫抱着红色皮球", call["positive_prompt"])
         self.assertEqual(call["positive_prompt"].count("我想要一只熊猫抱着红色皮球"), 1)

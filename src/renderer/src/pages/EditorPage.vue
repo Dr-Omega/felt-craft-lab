@@ -20,7 +20,7 @@ import {
   isAcceptanceUnlockAllAssetsEnabled,
   seedAcceptanceUnlockedAccess
 } from '../catalog/acceptance-access'
-import { getEditorLaunch, openLibrary, openLearning, openSavedWork } from '../app-nav'
+import { getEditorLaunch, openLibrary, openLearning, openSavedWork, returnFromEditor } from '../app-nav'
 import { DEFAULT_SCENE_CANVAS } from '../catalog/scene-defaults'
 import {
   AssetAccessStore,
@@ -46,6 +46,8 @@ import { recolorLayers } from '../fabrication/recolor'
 import type { ScreenBox } from '../fabrication/panel-placement'
 import CreationInputDialog from '../components/editor/CreationInputDialog.vue'
 import { persistCanvasInput } from '../fabrication/canvas-intake'
+import { readPersonalElementInput } from '../fabrication/element-input'
+import { sameElementSource } from '@shared/fabrication-task-identity'
 import type { ForegroundMode } from '@shared/fabrication-desktop'
 
 const launch = getEditorLaunch()
@@ -54,7 +56,7 @@ const guidedTheme = launch?.guidedTheme
 let unlockDestination: string | undefined
 function leaveEditor(): void {
   if (guidedTheme || unlockDestination) openLearning(guidedTheme?.themeId ?? unlockDestination)
-  else openLibrary()
+  else returnFromEditor()
 }
 function requestThemeUnlock(themeId: string): void {
   unlockDestination = themeId
@@ -75,7 +77,22 @@ const returnModalError = ref('')
 const sheetOpen = ref(false)
 const qaAsset = ref<AssetRecord | null>(null)
 const backgroundDrawerOpen = ref(false)
-const inputDialogOpen = ref(false)
+const inputDialogOpen = ref(launch?.chooseImage === true && !guidedTheme)
+const saveMenuOpen = ref(false)
+const saveMenu = ref<HTMLElement | null>(null)
+let saveOpener: HTMLElement | null = null
+function saveMenuKeys(event: KeyboardEvent): void {
+  if (event.key === 'Escape') { saveMenuOpen.value = false; return }
+  if (event.key !== 'Tab') return
+  const buttons = [...(saveMenu.value?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)') ?? [])]
+  if (event.shiftKey && document.activeElement === buttons[0]) { event.preventDefault(); buttons.at(-1)?.focus() }
+  else if (!event.shiftKey && document.activeElement === buttons.at(-1)) { event.preventDefault(); buttons[0]?.focus() }
+}
+watch(saveMenuOpen, async open => {
+  if (open) { saveOpener = document.activeElement as HTMLElement; await nextTick(); saveMenu.value?.querySelector('button')?.focus() }
+  else if (saveOpener?.isConnected) saveOpener.focus()
+})
+const toolsOpen = ref(false)
 const sceneSnapshotMissing = ref(false)
 const currentSelection = ref<EditorSelectionProjection | null>(null)
 const oqtSelection = ref<EditorSelectionProjection | null>(null)
@@ -119,7 +136,7 @@ async function applyLayerColor(png: string, colors: LayerColors, jobId: string, 
 async function addProcessedElement(): Promise<void> {
   const service = session.value, id = localStorage.getItem('felt-fabrication-job')
   if (!service || busy.value) return
-  if (!id) { showFeedback('目前没有已完成分层的素材。可先在画布中选择元素编辑。', 'info'); return }
+  if (!id) { showFeedback('暂无已分层素材。', 'info'); return }
   busy.value = true
   const urls: string[] = []
   try {
@@ -134,7 +151,7 @@ async function addProcessedElement(): Promise<void> {
     const {asset,version} = await persistCanvasRecolor(painted.composite, { jobId: id, sourceSha256: job.result.sourceSha256,
       binding: colors.binding, colors, ownerUserId: launch!.scene.userId }, 'element')
     await service.addPersonalElement(asset, version)
-    showFeedback('已放入真实分层素材，双击它即可按层换色。', 'success')
+    showFeedback('双击图片可换色。', 'success')
   } catch (error) { showFeedback(friendlyError(error), 'error') }
   finally { urls.forEach(url=>URL.revokeObjectURL(url)); busy.value=false }
 }
@@ -148,14 +165,19 @@ async function editElementLayers(): Promise<void> {
   if (!session.value || !selection || busy.value) return
   busy.value = true
   try {
-    const prepared = await session.value.prepareProjectSave(selection.objectId)
-    const personal = [...prepared.scene.personalElements, ...(prepared.scene.corePattern ? [prepared.scene.corePattern] : [])]
+    const scene = session.value.prepareDraftSave()
+    const personal = [...scene.personalElements, ...(scene.corePattern ? [scene.corePattern] : [])]
       .find(item => item.objectId === selection.objectId)
     const savedEdit = personal ? readCanvasRecolorLink(personal.versionId) : undefined
-    const input = new Uint8Array(await prepared.previewPng.arrayBuffer())
+    if (savedEdit && savedEdit.ownerUserId !== scene.userId) throw new Error('换色记录不属于当前用户。')
+    // Saved recolors resume their bound job. Never split the recolored composite again.
+    const original = savedEdit ? new Uint8Array() : await readPersonalElementInput(scene, selection.objectId,
+      createCatalogResolver().resolvePersonalAsset!)
+    const input = original ?? new Uint8Array(await (await session.value.prepareProjectSave(selection.objectId)).previewPng.arrayBuffer())
     const cached = layerPreparations.get(selection.objectId)
-    const preparation = cached && cached.input.length === input.length && input.every((byte, i) => byte === cached.input[i])
-      ? cached : { input, binding: { scene: prepared.scene, objectId: selection.objectId } }
+    const preparation = cached && sameElementSource(cached.binding, { scene, objectId: selection.objectId }) &&
+      cached.input.length === input.length && input.every((byte, i) => byte === cached.input[i])
+      ? cached : { input, binding: { scene, objectId: selection.objectId } }
     if (!savedEdit) layerPreparations.set(selection.objectId, preparation)
     const foregroundMode = personal && localStorage.getItem(`felt-foreground-mode:${personal.versionId}`) === 'embedded-alpha' ? 'embedded-alpha' : 'birefnet-general'
     layerEditor.value = { input, binding: savedEdit ? savedEdit.binding : preparation.binding, selection, savedEdit, foregroundMode }
@@ -354,7 +376,7 @@ async function boot(): Promise<void> {
   if (!guidedTheme) await seedAcceptanceUnlockedAccess(accessStore, sceneCatalogAssets, acceptanceUnlockAllAssets)
   await refreshAccess()
   if (launch.fromGeneration) {
-    showFeedback('图片已确认，正在准备图层。等待时可以继续布置画布。', 'info')
+    showFeedback('正在准备图层，可继续拼贴。', 'info')
   }
   const service = new EditorSessionService({
     createAdapter: () => new FabricEditorAdapter({ allowTestAssets: false, snapshotContext: YWN_SNAPSHOT_CONTEXT })
@@ -474,6 +496,7 @@ async function redo(): Promise<void> {
 
 async function finish(next?: 'story-card' | 'work-display'): Promise<void> {
   if (!session.value || busy.value) return
+  saveMenuOpen.value = false
   closeOqt()
   busy.value = true
   try {
@@ -641,8 +664,9 @@ watch([oqtOpen, oqtSelection], () => { void nextTick(updateOqtPosition) })
 
 <template>
   <section class="editor-stage">
-    <DrawingFrame :task-mode="!!guidedTheme" :busy="busy" :can-undo="canUndo" :can-redo="canRedo" :can-save="canFinish && !guidedTheme"
-      @back="requestBack" @undo="undo" @redo="redo" @save="finish()">
+    <DrawingFrame :inert="saveMenuOpen || undefined" :task-mode="!!guidedTheme" :busy="busy" :can-undo="canUndo" :can-redo="canRedo" :can-save="canFinish && !guidedTheme && !layerEditor"
+      :back-label="guidedTheme ? '返回学习主题' : launch?.returnTo === 'lobby' || launch?.mode === 'new' && !launch?.returnTo ? '返回游戏大厅' : '返回个人作品'"
+      @back="requestBack" @undo="undo" @redo="redo" @save="saveMenuOpen = true">
       <div class="editor-frame-inner" @click.self="closeTransientContexts">
         <div class="canvas-area" :inert="busy || undefined">
           <div class="canvas-stage">
@@ -674,13 +698,16 @@ watch([oqtOpen, oqtSelection], () => { void nextTick(updateOqtPosition) })
 
       </div>
       <template v-if="!guidedTheme" #tools>
-        <button :disabled="busy || !canFinish || Boolean(layerEditor)" @click="finish('story-card')">保存并讲故事</button>
-        <button :disabled="busy || !canFinish || Boolean(layerEditor)" @click="finish('work-display')">保存并展示</button>
-        <button :disabled="busy || !canEdit || !!layerEditor" @click="inputDialogOpen = true">添加图片</button>
-        <button aria-label="打开素材盒" :disabled="busy || !canEdit" @click="toggleSheet">素材</button>
-        <button aria-label="打开背景选择" :aria-expanded="backgroundDrawerOpen" @click="toggleBackgroundDrawer">背景</button>
-        <button :disabled="busy || !currentSelection || !canFinish" @click="editElementLayers">编辑选中元素</button>
-        <button :disabled="busy || !canEdit" @click="addProcessedElement">加入已分层素材</button>
+        <details v-if="!inputDialogOpen" class="creation-tools" :open="toolsOpen" @toggle="toolsOpen = ($event.target as HTMLDetailsElement).open">
+        <summary>创作工具</summary>
+        <div class="creation-tools-menu" @click="toolsOpen = false">
+        <button class="hand-btn-primary" :disabled="busy || !canEdit || !!layerEditor" @click="inputDialogOpen = true">添加图片</button>
+        <button class="hand-btn-primary" aria-label="打开素材盒" :disabled="busy || !canEdit" @click="toggleSheet">素材</button>
+        <button class="hand-btn-primary" aria-label="打开背景选择" :aria-expanded="backgroundDrawerOpen" @click="toggleBackgroundDrawer">背景</button>
+        <button class="hand-btn-primary" :disabled="busy || !currentSelection || !canFinish" @click="editElementLayers">编辑选中元素</button>
+        <button class="hand-btn-primary" :disabled="busy || !canEdit" @click="addProcessedElement">加入已分层素材</button>
+        </div>
+        </details>
       </template>
     </DrawingFrame>
 
@@ -726,6 +753,16 @@ watch([oqtOpen, oqtSelection], () => { void nextTick(updateOqtPosition) })
       :anchor="layerAnchor" :saved-edit="layerEditor.savedEdit" :apply="applyLayerColor" @preview="previewLayerColor" @close="closeLayerEditor" />
     <CreationInputDialog v-if="inputDialogOpen" :insert="insertCreationImage" @close="inputDialogOpen = false" />
 
+    <div v-if="saveMenuOpen" class="save-choice-backdrop" @click.self="saveMenuOpen = false" @keydown="saveMenuKeys">
+      <section ref="saveMenu" role="dialog" aria-modal="true" aria-label="保存作品后做什么" class="save-choice">
+        <h2>收好作品后，想做什么？</h2>
+        <button autofocus :disabled="busy || !!layerEditor" @click="finish()">保存，继续画</button>
+        <button :disabled="busy || !!layerEditor" @click="finish('story-card')">保存并讲故事</button>
+        <button :disabled="busy || !!layerEditor" @click="finish('work-display')">保存并展示</button>
+        <button @click="saveMenuOpen = false">返回画布</button>
+      </section>
+    </div>
+
     <ReturnSaveModal
       :open="returnModalOpen"
       :busy="busy"
@@ -738,6 +775,12 @@ watch([oqtOpen, oqtSelection], () => { void nextTick(updateOqtPosition) })
 </template>
 
 <style>
+.creation-tools { position: relative; margin-left: auto; color: #71351c; }
+.creation-tools summary { cursor: pointer; border: 2px solid #71351c; border-radius: 12px; background: #fff4bd; padding: 8px 14px; font-weight: bold; }
+.creation-tools-menu { position: absolute; right: 0; top: 100%; display: grid; gap: 8px; width: 210px; padding: 12px; border: 2px solid #71351c; border-radius: 12px; background: #fff4bd; }
+.save-choice-backdrop { position: fixed; inset: 0; z-index: 300; display: grid; place-items: center; background: #39211055; pointer-events: auto; }
+.save-choice { display: grid; gap: 12px; width: min(430px, 90vw); padding: 24px; border: 4px solid #71351c; border-radius: 20px; background: #fff4bd; }
+.save-choice h2 { margin: 0 0 8px; font-size: 22px; }
 :root {
   --bg-app: #f8f0e2;
   --wood-light: #f0e2c5;

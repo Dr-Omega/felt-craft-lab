@@ -11,7 +11,7 @@ import type {
   UserRole
 } from '@shared/contracts/rewards'
 import type { SharedError } from '@shared/contracts'
-import { openPlaza, openPersonalCenter } from '../app-nav'
+import { openPlaza, openPersonalCenter, openLobby } from '../app-nav'
 import { showCenterToast } from '../composables/center-toast'
 import { loadPlazaSession } from '../services/plaza-session'
 import {
@@ -29,12 +29,14 @@ import { rewardAssets } from '../ui/reward-assets'
 import { profileAssets } from '../ui/profile-assets'
 
 type TabId = 'account' | 'inbox' | 'teacher' | 'store' | 'bear' | 'admin'
+const props = withDefaults(defineProps<{ initialTab?: TabId; embedded?: boolean }>(), { initialTab: 'account', embedded: false })
+const emit = defineEmits<{ account: [] }>()
 
 const session = loadPlazaSession()
 const dashboard = ref<RewardDashboard | null>(null)
 const inbox = ref<InboxMessage[]>([])
 const config = ref<RewardConfig | null>(null)
-const activeTab = ref<TabId>('account')
+const activeTab = ref<TabId>(props.initialTab)
 const loading = ref(true)
 const busyKey = ref('')
 const convertAmount = ref(1)
@@ -64,7 +66,7 @@ const tabs = computed<Array<{ id: TabId; label: string }>>(() => {
   if (role.value === 'child') items.push({ id: 'inbox', label: `反馈邮箱${dashboard.value?.inboxPendingCount ? ` (${dashboard.value.inboxPendingCount})` : ''}` })
   if (role.value === 'art_teacher' || role.value === 'chinese_teacher') items.push({ id: 'teacher', label: '教师等级' })
   items.push({ id: 'store', label: '兑换商城' })
-  if (role.value === 'child') items.push({ id: 'bear', label: '小熊房间' })
+  if (role.value === 'child' && props.initialTab === 'bear') items.push({ id: 'bear', label: '小熊的家' })
   return items
 })
 
@@ -102,6 +104,7 @@ async function loadPage(): Promise<void> {
   loading.value = true
   try {
     await refreshDashboard()
+    if (!tabs.value.some(tab => tab.id === activeTab.value)) activeTab.value = tabs.value[0].id
     if (role.value === 'child') await refreshInbox()
     if (role.value === 'admin') {
       config.value = await loadRewardConfig(session.token)
@@ -150,7 +153,7 @@ async function saveRoom(): Promise<void> {
       character: selectedIp.value, furniture: selectedFurniture.value, revision: roomRevision.value
     })
     roomRevision.value = saved.revision
-    showCenterToast('房间偏好已保存到当前账号')
+    showCenterToast('房间设置已保存')
   })
 }
 
@@ -158,7 +161,7 @@ async function reloadRoom(): Promise<void> {
   await run('room', async () => {
     roomLoaded.value = false
     await refreshDashboard()
-    showCenterToast('已载入服务器房间设置')
+    showCenterToast('房间设置已载入')
   })
 }
 
@@ -240,6 +243,7 @@ onMounted(() => void loadPage())
 <template>
   <main
     class="reward-center"
+    :class="{ 'reward-center--embedded': embedded }"
     :style="{
       '--reward-panel-image': `url(${rewardAssets.growthCenter.basePanelNineSlice})`,
       '--reward-card-image': `url(${rewardAssets.growthCenter.cardNineSlice})`
@@ -249,8 +253,8 @@ onMounted(() => void loadPage())
     <div class="reward-panel">
       <div class="reward-scroll">
     <header class="reward-header">
-      <div class="reward-title">
-        <h1>成长中心</h1>
+      <div v-if="!embedded" class="reward-title">
+        <h1>{{ activeTab === 'bear' ? '小熊的家' : activeTab === 'inbox' ? '反馈邮箱' : activeTab === 'store' ? '商城' : '账户与流水' }}</h1>
       </div>
       <div v-if="role !== 'parent' && role !== 'admin'" class="wallet-strip" aria-label="账户余额">
         <span class="wallet-chip">
@@ -261,12 +265,12 @@ onMounted(() => void loadPage())
         <span class="wallet-chip">
           <img :src="rewardAssets.coin" alt="金币" />
           <strong>{{ wallet.coins }}</strong>
-          <button type="button" class="wallet-plus" aria-label="钻石转换金币" @click="activeTab = 'account'">+</button>
+          <button v-if="initialTab !== 'bear'" type="button" class="wallet-plus" aria-label="钻石转换金币" @click="embedded ? emit('account') : (activeTab = 'account')">+</button>
         </span>
       </div>
     </header>
 
-    <nav class="reward-tabs" aria-label="成长中心导航">
+    <nav v-if="!embedded && initialTab !== 'bear'" class="reward-tabs" aria-label="成长中心导航">
       <button
         v-for="tab in tabs"
         :key="tab.id"
@@ -284,8 +288,7 @@ onMounted(() => void loadPage())
       <template v-if="role === 'parent'">
         <div class="parent-band">
           <h2>家长中心</h2>
-          <p>当前账号可以在分享广场为儿童作品点赞。</p>
-          <p>家长不获得金币或钻石，也不能进入儿童的反馈邮箱。</p>
+          <details><summary>账号规则</summary><p>家长可点赞，不参与金币、钻石奖励，也不能查看儿童邮箱。</p></details>
           <button type="button" class="primary" @click="openPlaza">去分享广场</button>
         </div>
       </template>
@@ -369,7 +372,7 @@ onMounted(() => void loadPage())
     </section>
 
     <section v-else-if="activeTab === 'store'" class="reward-content store-view">
-      <header class="section-heading"><h2>兑换商城</h2><span>选择金币或钻石支付</span></header>
+      <header class="section-heading"><h2>兑换商城</h2></header>
       <ul class="product-grid">
         <li v-for="(product, index) in dashboard?.products" :key="product.productId" class="product-card">
           <div v-if="product.productId === 'ip_blind_box'" class="blind-box-preview" aria-label="IP 盲盒角色预览">
@@ -398,11 +401,10 @@ onMounted(() => void loadPage())
         <section class="bear-customizer" aria-label="小熊房间动态内容">
           <h2>房间与 IP</h2>
           <label>IP 角色<select v-model="selectedIp" :disabled="Boolean(busyKey)"><option v-for="ip in ipVariants" :key="ip.name" :value="ip.name">{{ ip.name }}</option></select></label>
-          <button type="button" class="custom-action" @click="runIpAction">执行动作</button>
+          <button type="button" class="custom-action" @click="runIpAction">文字互动</button>
           <div class="furniture-choice"><span>房间配色预览</span><button v-for="color in furnitureColors" :key="color" type="button" :disabled="Boolean(busyKey)" :class="{ selected: selectedFurniture === color }" @click="selectedFurniture = color">{{ color }}</button></div>
           <button type="button" class="primary" :disabled="Boolean(busyKey) || !roomLoaded" @click="saveRoom">保存房间设置</button>
           <button type="button" :disabled="Boolean(busyKey)" @click="reloadRoom">重新载入房间设置</button>
-          <p>当前沿用小熊房间原画；角色动作是文字反馈，配色是整图预览，不代表独立家具或角色动画已制作。</p>
         </section>
         <article v-for="food in dashboard?.foods" :key="food.foodId" class="food-item">
           <img :src="foodImage(food.foodId)" :alt="food.name" />
@@ -448,7 +450,7 @@ onMounted(() => void loadPage())
       </div>
     </div>
     <img class="reward-skin reward-skin--frame" :src="rewardAssets.growthCenter.frameOverlay" alt="" aria-hidden="true" />
-    <button type="button" class="reward-back" aria-label="返回个人中心" @click="openPersonalCenter">
+    <button v-if="!embedded" type="button" class="reward-back" :aria-label="initialTab === 'bear' ? '返回游戏大厅' : '返回个人中心'" @click="initialTab === 'bear' ? openLobby() : openPersonalCenter()">
       <img :src="profileAssets.back" alt="" />
     </button>
   </main>
@@ -750,4 +752,9 @@ th { color: #675b50; font-size: 15px; }
   .product-card { grid-template-columns: 1fr; grid-template-rows: auto; }
   .product-card > :first-child, .product-card h3, .product-card .price-actions { grid-column: 1; grid-row: auto; }
 }
+.reward-center--embedded { height: auto; min-height: 400px; overflow: visible; background: transparent; }
+.reward-center--embedded .reward-skin { display: none; }
+.reward-center--embedded .reward-panel { position: relative; inset: auto; border: 0; overflow: visible; }
+.reward-center--embedded .reward-scroll { height: auto; padding: 0; overflow: visible; }
+.reward-center--embedded .reward-header { display: flex; flex-wrap: wrap; justify-content: space-between; padding: 0 0 18px; }
 </style>

@@ -80,7 +80,18 @@ export async function gatewayJson(
   const url = `${resolved.baseUrl}${path.startsWith('/') ? path : `/${path}`}`
   const timeoutMs = init.timeoutMs ?? DEFAULT_TIMEOUT_MS
   const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), timeoutMs)
+  let timedOut = false
+  const timer = setTimeout(() => { timedOut = true; controller.abort() }, timeoutMs)
+
+  const interruptionError = (): SharedError => {
+    if (init.signal?.aborted || !timedOut) {
+      return toSharedError({ code: 'REQUEST_CANCELLED', message: '请求已取消。', retryable: false })
+    }
+    const code = path.includes('/asr/') ? 'ASR_TIMEOUT'
+      : path.includes('/tts/') ? 'TTS_TIMEOUT'
+        : path.includes('/qa/') || path.includes('/story/') ? 'QA_TIMEOUT' : 'UNKNOWN'
+    return toSharedError({ code, message: '服务响应超时，请稍后重试；已输入的内容无需重新填写。', retryable: true })
+  }
 
   const onAbort = (): void => controller.abort()
   if (init.signal) {
@@ -118,13 +129,7 @@ export async function gatewayJson(
           }
         }
         if (bounded.reason === 'aborted') {
-          return {
-            ok: false,
-            error: toSharedError(
-              { code: 'REQUEST_CANCELLED', message: '请求已取消。', retryable: false },
-              'REQUEST_CANCELLED'
-            )
-          }
+          return { ok: false, error: interruptionError() }
         }
         return {
           ok: false,
@@ -151,6 +156,7 @@ export async function gatewayJson(
 
     return { ok: true, status: response.status, body }
   } catch (error) {
+    if (controller.signal.aborted) return { ok: false, error: interruptionError() }
     const cancelled =
       (error instanceof Error && error.name === 'AbortError') || (init.signal?.aborted ?? false)
     return {

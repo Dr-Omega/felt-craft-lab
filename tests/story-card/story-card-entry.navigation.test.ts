@@ -37,13 +37,13 @@ describe('saved work navigation', () => {
   it('missing work leaves the current view intact', async () => {
     openLibrary(); mocks.load.mockRejectedValue(new Error('missing'))
     await expect(openSavedWork('missing', 'work-display')).rejects.toThrow('missing')
-    expect(getAppView()).toBe('library')
+    expect(getAppView()).toBe('profile')
   })
   it('ignores late work loads after another navigation', async () => {
     let finish!: (work: ReturnType<typeof validFeltProject>) => void
     mocks.load.mockReturnValue(new Promise(resolve => { finish = resolve }))
     const navigation = openSavedWork('slow', 'work-display')
     openLibrary(); finish(validFeltProject()); await navigation
-    expect(getAppView()).toBe('library')
+    expect(getAppView()).toBe('profile')
   })
 })

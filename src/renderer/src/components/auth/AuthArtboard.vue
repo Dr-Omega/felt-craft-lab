@@ -41,7 +41,8 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   background: #f8e8a8;
-  overflow: hidden;
+  /* Clip without a scroll container: focus must not pan the scaled artwork. */
+  overflow: clip;
 }
 
 .auth-artboard {

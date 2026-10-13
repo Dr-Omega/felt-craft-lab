@@ -34,26 +34,39 @@ export async function captureWorkspace(userId: string): Promise<WorkspaceDocumen
 }
 
 function validateWorkspace(document: WorkspaceDocument, userId: string) {
-  if(document.schema!=='account-workspace/1'||document.userId!==userId) throw new Error('云端账号身份不匹配。')
+  if(!document || document.schema!=='account-workspace/1'||document.userId!==userId) throw new Error('云端账号身份不匹配。')
   for(const name of SYNC_TABLES) if(!Array.isArray(document.tables[name])) throw new Error('云端表结构不完整。')
   for(const row of document.tables.projects) if(!validateProjectRecord(row,FELT_RESOURCE_REF_POLICY).ok || (row.scene as {userId:string}).userId!==userId) throw new Error('云端作品合同校验失败。')
   for(const row of document.tables.drafts) if(!validateDraftRecord(row).ok || (row.scene as {userId:string}).userId!==userId) throw new Error('云端草稿合同校验失败。')
   for(const row of document.tables.personalAssets) if(!validatePersonalAssetRecord(row).ok || row.userId!==userId) throw new Error('云端个人素材校验失败。')
   for(const row of document.tables.personalAssetVersions) if(!validatePersonalAssetVersionRecord(row,FELT_RESOURCE_REF_POLICY).ok) throw new Error('云端素材版本校验失败。')
+  for(const name of ['assetAccess','favorites','learningProgress'] as const) {
+    if(document.tables[name].some(row=>row.userId!==userId)) throw new Error('云端记录账号身份不匹配。')
+  }
+  const assets=new Set(document.tables.personalAssets.map(row=>row.personalAssetId))
+  const works=new Set(document.tables.projects.map(row=>row.projectId))
+  const versions=new Set(document.tables.personalAssetVersions.map(row=>String(row.versionId)))
+  if(document.tables.personalAssetVersions.some(row=>!assets.has(row.personalAssetId)) || document.tables.storyCards.some(row=>!works.has(row.workId))) throw new Error('云端关联记录不属于此账号的作品或素材。')
+  if(!document.recolor || Object.keys(document.recolor).some(id=>!versions.has(id))) throw new Error('云端图层关联缺少所属素材版本。')
 }
 
 /** Conflict replacement is explicit, backed up locally; no implicit last-write-wins. */
 async function restoreWorkspace(document: WorkspaceDocument, local: WorkspaceDocument) {
-  const db=getFeltCraftDatabase(), userId=document.userId
+  const db=getFeltCraftDatabase(), userId=local.userId
   validateWorkspace(document,userId)
   // Links belong to immutable personal versions. Prepare new links before the DB
   // commit; a crash can leave harmless unreferenced links, never missing live ones.
+  const newLinks: [string,string][]=[]
   for(const [id,link] of Object.entries(document.recolor)) {
     const previous=localStorage.getItem('felt-recolor-version:'+id)
     if(previous && workspaceFingerprint({...document,recolor:{[id]:JSON.parse(previous)}}) !== workspaceFingerprint({...document,recolor:{[id]:link}})) throw new Error('相同素材版本的图层关联不同，未覆盖。')
-    localStorage.setItem('felt-recolor-version:'+id,JSON.stringify(link))
+    if(!previous) newLinks.push(['felt-recolor-version:'+id,JSON.stringify(link)])
   }
-  await db.transaction('rw',[...SYNC_TABLES.map(name=>db.table(name)),db.table('syncBackups')],async()=>{
+  const written: [string,string][]=[]
+  try { await db.transaction('rw',[...SYNC_TABLES.map(name=>db.table(name)),db.table('syncBackups')],async()=>{
+    // Check again under the write transaction: an edit can arrive between the
+    // download check and acquiring the DB lock.
+    if(workspaceFingerprint(await captureWorkspace(userId))!==workspaceFingerprint(local)) throw new Error('SYNC_CONFLICT: 同步期间本机有新修改，未覆盖。')
     await db.table('syncBackups').add({userId,createdAt:new Date().toISOString(),document:local})
     for(const name of SYNC_TABLES) {
       const table=db.table(name), old=local.tables[name]
@@ -66,7 +79,13 @@ async function restoreWorkspace(document: WorkspaceDocument, local: WorkspaceDoc
       await table.bulkDelete(keys as never[])
       await table.bulkPut(document.tables[name])
     }
-  })
+    // Validate all collisions before exposing links. Roll back new links if the
+    // DB commit or storage write fails; never remove a pre-existing link.
+    for(const [key,value] of newLinks) { localStorage.setItem(key,value); written.push([key,value]) }
+  }) } catch(error) {
+    for(const [key,value] of written) if(localStorage.getItem(key)===value) localStorage.removeItem(key)
+    throw error
+  }
 }
 
 export async function syncWorkspace(choice?: 'local'|'remote'): Promise<void> {
@@ -74,8 +93,9 @@ export async function syncWorkspace(choice?: 'local'|'remote'): Promise<void> {
   const session=loadPlazaSession()
   if(!session || !window.electronAPI?.workspaceSync) return
   const userId=session.user.userId, token=session.token
-  if(stateUser!==userId){stateUser=userId;syncState.conflict=false;syncState.message='尚未同步'}
-  const guard=()=>{if(loadPlazaSession()?.user.userId!==userId)throw new Error('账号已切换，未应用同步结果。')}
+  if(stateUser!==userId){stateUser=userId;syncState.conflict=false;syncState.message='尚未同步';syncState.revision=0}
+  const isCurrent=()=>{const current=loadPlazaSession();return current?.user.userId===userId && current.token===token}
+  const guard=()=>{if(!isCurrent())throw new Error('账号已切换，未应用同步结果。')}
   operation=(async()=>{
     syncState.busy=true; syncState.message='同步中……'
     try {
@@ -83,10 +103,14 @@ export async function syncWorkspace(choice?: 'local'|'remote'): Promise<void> {
       const raw=localStorage.getItem(stateKey(userId)), base=raw?JSON.parse(raw) as {revision:number;hash:string}:undefined
       const remote=await window.electronAPI.workspaceSync({token,action:'read'})
       guard()
+      if(remote.document) validateWorkspace(remote.document,userId)
       const hasLocal=SYNC_TABLES.some(name=>local.tables[name].length>0)
       const localDirty=base ? localHash!==base.hash : hasLocal
       const remoteChanged=remote.revision!==(base?.revision ?? 0)
       const remoteHash=remote.document ? await digest(remote.document) : undefined
+      guard()
+      let syncedHash=localHash
+      let syncedRevision=remote.revision
       if(localHash===remoteHash) {
         localStorage.setItem(stateKey(userId),JSON.stringify({revision:remote.revision,hash:localHash}))
       } else if(remoteChanged && localDirty && !choice) {
@@ -95,20 +119,30 @@ export async function syncWorkspace(choice?: 'local'|'remote'): Promise<void> {
         validateWorkspace(remote.document,userId)
         const restored=await window.electronAPI.workspaceSync({token,action:'restore',revision:remote.revision})
         guard()
+        validateWorkspace(restored.document!,userId)
+        if(restored.revision!==remote.revision) throw new Error('SYNC_CONFLICT: 云端版本已变化，未覆盖。')
         // User edits during download must never be silently replaced.
         if(await digest(await captureWorkspace(userId))!==localHash) throw new Error('SYNC_CONFLICT: 同步期间本机有新修改，未覆盖。')
+        guard()
         await restoreWorkspace(restored.document!,local)
-        localStorage.setItem(stateKey(userId),JSON.stringify({revision:restored.revision,hash:await digest(restored.document!)}))
+        syncedHash=await digest(restored.document!)
+        syncedRevision=restored.revision
+        localStorage.setItem(stateKey(userId),JSON.stringify({revision:syncedRevision,hash:syncedHash}))
       } else if(localDirty || choice==='local') {
         guard()
         const result=await window.electronAPI.workspaceSync({token,action:'push',revision:remote.revision,document:local})
         guard()
+        syncedRevision=result.revision
         localStorage.setItem(stateKey(userId),JSON.stringify({revision:result.revision,hash:localHash}))
       }
-      syncState.conflict=false; syncState.message='已同步（本机仍保留离线副本）'
+      const pending=await digest(await captureWorkspace(userId))!==syncedHash
+      guard()
+      syncState.revision=syncedRevision
+      syncState.conflict=false; syncState.message=pending?'本机有新修改待同步（已保留），请再次同步。':'已同步'
       window.dispatchEvent(new Event('felt-workspace-synced'))
     } catch(e) {
-      const message=(e as Error).message
+      if(!isCurrent()) { syncState.conflict=false;syncState.message='账号已切换，请同步当前账号。';syncState.revision=0;return }
+      const message=e instanceof Error?e.message:String(e)
       if(message.includes('SYNC_CONFLICT'))syncState.conflict=true
       syncState.message=message+'；本机数据保留，可稍后重试。'
     } finally { syncState.busy=false }

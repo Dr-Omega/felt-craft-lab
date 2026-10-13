@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import type { PlazaPost } from '@shared/contracts/plaza'
 import AuthArtboard from '../components/auth/AuthArtboard.vue'
 import PlazaPostDetailModal from '../components/plaza/PlazaPostDetailModal.vue'
-import { openLobby, openPersonalCenter } from '../app-nav'
+import { openLobby } from '../app-nav'
 import { loadPlazaSession } from '../services/plaza-session'
 import { listPlazaPosts, loadPlazaPreviewUrl } from '../services/plaza-api'
 import { plazaV2Assets, plazaV2ContentSlotStyle, plazaV2FullLayerStyle, plazaV2HitBoxStyle } from '../ui/plaza-v2-assets'
@@ -17,9 +17,12 @@ const activeTab = ref<'public' | 'personal'>('public')
 const publicTabHit = plazaV2HitBoxStyle('public-tab')
 const personalTabHit = plazaV2HitBoxStyle('personal-tab')
 const backHit = plazaV2HitBoxStyle('back-button')
-const publicTabLayerClass = 'plaza-v2-tab-layer--active'
-const personalTabLayerClass = 'plaza-v2-tab-layer--idle'
-function selectTab(tab: string): void { if (tab === 'personal') openPersonalCenter() }
+const publicTabLayerClass = computed(() => activeTab.value === 'public' ? 'plaza-v2-tab-layer--active' : 'plaza-v2-tab-layer--idle')
+const personalTabLayerClass = computed(() => activeTab.value === 'personal' ? 'plaza-v2-tab-layer--active' : 'plaza-v2-tab-layer--idle')
+// The plaza contains published posts only. Private drafts remain in the account's works section.
+const visiblePosts = computed(() => activeTab.value === 'public'
+  ? posts.value : posts.value.filter(post => post.userId === session?.user.userId))
+function selectTab(tab: 'public' | 'personal'): void { activeTab.value = tab; detail.value = null }
 async function refresh(): Promise<void> {
   if (!session) return
   loading.value = true; error.value = ''
@@ -110,10 +113,10 @@ onMounted(refresh)
       :aria-label="activeTab === 'public' ? '公共空间作品' : '个人空间作品'"
     >
       <p v-if="loading" role="status">正在加载分享作品…</p>
-      <p v-else-if="error" role="alert">{{ error }} <button @click="refresh">重试</button></p>
-      <p v-else-if="!posts.length">还没有人分享作品。可从个人中心选择作品发布。</p>
+      <p v-else-if="error" role="alert">{{ error }} <button class="hand-btn-secondary" @click="refresh">重试</button></p>
+      <p v-else-if="!visiblePosts.length">{{ activeTab === 'public' ? '暂无分享。可在个人中心发布作品。' : '暂无分享。草稿和未发布作品在个人中心。' }}</p>
       <ul class="plaza-grid">
-        <li v-for="post in posts" :key="post.postId">
+        <li v-for="post in visiblePosts" :key="post.postId">
           <button type="button" class="plaza-card text-box-surface" @click="detail = post">
             <div class="plaza-card__thumb"><img v-if="previews[post.postId]" :src="previews[post.postId]" :alt="post.title" /></div>
             <div class="plaza-card__body"><h3>{{ post.title }}</h3><p>{{ post.authorName }} · {{ post.likeCount }} 赞</p></div>
@@ -175,7 +178,7 @@ onMounted(refresh)
 }
 
 .plaza-v2-tab-layer--idle {
-  mix-blend-mode: multiply;
+  mix-blend-mode: normal;
   opacity: 1;
 }
 
@@ -247,7 +250,7 @@ onMounted(refresh)
 .plaza-card__thumb img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 </style>
