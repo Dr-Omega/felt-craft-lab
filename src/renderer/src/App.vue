@@ -16,6 +16,7 @@ import LobbyPage from './pages/LobbyPage.vue'
 import PersonalCenterPage from './pages/PersonalCenterPage.vue'
 import PlazaPage from './pages/PlazaPage.vue'
 import RewardCenterPage from './pages/RewardCenterPage.vue'
+import BearHomePage from './pages/BearHomePage.vue'
 import CenterToastOverlay from './components/shell/CenterToastOverlay.vue'
 import WorkspaceSyncStatus from './components/shell/WorkspaceSyncStatus.vue'
 import { openLobby } from './app-nav'
@@ -38,6 +39,7 @@ async function returnFromStory(): Promise<void> {
   <LobbyPage v-else-if="view === 'lobby'" />
   <PersonalCenterPage v-else-if="view === 'profile'" />
   <PlazaPage v-else-if="view === 'plaza'" />
+  <BearHomePage v-else-if="view === 'rewards' && getRewardEntry() === 'bear'" />
   <RewardCenterPage v-else-if="view === 'rewards'" :initial-tab="getRewardEntry()" />
   <EditorPage v-else-if="view === 'editor'" />
   <LearningZonePage v-else-if="view === 'learning'" />

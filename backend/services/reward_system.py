@@ -377,7 +377,7 @@ class RewardSystem:
             raise RewardError("FORBIDDEN", "仅儿童账号可设置房间", 403)
         if (not isinstance(body, dict) or set(body) != {"character", "furniture", "revision"}
                 or body.get("character") not in ("小熊", "小兔", "小猫")
-                or body.get("furniture") not in ("原木色", "薄荷绿", "樱花粉")
+                or body.get("furniture") not in ("原木色", "薄荷绿", "樱花粉", "沙发款")
                 or type(body.get("revision")) is not int or body["revision"] < 0):
             raise RewardError("INVALID_ARGUMENT", "房间设置无效")
         with self._connect() as conn:

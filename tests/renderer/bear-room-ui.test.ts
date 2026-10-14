@@ -6,6 +6,16 @@ const page = readFileSync(resolve('src/renderer/src/pages/RewardCenterPage.vue')
 const bearView = page.split('class="reward-content bear-view"')[1].split('activeTab === \'admin\'')[0]
 
 describe('bear room artwork and supported controls', () => {
+  it('routes to the fullscreen home and keeps shared gateway error messages', () => {
+    const app = readFileSync(resolve('src/renderer/src/App.vue'), 'utf8')
+    const home = readFileSync(resolve('src/renderer/src/pages/BearHomePage.vue'), 'utf8')
+    expect(app).toContain('<BearHomePage v-else-if="view === \'rewards\' && getRewardEntry() === \'bear\'"')
+    expect(home).toContain("typeof shared?.message === 'string'")
+    expect(home).not.toContain('error instanceof Error')
+    expect(home).toContain('await feedBear(session.token, food.foodId, currency)')
+    expect(home).toContain('revision: roomRevision.value')
+  })
+
   it('renders the original flattened artwork without pretending to replace its layers', () => {
     expect(bearView).toContain(':src="rewardAssets.bearRoom"')
     expect(page).not.toMatch(/hue-rotate|bearRoomStyle|selectedFurniture|selectedIp|runIpAction/)

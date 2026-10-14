@@ -7,6 +7,7 @@ import createMushroomUrl from '../../../../assets/ui/lobby/create-mushroom.png'
 import shareTipUrl from '../../../../assets/ui/lobby/share-tip.png'
 import learningTipUrl from '../../../../assets/ui/lobby/learning-tip.png'
 import createTipUrl from '../../../../assets/ui/lobby/create-tip.png'
+import bearHomeTipUrl from '../../../../assets/ui/lobby/bear-home-tip.png'
 
 export const lobbyAssets = {
   backgroundOne: backgroundOneUrl,
@@ -17,5 +18,6 @@ export const lobbyAssets = {
   createMushroom: createMushroomUrl,
   shareTip: shareTipUrl,
   learningTip: learningTipUrl,
-  createTip: createTipUrl
+  createTip: createTipUrl,
+  bearHomeTip: bearHomeTipUrl
 } as const
