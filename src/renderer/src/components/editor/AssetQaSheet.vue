@@ -31,6 +31,7 @@ import {
   type AssetQaSnapshot
 } from './asset-qa.controller'
 import SourceArtboard from '../artwork/SourceArtboard.vue'
+import QaMessageBubble from './QaMessageBubble.vue'
 import { suppliedArt } from '../../ui/supplied-controls'
 import { handDrawnAssets } from '../../ui/hand-drawn-assets'
 import { conciseCopy } from '../../ui/concise-copy'
@@ -379,11 +380,6 @@ const voiceBarText = computed(() => {
   return ''
 })
 
-const emptyTitleCopy = computed(() => {
-  if (props.asset?.nameZh) return `你想问${props.asset.nameZh}什么？`
-  return '你想问它什么？'
-})
-
 const loadingCopy = computed(() => {
   if (props.asset?.nameZh) return `${props.asset.nameZh}正在想一想……`
   return '正在想一想……'
@@ -395,8 +391,7 @@ const inputPlaceholder = computed(() => {
   if (isAsrBusy.value) return '正在识别录音…'
   return ''
 })
-// One conversation turn occupies the original two bubble slots. History scrolls by turn;
- // source geometry is not stretched to fit message length (each text area scrolls).
+// Keep the original PNGs and bubble width; stretch only their height to fit text.
 const thread = ref<HTMLElement>()
 const turns = computed(() => {
   const rows: { question: string; answer: string }[] = []
@@ -404,11 +399,13 @@ const turns = computed(() => {
     if (message.role === 'user') rows.push({ question: message.content, answer: '' })
     else { if (!rows.length) rows.push({ question: '', answer: '' }); rows[rows.length - 1].answer += message.content }
   }
-  return rows.length ? rows : [{ question: '', answer: emptyTitleCopy.value }]
+  if (snapshot.value.pendingQuestion) rows.push({ question: snapshot.value.pendingQuestion, answer: '' })
+  return rows
 })
-watch(() => snapshot.value.history.length, async () => {
+watch(() => [snapshot.value.history.length, snapshot.value.pendingQuestion], async () => {
   await nextTick()
-  if (thread.value) thread.value.scrollTop = thread.value.scrollHeight
+  const latest = thread.value?.querySelector<HTMLElement>('.qa-turn:last-child .qa-bubble:last-child')
+  if (thread.value && latest) thread.value.scrollTop = latest.offsetTop
 })
 </script>
 
@@ -426,13 +423,11 @@ watch(() => snapshot.value.history.length, async () => {
           <button class="qa-close" aria-label="关闭问问它" @click="onClose"><img :src="handDrawnAssets.btnClose" alt="" /></button>
           <div ref="thread" class="qa-turns" role="log" aria-live="polite" aria-label="对话记录" tabindex="0">
             <section v-for="(turn, index) in turns" :key="index" class="qa-turn">
-              <svg class="qa-question-art" viewBox="959 207 479 149" aria-hidden="true"><image :href="suppliedArt.qaUser" width="1920" height="1080" /></svg>
-              <svg class="qa-answer-art" viewBox="480 363 479 149" aria-hidden="true"><image :href="suppliedArt.qaAssistant" width="1920" height="1080" /></svg>
-              <p class="qa-question-text" tabindex="0" aria-label="我的提问">{{ turn.question }}</p>
-              <p class="qa-answer-text" tabindex="0" aria-label="回答">{{ turn.answer || (isBusy ? loadingCopy : '') }}</p>
+              <QaMessageBubble v-if="turn.question" role="user" :text="turn.question" />
+              <QaMessageBubble v-if="turn.answer" role="assistant" :text="turn.answer" />
             </section>
           </div>
-          <p class="qa-feedback" :role="snapshot.errorMessage ? 'alert' : 'status'">{{ conciseCopy(snapshot.errorMessage || snapshot.micHint || voiceBarText) }}</p>
+          <p class="qa-feedback" :role="snapshot.errorMessage ? 'alert' : 'status'">{{ conciseCopy(snapshot.errorMessage || (isBusy ? loadingCopy : '') || snapshot.micHint || voiceBarText) }}</p>
           <form @submit.prevent="sendTextQuestion">
             <textarea :value="snapshot.input" class="qa-text-entry" :maxlength="ASSET_QA_MAX_QUESTION" :placeholder="inputPlaceholder" :disabled="isBusy || isRecording || isAsrBusy || isMicStarting" aria-label="问问它的问题"
               @input="event => controller.setInput((event.target as HTMLTextAreaElement).value)"
@@ -457,12 +452,9 @@ watch(() => snapshot.value.history.length, async () => {
 .qa-heading { position: absolute; left: 494px; top: 168px; width: 860px; height: 32px; font-size: 24px; line-height: 32px; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .qa-close { position: absolute; left: 1438px; top: 165px; width: 36px; height: 36px; padding: 0; pointer-events: auto; border: 0; background: transparent; }
 .qa-close img { width: 100%; height: 100%; object-fit: contain; }
-.qa-turns { position: absolute; left: 480px; top: 207px; width: 976px; height: 305px; overflow-x: hidden; overflow-y: auto; pointer-events: auto; scroll-snap-type: y mandatory; }
-.qa-turn { position: relative; width: 958px; height: 305px; scroll-snap-align: start; }
-.qa-question-art, .qa-answer-art { position: absolute; width: 479px; height: 149px; pointer-events: none; }
-.qa-question-art { left: 479px; top: 0; }.qa-answer-art { left: 0; top: 156px; }
-.qa-question-text, .qa-answer-text { position: absolute; width: 419px; height: 80px; overflow-x: hidden; overflow-y: auto; margin: 0; font-size: 24px; line-height: 1.4; white-space: pre-wrap; overflow-wrap: anywhere; }
-.qa-question-text { left: 504px; top: 17px; }.qa-answer-text { left: 30px; top: 169px; }
+.qa-turns { position: absolute; left: 480px; top: 207px; width: 976px; height: 305px; overflow-x: hidden; overflow-y: auto; pointer-events: auto; }
+.qa-turn { display: flex; flex-direction: column; gap: 6px; width: 958px; }
+.qa-turn + .qa-turn { margin-top: 14px; }
 .qa-feedback { position: absolute; left: 494px; top: 522px; width: 932px; height: 38px; margin: 0; font-size: 22px; overflow: auto; pointer-events: auto; }
 .qa-text-entry { position: absolute; left: 514px; top: 586px; width: 892px; height: 143px; resize: none; border: 0; padding: 8px; background: transparent; color: inherit; font: inherit; font-size: 26px; pointer-events: auto; }
 .qa-voice-art { position: absolute; left: 1175px; top: 745px; width: 199px; height: 69px; padding: 0; border: 0; background: transparent; pointer-events: auto; }

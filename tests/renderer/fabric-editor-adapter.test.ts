@@ -386,7 +386,7 @@ describe('FabricEditorAdapter', () => {
     await adapter.importScene(scene, resolver())
     const objectId = await adapter.addSticker(materialAsset('sticker'), validAccess, { left: 500, top: 400, fitBox: { width: 200, height: 120 } })
     expect(canvas.getObjects().find(item => item.objectId === objectId)).toMatchObject({
-      scaleX: .25, scaleY: .25, lockMovementX: false, lockMovementY: false, lockScalingX: true, lockScalingY: true, lockRotation: true
+      scaleX: .25, scaleY: .25, lockMovementX: false, lockMovementY: false, lockScalingX: true, lockScalingY: true, lockRotation: true, hasControls: false, hasBorders: false
     })
     expect(adapter.exportScene().objects[0]).toMatchObject({ left: 500, top: 400, scaleX: .25, scaleY: .25 })
   })

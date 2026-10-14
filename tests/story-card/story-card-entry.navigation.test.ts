@@ -11,11 +11,36 @@ vi.mock('../../src/renderer/src/services/plaza-session', () => ({
 vi.mock('../../src/renderer/src/workflows/saved-work', () => ({
   loadSavedWork: mocks.load, savedWorkStoryContext: mocks.context
 }))
-import { getAppView, getEditorLaunch, getStoryCardContext, openEditor, openLibrary, openSavedWork, returnFromSavedWork } from '../../src/renderer/src/app-nav'
+import { continueStoryToExplode, getWorkDisplayEntry, getAppView, getEditorLaunch, getStoryCardContext, openEditor, openLibrary, openSavedWork, returnFromSavedWork } from '../../src/renderer/src/app-nav'
 const context: StoryCardWorkContext = { workId: 'work', completionStatus: 'completed',
   artworkImageRef: 'felt-resource://preview/work.png', background: null, subject: { name: '作品' }, stickers: [] }
 afterEach(() => { openLibrary(); vi.clearAllMocks() })
 describe('saved work navigation', () => {
+  it('continues from story directly to explosion and returns through story to the saved editor', async () => {
+    const work = validFeltProject()
+    mocks.load.mockResolvedValue(work); mocks.context.mockResolvedValue(context)
+    await openSavedWork(work.projectId, 'story-card', 'editor')
+    await continueStoryToExplode(work.projectId)
+    expect(getAppView()).toBe('work-display')
+    expect(getWorkDisplayEntry()).toBe('explode')
+    await returnFromSavedWork()
+    expect(getAppView()).toBe('story-card')
+    await returnFromSavedWork()
+    expect(getAppView()).toBe('editor')
+    await openSavedWork(work.projectId, 'work-display', 'profile')
+    expect(getWorkDisplayEntry()).toBe('picture')
+    await returnFromSavedWork()
+    expect(getAppView()).toBe('profile')
+  })
+  it('does not advance a missing or different story work', async () => {
+    const work = validFeltProject()
+    mocks.load.mockResolvedValue(work); mocks.context.mockResolvedValue(context)
+    await openSavedWork(work.projectId, 'story-card', 'profile')
+    await expect(continueStoryToExplode('other')).rejects.toThrow()
+    mocks.load.mockRejectedValue(new Error('missing'))
+    await expect(continueStoryToExplode(work.projectId)).rejects.toThrow('missing')
+    expect(getAppView()).toBe('story-card')
+  })
   it('opens Vue-proxied library rows without mutating the saved scene', () => {
     const work = reactive(validFeltProject())
     openEditor({ mode: 'project', projectId: work.projectId, scene: work.scene })

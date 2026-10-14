@@ -30,6 +30,7 @@ export interface AssetQaClient {
 
 export interface AssetQaSnapshot {
   history: QaHistoryMessage[]
+  pendingQuestion: string
   busy: boolean
   errorMessage: string
   micAvailability: MicAvailability
@@ -59,6 +60,7 @@ const TRANSCRIPT_FAIL_TEXT = '刚刚没听清，再说一次吧。'
 function defaultSnapshot(partial: Partial<AssetQaSnapshot> = {}): AssetQaSnapshot {
   return {
     history: [],
+    pendingQuestion: '',
     busy: false,
     errorMessage: '',
     micAvailability: 'unknown',
@@ -104,6 +106,7 @@ export function friendlyAsrErrorMessage(err?: unknown): string {
 
 export class AssetQaController {
   private history: QaHistoryMessage[] = []
+  private pendingQuestion = ''
   private input = ''
   private busy = false
   private errorMessage = ''
@@ -128,6 +131,7 @@ export class AssetQaController {
   snapshot(): AssetQaSnapshot {
     return {
       history: this.history.slice(),
+      pendingQuestion: this.pendingQuestion,
       busy: this.busy,
       errorMessage: this.errorMessage,
       micAvailability: this.micAvailability,
@@ -150,6 +154,7 @@ export class AssetQaController {
     this.inflight = null
     this.busy = false
     this.history = []
+    this.pendingQuestion = ''
     this.input = ''
     this.errorMessage = ''
     this.isRecording = false
@@ -261,6 +266,7 @@ export class AssetQaController {
     this.errorMessage = ''
     const myGen = ++this.generation
     this.inflight = { generation: myGen, sentAt: text }
+    this.pendingQuestion = text
     this.busy = true
     this.emit()
     try {
@@ -281,6 +287,7 @@ export class AssetQaController {
         { role: 'assistant', content: result.answer }
       ]
       this.input = ''
+      this.pendingQuestion = ''
       this.errorMessage = ''
     } catch (err) {
       if (myGen !== this.generation) return

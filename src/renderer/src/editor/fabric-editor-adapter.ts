@@ -847,7 +847,7 @@ export class FabricEditorAdapter {
         if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0 || !Number.isFinite(scale) || scale <= 0) {
           throw editorError('INVALID_ARGUMENT', 'Task sticker fit box must be positive and finite.')
         }
-        loaded.object.set({ scaleX: scale, scaleY: scale, lockScalingX: true, lockScalingY: true, lockRotation: true, hasControls: false })
+        loaded.object.set({ scaleX: scale, scaleY: scale, lockScalingX: true, lockScalingY: true, lockRotation: true, hasControls: false, hasBorders: false })
         loaded.object.setCoords()
       } catch (error) { loaded.release(); throw error }
     }

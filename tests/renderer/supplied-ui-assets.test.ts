@@ -16,7 +16,10 @@ describe('supplied UI source identity and positions', () => {
     expect(material).not.toContain('完成主题引导后解锁。')
     expect(read('components/editor/BackgroundDrawer.vue')).toContain('background-drawer art-scrollbars')
     const tools = read('pages/EditorPage.vue').split('class="creation-tools-menu"')[1].split('</div>')[0]
-    expect(tools.match(/class="hand-btn-primary"/g)).toHaveLength(5)
+    expect(tools.match(/class="hand-btn-primary"/g)).toHaveLength(2)
+    const page = read('pages/EditorPage.vue')
+    expect(page).toContain('handDrawnAssets.btnRoundMaterial')
+    expect(page).toContain('handDrawnAssets.backgroundTrigger')
   })
   it('uses reusable source artwork for role cancel and registration without moving supplied roles', () => {
     const role = readFileSync(resolve('src/renderer/src/components/auth/RoleArtworkPicker.vue'), 'utf8')
@@ -45,8 +48,11 @@ describe('supplied UI source identity and positions', () => {
   })
   it('keeps the guided unlock guard while replacing the question entry', () => {
     const source = readFileSync(resolve('src/renderer/src/pages/LearningZonePage.vue'),'utf8')
-    expect(source).toContain('v-if="isUnlocked && questionAsset"')
+    expect(source).toContain('v-else class="unlocked-panel"')
     expect(source).toContain('bounds="1037 816 182 76"')
-    expect(source).toContain('qaAsset = questionAsset')
+    expect(source).toContain('qaAsset = asset')
+    expect(source).not.toContain('questionAssetId')
+    expect(source).not.toContain('<h3>主题贴纸</h3>')
+    expect(source.split('class="material-card"')[1].split('</article>')[0]).toContain('class="material-question"')
   })
 })

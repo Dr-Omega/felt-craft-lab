@@ -20,7 +20,7 @@ describe('minimal user-facing copy', () => {
   it('removes repeated always-on instructions without removing the real controls', () => {
     const learning = source('pages/LearningZonePage.vue')
     expect(learning).not.toContain('背景和主题贴纸均已收集。点击素材名称选择')
-    expect(learning).toContain('question-source-entry')
+    expect(learning).toContain('material-question')
     const create = source('pages/CreateAssetPage.vue')
     expect(create).not.toContain('<p class="stage-hint">')
     expect(create).not.toContain('正在问这栏')

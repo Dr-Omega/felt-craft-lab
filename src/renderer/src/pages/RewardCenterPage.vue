@@ -15,7 +15,6 @@ import { openPlaza, openPersonalCenter, openLobby } from '../app-nav'
 import { showCenterToast } from '../composables/center-toast'
 import { loadPlazaSession } from '../services/plaza-session'
 import {
-  saveBearRoom,
   claimInboxReward,
   convertDiamonds,
   feedBear,
@@ -42,20 +41,6 @@ const busyKey = ref('')
 const convertAmount = ref(1)
 const rechargeOpen = ref(false)
 const blindBoxReveal = ref<(typeof rewardAssets.blindBox)[number] | null>(null)
-const selectedIp = ref('小熊')
-const selectedFurniture = ref('原木色')
-const roomRevision = ref(0)
-const roomLoaded = ref(false)
-const ipActionMessage = ref('')
-const furnitureColors = ['原木色', '薄荷绿', '樱花粉']
-const ipVariants = [
-  { name: '小熊', action: '挥挥手' },
-  { name: '小兔', action: '跳一跳' },
-  { name: '小猫', action: '眨眨眼' }
-]
-const bearRoomStyle = computed(() => ({
-  filter: selectedFurniture.value === '薄荷绿' ? 'hue-rotate(42deg) saturate(.9)' : selectedFurniture.value === '樱花粉' ? 'hue-rotate(315deg) saturate(1.05)' : 'none'
-}))
 
 const role = computed<UserRole>(() => dashboard.value?.user.role ?? session?.user.role ?? 'child')
 const wallet = computed(() => dashboard.value?.wallet ?? { coins: 0, diamonds: 0, updatedAt: '' })
@@ -83,12 +68,6 @@ function applyWallet(next: { coins: number; diamonds: number; updatedAt: string 
 async function refreshDashboard(): Promise<void> {
   if (!session?.token) return
   dashboard.value = await loadRewardDashboard(session.token)
-  if (!roomLoaded.value && dashboard.value.room) {
-    selectedIp.value = dashboard.value.room.character
-    selectedFurniture.value = dashboard.value.room.furniture
-    roomRevision.value = dashboard.value.room.revision
-    roomLoaded.value = true
-  }
 }
 
 async function refreshInbox(): Promise<void> {
@@ -137,31 +116,6 @@ async function convert(): Promise<void> {
     applyWallet(result.wallet)
     await refreshDashboard()
     showCenterToast(`${amount} 钻石已转换为 ${result.receivedCoins} 金币`)
-  })
-}
-
-
-function runIpAction(): void {
-  const ip = ipVariants.find((item) => item.name === selectedIp.value)
-  ipActionMessage.value = ip ? `${ip.name}正在${ip.action}` : ''
-}
-
-async function saveRoom(): Promise<void> {
-  if (!session?.token || !roomLoaded.value) return
-  await run('room', async () => {
-    const saved = await saveBearRoom(session.token, {
-      character: selectedIp.value, furniture: selectedFurniture.value, revision: roomRevision.value
-    })
-    roomRevision.value = saved.revision
-    showCenterToast('房间设置已保存')
-  })
-}
-
-async function reloadRoom(): Promise<void> {
-  await run('room', async () => {
-    roomLoaded.value = false
-    await refreshDashboard()
-    showCenterToast('房间设置已载入')
   })
 }
 
@@ -251,7 +205,7 @@ onMounted(() => void loadPage())
   >
     <img class="reward-skin reward-skin--background" :src="rewardAssets.growthCenter.background" alt="" aria-hidden="true" />
     <div class="reward-panel">
-      <div class="reward-scroll">
+      <div class="reward-scroll art-scrollbars">
     <header class="reward-header">
       <div v-if="!embedded" class="reward-title">
         <h1>{{ activeTab === 'bear' ? '小熊的家' : activeTab === 'inbox' ? '反馈邮箱' : activeTab === 'store' ? '商城' : '账户与流水' }}</h1>
@@ -394,26 +348,17 @@ onMounted(() => void loadPage())
 
     <section v-else-if="activeTab === 'bear'" class="reward-content bear-view">
       <div class="bear-room">
-        <img class="bear-room-image" :style="bearRoomStyle" :src="rewardAssets.bearRoom" alt="小熊的家" />
-        <div class="bear-room-state"><strong>{{ selectedIp }}</strong><span>{{ selectedFurniture }} · {{ ipActionMessage || '等待互动' }}</span></div>
+        <img class="bear-room-image" :src="rewardAssets.bearRoom" alt="小熊的家" />
       </div>
       <div class="food-tray">
-        <section class="bear-customizer" aria-label="小熊房间动态内容">
-          <h2>房间与 IP</h2>
-          <label>IP 角色<select v-model="selectedIp" :disabled="Boolean(busyKey)"><option v-for="ip in ipVariants" :key="ip.name" :value="ip.name">{{ ip.name }}</option></select></label>
-          <button type="button" class="custom-action" @click="runIpAction">文字互动</button>
-          <div class="furniture-choice"><span>房间配色预览</span><button v-for="color in furnitureColors" :key="color" type="button" :disabled="Boolean(busyKey)" :class="{ selected: selectedFurniture === color }" @click="selectedFurniture = color">{{ color }}</button></div>
-          <button type="button" class="primary" :disabled="Boolean(busyKey) || !roomLoaded" @click="saveRoom">保存房间设置</button>
-          <button type="button" :disabled="Boolean(busyKey)" @click="reloadRoom">重新载入房间设置</button>
-        </section>
         <article v-for="food in dashboard?.foods" :key="food.foodId" class="food-item">
           <img :src="foodImage(food.foodId)" :alt="food.name" />
           <h3>{{ food.name }}</h3>
           <div class="price-actions">
-            <button type="button" :disabled="Boolean(busyKey)" @click="feed(food, 'coins')">
+            <button type="button" class="hand-btn-secondary" :aria-label="`用 ${food.coinPrice} 金币喂${food.name}`" :disabled="Boolean(busyKey)" @click="feed(food, 'coins')">
               <img :src="rewardAssets.coin" alt="金币" />{{ food.coinPrice }}
             </button>
-            <button type="button" :disabled="Boolean(busyKey)" @click="feed(food, 'diamonds')">
+            <button type="button" class="hand-btn-secondary" :aria-label="`用 ${food.diamondPrice} 钻石喂${food.name}`" :disabled="Boolean(busyKey)" @click="feed(food, 'diamonds')">
               <img :src="rewardAssets.diamond" alt="钻石" />{{ food.diamondPrice }}
             </button>
           </div>
@@ -680,28 +625,15 @@ th { color: #675b50; font-size: 15px; }
 .price-actions button { display: flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; min-height: 48px; padding: 0 10px; border: 1px solid #cbbfae; border-radius: 6px; background: #faf8f3; color: #493d33; }
 .product-card .price-actions { grid-column: 2; align-self: start; }
 
-.bear-view { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(320px, 0.7fr); gap: 28px; }
-.bear-room { aspect-ratio: 16 / 9; overflow: hidden; border: 1px solid #cbbfae; border-radius: 8px; background: #a17d4d; }
-.bear-room-image { display: block; width: 100%; height: 100%; object-fit: cover; transition: filter 180ms ease; }
-.bear-room { position: relative; }
-.bear-room-state { position: absolute; left: 18px; bottom: 18px; display: grid; gap: 3px; padding: 9px 13px; border-radius: 7px; background: rgba(255, 250, 231, .88); color: #563c2d; }
-.bear-room-state span { font-size: 13px; color: #80634c; }
-.bear-customizer {
-  display: grid;
-  gap: 10px;
-  padding: 16px;
-  border: 18px solid transparent;
-  border-image-source: var(--reward-card-image);
-  border-image-slice: 42 fill;
-  border-image-width: 18px;
-  border-image-repeat: stretch;
-  background: transparent;
-}
-.bear-customizer h2 { margin: 0; font-size: 20px; }.bear-customizer label { display: grid; gap: 6px; color: #766858; }.bear-customizer select { min-height: 38px; padding: 4px 8px; border: 1px solid #c9beb0; border-radius: 5px; font: inherit; }.custom-action { min-height: 40px; border: 1px solid #b88a55; border-radius: 6px; background: #fff5d8; color: #70431f; }.furniture-choice { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; color: #766858; }.furniture-choice button { padding: 5px 8px; border: 1px solid #cbbfae; border-radius: 5px; background: #faf8f3; color: #493d33; }.furniture-choice button.selected { border-color: #b4473d; background: #ffe4c4; }
+.bear-view { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(320px, 0.7fr); align-items: start; gap: 28px; }
+.bear-room { overflow: hidden; border: 1px solid #cbbfae; border-radius: 8px; }
+.bear-room-image { display: block; width: 100%; height: auto; }
 .food-tray { display: grid; gap: 12px; }
 .food-item { display: grid; grid-template-columns: 92px 1fr; align-items: center; gap: 8px 14px; }
 .food-item > img { grid-row: 1 / 3; width: 88px; height: 88px; object-fit: contain; }
 .food-item h3 { min-height: 0; margin: 0; }
+.food-item .price-actions .hand-btn-secondary { border: 0; background-color: transparent; background-image: url('../../../../assets/ui/hand-drawn/btn-secondary.png'); background-size: 100% 100%; background-repeat: no-repeat; }
+.food-item button:focus-visible { outline: 3px solid #70431f; outline-offset: 3px; }
 
 .admin-view h3 { margin-top: 32px; }
 .config-row { display: flex; flex-wrap: wrap; gap: 16px; }
@@ -726,6 +658,7 @@ th { color: #675b50; font-size: 15px; }
   .reward-title { text-align: center; }
   .wallet-strip { justify-content: center; }
   .product-grid { grid-template-columns: 1fr; }
+  .bear-view { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 900px) {

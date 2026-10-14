@@ -32,6 +32,7 @@ import {
 } from '../persistence'
 import GuidedThemeTask from '../components/editor/GuidedThemeTask.vue'
 import DrawingFrame from '../components/editor/DrawingFrame.vue'
+import { handDrawnAssets } from '../ui/hand-drawn-assets'
 import BackgroundDrawer from '../components/editor/BackgroundDrawer.vue'
 import MaterialSheet from '../components/editor/MaterialSheet.vue'
 import AssetQaSheet from '../components/editor/AssetQaSheet.vue'
@@ -78,20 +79,6 @@ const sheetOpen = ref(false)
 const qaAsset = ref<AssetRecord | null>(null)
 const backgroundDrawerOpen = ref(false)
 const inputDialogOpen = ref(launch?.chooseImage === true && !guidedTheme)
-const saveMenuOpen = ref(false)
-const saveMenu = ref<HTMLElement | null>(null)
-let saveOpener: HTMLElement | null = null
-function saveMenuKeys(event: KeyboardEvent): void {
-  if (event.key === 'Escape') { saveMenuOpen.value = false; return }
-  if (event.key !== 'Tab') return
-  const buttons = [...(saveMenu.value?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)') ?? [])]
-  if (event.shiftKey && document.activeElement === buttons[0]) { event.preventDefault(); buttons.at(-1)?.focus() }
-  else if (!event.shiftKey && document.activeElement === buttons.at(-1)) { event.preventDefault(); buttons[0]?.focus() }
-}
-watch(saveMenuOpen, async open => {
-  if (open) { saveOpener = document.activeElement as HTMLElement; await nextTick(); saveMenu.value?.querySelector('button')?.focus() }
-  else if (saveOpener?.isConnected) saveOpener.focus()
-})
 const toolsOpen = ref(false)
 const sceneSnapshotMissing = ref(false)
 const currentSelection = ref<EditorSelectionProjection | null>(null)
@@ -494,9 +481,8 @@ async function redo(): Promise<void> {
   try { await session.value.redo() } catch (error) { showFeedback(friendlyError(error), 'error') }
 }
 
-async function finish(next?: 'story-card' | 'work-display'): Promise<void> {
-  if (!session.value || busy.value) return
-  saveMenuOpen.value = false
+async function finish(): Promise<void> {
+  if (!session.value || busy.value || !canFinish.value || guidedTheme || layerEditor.value) return
   closeOqt()
   busy.value = true
   try {
@@ -512,7 +498,7 @@ async function finish(next?: 'story-card' | 'work-display'): Promise<void> {
     }
     session.value.markSaved()
     showFeedback('作品收好啦！', 'success')
-    if (next && projectId) await openSavedWork(projectId, next, 'editor')
+    if (projectId) await openSavedWork(projectId, 'story-card', 'editor')
   } catch (error) {
     showFeedback(friendlyError(error), 'error')
   } finally {
@@ -600,7 +586,7 @@ function requestBack(): void {
     leaveEditor()
     return
   }
-  returnModalOpen.value = true
+  void saveProgressAndBack()
 }
 
 async function saveProgressAndBack(): Promise<void> {
@@ -623,6 +609,7 @@ async function saveProgressAndBack(): Promise<void> {
     leaveEditor()
   } catch (error) {
     returnModalError.value = friendlyError(error)
+    returnModalOpen.value = true
   } finally {
     busy.value = false
   }
@@ -664,9 +651,9 @@ watch([oqtOpen, oqtSelection], () => { void nextTick(updateOqtPosition) })
 
 <template>
   <section class="editor-stage">
-    <DrawingFrame :inert="saveMenuOpen || undefined" :task-mode="!!guidedTheme" :busy="busy" :can-undo="canUndo" :can-redo="canRedo" :can-save="canFinish && !guidedTheme && !layerEditor"
+    <DrawingFrame :task-mode="!!guidedTheme" :busy="busy" :can-undo="canUndo" :can-redo="canRedo" :can-save="canFinish && !guidedTheme && !layerEditor"
       :back-label="guidedTheme ? '返回学习主题' : launch?.returnTo === 'lobby' || launch?.mode === 'new' && !launch?.returnTo ? '返回游戏大厅' : '返回个人作品'"
-      @back="requestBack" @undo="undo" @redo="redo" @save="saveMenuOpen = true">
+      @back="requestBack" @undo="undo" @redo="redo" @save="finish">
       <div class="editor-frame-inner" @click.self="closeTransientContexts">
         <div class="canvas-area" :inert="busy || undefined">
           <div class="canvas-stage">
@@ -698,16 +685,18 @@ watch([oqtOpen, oqtSelection], () => { void nextTick(updateOqtPosition) })
 
       </div>
       <template v-if="!guidedTheme" #tools>
-        <details v-if="!inputDialogOpen" class="creation-tools" :open="toolsOpen" @toggle="toolsOpen = ($event.target as HTMLDetailsElement).open">
-        <summary>创作工具</summary>
-        <div class="creation-tools-menu" @click="toolsOpen = false">
+        <nav v-if="!inputDialogOpen" class="creation-art-tools" aria-label="创作工具">
         <button class="hand-btn-primary" :disabled="busy || !canEdit || !!layerEditor" @click="inputDialogOpen = true">添加图片</button>
-        <button class="hand-btn-primary" aria-label="打开素材盒" :disabled="busy || !canEdit" @click="toggleSheet">素材</button>
-        <button class="hand-btn-primary" aria-label="打开背景选择" :aria-expanded="backgroundDrawerOpen" @click="toggleBackgroundDrawer">背景</button>
+        <button class="creation-art-control" aria-label="打开素材盒" title="素材" :disabled="busy || !canEdit" @click="toggleSheet"><img :src="handDrawnAssets.btnRoundMaterial" alt="" /></button>
+        <button class="creation-art-control creation-background-control" aria-label="打开背景选择" title="背景" :aria-expanded="backgroundDrawerOpen" :disabled="busy || !canEdit" @click="toggleBackgroundDrawer"><img :src="handDrawnAssets.backgroundTrigger" alt="" /></button>
+        <details v-if="!inputDialogOpen" class="creation-tools" :open="toolsOpen" @toggle="toolsOpen = ($event.target as HTMLDetailsElement).open">
+        <summary>更多工具</summary>
+        <div class="creation-tools-menu" @click="toolsOpen = false">
         <button class="hand-btn-primary" :disabled="busy || !currentSelection || !canFinish" @click="editElementLayers">编辑选中元素</button>
         <button class="hand-btn-primary" :disabled="busy || !canEdit" @click="addProcessedElement">加入已分层素材</button>
         </div>
         </details>
+        </nav>
       </template>
     </DrawingFrame>
 
@@ -753,16 +742,6 @@ watch([oqtOpen, oqtSelection], () => { void nextTick(updateOqtPosition) })
       :anchor="layerAnchor" :saved-edit="layerEditor.savedEdit" :apply="applyLayerColor" @preview="previewLayerColor" @close="closeLayerEditor" />
     <CreationInputDialog v-if="inputDialogOpen" :insert="insertCreationImage" @close="inputDialogOpen = false" />
 
-    <div v-if="saveMenuOpen" class="save-choice-backdrop" @click.self="saveMenuOpen = false" @keydown="saveMenuKeys">
-      <section ref="saveMenu" role="dialog" aria-modal="true" aria-label="保存作品后做什么" class="save-choice">
-        <h2>收好作品后，想做什么？</h2>
-        <button autofocus :disabled="busy || !!layerEditor" @click="finish()">保存，继续画</button>
-        <button :disabled="busy || !!layerEditor" @click="finish('story-card')">保存并讲故事</button>
-        <button :disabled="busy || !!layerEditor" @click="finish('work-display')">保存并展示</button>
-        <button @click="saveMenuOpen = false">返回画布</button>
-      </section>
-    </div>
-
     <ReturnSaveModal
       :open="returnModalOpen"
       :busy="busy"
@@ -775,12 +754,15 @@ watch([oqtOpen, oqtSelection], () => { void nextTick(updateOqtPosition) })
 </template>
 
 <style>
-.creation-tools { position: relative; margin-left: auto; color: #71351c; }
+.creation-art-tools { display: flex; align-items: center; justify-content: center; gap: 12px; }
+.creation-art-control { border: 0; background: transparent; padding: 0; width: 60px; height: 60px; cursor: pointer; }
+.creation-art-control img { width: 100%; height: 100%; object-fit: contain; }
+.creation-background-control { width: 44px; height: 72px; }
+.creation-art-control:disabled { opacity: .45; cursor: default; }
+.creation-art-control:focus-visible { outline: 3px solid #71351c; outline-offset: 3px; }
+.creation-tools { position: relative; color: #71351c; }
 .creation-tools summary { cursor: pointer; border: 2px solid #71351c; border-radius: 12px; background: #fff4bd; padding: 8px 14px; font-weight: bold; }
 .creation-tools-menu { position: absolute; right: 0; top: 100%; display: grid; gap: 8px; width: 210px; padding: 12px; border: 2px solid #71351c; border-radius: 12px; background: #fff4bd; }
-.save-choice-backdrop { position: fixed; inset: 0; z-index: 300; display: grid; place-items: center; background: #39211055; pointer-events: auto; }
-.save-choice { display: grid; gap: 12px; width: min(430px, 90vw); padding: 24px; border: 4px solid #71351c; border-radius: 20px; background: #fff4bd; }
-.save-choice h2 { margin: 0 0 8px; font-size: 22px; }
 :root {
   --bg-app: #f8f0e2;
   --wood-light: #f0e2c5;

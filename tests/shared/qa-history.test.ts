@@ -4,6 +4,20 @@ import { validateQaIpcInput, withValidatedIpcInput } from '../../src/main/ai/inp
 import { AssetQaController } from '../../src/renderer/src/components/editor/asset-qa.controller'
 
 describe('material QA context and lifecycle', () => {
+  it('shows the sent question immediately without sending incomplete history to AI', async () => {
+    let finish!: (value: { answer: string }) => void
+    const client = { qaAsk: vi.fn(() => new Promise<{ answer: string }>(r => { finish = r })), asrTranscribe: vi.fn() }
+    const controller = new AssetQaController(client)
+    expect(controller.snapshot().pendingQuestion).toBe('')
+    controller.setInput('它是什么颜色？')
+    expect(controller.snapshot().pendingQuestion).toBe('')
+    const pending = controller.submitTextQuestion({ assetId: 'moon', nameZh: '月亮', introZh: '', themeId: 'autumn' })
+    expect(controller.snapshot()).toMatchObject({ history: [], pendingQuestion: '它是什么颜色？', busy: true })
+    expect(client.qaAsk).toHaveBeenCalledWith(expect.objectContaining({ history: [] }))
+    finish({ answer: '淡黄色。' }); await pending
+    expect(controller.snapshot()).toMatchObject({ pendingQuestion: '', busy: false, input: '' })
+    expect(controller.snapshot().history).toHaveLength(2)
+  })
   const pair = [{ role: 'user', content: '这是什么？' }, { role: 'assistant', content: '这是月亮。' }]
   it('accepts only bounded complete alternating turns', () => {
     expect(validQaHistory(undefined)).toBe(true)
@@ -29,6 +43,7 @@ describe('material QA context and lifecycle', () => {
     resolve({ answer: '迟到的回答' })
     await pending
     expect(controller.snapshot().history).toEqual([])
+    expect(controller.snapshot().pendingQuestion).toBe('')
     expect(controller.snapshot().busy).toBe(false)
     controller.resetForClose()
     expect(controller.snapshot().input).toBe('')

@@ -10,7 +10,7 @@ describe('material QA actionable public errors', () => {
     })
     controller.setInput('为什么有月亮？')
     await controller.submitTextQuestion({ assetId: 'moon', nameZh: '月亮', introZh: '', themeId: 'autumn' })
-    expect(controller.snapshot()).toMatchObject({ input: '为什么有月亮？', history: [], busy: false, errorMessage: message })
+    expect(controller.snapshot()).toMatchObject({ input: '为什么有月亮？', pendingQuestion: '为什么有月亮？', history: [], busy: false, errorMessage: message })
   })
 
   it('distinguishes ASR configuration and known timeouts', () => {

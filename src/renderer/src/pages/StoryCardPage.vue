@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onUnmounted, ref, watch, type CSSProperties } from 'vue'
 import { conciseCopy } from '../ui/concise-copy'
+import { continueStoryToExplode } from '../app-nav'
 import type {
   ResourceRef,
   StoryCard,
@@ -544,6 +545,17 @@ function saveFeedback(): void {
   emit('saved', confirmedCard.value)
 }
 
+async function nextToExplode(): Promise<void> {
+  if (busy.value || phase.value !== 'detail' || !confirmedCard.value || !props.workContext) return
+  busy.value = true
+  errorMessage.value = ''
+  try {
+    await continueStoryToExplode(props.workContext.workId)
+  } catch (error) {
+    errorMessage.value = messageFor(error)
+  } finally { busy.value = false }
+}
+
 function requestBack(): void {
   if (busy.value || phase.value === 'processing') {
     notice.value = '正在处理，请稍后返回。'
@@ -642,6 +654,7 @@ onUnmounted(() => {
         <p class="detail-story" :style="box(1210, 333, 360, 455, 4.2)" tabindex="0">{{ confirmedCard.storyText }}</p>
         <time class="detail-date" :style="box(770, 867, 320, 45, 5.2)">{{ dateLabel }}</time>
         <button class="hotspot" :style="box(1735, 422, 130, 225, 7.2)" aria-label="保存故事卡" @click="saveFeedback" />
+        <button class="added-button" :style="box(1660, 820, 200, 82, 101)" :disabled="busy" aria-label="下一步：爆炸图" @click="nextToExplode">下一步</button>
       </template>
 
       <div v-if="phase === 'update-choice'" class="update-panel" :style="box(1120, 235, 490, 560, 8.5)">

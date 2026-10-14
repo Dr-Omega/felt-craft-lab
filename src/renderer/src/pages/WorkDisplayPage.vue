@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { getSavedWork, returnFromSavedWork } from '../app-nav'
+import { getSavedWork, getWorkDisplayEntry, returnFromSavedWork } from '../app-nav'
 import { buildWorkDisplay, type WorkDisplay } from '../workflows/work-display'
 import Stage1920 from '../components/projection/v2/Stage1920.vue'
 import ExplodeScreenV2 from '../components/projection/v2/ExplodeScreenV2.vue'
@@ -14,7 +14,8 @@ const work = getSavedWork()
 const display = ref<WorkDisplay>()
 const error = ref('')
 const loading = ref(true)
-const screen = ref<'picture' | 'explode' | 'export'>('picture')
+const entryScreen = getWorkDisplayEntry()
+const screen = ref<'picture' | 'explode' | 'export'>(entryScreen)
 const subjectSize = ref(defaultSubjectSizeChoice())
 const exporting = ref(false)
 const layoutLayers = computed<LayoutLayerInput[]>(() => layers.value.map((layer, index) => ({
@@ -64,7 +65,7 @@ onUnmounted(() => controller.abort())
         <ExplodeScreenV2 v-if="screen === 'explode'" :layers="layers" :explode="explode / 100" :explode-percent="explode"
           :include-background="includeBackground" background-label="场景背景与画布底色"
           @update:explode-percent="explode = $event" @enable-background="includeBackground = true"
-          @disable-background="includeBackground = false" @back="screen = 'picture'" @next="screen = 'export'" />
+          @disable-background="includeBackground = false" @back="entryScreen === 'explode' ? back() : (screen = 'picture')" @next="screen = 'export'" />
         <ExportScreenV2 v-else :layers="layoutLayers" :subject-size="subjectSize" :work-name="work?.projectName || '作品'"
           :busy="exporting"
           @back="screen = 'explode'" @finish="back" @confirm-export="downloadPdf" />

@@ -50,7 +50,6 @@ const initialUnit = units.find(unit => unit.topics.some(topic => topic.themeId =
 const selectedUnit = ref(initialUnit)
 const selectedTopic = ref(initialUnit.topics.find(topic => topic.themeId === initialTheme) ?? initialUnit.topics[0])
 const qaAsset = ref<AssetRecord | null>(null)
-const questionAssetId = ref('')
 const unlockedThemeIds = ref<string[]>([])
 let pageEpoch = 0
 let activeAudio: HTMLAudioElement | null = null
@@ -61,7 +60,6 @@ const background = computed(() => selectedAssets.value.find(asset => asset.type 
 const stickers = computed(() => selectedAssets.value.filter(asset => asset.type === 'sticker'))
 const isUnlocked = computed(() => unlockedThemeIds.value.includes(selectedTopic.value.themeId))
 const unlockedAssets = computed(() => [...selectedAssets.value].sort((a, b) => a.type === b.type ? 0 : a.type === 'background' ? -1 : 1))
-const questionAsset = computed(() => unlockedAssets.value.find(asset => asset.assetId === questionAssetId.value) ?? unlockedAssets.value[0])
 
 function imageFor(file: string): string {
   return files[`../assets/learning-zone/${file}`] ?? ''
@@ -191,7 +189,6 @@ onBeforeUnmount(() => { pageEpoch++; stopActiveAudio() })
       </div>
       </div>
       <section class="theme-preview-stickers" aria-label="本主题贴纸预览">
-        <h3>主题贴纸</h3>
         <div class="theme-sticker-grid">
           <figure v-for="asset in stickers" :key="asset.assetId">
             <img :src="previewUrl(asset.thumbnailUrl ?? asset.imageUrl)" :alt="asset.nameZh">
@@ -206,19 +203,19 @@ onBeforeUnmount(() => { pageEpoch++; stopActiveAudio() })
     <section v-else class="unlocked-panel" :style="unlockedPanelStyle()" :aria-label="`${selectedTopic.name}已解锁内容`">
       <header><span class="status-label">已解锁</span><h2>{{ selectedTopic.name }}的素材</h2></header>
       <div class="material-list">
-        <article v-for="asset in unlockedAssets" :key="asset.assetId" class="material-card" :class="{ 'background-card': asset.type === 'background', 'question-selected': questionAsset?.assetId === asset.assetId }">
+        <article v-for="asset in unlockedAssets" :key="asset.assetId" class="material-card" :class="{ 'background-card': asset.type === 'background' }">
           <img :src="previewUrl(asset.thumbnailUrl ?? asset.imageUrl)" :alt="asset.nameZh">
           <div>
-            <div class="material-title"><h3><button class="question-select" type="button" :aria-label="`选择${asset.nameZh}用于提问`" :aria-pressed="questionAsset?.assetId === asset.assetId" @click="questionAssetId = asset.assetId">{{ asset.nameZh }} <span>/ {{ asset.nameEn }}</span></button></h3><button class="audio-button name-audio-button" type="button" :aria-label="`播放${asset.nameZh}的中英文名称`" @click="playCatalogAudio([asset.audio.nameZhUrl, asset.audio.nameEnUrl])"><img :src="imageFor('audio-button.png')" alt="">中英文名称</button></div>
+            <div class="material-title"><h3>{{ asset.nameZh }} <span>/ {{ asset.nameEn }}</span></h3><button class="audio-button name-audio-button" type="button" :aria-label="`播放${asset.nameZh}的中英文名称`" @click="playCatalogAudio([asset.audio.nameZhUrl, asset.audio.nameEnUrl])"><img :src="imageFor('audio-button.png')" alt="">中英文名称</button></div>
             <p>{{ asset.introZh }}</p>
             <div class="audio-actions" :aria-label="`${asset.nameZh}的音频`">
               <button class="audio-button" type="button" :aria-label="`播放${asset.nameZh}的中文介绍`" @click="playCatalogAudio([asset.audio.introZhUrl])"><img :src="imageFor('audio-button.png')" alt="">中文介绍</button>
+              <ArtworkButton class="material-question" :image="suppliedArt.qaEntry" bounds="1037 816 182 76" :label="`提问：${asset.nameZh}`" @click="stopActiveAudio(); qaAsset = asset" />
             </div>
           </div>
         </article>
       </div>
     </section>
-    <ArtworkButton v-if="isUnlocked && questionAsset" class="question-source-entry" :image="suppliedArt.qaEntry" bounds="1037 816 182 76" :label="`提问：${questionAsset.nameZh}`" @click="stopActiveAudio(); qaAsset = questionAsset" />
     <img class="layer" :src="imageFor('learning-border.png')" alt="" :style="box(0, 0, 1920, 1080, 70)">
     <button class="back-button" type="button" aria-label="返回大厅" :style="box(39, 35, 208, 112, 100)" @click="openLobby"><img :src="imageFor('back-button.png')" alt=""></button>
   </section>
@@ -227,9 +224,7 @@ onBeforeUnmount(() => { pageEpoch++; stopActiveAudio() })
 </template>
 
 <style scoped>
-.question-source-entry { position: absolute; left: 1037px; top: 816px; width: 182px; height: 76px; z-index: 95; }
-.question-select { border: 0; padding: 0; background: transparent; color: inherit; font: inherit; text-align: left; }
-.question-selected { outline: 3px solid #71331d; outline-offset: -3px; }
+.material-question { flex: 0 0 auto; width: 128px; height: 54px; margin-left: auto; }
 .learning-artboard { z-index: 80; }
 .learning-zone-page {
   position: relative; width: 1920px; height: 1080px; background: #fff2be;
@@ -258,7 +253,6 @@ onBeforeUnmount(() => { pageEpoch++; stopActiveAudio() })
 .background-preview { width: 100%; aspect-ratio: 902 / 516; border: 3px dashed #a9632c; border-radius: 20px; background: #fff7d7; overflow: hidden; }
 .background-preview > img { display: block; width: 100%; height: 100%; object-fit: contain; }
 .theme-preview-stickers { margin-top: 16px; }
-.theme-preview-stickers h3 { margin: 0 0 10px; font-size: 22px; }
 .theme-sticker-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
 .theme-sticker-grid figure { min-width: 0; margin: 0; text-align: center; }
 .theme-sticker-grid img { display: block; width: 100%; height: 68px; object-fit: contain; }
@@ -266,7 +260,7 @@ onBeforeUnmount(() => { pageEpoch++; stopActiveAudio() })
 .begin-guided { border: 2px solid #a45e25; border-radius: 12px; padding: 14px 10px; background: #ffe390; color: #6c210e; font: inherit; font-size: 22px; font-weight: bold; cursor: pointer; }
 .begin-guided:disabled { cursor: wait; opacity: .65; }
 .unlock-panel > [role="alert"] { margin: 0; font-size: 20px; line-height: 1.4; overflow-wrap: anywhere; }
-.unlocked-panel { display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 14px; padding-bottom: 76px; }
+.unlocked-panel { display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 14px; }
 .unlocked-panel header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
 .unlocked-panel h2, .unlocked-panel h3, .unlocked-panel p { margin: 0; }
 .unlocked-panel h2 { font-size: 30px; }
@@ -281,7 +275,7 @@ onBeforeUnmount(() => { pageEpoch++; stopActiveAudio() })
 .material-card h3 span { font-size: .75em; font-weight: 600; }
 .material-card p { margin-top: 8px; color: #71331d; font-size: 21px; line-height: 1.5; white-space: pre-line; }
 .material-card button { cursor: pointer; }
-.audio-actions { display: flex; flex-wrap: wrap; margin-top: 12px; gap: 8px; }
+.audio-actions { display: flex; flex-wrap: wrap; align-items: center; margin-top: 12px; gap: 8px; }
 .audio-button { display: inline-flex; align-items: center; gap: 6px; padding: 4px; border: 0; background: transparent; color: #6c210e; font-weight: 800; font-size: 21px; }
 .name-audio-button { flex: 0 0 auto; }
 .audio-button img { width: 32px; height: auto; }

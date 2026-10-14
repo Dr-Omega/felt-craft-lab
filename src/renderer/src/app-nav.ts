@@ -54,6 +54,7 @@ let launch: EditorLaunchContext | undefined
 let savedWork: ProjectRecord | undefined
 let storyContext: StoryCardWorkContext | undefined
 let workReturn: 'library' | 'editor' | 'profile' = 'library'
+let workDisplayEntry: 'picture' | 'explode' = 'picture'
 let navigationGeneration = 0
 const listeners = new Set<() => void>()
 
@@ -151,10 +152,11 @@ export function openEditor(context: EditorLaunchContext): void {
 
 export function getSavedWork(): ProjectRecord | undefined { return savedWork }
 export function getStoryCardContext(): StoryCardWorkContext | undefined { return storyContext }
+export function getWorkDisplayEntry(): 'picture' | 'explode' { return workDisplayEntry }
 
 /** Load first, navigate only after success. Missing/deleted work never opens a stale page. */
 export async function openSavedWork(
-  projectId: string, target: 'story-card' | 'work-display', back: 'library' | 'editor' | 'profile' = 'library'
+  projectId: string, target: 'story-card' | 'work-display' | 'work-explode', back: 'library' | 'editor' | 'profile' = 'library'
 ): Promise<void> {
   const generation = ++navigationGeneration
   const work = await loadSavedWork(projectId)
@@ -163,11 +165,21 @@ export async function openSavedWork(
   savedWork = work
   storyContext = context
   workReturn = back
-  currentView = target
+  workDisplayEntry = target === 'work-explode' ? 'explode' : 'picture'
+  currentView = target === 'work-explode' ? 'work-display' : target
   notify()
 }
 
+export async function continueStoryToExplode(workId: string): Promise<void> {
+  if (currentView !== 'story-card' || savedWork?.projectId !== workId) throw new Error('请从当前作品的故事卡继续。')
+  await openSavedWork(workId, 'work-explode', workReturn)
+}
+
 export async function returnFromSavedWork(): Promise<void> {
+  if (currentView === 'work-display' && workDisplayEntry === 'explode' && savedWork) {
+    await openSavedWork(savedWork.projectId, 'story-card', workReturn)
+    return
+  }
   if (workReturn === 'editor' && savedWork) {
     const work = await loadSavedWork(savedWork.projectId)
     openEditor({ mode: 'project', projectId: work.projectId, scene: work.scene,

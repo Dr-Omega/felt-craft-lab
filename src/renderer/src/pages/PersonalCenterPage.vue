@@ -207,14 +207,10 @@ onUnmounted(() => window.removeEventListener('felt-workspace-synced', syncRefres
     <button type="button" class="profile-back" aria-label="返回游戏大厅" @click="openLobby"><img :src="profileAssets.back" alt="" /></button>
 
     <nav class="profile-side-nav" aria-label="个人中心导航">
-      <button type="button" :class="{ active: profileSection === 'account' }" aria-label="账号" @click="profileSection = 'account'">
-        <img :src="profileAssets.account" alt="账号" />
-      </button>
-      <button type="button" :class="{ active: profileSection === 'works' }" aria-label="作品" @click="profileSection = 'works'">
-        <img :src="profileAssets.works" alt="作品" />
-      </button>
-      <button v-if="profileRole === 'child'" type="button" class="profile-text-tab" :class="{ active: profileSection === 'inbox' }" @click="profileSection = 'inbox'">邮箱</button>
-      <button v-if="!['parent','admin'].includes(profileRole)" type="button" class="profile-text-tab" :class="{ active: profileSection === 'store' }" @click="profileSection = 'store'">商城</button>
+      <button type="button" class="profile-text-tab" :class="{ active: profileSection === 'account' }" :aria-pressed="profileSection === 'account'" @click="profileSection = 'account'">账号</button>
+      <button type="button" class="profile-text-tab" :class="{ active: profileSection === 'works' }" :aria-pressed="profileSection === 'works'" @click="profileSection = 'works'">作品</button>
+      <button v-if="profileRole === 'child'" type="button" class="profile-text-tab" :class="{ active: profileSection === 'inbox' }" :aria-pressed="profileSection === 'inbox'" @click="profileSection = 'inbox'">邮箱</button>
+      <button v-if="!['parent','admin'].includes(profileRole)" type="button" class="profile-text-tab" :class="{ active: profileSection === 'store' }" :aria-pressed="profileSection === 'store'" @click="profileSection = 'store'">商城</button>
     </nav>
 
     <nav v-if="profileSection === 'works'" class="profile-filter-nav" aria-label="作品筛选">

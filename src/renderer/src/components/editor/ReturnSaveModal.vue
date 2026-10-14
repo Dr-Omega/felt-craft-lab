@@ -29,7 +29,7 @@ const emit = defineEmits<{
       ></button>
       <section class="return-modal">
         <div class="return-modal-icon" aria-hidden="true">✿</div>
-        <h2 id="return-modal-title">要先把作品收起来吗？</h2>
+        <h2 id="return-modal-title">{{ errorMessage ? '进度还没保存成功' : '要先把作品收起来吗？' }}</h2>
         <p v-if="errorMessage" class="return-modal-error">{{ errorMessage }}</p>
         <div class="return-modal-actions">
           <button class="hand-btn-primary" type="button" :disabled="busy" @click="emit('save')">保存进度再回去</button>
