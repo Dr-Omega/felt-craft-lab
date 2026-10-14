@@ -20,6 +20,7 @@ const roomRevision = ref(0)
 const roomLoaded = ref(false)
 const selectedFoodId = ref<BearFood['foodId'] | ''>('')
 const payPanelOpen = ref(false)
+const foodMenuOpen = ref(false)
 
 const foods = computed(() => dashboard.value?.foods ?? [])
 const selectedFood = computed(() => foods.value.find((food) => food.foodId === selectedFoodId.value) ?? null)
@@ -59,10 +60,19 @@ async function run(key: string, task: () => Promise<void>): Promise<void> {
   }
 }
 
-function onFoodChange(event: Event): void {
-  const value = (event.target as HTMLSelectElement).value as BearFood['foodId'] | ''
-  selectedFoodId.value = value
-  payPanelOpen.value = Boolean(value)
+function foodImage(foodId: BearFood['foodId']): string {
+  return rewardAssets[foodId]
+}
+
+function selectFood(food: BearFood): void {
+  selectedFoodId.value = food.foodId
+  payPanelOpen.value = true
+  foodMenuOpen.value = false
+}
+
+function toggleFoodMenu(): void {
+  if (busyKey.value || loading.value) return
+  foodMenuOpen.value = !foodMenuOpen.value
 }
 
 function toggleSofaScene(): void {
@@ -135,15 +145,33 @@ onMounted(() => {
     />
 
     <div class="bear-food-bar" aria-label="购买食物">
-      <label class="bear-food-select">
-        <span class="sr-only">选择食物</span>
-        <select :value="selectedFoodId" :disabled="Boolean(busyKey) || loading" @change="onFoodChange">
-          <option value="">选择要购买的食物…</option>
-          <option v-for="food in foods" :key="food.foodId" :value="food.foodId">{{ food.name }}</option>
-        </select>
-      </label>
+      <div class="bear-food-picker">
+        <button
+          type="button"
+          class="bear-food-trigger"
+          aria-haspopup="listbox"
+          :aria-expanded="foodMenuOpen"
+          :disabled="Boolean(busyKey) || loading"
+          @click="toggleFoodMenu"
+        >
+          <img v-if="selectedFood" class="bear-food-trigger-icon" :src="foodImage(selectedFood.foodId)" :alt="" />
+          <span>{{ selectedFood?.name ?? '选择要购买的食物…' }}</span>
+          <span class="bear-food-chevron" aria-hidden="true">{{ foodMenuOpen ? '▲' : '▼' }}</span>
+        </button>
+        <ul v-if="foodMenuOpen" class="bear-food-menu" role="listbox" aria-label="食物列表">
+          <li v-for="food in foods" :key="food.foodId" role="option" :aria-selected="selectedFoodId === food.foodId">
+            <button type="button" :disabled="Boolean(busyKey)" @click="selectFood(food)">
+              <img :src="foodImage(food.foodId)" :alt="" />
+              <span>{{ food.name }}</span>
+            </button>
+          </li>
+        </ul>
+      </div>
       <div v-if="payPanelOpen && selectedFood" class="bear-pay-panel">
-        <span>{{ selectedFood.name }}</span>
+        <span class="bear-pay-label">
+          <img :src="foodImage(selectedFood.foodId)" :alt="" />
+          {{ selectedFood.name }}
+        </span>
         <button type="button" :disabled="Boolean(busyKey)" @click="feed('coins')">
           <img :src="rewardAssets.coin" alt="金币" />{{ selectedFood.coinPrice }}
         </button>
@@ -194,10 +222,18 @@ onMounted(() => {
   min-width: 420px;
   max-width: 520px;
 }
-.bear-food-select select {
+.bear-food-picker {
+  position: relative;
+  width: 100%;
+}
+.bear-food-trigger {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
   min-width: 420px;
   min-height: 68px;
-  padding: 12px 20px;
+  padding: 10px 20px;
   border: 4px solid #71351c;
   border-radius: 16px;
   background: rgba(255, 248, 213, .95);
@@ -205,7 +241,47 @@ onMounted(() => {
   font: inherit;
   font-size: 28px;
   font-weight: 700;
+  text-align: left;
+  cursor: pointer;
 }
+.bear-food-trigger:disabled { opacity: .55; cursor: not-allowed; }
+.bear-food-trigger-icon { width: 48px; height: 48px; object-fit: contain; flex: 0 0 48px; }
+.bear-food-chevron { margin-left: auto; font-size: 22px; line-height: 1; }
+.bear-food-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 2;
+  width: 100%;
+  min-width: 420px;
+  margin: 0;
+  padding: 8px;
+  list-style: none;
+  border: 4px solid #71351c;
+  border-radius: 16px;
+  background: rgba(255, 252, 238, .98);
+  box-shadow: 0 8px 0 rgba(113, 53, 28, .12);
+}
+.bear-food-menu li { margin: 0; padding: 0; }
+.bear-food-menu button {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 64px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: #71351c;
+  font: inherit;
+  font-size: 26px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+.bear-food-menu button:hover { background: rgba(255, 244, 189, .9); }
+.bear-food-menu img { width: 48px; height: 48px; object-fit: contain; flex: 0 0 48px; }
 .bear-pay-panel {
   display: flex;
   flex-wrap: wrap;
@@ -233,7 +309,13 @@ onMounted(() => {
   font: inherit;
   font-size: 22px;
 }
-.bear-pay-panel img { width: 36px; height: 36px; object-fit: contain; }
+.bear-pay-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.bear-pay-label img { width: 44px; height: 44px; object-fit: contain; }
+.bear-pay-panel button img { width: 36px; height: 36px; object-fit: contain; }
 
 .bear-save {
   position: absolute;
@@ -267,15 +349,4 @@ onMounted(() => {
 .bear-back:hover { filter: brightness(1.06); }
 .bear-back:active { transform: translateY(2px); }
 
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
 </style>
