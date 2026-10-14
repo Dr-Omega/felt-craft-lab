@@ -11,7 +11,7 @@ import { lobbyAssets } from '../ui/lobby-assets'
 import { plazaAvatarForRole } from '../ui/plaza-assets'
 import { rewardAssets } from '../ui/reward-assets'
 
-const hoveredZone = ref<'share' | 'learning' | 'create' | null>(null)
+const hoveredZone = ref<'share' | 'learning' | 'create' | 'bear' | null>(null)
 const session = computed(() => loadPlazaSession())
 const dashboard = ref<RewardDashboard | null>(null)
 const wallet = computed(() => dashboard.value?.wallet ?? { coins: 0, diamonds: 0 })
@@ -49,12 +49,22 @@ function openCreate(): void {
     <button class="lobby-zone lobby-zone--share" type="button" aria-label="打开分享社区动态" @mouseenter="hoveredZone = 'share'" @mouseleave="hoveredZone = null" @click="openPlaza"></button>
     <button class="lobby-zone lobby-zone--learning" type="button" aria-label="进入学习区" @mouseenter="hoveredZone = 'learning'" @mouseleave="hoveredZone = null" @click="openLearning()"></button>
     <button class="lobby-zone lobby-zone--create" type="button" aria-label="进入创作区" @mouseenter="hoveredZone = 'create'" @mouseleave="hoveredZone = null" @click="openCreate"></button>
-    <button v-if="(dashboard?.user.role ?? session?.user.role) === 'child'" class="lobby-zone lobby-zone--bear" type="button" aria-label="进入小熊的家" title="小熊的家" @click="openRewards('bear')"></button>
+    <button
+      v-if="(dashboard?.user.role ?? session?.user.role) === 'child'"
+      class="lobby-zone lobby-zone--bear"
+      type="button"
+      aria-label="进入小熊的家"
+      title="小熊的家"
+      @mouseenter="hoveredZone = 'bear'"
+      @mouseleave="hoveredZone = null"
+      @click="openRewards('bear')"
+    ></button>
     <button class="lobby-avatar-hitbox" type="button" aria-label="进入个人空间" @click="openPersonalCenter"></button>
 
     <img v-if="hoveredZone === 'share'" class="lobby-tip lobby-tip--share" :style="authFullLayerStyle" :src="lobbyAssets.shareTip" alt="分享社区" />
     <img v-if="hoveredZone === 'learning'" class="lobby-tip lobby-tip--learning" :style="authFullLayerStyle" :src="lobbyAssets.learningTip" alt="学习区" />
     <img v-if="hoveredZone === 'create'" class="lobby-tip lobby-tip--create" :style="authFullLayerStyle" :src="lobbyAssets.createTip" alt="创作区" />
+    <img v-if="hoveredZone === 'bear'" class="lobby-tip lobby-tip--bear" :style="authFullLayerStyle" :src="lobbyAssets.bearHomeTip" alt="小熊的家" />
 
     <div v-if="showWallet" class="lobby-account" aria-label="账户余额">
       <span><img :src="rewardAssets.diamond" alt="钻石" /><strong>{{ wallet.diamonds }}</strong></span>
