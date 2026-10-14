@@ -154,14 +154,14 @@ onMounted(() => {
           :disabled="Boolean(busyKey) || loading"
           @click="toggleFoodMenu"
         >
-          <img v-if="selectedFood" class="bear-food-trigger-icon" :src="foodImage(selectedFood.foodId)" :alt="" />
+          <img v-if="selectedFood" class="bear-food-trigger-icon" :src="foodImage(selectedFood.foodId)" alt="" />
           <span>{{ selectedFood?.name ?? '选择要购买的食物…' }}</span>
           <span class="bear-food-chevron" aria-hidden="true">{{ foodMenuOpen ? '▲' : '▼' }}</span>
         </button>
         <ul v-if="foodMenuOpen" class="bear-food-menu" role="listbox" aria-label="食物列表">
           <li v-for="food in foods" :key="food.foodId" role="option" :aria-selected="selectedFoodId === food.foodId">
             <button type="button" :disabled="Boolean(busyKey)" @click="selectFood(food)">
-              <img :src="foodImage(food.foodId)" :alt="" />
+              <img :src="foodImage(food.foodId)" alt="" />
               <span>{{ food.name }}</span>
             </button>
           </li>
@@ -169,7 +169,7 @@ onMounted(() => {
       </div>
       <div v-if="payPanelOpen && selectedFood" class="bear-pay-panel">
         <span class="bear-pay-label">
-          <img :src="foodImage(selectedFood.foodId)" :alt="" />
+          <img :src="foodImage(selectedFood.foodId)" alt="" />
           {{ selectedFood.name }}
         </span>
         <button type="button" :disabled="Boolean(busyKey)" @click="feed('coins')">
