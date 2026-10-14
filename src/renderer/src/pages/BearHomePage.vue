@@ -185,64 +185,68 @@ onMounted(() => {
 
 .bear-food-bar {
   position: absolute;
-  left: 50%;
-  top: 72px;
+  right: 72px;
+  top: 96px;
   z-index: 35;
   display: grid;
-  gap: 10px;
-  transform: translateX(-50%);
-  min-width: 320px;
+  gap: 14px;
+  justify-items: end;
+  min-width: 420px;
+  max-width: 520px;
 }
 .bear-food-select select {
-  min-width: 320px;
-  min-height: 48px;
-  padding: 8px 14px;
-  border: 3px solid #71351c;
-  border-radius: 12px;
+  min-width: 420px;
+  min-height: 68px;
+  padding: 12px 20px;
+  border: 4px solid #71351c;
+  border-radius: 16px;
   background: rgba(255, 248, 213, .95);
   color: #71351c;
   font: inherit;
-  font-size: 20px;
+  font-size: 28px;
+  font-weight: 700;
 }
 .bear-pay-panel {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 10px 14px;
-  border: 3px solid #71351c;
-  border-radius: 12px;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 14px 18px;
+  border: 4px solid #71351c;
+  border-radius: 16px;
   background: rgba(255, 252, 238, .96);
   color: #563c2d;
-  font-size: 18px;
+  font-size: 24px;
+  font-weight: 600;
 }
 .bear-pay-panel button {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  min-height: 42px;
-  padding: 6px 12px;
-  border: 2px solid #b88a55;
-  border-radius: 8px;
+  gap: 10px;
+  min-height: 56px;
+  padding: 8px 16px;
+  border: 3px solid #b88a55;
+  border-radius: 12px;
   background: #fff5d8;
   color: #70431f;
   font: inherit;
+  font-size: 22px;
 }
-.bear-pay-panel img { width: 28px; height: 28px; object-fit: contain; }
+.bear-pay-panel img { width: 36px; height: 36px; object-fit: contain; }
 
 .bear-save {
   position: absolute;
   left: 72px;
   bottom: 64px;
   z-index: 35;
-  min-width: 140px;
-  min-height: 54px;
-  border: 3px solid #71351c;
-  border-radius: 14px;
+  min-width: 200px;
+  min-height: 72px;
+  border: 4px solid #71351c;
+  border-radius: 18px;
   background: #fff4bd;
   color: #71351c;
-  font-size: 22px;
+  font-size: 30px;
   font-weight: 700;
 }
 
