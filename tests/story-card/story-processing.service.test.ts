@@ -91,7 +91,7 @@ describe('StoryProcessingService', () => {
     expect(storyRewrite.rewrite).toHaveBeenCalledWith({ workId: 'work-001', text: combinedText, context })
   })
 
-  it('returns needs-more-input before story rewrite when the text is too short', async () => {
+  it('sends short child expressions to story rewrite without a length gate', async () => {
     const { speechRecognition, storyRewrite, service } = services({
       ok: true,
       transcript: { workId: 'work-001', text: '不应使用这段转写。' }
@@ -99,11 +99,10 @@ describe('StoryProcessingService', () => {
 
     await expect(service.process({ input: { ...manualInput, text: '小兔子。' }, context })).resolves.toMatchObject({
       workId: 'work-001',
-      status: 'needs_more_input',
-      followUpQuestions: expect.any(Array)
+      status: 'ready_for_review'
     })
     expect(speechRecognition.transcribe).not.toHaveBeenCalled()
-    expect(storyRewrite.rewrite).not.toHaveBeenCalled()
+    expect(storyRewrite.rewrite).toHaveBeenCalledWith({ workId: 'work-001', text: '小兔子。', context })
   })
 
   it('returns recognition failure or invalid work context without calling story rewrite', async () => {

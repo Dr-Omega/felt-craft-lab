@@ -75,6 +75,11 @@ export function createStoryCardTestProcessor(context: StoryCardWorkContext): Sto
   const fixtures: MockStoryRewriteFixture[] = [
     {
       workId: context.workId,
+      text: STORY_CARD_TEST_INSUFFICIENT_TEXT,
+      draft: { workId: context.workId, status: 'ready_for_review', suggestedTitle: '小兔子', suggestedStoryText: STORY_CARD_TEST_INSUFFICIENT_TEXT }
+    },
+    {
+      workId: context.workId,
       text: STORY_CARD_TEST_READY_TEXT,
       draft: {
         workId: context.workId,

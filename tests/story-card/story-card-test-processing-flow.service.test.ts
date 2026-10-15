@@ -20,7 +20,7 @@ import {
 const audioRef = 'felt-resource://audio/dynamic/story-card/temp/test-recording.webm'
 
 describe('story-card test processing flow', () => {
-  it('returns follow-up questions instead of a candidate for insufficient text', async () => {
+  it('accepts a short expression when the rewrite adapter returns a candidate', async () => {
     const result = await createStoryCardTestProcessor(STORY_CARD_TEST_WORK_CONTEXT).process({
       input: createTestManualTextRequest(STORY_CARD_TEST_WORK_CONTEXT.workId, STORY_CARD_TEST_INSUFFICIENT_TEXT, audioRef),
       context: STORY_CARD_TEST_WORK_CONTEXT
@@ -28,11 +28,10 @@ describe('story-card test processing flow', () => {
 
     expect(result).toMatchObject({
       workId: STORY_CARD_TEST_WORK_CONTEXT.workId,
-      status: 'needs_more_input',
-      followUpQuestions: [expect.any(String), expect.any(String), expect.any(String)]
+      status: 'ready_for_review',
+      suggestedStoryText: STORY_CARD_TEST_INSUFFICIENT_TEXT
     })
-    expect(result).not.toHaveProperty('suggestedTitle')
-    expect(result).not.toHaveProperty('suggestedStoryText')
+    expect(result).not.toHaveProperty('followUpQuestions')
   })
 
   it('preserves the fixed recording meaning and naturally joins a later text supplement', async () => {

@@ -3,7 +3,6 @@ import { computed, onMounted, ref } from 'vue'
 import type { RewardDashboard } from '@shared/contracts/rewards'
 import AuthArtboard from '../components/auth/AuthArtboard.vue'
 import { enterCreationStudio, openLearning, openPersonalCenter, openPlaza, openRewards } from '../app-nav'
-import { syncState } from '../persistence/workspace-sync'
 import { loadPlazaSession } from '../services/plaza-session'
 import { loadRewardDashboard } from '../services/reward-api'
 import { authFullLayerStyle } from '../ui/auth-assets'
@@ -70,8 +69,6 @@ function openCreate(): void {
       <span><img :src="rewardAssets.diamond" alt="钻石" /><strong>{{ wallet.diamonds }}</strong></span>
       <span><img :src="rewardAssets.coin" alt="金币" /><strong>{{ wallet.coins }}</strong></span>
     </div>
-    <div class="lobby-user" aria-label="当前用户" :title="session?.user.username ?? '用户'">{{ session?.user.username ?? '用户' }}<span v-if="syncState.conflict" class="sync-attention" role="status"> · 同步待处理</span></div>
-    <div class="lobby-actions"><button type="button" class="lobby-action" @click="enterCreationStudio">开始创作</button></div>
   </AuthArtboard>
 </template>
 
@@ -93,8 +90,4 @@ function openCreate(): void {
 .lobby-account span { display: flex; align-items: center; gap: 12px; min-width: 162px; min-height: 82px; padding: 12px 20px; border: 4px solid rgba(105, 69, 40, .32); border-radius: 15px; background: rgba(255, 252, 238, .95); color: #71351c; font-size: 32px; }
 .lobby-account img { width: 54px; height: 54px; flex: 0 0 54px; object-fit: contain; }
 .lobby-account strong { line-height: 1; }
-.lobby-user { position: absolute; right: 275px; top: 120px; z-index: 15; display: block; width: max-content; max-width: 330px; min-height: 42px; padding: 4px 9px; overflow: hidden; border: 3px solid #71351c; border-radius: 9px; background: rgba(255, 248, 213, .94); color: #71351c; box-shadow: 0 3px 0 rgba(113, 53, 28, .14); font-size: 34px; font-weight: 700; line-height: 1; text-align: center; text-overflow: ellipsis; white-space: nowrap; }
-.sync-attention { font-size: 18px; }
-.lobby-actions { position: absolute; right: 58px; bottom: 48px; z-index: 15; display: flex; gap: 12px; }
-.lobby-action { min-width: 170px; min-height: 54px; border: 3px solid #71351c; border-radius: 14px; background: #fff4bd; color: #71351c; font-size: 22px; }
 </style>

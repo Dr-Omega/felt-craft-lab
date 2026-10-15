@@ -5,6 +5,24 @@ import { describe, expect, it } from 'vitest'
 const page = readFileSync(resolve('src/renderer/src/pages/StoryCardPage.vue'), 'utf8')
 
 describe('StoryCardPage contract', () => {
+  it('does not overlay extra follow-up questions on the supplied artwork', () => {
+    expect(page).not.toContain('draft.followUpQuestions.join')
+    expect(page).not.toContain('question-text')
+    expect(page).not.toContain('可以回答上面的问题')
+    expect(page).toContain("errorMessage.value = '请补充一点故事内容后再试。'")
+  })
+  it('keeps rerecord left and generate right on one row without transcript or skip controls', () => {
+    expect(page).toContain('class="added-button supplement-rerecord" :style="box(620, 704, 300, 82, 9.2)"')
+    expect(page).toContain('class="added-button supplement-submit" :style="box(980, 704, 300, 82, 9.2)"')
+    expect(page.indexOf('class="added-button supplement-rerecord"')).toBeLessThan(page.indexOf('class="added-button supplement-submit"'))
+    expect(page).not.toContain('transcript-review')
+    expect(page).not.toContain('检查识别文字')
+    expect(page).not.toContain('没有，跳过09.png')
+    expect(page).not.toContain('aria-label="没有补充，跳过"')
+    expect(page).not.toContain('!supplementText.trim() && !transcript.trim()')
+    expect(page).toContain('busy || (speechFailed && !supplementText.trim())')
+  })
+
   it('keeps confirmed long story text in a fixed-height scrollable region', () => {
     expect(page).toContain('<p class="detail-story"')
     expect(page).toContain('{{ confirmedCard.storyText }}</p>')

@@ -49,6 +49,26 @@ def fractional_nested():
 
 
 class LayeredCompletionTests(unittest.TestCase):
+    def test_partition_contact_lines_do_not_become_material_or_undefined_boundaries(self):
+        from vertex_partition import partition
+        full = box(0, 0, 5, 4)
+        red = [observed(box(0, 0, 1, 4), 'left-red', 'red'),
+               observed(box(4, 0, 5, 1), 'right-red', 'red')]
+        upper = [observed(box(1, 0, 4, 4), 'middle-white', 'white'),
+                 observed(box(4, 1, 5, 4), 'right-white', 'white')]
+        sources = red + upper
+        visible = unary_union([s['polygon'] for s in red])
+        self.assertEqual(box(0, 0, 4, 4).intersection(visible).geom_type, 'GeometryCollection')
+        base = {'sources': red, 'full': full, 'visible': visible,
+                'evidence': [{'method': 'test-support', 'inferredHiddenGeometry': True}]}
+        def split(polygon, axis):
+            return [box(0, 0, 4, 4), box(4, 0, 5, 4)] if polygon.equals(full) else partition(polygon, axis)
+        with patch('layered_completion.vertex_partition', side_effect=split):
+            plan = _materialize([base] + [_group(s) for s in upper], sources, 'x', 'test-support')
+        self.assertTrue(all(p['visiblePolygon'].geom_type in ('Polygon', 'MultiPolygon') for p in plan['pieces']))
+        self.assertEqual(validate_layered_plan(sources, plan)['exactVisibleCoverage'], 'PASS')
+        rank_layered_plans(sources, [plan])
+
     def test_public_rank_rejects_fractional_invalid_candidates_not_only_best_plan(self):
         sources = fractional_nested()
         for axis in ('x', 'y'):

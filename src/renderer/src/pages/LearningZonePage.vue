@@ -252,7 +252,7 @@ onBeforeUnmount(() => { pageEpoch++; stopActiveAudio() })
 .unlock-copy { font-size: 22px; line-height: 1.4; }
 .background-preview { width: 100%; aspect-ratio: 902 / 516; border: 3px dashed #a9632c; border-radius: 20px; background: #fff7d7; overflow: hidden; }
 .background-preview > img { display: block; width: 100%; height: 100%; object-fit: contain; }
-.theme-preview-stickers { margin-top: 16px; }
+.theme-preview-stickers { margin-top: 16px; padding-top: 36px; }
 .theme-sticker-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
 .theme-sticker-grid figure { min-width: 0; margin: 0; text-align: center; }
 .theme-sticker-grid img { display: block; width: 100%; height: 68px; object-fit: contain; }

@@ -186,7 +186,11 @@ def _materialize(groups, sources, axis, mode, diagnostics=None):
     pieces = []
     for group in groups:
         for full in vertex_partition(group["full"], axis):
-            visible = full.intersection(group["visible"])
+            # A clipped source may include isolated contact lines beside its
+            # positive-area domains. Those are not material; a collection's
+            # boundary is undefined in GEOS. Keep every polygon, without an
+            # area cutoff, consistently with ordered_coverage.
+            visible = unary_union(_parts(full.intersection(group["visible"])))
             if visible.area <= 0:
                 raise LayeredPlanError("completion would manufacture a wholly hidden useless piece")
             actual_sources = [s for s in group["sources"] if _positive(visible, s["polygon"])]
@@ -312,7 +316,7 @@ def validate_layered_plan(observed, plan):
         if (p.get("sourceComponentIds") != sorted(s["componentId"] for s in matching)
                 or p.get("sourceRegionIds") != sorted({s["regionId"] for s in matching})):
             raise LayeredPlanError("visible source Component/Region membership mismatch")
-        expected = unary_union([s["polygon"].intersection(full) for s in matching])
+        expected = unary_union([part for s in matching for part in _parts(s["polygon"].intersection(full))])
         if not _same_domain(visible, expected, tolerance):
             raise LayeredPlanError("piece visible geometry no longer matches original complete source domain")
         actual_visible.append(visible)

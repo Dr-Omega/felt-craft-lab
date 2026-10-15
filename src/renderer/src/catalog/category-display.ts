@@ -2,8 +2,8 @@ import type { AssetRecord } from '@shared/contracts'
 
 /**
  * Children-friendly Chinese display names for the known category ids shipped
- * with the YWN formal catalog. Unknown ids keep their raw id as a fallback so
- * no material is silently hidden if a new category appears.
+ * with the YWN formal catalog. Filtering keeps the original ids; labels never
+ * expose internal English identifiers to children.
  */
 const KNOWN_CATEGORY_DISPLAY: Readonly<Record<string, string>> = Object.freeze({
   festival_scene: '场景',
@@ -11,6 +11,22 @@ const KNOWN_CATEGORY_DISPLAY: Readonly<Record<string, string>> = Object.freeze({
   festival_food: '食物',
   festival_story: '故事角色',
   festival_custom: '习俗',
+  festival_nature: '节日植物',
+  festival_poetry: '节日诗意',
+  animal: '动物',
+  animal_scene: '动物场景',
+  calligraphy_tool: '书画工具',
+  culture_scene: '民俗场景',
+  folk_instrument: '传统乐器',
+  opera_instrument: '戏曲乐器',
+  opera_prop: '戏曲道具',
+  plant: '植物',
+  plant_scene: '植物场景',
+  season_food: '时令食物',
+  season_nature: '四季自然',
+  season_object: '四季物品',
+  season_scene: '四季场景',
+  tea_ware: '茶具',
   // Defensive aliases so older snapshots that still emit them stay readable.
   scene: '场景',
   decoration: '装饰',
@@ -21,7 +37,7 @@ const KNOWN_CATEGORY_DISPLAY: Readonly<Record<string, string>> = Object.freeze({
 
 export function categoryDisplayName(categoryId: string): string {
   if (typeof categoryId !== 'string' || categoryId.length === 0) return '未分类'
-  return KNOWN_CATEGORY_DISPLAY[categoryId] ?? categoryId
+  return KNOWN_CATEGORY_DISPLAY[categoryId] ?? '其他素材'
 }
 
 export interface DerivedCategory {

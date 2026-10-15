@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import manifest from '../../assets/generated/assets.manifest.json'
 import type { AssetRecord } from '../../src/shared/contracts'
 import {
   categoryDisplayName,
@@ -28,13 +29,20 @@ describe('categoryDisplayName', () => {
     expect(categoryDisplayName('festival_custom')).toBe('习俗')
   })
 
-  it('returns the raw id as a fallback for unknown categories so no material disappears', () => {
-    expect(categoryDisplayName('galaxy_nebula')).toBe('galaxy_nebula')
+  it('uses a Chinese fallback while retaining unknown ids for filtering', () => {
+    expect(categoryDisplayName('galaxy_nebula')).toBe('其他素材')
     expect(categoryDisplayName('')).toBe('未分类')
   })
 })
 
 describe('deriveCategoriesFromAssets', () => {
+  it('translates every category in the shipped catalog', () => {
+    const ids = new Set(manifest.assets.flatMap(asset => asset.categoryIds))
+    for (const id of ids) {
+      expect(categoryDisplayName(id)).toMatch(/[\u4e00-\u9fff]/)
+      expect(categoryDisplayName(id)).not.toBe('其他素材')
+    }
+  })
   it('aggregates every categoryId across the current asset set and counts it once per asset', () => {
     const assets = [
       makeAsset({ assetId: 'a1', nameZh: '灯笼', nameEn: 'Lantern', keywords: ['lantern'], categoryIds: ['festival_decoration'] }),

@@ -33,10 +33,8 @@ describe('StoryProcessingService fixed Mock regression', () => {
     const service = new StoryProcessingService(recognition, new MockStoryRewriteAdapter(fixtures))
 
     for (const testCase of cases) {
-      // Keep the historical dataset intact; current clarification must not invent a rabbit.
-      const expected = testCase.expected.status === 'needs_more_input'
-        ? { ...testCase.expected, followUpQuestions: ['画里发生了什么？', '你最喜欢这幅画里的哪里？', '接下来会发生什么？'] }
-        : testCase.expected
+      // Preserve the adapter response; local length checks no longer replace it.
+      const expected = testCase.expected
       await expect(service.process({ input: testCase.input, context: testCase.context })).resolves.toEqual({
         workId: testCase.input.workId,
         ...expected

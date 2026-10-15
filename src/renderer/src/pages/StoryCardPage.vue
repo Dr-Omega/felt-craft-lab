@@ -98,7 +98,6 @@ const layers = computed<Layer[]>(() => {
   } else if (phase.value === 'supplement' || phase.value === 'processing' || phase.value === 'insufficient') {
     result.push({ file: '还有什么要补充的嘛07.png', order: 7 })
     result.push({ file: '文本框08.png', order: 8 })
-    if (phase.value === 'supplement') result.push({ file: '没有，跳过09.png', order: 9 })
   } else if (phase.value === 'review') {
     if (fullRecording.value || confirmedCard.value) result.push({ file: '播放音频按钮06.png', order: 6 })
     result.push(
@@ -454,6 +453,7 @@ function showDraft(result: StoryCardDraft): void {
     phase.value = 'review'
   } else if (result.status === 'needs_more_input') {
     phase.value = 'insufficient'
+    errorMessage.value = '请补充一点故事内容后再试。'
   } else if (result.status === 'failed') {
     errorMessage.value = result.error.message
   }
@@ -617,29 +617,21 @@ onUnmounted(() => {
       </template>
 
       <template v-if="phase === 'supplement' || phase === 'processing' || phase === 'insufficient'">
-        <div v-if="phase === 'insufficient' && draft?.status === 'needs_more_input'" class="question-text" :style="box(590, 385, 730, 65, 7.5)">
-          {{ draft.followUpQuestions.join('　') }}
-        </div>
         <textarea
           v-model="supplementText"
           class="layer-input supplement-input"
           :style="box(610, 465, 670, 190, 8.2)"
-          :placeholder="phase === 'insufficient' ? '可以回答上面的问题' : '还想补充什么？写在这里'"
+          placeholder="还想补充什么？写在这里"
           aria-label="故事补充内容"
           :disabled="busy"
         />
-        <button v-if="phase === 'supplement'" class="hotspot" :style="box(985, 697, 320, 86, 9.2)" aria-label="没有补充，跳过" :disabled="busy" @click="processStory()" />
-        <button class="added-button supplement-submit" :style="box(620, 704, 300, 82, 9.2)" :disabled="busy || (!supplementText.trim() && !transcript.trim())" @click="processStory(speechFailed)">
-          {{ speechFailed ? '仅用文字生成' : '生成故事' }}
-        </button>
-        <p v-if="speechFailed" class="feedback" :style="box(940, 800, 390, 100, 9.2)">识别未完成，请输入完整故事。录音仍保留。</p>
-        <button class="added-button" :style="box(620, 800, 300, 72, 9.2)" :disabled="busy" @click="startRecording(true)">
+        <button class="added-button supplement-rerecord" :style="box(620, 704, 300, 82, 9.2)" :disabled="busy" @click="startRecording(true)">
           重新录音
         </button>
-        <details v-if="transcript && purpose !== 'partial-update'" class="transcript-review" :style="box(940, 800, 390, 140, 10)">
-          <summary>检查识别文字</summary>
-          <textarea v-model="transcript" :disabled="busy" aria-label="录音识别文字" />
-        </details>
+        <button class="added-button supplement-submit" :style="box(980, 704, 300, 82, 9.2)" :disabled="busy || (speechFailed && !supplementText.trim())" @click="processStory(speechFailed)">
+          {{ busy ? '正在生成…' : speechFailed ? '仅用文字生成' : '生成故事' }}
+        </button>
+        <p v-if="speechFailed" class="feedback" :style="box(940, 800, 390, 100, 9.2)">识别未完成，请输入完整故事。录音仍保留。</p>
       </template>
 
       <template v-if="phase === 'review'">
@@ -720,7 +712,7 @@ onUnmounted(() => {
   pointer-events: none;
   user-select: none;
 }
-.hotspot, .layer-input, .placed-artwork, .recording-panel, .recording-action, .recording-status, .question-text,
+.hotspot, .layer-input, .placed-artwork, .recording-panel, .recording-action, .recording-status,
 .detail-title, .detail-story, .detail-date, .audio-progress,
 .update-panel, .feedback, .added-button {
   position: absolute;
@@ -787,12 +779,6 @@ onUnmounted(() => {
 .supplement-input { font-size: clamp(12px, 2vw, 31px); }
 .title-input { font-size: clamp(12px, 2.2vw, 36px); font-weight: 700; }
 .body-input { font-size: clamp(12px, 1.65vw, 27px); line-height: 1.5; }
-.question-text {
-  text-align: center;
-  font-size: clamp(12px, 1.8vw, 28px);
-  font-weight: 700;
-}
-.question-text { overflow: auto; }
 .added-button {
   display: grid;
   place-items: center;
@@ -815,9 +801,6 @@ onUnmounted(() => {
 .audio-progress input::-webkit-slider-thumb { appearance: none; width: 15px; height: 15px; margin-top: -5px; border-radius: 50%; background: #71351c; border: 2px solid #fff1b7; }
 .audio-progress input:focus-visible { outline: 2px solid #71351c; outline-offset: 3px; }
 .audio-progress input:disabled { opacity: .5; cursor: default; }
-.transcript-review { position: absolute; font-size: 1.2cqw; color: #591608; }
-.transcript-review summary { cursor: pointer; }
-.transcript-review textarea { width: 100%; height: 78%; resize: none; box-sizing: border-box; font: inherit; color: inherit; background: #fff1b7; border: 2px solid #71351c; border-radius: 8px; padding: 6px; }
 .update-panel { display: flex; flex-direction: column; justify-content: center; gap: 3%; text-align: center; font-size: clamp(13px, 1.7vw, 27px); }
 .update-panel .added-button { position: static; min-height: 15%; }
 .feedback { display: grid; place-items: center; border-radius: 14px; background: #fff0b5; font-size: clamp(11px, 1.4vw, 22px); font-weight: 700; }

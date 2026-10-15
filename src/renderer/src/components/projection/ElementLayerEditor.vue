@@ -22,7 +22,9 @@ const sourcePreview = URL.createObjectURL(new Blob([new Uint8Array(props.input).
 const images: string[] = []
 const busy = computed(() => starting.value || ['queued','background','fabrication'].includes(job.value?.status || ''))
 const processMessage = computed(() => busy.value
-  ? job.value?.status === 'queued' ? '排队中…' : '正在准备图层…'
+  ? job.value?.status === 'queued' ? '排队中…'
+    : job.value?.status === 'background' ? '正在处理图片…'
+    : job.value?.status === 'fabrication' ? '正在拆分图层…' : '正在准备图层…'
   : error.value ? '' : message.value)
 let key = '', sourceHash = '', generation = 0, disposed = false
 let timer: ReturnType<typeof setTimeout> | undefined
