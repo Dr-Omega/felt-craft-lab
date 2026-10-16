@@ -20,6 +20,8 @@ import { plazaAvatarForRole } from '../ui/plaza-assets'
 import { authAssets, authFullLayerStyle } from '../ui/auth-assets'
 import { friendlyRelativeTime } from '../util/friendly-time'
 import { showCenterToast } from '../composables/center-toast'
+import { replayOnboardingTour } from '../services/onboarding-service'
+import { ONBOARDING_PREPARE_EVENT } from '../services/onboarding-nav'
 
 type Filter = 'draft' | 'drawing' | 'story' | 'blueprint' | 'completed'
 type ProfileSection = 'works' | 'account' | 'inbox' | 'store'
@@ -196,8 +198,9 @@ async function convert(): Promise<void> {
 }
 
 const syncRefresh = () => { void refresh() }
-onMounted(() => { void refresh(); window.addEventListener('felt-workspace-synced', syncRefresh) })
-onUnmounted(() => window.removeEventListener('felt-workspace-synced', syncRefresh))
+function prepareGuideSection(): void { profileSection.value = getPersonalSection(); filter.value = getPersonalWorksFilter() }
+onMounted(() => { void refresh(); window.addEventListener('felt-workspace-synced', syncRefresh); window.addEventListener(ONBOARDING_PREPARE_EVENT, prepareGuideSection) })
+onUnmounted(() => { window.removeEventListener('felt-workspace-synced', syncRefresh); window.removeEventListener(ONBOARDING_PREPARE_EVENT, prepareGuideSection) })
 </script>
 
 <template>
@@ -208,7 +211,7 @@ onUnmounted(() => window.removeEventListener('felt-workspace-synced', syncRefres
 
     <nav class="profile-side-nav" aria-label="个人中心导航">
       <button type="button" class="profile-text-tab" :class="{ active: profileSection === 'account' }" :aria-pressed="profileSection === 'account'" @click="profileSection = 'account'">账号</button>
-      <button type="button" class="profile-text-tab" :class="{ active: profileSection === 'works' }" :aria-pressed="profileSection === 'works'" @click="profileSection = 'works'">作品</button>
+      <button type="button" class="profile-text-tab" :class="{ active: profileSection === 'works' }" :aria-pressed="profileSection === 'works'" @click="profileSection = 'works'" data-tour-id="tour-profile-works">作品</button>
       <button v-if="profileRole === 'child'" type="button" class="profile-text-tab" :class="{ active: profileSection === 'inbox' }" :aria-pressed="profileSection === 'inbox'" @click="profileSection = 'inbox'">邮箱</button>
       <button v-if="!['parent','admin'].includes(profileRole)" type="button" class="profile-text-tab" :class="{ active: profileSection === 'store' }" :aria-pressed="profileSection === 'store'" @click="profileSection = 'store'">商城</button>
     </nav>
@@ -216,7 +219,7 @@ onUnmounted(() => window.removeEventListener('felt-workspace-synced', syncRefres
     <nav v-if="profileSection === 'works'" class="profile-filter-nav" aria-label="作品筛选">
       <button type="button" :class="{ active: filter === 'draft' }" aria-label="进度草稿" @click="selectFilter('draft')"><img :src="profileAssets.drafts" alt="进度草稿" /></button>
       <button type="button" :class="{ active: filter === 'drawing' }" aria-label="创作图画" @click="selectFilter('drawing')"><img :src="profileAssets.createDrawing" alt="创作图画" /></button>
-      <button type="button" :class="{ active: filter === 'story' }" aria-label="故事卡" @click="selectFilter('story')"><img :src="profileAssets.story" alt="故事卡" /></button>
+      <button type="button" :class="{ active: filter === 'story' }" aria-label="故事卡" data-tour-id="tour-profile-story" @click="selectFilter('story')"><img :src="profileAssets.story" alt="故事卡" /></button>
       <button type="button" :class="{ active: filter === 'blueprint' }" aria-label="制作图纸" @click="selectFilter('blueprint')"><img :src="profileAssets.blueprint" alt="制作图纸" /></button>
       <button type="button" :class="{ active: filter === 'completed' }" aria-label="完成作品" @click="selectFilter('completed')"><img :src="profileAssets.completed" alt="完成作品" /></button>
     </nav>
@@ -249,6 +252,7 @@ onUnmounted(() => window.removeEventListener('felt-workspace-synced', syncRefres
           </div>
           <button type="button" class="wallet-detail hand-btn-secondary" @click="openRewards()">账户流水与规则</button>
           <button type="button" class="wallet-detail hand-btn-secondary" @click="logout">退出登录</button>
+          <button type="button" class="wallet-detail hand-btn-secondary" @click="replayOnboardingTour">重看新手引导</button>
         </header>
 
         <div v-if="canUseWallet" class="profile-wallet" aria-label="账户余额">

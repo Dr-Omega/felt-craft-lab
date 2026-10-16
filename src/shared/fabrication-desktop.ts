@@ -36,6 +36,7 @@ export interface FabricationJob {
   result?: FabricationView
 }
 export const FABRICATION_CHANNELS = {
+  cuttingGeometry: 'fabrication:cutting-geometry',
   list: 'fabrication:list', retry: 'fabrication:retry', availability: 'fabrication:availability',
   start: 'fabrication:start', status: 'fabrication:status', asset: 'fabrication:asset',
   colors: 'fabrication:colors', saveColors: 'fabrication:save-colors', resume: 'fabrication:resume'

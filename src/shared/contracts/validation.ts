@@ -695,7 +695,7 @@ export function validateSceneDocumentAgainstSnapshot(raw: unknown, snapshotConte
 function validateCanvas(raw: unknown, errors: ValidationIssue[]): void {
   const canvas = requireObject(raw, 'scene.canvas', errors)
   if (!canvas) return
-  hasOnlyKeys(canvas, ['width', 'height', 'backgroundColor'], 'scene.canvas', errors)
+  hasOnlyKeys(canvas, ['width', 'height', 'backgroundColor', 'backgroundColorSource'], 'scene.canvas', errors)
   for (const dimension of ['width', 'height'] as const) {
     const size = canvas[dimension]
     if (!requireFiniteNumber(size, `scene.canvas.${dimension}`, errors) || !Number.isInteger(size) || size <= 0) {
@@ -704,6 +704,9 @@ function validateCanvas(raw: unknown, errors: ValidationIssue[]): void {
   }
   if (canvas.backgroundColor !== undefined && !isValidColor(canvas.backgroundColor)) {
     errors.push({ path: 'scene.canvas.backgroundColor', message: '必须是合法的纯色背景字符串。' })
+  }
+  if (canvas.backgroundColorSource !== undefined && (canvas.backgroundColorSource !== 'user' || canvas.backgroundColor === undefined)) {
+    errors.push({ path: 'scene.canvas.backgroundColorSource', message: '用户背景色标记必须与纯色背景一起保存。' })
   }
 }
 

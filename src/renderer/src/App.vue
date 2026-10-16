@@ -18,6 +18,7 @@ import PlazaPage from './pages/PlazaPage.vue'
 import RewardCenterPage from './pages/RewardCenterPage.vue'
 import BearHomePage from './pages/BearHomePage.vue'
 import CenterToastOverlay from './components/shell/CenterToastOverlay.vue'
+import OnboardingOverlay from './components/onboarding/OnboardingOverlay.vue'
 import WorkspaceSyncStatus from './components/shell/WorkspaceSyncStatus.vue'
 import { openLobby } from './app-nav'
 const view = ref<AppView>(getAppView())
@@ -32,6 +33,7 @@ async function returnFromStory(): Promise<void> {
 </script>
 <template>
   <CenterToastOverlay />
+  <OnboardingOverlay />
   <WorkspaceSyncStatus v-if="['lobby','profile','library'].includes(view)" background-only />
   <FabricationTaskTray v-if="['editor','fabrication'].includes(view) && !getEditorLaunch()?.guidedTheme" :scene-id="view === 'editor' ? getEditorLaunch()?.scene.sceneId : undefined" />
   <SplashPage v-if="view === 'splash'" />

@@ -6,6 +6,7 @@ import { suppliedRoles } from '../ui/supplied-controls'
 import { completeLogin } from '../app-nav'
 import { loginPlazaUser, registerPlazaUser } from '../services/plaza-api'
 import { savePlazaSession } from '../services/plaza-session'
+import { maybeStartOnboardingAfterAuth } from '../services/onboarding-service'
 import { showCenterToast } from '../composables/center-toast'
 import type { SharedError } from '@shared/contracts'
 import type { UserRole } from '@shared/contracts/rewards'
@@ -66,6 +67,7 @@ async function submit(): Promise<void> {
     const { syncWorkspace } = await import('../persistence/workspace-sync')
     await syncWorkspace()
     completeLogin()
+    maybeStartOnboardingAfterAuth(auth.user)
   } catch (error) {
     showCenterToast(authErrorMessage(error))
   } finally {

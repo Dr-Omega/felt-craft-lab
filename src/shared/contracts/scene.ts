@@ -55,6 +55,8 @@ export interface SceneCanvas {
   width: number
   height: number
   backgroundColor?: string
+  /** Explicit user-chosen artwork color, not the legacy editor paper surface. */
+  backgroundColorSource?: 'user'
 }
 
 /**

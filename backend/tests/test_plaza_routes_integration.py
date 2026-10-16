@@ -62,6 +62,49 @@ def test_room_route_uses_authenticated_account_and_conflict_version(client):
     assert client.get("/api/rewards/dashboard", headers=other).json["result"]["room"]["character"] == "小熊"
 
 
+def test_onboarding_complete_persists(client):
+    first = register(client, "guideKid")
+    token = first["token"]
+    assert first["user"].get("onboardingCompletedVersion", 0) == 0
+    done = client.post(
+        "/api/plaza/onboarding/complete",
+        json={"version": 1},
+        headers={"Authorization": "Bearer " + token},
+    )
+    assert done.status_code == 200
+    user = done.json["result"]["user"]
+    assert user["onboardingCompletedVersion"] == 1
+    login = client.post("/api/plaza/auth/login", json={"username": "guideKid", "password": "testpass"}).json["result"]
+    assert login["user"]["onboardingCompletedVersion"] == 1
+
+
+def test_onboarding_requires_auth_and_only_accepts_current_integer_version(client):
+    assert client.post("/api/plaza/onboarding/complete", json={"version": 1}).status_code == 401
+    first, other = register(client, "guideA"), register(client, "guideB")
+    headers = {"Authorization": "Bearer " + first["token"]}
+    for version in [True, 0, -1, 1.5, "1", 2, 999]:
+        assert client.post("/api/plaza/onboarding/complete", json={"version": version}, headers=headers).status_code == 400
+    for _ in range(2):
+        assert client.post("/api/plaza/onboarding/complete", json={"version": 1}, headers=headers).json["result"]["user"]["onboardingCompletedVersion"] == 1
+    login = client.post("/api/plaza/auth/login", json={"username": "guideB", "password": "testpass"}).json["result"]
+    assert login["user"]["userId"] == other["user"]["userId"]
+    assert login["user"]["onboardingCompletedVersion"] == 0
+
+
+def test_onboarding_migration_exempts_legacy_accounts_only(tmp_path):
+    import sqlite3
+    from services.plaza_db import PlazaDb
+    path = tmp_path / "legacy.db"
+    with sqlite3.connect(path) as conn:
+        conn.execute("CREATE TABLE plaza_users (user_id TEXT PRIMARY KEY, username TEXT UNIQUE, password_hash TEXT, created_at TEXT, role TEXT)")
+        conn.execute("INSERT INTO plaza_users VALUES ('legacy','oldKid','hash','2026-01-01','child')")
+    db = PlazaDb(path)
+    assert db.find_user_by_id("legacy").onboarding_completed_version == 1
+    fresh = db.create_user("newKid", "hash")
+    assert fresh.onboarding_completed_version == 0
+    assert PlazaDb(path).find_user_by_id(fresh.user_id).onboarding_completed_version == 0
+
+
 def test_bad_login_and_shared_wallet_identity(client):
     first = register(client, "accountA")
     assert client.post("/api/plaza/auth/login", json={"username": "accountA", "password": "wrong"}).status_code == 401

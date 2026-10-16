@@ -1,5 +1,6 @@
 import type { ProjectRecord, SceneObject, ScenePersonalTransformBase } from '@shared/contracts'
 import { initialColors, validateColors } from '@shared/fabrication-colors'
+import { artworkBackgroundColor } from '@shared/scene-background'
 import { createCatalogResolver } from '../catalog/ywn-catalog'
 import { readCanvasRecolorLink } from '../fabrication/canvas-recolor'
 import { recolorLayers } from '../fabrication/recolor'
@@ -65,10 +66,10 @@ export async function buildWorkDisplay(work: ProjectRecord, signal?: AbortSignal
     if (resolved.asset.userId !== scene.userId) throw new Error('个人素材与作品用户不匹配。')
     return resolved
   }
-  if (scene.canvas.backgroundColor) {
-    ctx.fillStyle = scene.canvas.backgroundColor
+  const backgroundColor = artworkBackgroundColor(scene.canvas)
+  if (backgroundColor) {
+    ctx.fillStyle = backgroundColor
     ctx.fillRect(0, 0, width, height)
-    record({ id: 'paper', label: '画布底色（不是制作底板）', background: true })
   }
   if (scene.personalBackground || scene.backgroundAssetId) {
     const ref = scene.personalBackground
@@ -76,9 +77,12 @@ export async function buildWorkDisplay(work: ProjectRecord, signal?: AbortSignal
       : (await resolver.resolveAsset(scene.backgroundAssetId!, scene.assetSnapshotId)).imageUrl
     const source = await image(ref)
     const scale = Math.max(width / source.width, height / source.height)
-    ctx.clearRect(0, 0, width, height)
     ctx.drawImage(source, (width - source.width * scale) / 2, (height - source.height * scale) / 2, source.width * scale, source.height * scale)
-    record({ id: 'background', label: '场景背景', background: true })
+  }
+  // Only actual artwork belongs here. The default UI paper is neither drawn
+  // into transparent image areas nor recorded as a background layer.
+  if (backgroundColor || scene.personalBackground || scene.backgroundAssetId) {
+    record({ id: 'background', label: scene.personalBackground || scene.backgroundAssetId ? '场景背景' : '画布底色', background: true })
   }
   async function draw(src: string, object: SceneObject | ScenePersonalTransformBase,
     layer: Omit<WorkDisplayLayer, 'image'>, cumulative?: string, commit = true) {

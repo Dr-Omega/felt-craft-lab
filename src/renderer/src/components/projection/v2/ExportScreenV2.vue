@@ -17,6 +17,7 @@ const props = defineProps<{
   subjectSize: SubjectSizeChoice
   workName: string
   busy?: boolean
+  ready?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -32,7 +33,7 @@ const heightCm = ref('')
 const metaphorId = ref('apple')
 
 function toggleModal(): void {
-  if(props.busy || !props.layers.length) return
+  if(props.busy || !(props.ready ?? props.layers.length > 0)) return
   if(!modalOpen.value) {
     mode.value=props.subjectSize.mode
     widthCm.value=props.subjectSize.boundsMm ? String(props.subjectSize.boundsMm.width/10) : ''
@@ -47,7 +48,7 @@ function selectMode(next: SubjectSizeMode): void {
 }
 
 function onConfirm(): void {
-  if(props.busy || !props.layers.length) return
+  if(props.busy || !(props.ready ?? props.layers.length > 0)) return
   if (mode.value === 'specific') {
     const choice = choiceFromSpecificCm(Number(widthCm.value), Number(heightCm.value))
     if (!choice) {
@@ -71,7 +72,7 @@ function onConfirm(): void {
     <img class="layer z-2" :src="exportV2Assets.projectionFrame" alt="" />
 
     <div class="layer layer--preview z-3" :style="boxStyle(VIEWPORT_BOUNDS)">
-      <LayoutPreviewCanvas :layers="layers" :subject-size="subjectSize" />
+      <slot name="preview"><LayoutPreviewCanvas :layers="layers" :subject-size="subjectSize" /></slot>
     </div>
 
     <img class="layer z-4" :src="exportV2Assets.btnExport" alt="" />
@@ -145,7 +146,7 @@ function onConfirm(): void {
       class="hit z-40"
       :style="boxStyle(exportV2HitAreas.exportToggle)"
       aria-label="导出"
-      :disabled="busy || !layers.length"
+      :disabled="busy || !(ready ?? layers.length > 0)"
       @click="toggleModal"
     />
     <button

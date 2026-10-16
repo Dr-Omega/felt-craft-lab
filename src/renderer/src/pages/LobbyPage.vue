@@ -45,9 +45,9 @@ function openCreate(): void {
       aria-hidden="true"
     />
 
-    <button class="lobby-zone lobby-zone--share" type="button" aria-label="打开分享社区动态" @mouseenter="hoveredZone = 'share'" @mouseleave="hoveredZone = null" @click="openPlaza"></button>
-    <button class="lobby-zone lobby-zone--learning" type="button" aria-label="进入学习区" @mouseenter="hoveredZone = 'learning'" @mouseleave="hoveredZone = null" @click="openLearning()"></button>
-    <button class="lobby-zone lobby-zone--create" type="button" aria-label="进入创作区" @mouseenter="hoveredZone = 'create'" @mouseleave="hoveredZone = null" @click="openCreate"></button>
+    <button class="lobby-zone lobby-zone--share" data-tour-id="tour-lobby-share" type="button" aria-label="打开分享社区动态" @mouseenter="hoveredZone = 'share'" @mouseleave="hoveredZone = null" @click="openPlaza"></button>
+    <button class="lobby-zone lobby-zone--learning" data-tour-id="tour-lobby-learning" type="button" aria-label="进入学习区" @mouseenter="hoveredZone = 'learning'" @mouseleave="hoveredZone = null" @click="openLearning()"></button>
+    <button class="lobby-zone lobby-zone--create" data-tour-id="tour-lobby-create" type="button" aria-label="进入创作区" @mouseenter="hoveredZone = 'create'" @mouseleave="hoveredZone = null" @click="openCreate"></button>
     <button
       v-if="(dashboard?.user.role ?? session?.user.role) === 'child'"
       class="lobby-zone lobby-zone--bear"
@@ -58,7 +58,7 @@ function openCreate(): void {
       @mouseleave="hoveredZone = null"
       @click="openRewards('bear')"
     ></button>
-    <button class="lobby-avatar-hitbox" type="button" aria-label="进入个人空间" @click="openPersonalCenter"></button>
+    <button class="lobby-avatar-hitbox" data-tour-id="tour-lobby-profile" type="button" aria-label="进入个人空间" @click="openPersonalCenter"></button>
 
     <img v-if="hoveredZone === 'share'" class="lobby-tip lobby-tip--share" :style="authFullLayerStyle" :src="lobbyAssets.shareTip" alt="分享社区" />
     <img v-if="hoveredZone === 'learning'" class="lobby-tip lobby-tip--learning" :style="authFullLayerStyle" :src="lobbyAssets.learningTip" alt="学习区" />

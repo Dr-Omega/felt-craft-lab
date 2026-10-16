@@ -72,6 +72,8 @@ describe('CreateAssetPage surface', () => {
     })
     expect(scene.personalElements).toEqual([])
     expect(scene.personalBackground).toBeNull()
+    expect(scene.canvas).not.toHaveProperty('backgroundColor')
+    expect(scene.canvas).not.toHaveProperty('backgroundColorSource')
   })
 })
 

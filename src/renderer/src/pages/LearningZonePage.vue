@@ -196,7 +196,7 @@ onBeforeUnmount(() => { pageEpoch++; stopActiveAudio() })
           </figure>
         </div>
       </section>
-      <button class="begin-guided" type="button" :disabled="loadingGame" @click="beginGuidedCreation">{{ loadingGame ? '正在准备…' : '进入引导创作，解锁本主题' }}</button>
+      <button class="begin-guided" data-tour-id="tour-learning-guided" type="button" :disabled="loadingGame" @click="beginGuidedCreation">{{ loadingGame ? '正在准备…' : '进入引导创作，解锁本主题' }}</button>
       <p v-if="gameError" role="alert">{{ gameError }}</p>
       </section>
     </template>

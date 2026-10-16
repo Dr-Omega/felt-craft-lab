@@ -129,6 +129,8 @@ const electronAPI = {
       ipcRenderer.invoke(IPC_CHANNELS.PLAZA_AUTH_REGISTER, input),
     login: (input: { username: string; password: string }): Promise<PlazaIpcResult<unknown>> =>
       ipcRenderer.invoke(IPC_CHANNELS.PLAZA_AUTH_LOGIN, input),
+    completeOnboarding: (input: { token: string; version: number }): Promise<PlazaIpcResult<unknown>> =>
+      ipcRenderer.invoke(IPC_CHANNELS.PLAZA_ONBOARDING_COMPLETE, input),
     listPosts: (input: { token: string }): Promise<PlazaIpcResult<unknown>> =>
       ipcRenderer.invoke(IPC_CHANNELS.PLAZA_LIST_POSTS, input),
     mySharedProjectIds: (input: { token: string }): Promise<PlazaIpcResult<unknown>> =>
@@ -159,6 +161,7 @@ const electronAPI = {
       ipcRenderer.invoke(LEARNING_CHANNEL, { path, ...input })
   },
   fabrication: {
+    cuttingGeometry: (id: string): Promise<import('@shared/cutting-pattern').CuttingGeometry> => ipcRenderer.invoke(FABRICATION_CHANNELS.cuttingGeometry, id),
     list: (): Promise<FabricationJob[]> => ipcRenderer.invoke(FABRICATION_CHANNELS.list),
     retry: (id: string): Promise<FabricationJob> => ipcRenderer.invoke(FABRICATION_CHANNELS.retry, id),
     availability: (): Promise<{ available: boolean; message: string }> => ipcRenderer.invoke(FABRICATION_CHANNELS.availability),

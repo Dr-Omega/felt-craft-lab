@@ -343,6 +343,39 @@ describe('FabricEditorAdapter', () => {
     expect(JSON.stringify(exported)).not.toMatch(/[A-Za-z]:\\/)
   })
 
+  it('keeps legacy UI paper out of the editable canvas, saved scene and PNG export', async () => {
+    const scene = cloneFixture(validScene), original = cloneFixture(scene)
+    const { adapter, canvas } = createHarness(scene)
+    await adapter.importScene(scene, resolver())
+    expect(canvas.backgroundColor).toBeUndefined()
+    expect(adapter.exportScene().canvas).toEqual({ width: scene.canvas.width, height: scene.canvas.height })
+    let colorAtExport: string | undefined = 'not exported'
+    const png = canvas.toDataURL()
+    canvas.toDataURL = () => { colorAtExport = canvas.backgroundColor; return png }
+    expect((await adapter.exportPng()).size).toBeGreaterThan(0)
+    expect(colorAtExport).toBeUndefined()
+    expect(scene).toEqual(original)
+    await adapter.setBackground(null)
+    expect(canvas.backgroundColor).toBeUndefined()
+    expect(adapter.exportScene().canvas.backgroundColor).toBeUndefined()
+  })
+
+  it('persists explicit solid-color intent through reload and undo without mistaking it for UI paper', async () => {
+    const { adapter, canvas } = createHarness()
+    await adapter.importScene(cloneFixture(validScene), resolver())
+    adapter.setSolidBackground('#FFF8E7')
+    expect(adapter.exportScene().canvas).toMatchObject({ backgroundColor: '#FFF8E7', backgroundColorSource: 'user' })
+    await adapter.undo()
+    expect(canvas.backgroundColor).toBeUndefined()
+    await adapter.redo()
+    expect(canvas.backgroundColor).toBe('#FFF8E7')
+    const saved = adapter.exportScene()
+    await adapter.importScene(saved, resolver())
+    expect(canvas.backgroundColor).toBe('#FFF8E7')
+    adapter.setTransparentBackground()
+    expect(adapter.exportScene().canvas).not.toHaveProperty('backgroundColorSource')
+  })
+
   it('keeps zIndex continuous and enforces uniform scale plus normalized angle', async () => {
     const { adapter, canvas } = createHarness()
     await adapter.importScene(cloneFixture(validScene), resolver())
@@ -822,7 +855,7 @@ describe('FabricEditorAdapter', () => {
     expect(() => adapter.resizeCanvas(320.5, 240)).toThrow(expect.objectContaining({ code: 'INVALID_ARGUMENT' }))
     expect(canvas.getWidth()).toBe(validScene.canvas.width)
     expect(() => adapter.setSolidBackground('url(https://example.invalid/background.png)')).toThrow(expect.objectContaining({ code: 'INVALID_ARGUMENT' }))
-    expect(canvas.backgroundColor).toBe(validScene.canvas.backgroundColor)
+    expect(canvas.backgroundColor).toBeUndefined()
   })
 
   it('allows concurrent sticker loads and does not cancel them on an invalid sync edit', async () => {

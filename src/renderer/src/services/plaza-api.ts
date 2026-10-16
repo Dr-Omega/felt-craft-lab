@@ -1,4 +1,5 @@
-import type { PlazaAuthResult, PlazaPost } from '@shared/contracts/plaza'
+import type { PlazaAuthResult, PlazaPost, PlazaUser } from '@shared/contracts/plaza'
+import { ONBOARDING_VERSION } from '@shared/contracts/plaza'
 import type { UserRole } from '@shared/contracts/rewards'
 import type { SharedError } from '@shared/contracts'
 
@@ -57,11 +58,51 @@ function parseAuthResult(raw: unknown): PlazaAuthResult {
   }
   const roles = new Set<UserRole>(['child', 'parent', 'art_teacher', 'chinese_teacher', 'admin'])
   const role = roles.has(user.role as UserRole) ? (user.role as UserRole) : 'child'
+  const onboardingRaw = user.onboardingCompletedVersion
+  const onboardingCompletedVersion =
+    typeof onboardingRaw === 'number' && Number.isFinite(onboardingRaw) ? Math.max(0, Math.floor(onboardingRaw)) : ONBOARDING_VERSION
   return {
     token: candidate.token,
-    user: { userId: user.userId, username: user.username, role },
+    user: { userId: user.userId, username: user.username, role, onboardingCompletedVersion },
     dailyRewardGranted: candidate.dailyRewardGranted === true
   }
+}
+
+function parseUserResult(raw: unknown): PlazaUser {
+  const record = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : null
+  const userRaw =
+    record?.user && typeof record.user === 'object'
+      ? (record.user as Record<string, unknown>)
+      : record?.result && typeof record.result === 'object' && (record.result as Record<string, unknown>).user
+        ? ((record.result as Record<string, unknown>).user as Record<string, unknown>)
+        : null
+  if (!userRaw || typeof userRaw.userId !== 'string' || typeof userRaw.username !== 'string') {
+    throw { code: 'UNKNOWN', message: '账号服务返回无效。', retryable: false } satisfies SharedError
+  }
+  const roles = new Set<UserRole>(['child', 'parent', 'art_teacher', 'chinese_teacher', 'admin'])
+  const role = roles.has(userRaw.role as UserRole) ? (userRaw.role as UserRole) : 'child'
+  const onboardingRaw = userRaw.onboardingCompletedVersion
+  const onboardingCompletedVersion =
+    typeof onboardingRaw === 'number' && Number.isFinite(onboardingRaw) ? Math.max(0, Math.floor(onboardingRaw)) : 0
+  return {
+    userId: userRaw.userId,
+    username: userRaw.username,
+    role,
+    onboardingCompletedVersion
+  }
+}
+
+export async function completePlazaOnboarding(token: string, version: number = ONBOARDING_VERSION): Promise<PlazaUser> {
+  if (browserPlazaEnabled()) {
+    const raw = await browserPlazaRequest<unknown>('/api/plaza/onboarding/complete', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ version })
+    })
+    return parseUserResult(raw)
+  }
+  const raw = await invoke<{ user?: PlazaUser } | PlazaUser>(getPlazaApi().completeOnboarding({ token, version }))
+  return parseUserResult(raw)
 }
 
 export async function registerPlazaUser(

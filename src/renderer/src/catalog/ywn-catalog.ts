@@ -150,7 +150,7 @@ export function createBlankScene(workName: string, themeId?: string): SceneDocum
     workName: name,
     themeId: theme,
     assetSnapshotId: YWN_SNAPSHOT_ID,
-    canvas: { ...DEFAULT_SCENE_CANVAS, backgroundColor: '#FFF8E7' },
+    canvas: { ...DEFAULT_SCENE_CANVAS },
     backgroundAssetId: null,
     objects: [],
     personalBackground: null,

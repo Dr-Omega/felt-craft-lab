@@ -146,7 +146,7 @@ onMounted(() => {
       @click="toggleSofaScene"
     />
 
-    <div class="bear-food-bar" aria-label="购买食物">
+    <div class="bear-food-bar" data-tour-id="tour-rewards-bear" aria-label="购买食物">
       <div class="bear-food-picker">
         <button
           type="button"

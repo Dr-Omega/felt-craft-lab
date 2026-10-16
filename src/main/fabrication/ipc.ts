@@ -25,6 +25,7 @@ export function registerFabricationIpc(): void {
     void jobs.shutdown().finally(()=>app.quit())
   })
   const handlers = {
+    [FABRICATION_CHANNELS.cuttingGeometry]: (id: string) => jobs.cuttingGeometry(id),
     [FABRICATION_CHANNELS.retry]: (id: string) => jobs.retry(id),
     [FABRICATION_CHANNELS.colors]: (id: string) => jobs.colors(id),
     [FABRICATION_CHANNELS.saveColors]: (id: string, colors: unknown) => jobs.saveColors(id, colors),

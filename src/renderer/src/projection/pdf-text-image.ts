@@ -24,7 +24,8 @@ export interface PdfTextRaster {
 export function rasterizePdfText(
   text: string,
   fontSizePt: number,
-  color = '#594738'
+  color = '#594738',
+  pixelRatio = 1
 ): PdfTextRaster {
   const fontSizePx = (fontSizePt * 96) / 72
   const canvas = document.createElement('canvas')
@@ -36,9 +37,10 @@ export function rasterizePdfText(
   const metrics = ctx.measureText(text)
   const widthPx = Math.ceil(metrics.width) + 4
   const heightPx = Math.ceil(fontSizePx * 1.35)
-  canvas.width = widthPx
-  canvas.height = heightPx
+  canvas.width = Math.ceil(widthPx * pixelRatio)
+  canvas.height = Math.ceil(heightPx * pixelRatio)
 
+  ctx.scale(pixelRatio, pixelRatio)
   ctx.font = font
   ctx.fillStyle = color
   ctx.textBaseline = 'top'

@@ -686,9 +686,9 @@ watch([oqtOpen, oqtSelection], () => { void nextTick(updateOqtPosition) })
       </div>
       <template v-if="!guidedTheme" #tools>
         <nav v-if="!inputDialogOpen" class="creation-art-tools" aria-label="创作工具">
-        <button class="hand-btn-primary" :disabled="busy || !canEdit || !!layerEditor" @click="inputDialogOpen = true">添加图片</button>
-        <button class="creation-art-control" aria-label="打开素材盒" title="素材" :disabled="busy || !canEdit" @click="toggleSheet"><img :src="handDrawnAssets.btnRoundMaterial" alt="" /></button>
-        <button class="creation-art-control creation-background-control" aria-label="打开背景选择" title="背景" :aria-expanded="backgroundDrawerOpen" :disabled="busy || !canEdit" @click="toggleBackgroundDrawer"><img :src="handDrawnAssets.backgroundTrigger" alt="" /></button>
+        <button class="hand-btn-primary" :disabled="busy || !canEdit || !!layerEditor" @click="inputDialogOpen = true" data-tour-id="tour-editor-add-image">添加图片</button>
+        <button class="creation-art-control" aria-label="打开素材盒" data-tour-id="tour-editor-material" title="素材" :disabled="busy || !canEdit" @click="toggleSheet"><img :src="handDrawnAssets.btnRoundMaterial" alt="" /></button>
+        <button class="creation-art-control creation-background-control" aria-label="打开背景选择" data-tour-id="tour-editor-background" title="背景" :aria-expanded="backgroundDrawerOpen" :disabled="busy || !canEdit" @click="toggleBackgroundDrawer"><img :src="handDrawnAssets.backgroundTrigger" alt="" /></button>
         <details v-if="!inputDialogOpen" class="creation-tools" :open="toolsOpen" @toggle="toolsOpen = ($event.target as HTMLDetailsElement).open">
         <summary>更多工具</summary>
         <div class="creation-tools-menu" @click="toolsOpen = false">
@@ -939,7 +939,8 @@ body { margin: 0; }
   background: var(--bg-app);
 }
 
-.canvas-wrap { position: relative; width: min(100cqw, calc(100cqh * var(--canvas-ratio))); height: min(100cqh, calc(100cqw / var(--canvas-ratio))); }
+/* Paper is UI only: Fabric/PNG/SceneDocument remain transparent without a chosen background. */
+.canvas-wrap { position: relative; width: min(100cqw, calc(100cqh * var(--canvas-ratio))); height: min(100cqh, calc(100cqw / var(--canvas-ratio))); background: #fff8e7; border-radius: var(--radius-lg); }
 .editor-canvas { display: block; width: 100%; height: 100%; border-radius: var(--radius-lg); touch-action: none; }
 .canvas-wrap .canvas-container .lower-canvas { width: 100% !important; height: 100% !important; border-radius: var(--radius-lg); }
 .canvas-wrap .canvas-container .upper-canvas { width: 100% !important; height: 100% !important; border-radius: var(--radius-lg); background: transparent !important; }

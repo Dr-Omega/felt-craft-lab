@@ -95,7 +95,7 @@ onMounted(refresh)
       class="plaza-v2-hit plaza-v2-hit--public-tab"
       :style="publicTabHit"
       :aria-pressed="activeTab === 'public'"
-      aria-label="公共空间"
+      aria-label="公共空间" data-tour-id="tour-plaza-public"
       @click="selectTab('public')"
     />
     <button

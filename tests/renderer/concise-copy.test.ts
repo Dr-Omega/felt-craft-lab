@@ -37,7 +37,7 @@ describe('minimal user-facing copy', () => {
     expect(source('pages/StoryCardPage.vue')).toContain('这次未确认的录音和故事草稿不会保存')
     expect(source('components/shell/WorkspaceSyncStatus.vue')).toContain('将替换当前云端版本')
     expect(source('components/plaza/PaymentDialog.vue')).toContain('等待支付确认（未到账）')
-    expect(source('pages/WorkDisplayPage.vue')).toContain('不是精确制造纸样')
+    expect(source('pages/WorkDisplayPage.vue')).toContain('图纸尚未完成实物制作验证')
     expect(source('pages/PersonalCenterPage.vue')).toContain('分享广场中的发布不会自动撤回')
   })
   it('keeps story correction and rewrite validation without the removed transcript inspector', () => {

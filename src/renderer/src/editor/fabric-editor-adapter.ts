@@ -24,6 +24,7 @@ import {
   validateSceneSnapshotValidationContext
 } from '@shared/contracts'
 import { FELT_RESOURCE_REF_POLICY, parseFeltResourceRef } from '@shared/resource'
+import { artworkBackgroundColor } from '@shared/scene-background'
 import type {
   EditorSelectionEvent,
   EditorSelectionListener,
@@ -523,7 +524,7 @@ export class FabricEditorAdapter {
     this.personalBackground = scene.personalBackground
     this.corePattern = scene.corePattern
     this.personalElements = scene.personalElements
-    this.backgroundColor = scene.canvas.backgroundColor
+    this.backgroundColor = artworkBackgroundColor(scene.canvas)
     this.canvas = this.runtime.createCanvas(element, scene.canvas.width, scene.canvas.height)
     this.recoveryIssues = this.snapshotAssetsById.has(scene.assetSnapshotId)
       ? []
@@ -558,7 +559,7 @@ export class FabricEditorAdapter {
         for (const object of canvas.getObjects()) canvas.remove(object)
         canvas.setWidth(scene.canvas.width)
         canvas.setHeight(scene.canvas.height)
-        canvas.backgroundColor = scene.canvas.backgroundColor
+        canvas.backgroundColor = artworkBackgroundColor(scene.canvas)
         if (prepared.background) this.fitBackground(prepared.background.object, canvas)
         canvas.setBackgroundImage(prepared.background?.object ?? null, () => undefined)
         if (prepared.corePattern) canvas.add(prepared.corePattern.object)
@@ -571,7 +572,7 @@ export class FabricEditorAdapter {
         this.personalBackground = scene.personalBackground
         this.corePattern = scene.corePattern
         this.personalElements = scene.personalElements
-        this.backgroundColor = scene.canvas.backgroundColor
+        this.backgroundColor = artworkBackgroundColor(scene.canvas)
         this.recoveryIssues = prepared.issues
         this.resolver = resolver
         this.assetCache.clear()
@@ -1654,8 +1655,8 @@ export class FabricEditorAdapter {
         ...(change.clearBackgroundColor
           ? {}
           : change.backgroundColor === undefined
-            ? (current.canvas.backgroundColor === undefined ? {} : { backgroundColor: current.canvas.backgroundColor })
-            : { backgroundColor: change.backgroundColor })
+            ? (current.canvas.backgroundColor === undefined ? {} : { backgroundColor: current.canvas.backgroundColor, backgroundColorSource: 'user' as const })
+            : { backgroundColor: change.backgroundColor, backgroundColorSource: 'user' as const })
       },
       backgroundAssetId: 'backgroundAssetId' in change ? change.backgroundAssetId ?? null : current.backgroundAssetId,
       personalBackground: 'personalBackground' in change ? change.personalBackground ?? null : current.personalBackground
@@ -1998,7 +1999,7 @@ export class FabricEditorAdapter {
       canvas: {
         width: canvas.getWidth(),
         height: canvas.getHeight(),
-        ...(this.backgroundColor === undefined ? {} : { backgroundColor: this.backgroundColor })
+        ...(this.backgroundColor === undefined ? {} : { backgroundColor: this.backgroundColor, backgroundColorSource: 'user' as const })
       },
       backgroundAssetId: this.backgroundAssetId,
       objects: systemObjects,

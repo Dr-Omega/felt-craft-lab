@@ -6,6 +6,7 @@ import { randomUUID, createHash } from 'node:crypto'
 import { elementSourceIdentity } from '@shared/fabrication-task-identity'
 import type { FabricationJob, FabricationView, ForegroundMode } from '@shared/fabrication-desktop'
 import { initialColors, validateBinding, validateColors, type LayerColors } from '@shared/fabrication-colors'
+import { readCuttingGeometry } from './cutting-geometry'
 
 export interface RuntimeConfig {
   root: string
@@ -200,6 +201,14 @@ export class FabricationJobs {
     initialColors(view)
     this.jobs.set(id, job)
     return this.status(id)
+  }
+
+  async cuttingGeometry(id: string) {
+    const job = await this.readCompleted(id)
+    const base = await realpath(join(this.config.jobsRoot, id))
+    const path = await realpath(join(base, 'fabrication', 'fabrication-result.json'))
+    if (!path.startsWith(base + sep) || (await stat(path)).size > 100 * 1024 * 1024) throw new Error('裁片数据路径或大小无效。')
+    return readCuttingGeometry(JSON.parse(await readFile(path, 'utf8')), job.result!)
   }
 
   async colors(id: string): Promise<LayerColors> {

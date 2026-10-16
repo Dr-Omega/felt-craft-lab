@@ -110,4 +110,9 @@ def parse_bearer_user_token(header_value: str | None) -> str | None:
 
 
 def user_public_dict(user: PlazaUserRow) -> dict[str, Any]:
-    return {"userId": user.user_id, "username": user.username, "role": user.role}
+    return {
+        "userId": user.user_id,
+        "username": user.username,
+        "role": user.role,
+        "onboardingCompletedVersion": user.onboarding_completed_version,
+    }

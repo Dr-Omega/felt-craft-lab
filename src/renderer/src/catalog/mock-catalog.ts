@@ -108,7 +108,7 @@ export function createBlankScene(workName: string): SceneDocument {
     workName,
     themeId: MOCK_THEME_ID,
     assetSnapshotId: MOCK_SNAPSHOT_ID,
-    canvas: { ...DEFAULT_SCENE_CANVAS, backgroundColor: '#FFF8E7' },
+    canvas: { ...DEFAULT_SCENE_CANVAS },
     backgroundAssetId: null,
     objects: [],
     personalBackground: null,

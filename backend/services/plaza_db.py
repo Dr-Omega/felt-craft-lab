@@ -24,6 +24,7 @@ class PlazaUserRow:
     password_hash: str
     created_at: str
     role: str = "child"
+    onboarding_completed_version: int = 0
 
 
 @dataclass(frozen=True)
@@ -81,6 +82,12 @@ class PlazaDb:
             user_columns = {row["name"] for row in conn.execute("PRAGMA table_info(plaza_users)")}
             if "role" not in user_columns:
                 conn.execute("ALTER TABLE plaza_users ADD COLUMN role TEXT NOT NULL DEFAULT 'child'")
+            if "onboarding_completed_version" not in user_columns:
+                conn.execute(
+                    "ALTER TABLE plaza_users ADD COLUMN onboarding_completed_version INTEGER NOT NULL DEFAULT 0"
+                )
+                # Existing accounts predate onboarding; only newly created accounts start the first-login tour.
+                conn.execute("UPDATE plaza_users SET onboarding_completed_version = 1")
 
             post_columns = {row["name"] for row in conn.execute("PRAGMA table_info(plaza_posts)")}
             if "output_type" not in post_columns:
@@ -106,12 +113,13 @@ class PlazaDb:
             password_hash=password_hash,
             created_at=created_at,
             role=role,
+            onboarding_completed_version=0,
         )
 
     def find_user_by_username(self, username: str) -> Optional[PlazaUserRow]:
         with self._connect() as conn:
             row = conn.execute(
-                "SELECT user_id, username, password_hash, created_at, role FROM plaza_users WHERE username = ? COLLATE NOCASE",
+                "SELECT user_id, username, password_hash, created_at, role, onboarding_completed_version FROM plaza_users WHERE username = ? COLLATE NOCASE",
                 (username.strip(),),
             ).fetchone()
         if not row:
@@ -122,12 +130,13 @@ class PlazaDb:
             password_hash=row["password_hash"],
             created_at=row["created_at"],
             role=row["role"],
+            onboarding_completed_version=int(row["onboarding_completed_version"] or 0),
         )
 
     def find_user_by_id(self, user_id: str) -> Optional[PlazaUserRow]:
         with self._connect() as conn:
             row = conn.execute(
-                "SELECT user_id, username, password_hash, created_at, role FROM plaza_users WHERE user_id = ?",
+                "SELECT user_id, username, password_hash, created_at, role, onboarding_completed_version FROM plaza_users WHERE user_id = ?",
                 (user_id,),
             ).fetchone()
         if not row:
@@ -138,7 +147,19 @@ class PlazaDb:
             password_hash=row["password_hash"],
             created_at=row["created_at"],
             role=row["role"],
+            onboarding_completed_version=int(row["onboarding_completed_version"] or 0),
         )
+
+    def set_onboarding_completed_version(self, user_id: str, version: int) -> Optional[PlazaUserRow]:
+        user = self.find_user_by_id(user_id)
+        if not user:
+            return None
+        with self._connect() as conn:
+            conn.execute(
+                "UPDATE plaza_users SET onboarding_completed_version = MAX(onboarding_completed_version, ?) WHERE user_id = ?",
+                (int(version), user_id),
+            )
+        return self.find_user_by_id(user_id)
 
     def create_post(
         self,

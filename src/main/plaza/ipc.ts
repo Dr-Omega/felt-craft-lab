@@ -11,6 +11,7 @@ import {
   plazaGetPost,
   plazaListPosts,
   plazaLogin,
+  plazaCompleteOnboarding,
   plazaMySharedProjectIds,
   plazaPublishPost,
   plazaRegister,
@@ -117,6 +118,14 @@ export function registerPlazaIpc(roots: ResourceRoots): void {
     const username = typeof input.username === 'string' ? input.username : ''
     const password = typeof input.password === 'string' ? input.password : ''
     return bindAuth(event, mapGatewayBody(await plazaLogin({ username, password, isPackaged: packaged })))
+  })
+
+  ipcMain.handle(IPC_CHANNELS.PLAZA_ONBOARDING_COMPLETE, async (event, raw: unknown) => {
+    if (!isTrustedIpcEvent(event)) return deny()
+    const input = asRecord(raw)
+    const token = typeof input.token === 'string' ? input.token : ''
+    if (!token.trim() || input.version !== 1) return deny()
+    return mapGatewayBody(await plazaCompleteOnboarding({ token, version: 1, isPackaged: packaged }))
   })
 
   ipcMain.handle(IPC_CHANNELS.PLAZA_LIST_POSTS, async (event, raw: unknown) => {

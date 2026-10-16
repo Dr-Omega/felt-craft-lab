@@ -58,7 +58,7 @@ class QaHistoryTests(unittest.TestCase):
             self.assertEqual(post.call_args.kwargs['json']['response_format'], {'type': 'json_object'})
             self.assertEqual(messages[0]['role'], 'system')
             self.assertEqual(messages[1:3], self.pair)
-            self.assertEqual(messages[-1], {'role': 'user', 'content': '什么颜色？'})
+            self.assertEqual(messages[-1], {'role': 'user', 'content': '什么颜色？\n请按系统规定仅返回 JSON 对象，包含 answer 和 safetyAction。'})
 
 
 class QaHistoryRouteTests(unittest.TestCase):

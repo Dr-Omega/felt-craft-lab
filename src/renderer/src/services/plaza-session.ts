@@ -26,6 +26,12 @@ export function savePlazaSession(session: PlazaSession): void {
   localStorage.setItem(USER_KEY, JSON.stringify(session.user))
 }
 
+export function patchPlazaUser(partial: Partial<PlazaSession['user']>): void {
+  const session = loadPlazaSession()
+  if (!session) return
+  savePlazaSession({ ...session, user: { ...session.user, ...partial } })
+}
+
 export function clearPlazaSession(): void {
   localStorage.removeItem(TOKEN_KEY)
   localStorage.removeItem(USER_KEY)

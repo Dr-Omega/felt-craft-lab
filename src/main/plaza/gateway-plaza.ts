@@ -40,6 +40,20 @@ export async function plazaLogin(input: {
   })
 }
 
+export async function plazaCompleteOnboarding(input: {
+  token: string
+  version: number
+  isPackaged?: boolean
+}): Promise<GatewayJsonResult> {
+  return gatewayJson('/api/plaza/onboarding/complete', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ version: input.version }),
+    plazaUserToken: input.token,
+    isPackaged: input.isPackaged
+  })
+}
+
 export async function plazaListPosts(input: {
   token: string
   isPackaged?: boolean

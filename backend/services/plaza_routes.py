@@ -158,6 +158,21 @@ def plaza_register():
     )
 
 
+@app.post("/api/plaza/onboarding/complete")
+def plaza_complete_onboarding():
+    user, err = _require_plaza_user()
+    if err:
+        return err
+    body = request.get_json(silent=True) or {}
+    version = body.get("version") if isinstance(body, dict) else None
+    if type(version) is not int or version != 1:
+        return _json_fail("INVALID_ARGUMENT")
+    updated = PLAZA_DB.set_onboarding_completed_version(user.user_id, version)
+    if not updated:
+        return _json_fail("SESSION_INVALID", 401)
+    return _json_ok({"result": {"user": user_public_dict(updated)}})
+
+
 @app.post("/api/plaza/auth/login")
 def plaza_login():
     body = request.get_json(silent=True) or {}
