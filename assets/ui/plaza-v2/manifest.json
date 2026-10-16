@@ -14,40 +14,34 @@
       "bbox": { "left": 0, "top": 0, "right": 1920, "bottom": 1080, "width": 1920, "height": 1080 }
     },
     {
-      "slug": "personal-background",
-      "file": "layer-personal-background-02.png",
+      "slug": "title-banner",
+      "file": "layer-title-banner.png",
       "zIndex": 2,
-      "bbox": { "left": 0, "top": 0, "right": 1920, "bottom": 1080, "width": 1920, "height": 1080 }
+      "bbox": { "left": 535, "top": 22, "right": 1384, "bottom": 236, "width": 850, "height": 215 }
     },
     {
       "slug": "showcase-frame",
       "file": "layer-showcase-frame-03.png",
       "zIndex": 3,
-      "bbox": { "left": 0, "top": 0, "right": 1920, "bottom": 1080, "width": 1920, "height": 1080 }
-    },
-    {
-      "slug": "public-tab",
-      "file": "layer-public-tab-04.png",
-      "zIndex": 4,
-      "bbox": { "left": 134, "top": 214, "right": 335, "bottom": 337, "width": 201, "height": 123 }
-    },
-    {
-      "slug": "personal-tab",
-      "file": "layer-personal-tab-05.png",
-      "zIndex": 5,
-      "bbox": { "left": 326, "top": 216, "right": 527, "bottom": 341, "width": 201, "height": 125 }
+      "bbox": { "left": 102, "top": 235, "right": 1819, "bottom": 1042, "width": 1718, "height": 808 }
     },
     {
       "slug": "back-button",
       "file": "layer-back-top.png",
       "zIndex": 6,
       "bbox": { "left": 39, "top": 35, "right": 245, "bottom": 146, "width": 206, "height": 111 }
+    },
+    {
+      "slug": "start-create",
+      "file": "",
+      "zIndex": 8,
+      "bbox": { "left": 1628, "top": 948, "right": 1798, "bottom": 1014, "width": 170, "height": 66 }
     }
   ],
   "contentSlot": {
-    "left": 130,
-    "top": 368,
-    "width": 1660,
-    "height": 648
+    "left": 132,
+    "top": 268,
+    "width": 1656,
+    "height": 668
   }
 }
