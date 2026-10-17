@@ -30,12 +30,6 @@
       "file": "layer-back-top.png",
       "zIndex": 6,
       "bbox": { "left": 39, "top": 35, "right": 245, "bottom": 146, "width": 206, "height": 111 }
-    },
-    {
-      "slug": "start-create",
-      "file": "",
-      "zIndex": 8,
-      "bbox": { "left": 1628, "top": 948, "right": 1798, "bottom": 1014, "width": 170, "height": 66 }
     }
   ],
   "contentSlot": {

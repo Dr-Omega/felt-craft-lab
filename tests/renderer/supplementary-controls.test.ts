@@ -5,7 +5,8 @@ describe('Screenshot-reported supplementary controls', () => {
   it('uses the child-space plaza banner and keeps uncropped previews without blending artwork', () => {
     const page = source('pages/PlazaPage.vue')
     expect(page).toContain('plazaV2Assets.titleBanner')
-    expect(page).toContain('enterCreationStudio')
+    expect(page).not.toContain('enterCreationStudio')
+    expect(page).not.toContain('成长中心')
     expect(page).not.toContain('public-tab')
     expect(page).toContain('object-fit: contain')
     expect(page).not.toContain('mix-blend-mode: multiply')

@@ -4,11 +4,10 @@ import type { PlazaPost } from '@shared/contracts/plaza'
 import type { RewardDashboard } from '@shared/contracts/rewards'
 import AuthArtboard from '../components/auth/AuthArtboard.vue'
 import PlazaPostDetailModal from '../components/plaza/PlazaPostDetailModal.vue'
-import { enterCreationStudio, openLobby, openPersonalCenter, openRewards } from '../app-nav'
+import { openLobby } from '../app-nav'
 import { loadPlazaSession } from '../services/plaza-session'
 import { listPlazaPosts, loadPlazaPreviewUrl } from '../services/plaza-api'
 import { loadRewardDashboard } from '../services/reward-api'
-import { plazaAvatarForRole } from '../ui/plaza-assets'
 import { rewardAssets } from '../ui/reward-assets'
 import { plazaV2Assets, plazaV2ContentSlotStyle, plazaV2FullLayerStyle, plazaV2HitBoxStyle } from '../ui/plaza-v2-assets'
 
@@ -20,13 +19,11 @@ const loading = ref(false)
 const error = ref('')
 const dashboard = ref<RewardDashboard | null>(null)
 const backHit = plazaV2HitBoxStyle('back-button')
-const startCreateHit = plazaV2HitBoxStyle('start-create')
 const wallet = computed(() => dashboard.value?.wallet ?? { coins: 0, diamonds: 0 })
 const showWallet = computed(() => {
   const role = dashboard.value?.user.role ?? session?.user.role
   return Boolean(dashboard.value) && role !== 'parent' && role !== 'admin'
 })
-const avatarSrc = computed(() => plazaAvatarForRole(dashboard.value?.user.role ?? session?.user.role ?? 'child'))
 
 async function refresh(): Promise<void> {
   if (!session) return
@@ -91,17 +88,11 @@ onMounted(() => {
 
     <img class="plaza-v2-layer plaza-v2-layer--back" :style="plazaV2FullLayerStyle" :src="plazaV2Assets.backButton" alt="" aria-hidden="true" />
     <button type="button" class="plaza-v2-hit plaza-v2-hit--back" :style="backHit" aria-label="返回游戏大厅" @click="openLobby" />
-    <button type="button" class="plaza-start-create" :style="startCreateHit" @click="enterCreationStudio">开始创作</button>
 
-    <div class="plaza-chrome">
-      <div v-if="showWallet" class="plaza-account" aria-label="账户余额">
-        <span><img :src="rewardAssets.diamond" alt="钻石" /><strong>{{ wallet.diamonds }}</strong></span>
-        <span><img :src="rewardAssets.coin" alt="金币" /><strong>{{ wallet.coins }}</strong></span>
-      </div>
-      <button type="button" class="plaza-rewards" @click="openRewards">成长中心</button>
+    <div v-if="showWallet" class="plaza-account" aria-label="账户余额">
+      <span><img :src="rewardAssets.diamond" alt="钻石" /><strong>{{ wallet.diamonds }}</strong></span>
+      <span><img :src="rewardAssets.coin" alt="金币" /><strong>{{ wallet.coins }}</strong></span>
     </div>
-    <img class="plaza-v2-layer plaza-v2-layer--avatar" :style="plazaV2FullLayerStyle" :src="avatarSrc" alt="" aria-hidden="true" />
-    <button type="button" class="plaza-v2-hit plaza-v2-hit--avatar" aria-label="进入个人中心" @click="openPersonalCenter" />
   </AuthArtboard>
 
   <PlazaPostDetailModal
@@ -129,11 +120,6 @@ onMounted(() => {
   z-index: 4;
   transform: scale(1.18);
   transform-origin: 960px 40px;
-}
-.plaza-v2-layer--avatar {
-  z-index: 5;
-  transform: scale(0.68);
-  transform-origin: 1694px 40px;
 }
 .plaza-v2-layer--back { z-index: 7; }
 
@@ -205,70 +191,34 @@ onMounted(() => {
   object-fit: contain;
 }
 
-.plaza-start-create {
+.plaza-account {
   position: absolute;
-  z-index: 9;
-  margin: 0;
-  border: 3px solid #71351c;
-  border-radius: 14px;
-  background: #fff4bd;
-  color: #71351c;
-  font-size: 22px;
-  cursor: pointer;
-}
-
-.plaza-chrome {
-  position: absolute;
-  left: 1252px;
-  top: 42px;
+  right: 72px;
+  top: 36px;
   z-index: 15;
   display: flex;
   align-items: center;
-  gap: 8px;
-}
-
-.plaza-account {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  gap: 16px;
 }
 
 .plaza-account span {
   display: flex;
   align-items: center;
-  gap: 8px;
-  min-width: 102px;
-  min-height: 44px;
-  padding: 4px 12px;
-  border: 3px solid rgba(105, 69, 40, .28);
-  border-radius: 14px;
-  background: rgba(255, 252, 238, .94);
+  gap: 12px;
+  min-width: 168px;
+  min-height: 78px;
+  padding: 12px 22px;
+  border: 4px solid rgba(105, 69, 40, .32);
+  border-radius: 18px;
+  background: rgba(255, 252, 238, .95);
   color: #71351c;
-  font-size: 22px;
+  font-size: 32px;
 }
 
 .plaza-account img {
-  width: 32px;
-  height: 32px;
+  width: 52px;
+  height: 52px;
+  flex: 0 0 52px;
   object-fit: contain;
-}
-
-.plaza-rewards {
-  min-height: 44px;
-  padding: 4px 14px;
-  border: 3px solid #c4a574;
-  border-radius: 14px;
-  background: #fff6d8;
-  color: #71351c;
-  font-size: 20px;
-  cursor: pointer;
-}
-
-.plaza-v2-hit--avatar {
-  left: 1597px;
-  top: 37px;
-  z-index: 16;
-  width: 193px;
-  height: 191px;
 }
 </style>
