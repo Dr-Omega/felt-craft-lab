@@ -1,10 +1,8 @@
 import manifest from '../../../../assets/ui/plaza-v2/manifest.json'
 import baseBackgroundUrl from '../../../../assets/ui/plaza-v2/layer-base-background.png'
 import publicBackgroundUrl from '../../../../assets/ui/plaza-v2/layer-public-background-01.png'
-import personalBackgroundUrl from '../../../../assets/ui/plaza-v2/layer-personal-background-02.png'
 import showcaseFrameUrl from '../../../../assets/ui/plaza-v2/layer-showcase-frame-03.png'
-import publicTabUrl from '../../../../assets/ui/plaza-v2/layer-public-tab-04.png'
-import personalTabUrl from '../../../../assets/ui/plaza-v2/layer-personal-tab-05.png'
+import titleBannerUrl from '../../../../assets/ui/plaza-v2/layer-title-banner.png'
 import backButtonUrl from '../../../../assets/ui/plaza-v2/layer-back-top.png'
 
 export const PLAZA_V2_DESIGN_WIDTH = manifest.designSize.width
@@ -15,10 +13,8 @@ export const plazaV2ContentSlot = manifest.contentSlot
 export const plazaV2Assets = {
   baseBackground: baseBackgroundUrl,
   publicBackground: publicBackgroundUrl,
-  personalBackground: personalBackgroundUrl,
   showcaseFrame: showcaseFrameUrl,
-  publicTab: publicTabUrl,
-  personalTab: personalTabUrl,
+  titleBanner: titleBannerUrl,
   backButton: backButtonUrl
 } as const
 

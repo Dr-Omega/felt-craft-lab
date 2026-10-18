@@ -29,6 +29,13 @@ describe('saved-work cutting input provenance',()=>{
     const cuts=await prepareWorkCuts(work,vi.fn(),new AbortController().signal)
     expect(api.start).not.toHaveBeenCalled();expect(api.colors).not.toHaveBeenCalled()
     expect(api.cuttingGeometry).toHaveBeenCalledWith(job.id);expect(cuts[0].color).toBe('#FF0000')
+    expect(cuts[0].element).toBe(2) // the actual scene background occupies layer 1
+  })
+  it('does not number the UI paper as an artwork background', async () => {
+    const transparent = structuredClone(work); transparent.scene.backgroundAssetId = null; transparent.scene.personalBackground = null
+    delete transparent.scene.canvas.backgroundColorSource; transparent.scene.canvas.backgroundColor = '#FFF8E7'
+    const cuts = await prepareWorkCuts(transparent, vi.fn(), new AbortController().signal)
+    expect(cuts[0].element).toBe(1)
   })
   it('rejects missing or mismatched existing layers without running the unapproved algorithm',async()=>{
     for(const altered of [{...job,result:{...view,sourceSha256:'b'.repeat(64)}},{...job,binding:{scene:{...work.scene,assetSnapshotId:'different-snapshot'},objectId:binding.objectId}}]){

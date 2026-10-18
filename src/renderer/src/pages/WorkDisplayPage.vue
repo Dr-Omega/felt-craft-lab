@@ -45,7 +45,7 @@ async function downloadPdf(choice: SubjectSizeChoice) {
     subjectSize.value = choice
     const blob = await exportCuttingPdf(next, work.projectName)
     const url = URL.createObjectURL(blob), anchor = document.createElement('a')
-    anchor.href = url; anchor.download = `${work.projectName.replace(/[\\/:*?"<>|]/g, '_')}-同色裁片图纸.pdf`; anchor.click()
+    anchor.href = url; anchor.download = `${work.projectName.replace(/[\\/:*?"<>|]/g, '_')}-彩色裁片图纸.pdf`; anchor.click()
     setTimeout(() => URL.revokeObjectURL(url), 30000)
   } catch (cause) { error.value = (cause as Error).message }
   finally { exporting.value = false }
@@ -91,15 +91,15 @@ onUnmounted(() => controller.abort())
             <CuttingPreview v-if="plan" :plan="plan" />
             <div v-else class="cut-preparation">
               <h2>按现有图层排版图纸</h2>
-              <p>A4 纸张 · 同色集中排版 · 放不下自动续页</p>
-              <p>按现有轮廓统一比例排版，不自动拆分、合并色块或修改小孔。<br />画布底色与场景背景不作为裁片。</p>
+              <p>A4 纸张 · 图层混色排版 · 放不下自动续页</p>
+              <p>同一元素按制作层序集中排列，所有裁片保持统一比例。</p>
               <p v-if="preparing" role="status">{{ progress || '正在准备裁片…' }}</p>
               <button class="hand-btn-primary" :disabled="preparing" @click="prepareCuts">{{ preparing ? '正在准备…' : error ? '重试准备裁片' : '准备图纸排版' }}</button>
             </div>
           </template>
         </ExportScreenV2>
       </Stage1920>
-      <p v-if="error || exporting || screen === 'export'" class="export-notice" :role="error ? 'alert' : 'status'">{{ error || (exporting ? '正在生成 PDF……' : '按 100% 实际大小打印并核对校准线；图纸尚未完成实物制作验证。') }}</p>
+      <p v-if="error || exporting || screen === 'export'" class="export-notice" :role="error ? 'alert' : 'status'">{{ error || (exporting ? '正在生成 PDF……' : '按 100% 实际大小打印；编号为“元素层序-内部制作层序”。图纸尚未完成实物制作验证。') }}</p>
     </template>
     <template v-else>
       <header><button class="hand-icon-btn hand-icon-btn--back" aria-label="返回作品" @click="back"><img :src="handDrawnAssets.btnBack" alt="" /></button><h1>{{ work?.projectName }} · 展示</h1>

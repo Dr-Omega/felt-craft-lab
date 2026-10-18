@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { validProject } from '../shared/contracts.fixtures'
 import { buildWorkDisplay } from '../../src/renderer/src/workflows/work-display'
+import { originalPsdEdit, providedPsdPack } from '../../src/renderer/src/projection/provided-psd-artwork'
 
 const mocks = vi.hoisted(() => ({ resolve: vi.fn(), personal: vi.fn() }))
 vi.mock('../../src/renderer/src/catalog/ywn-catalog', () => ({
@@ -39,6 +40,25 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals())
 
 describe('saved-work background layers', () => {
+  it('explodes complete scene elements in saved order, never the PSD color layers or fabrication tasks', async () => {
+    const work = structuredClone(validProject)
+    const transform = { left: 100, top: 100, scaleX: .5, scaleY: .5, angle: 15, visible: true, locked: false }
+    work.scene.corePattern = { ...transform, objectId: 'core', personalAssetId: 'fuwa', versionId: 'fuwa-pinned' }
+    work.scene.personalElements = [{ ...transform, objectId: 'envelope', personalAssetId: 'hongbao', versionId: 'red-pinned', zIndex: 1 }]
+    work.scene.objects[0].zIndex = 2
+    mocks.resolve.mockImplementation(async id => ({ imageUrl: id, nameZh: id, preSplitDataUrl: 'must-not-read-in-explode' }))
+    mocks.personal.mockImplementation(async id => ({ asset: { userId: work.scene.userId, name: '旧换色名称' },
+      version: { sourceImageRef: id + '-saved-composite', providedPsd: originalPsdEdit(providedPsdPack(id)) } }))
+    const fabrication = { resume: vi.fn(() => { throw Error('EXPLODE_MUST_NOT_LOAD_COLOR_LAYERS') }) }
+    vi.stubGlobal('window', { electronAPI: { fabrication } })
+    const fetch = vi.fn(() => { throw Error('EXPLODE_MUST_NOT_FETCH_PSD_MASKS') }); vi.stubGlobal('fetch', fetch)
+    const display = await buildWorkDisplay(work)
+    expect(display.layers.map(l => l.id)).toEqual(['background', 'core', 'envelope', work.scene.objects[0].objectId])
+    expect(display.layers.slice(1).map(l => l.label)).toEqual(['福娃', '红包', work.scene.objects[0].assetId])
+    expect(display.layers.every(l => l.layerIndex === undefined)).toBe(true)
+    expect(JSON.parse(display.assemblies.at(-1)!)).toEqual([work.scene.backgroundAssetId, 'fuwa-saved-composite', 'hongbao-saved-composite', work.scene.objects[0].assetId])
+    expect(fabrication.resume).not.toHaveBeenCalled(); expect(fetch).not.toHaveBeenCalled()
+  })
   it('never bakes default UI paper into the scene background or foreground', async () => {
     const work = structuredClone(validProject), original = structuredClone(work)
     const display = await buildWorkDisplay(work)

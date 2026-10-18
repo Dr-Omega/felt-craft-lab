@@ -1,0 +1,14 @@
+{
+  "springFestivalCoupletGate": {
+    "levelId": "spring-festival-couplet-gate-001",
+    "themeId": "spring_festival",
+    "assetSnapshotId": "snapshot_ywn_psd_20261017",
+    "width": 1686,
+    "height": 960,
+    "placements": [
+      { "stickerId": "sticker_lantern_001", "x": 369, "y": 243, "width": 237, "height": 321, "tolerance": 18 },
+      { "stickerId": "sticker_red_envelope_001", "x": 1281, "y": 495, "width": 140, "height": 199, "tolerance": 18 },
+      { "stickerId": "sticker_dumpling_001", "x": 134, "y": 546, "width": 167, "height": 97, "tolerance": 18 }
+    ]
+  }
+}

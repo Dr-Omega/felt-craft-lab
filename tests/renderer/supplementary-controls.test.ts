@@ -2,11 +2,25 @@ import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 const source = (file: string) => readFileSync(`src/renderer/src/${file}`, 'utf8')
 describe('Screenshot-reported supplementary controls', () => {
-  it('keeps personal plaza filtering and uncropped previews without blending artwork', () => {
+  it('uses the child-space plaza banner and keeps uncropped previews without blending artwork', () => {
     const page = source('pages/PlazaPage.vue')
-    expect(page).toContain('posts.value.filter(post => post.userId === session?.user.userId)')
+    expect(page).toContain('plazaV2Assets.titleBanner')
+    expect(page).not.toContain('enterCreationStudio')
+    expect(page).not.toContain('成长中心')
+    expect(page).not.toContain('public-tab')
+    expect(page).toContain('data-tour-id="tour-plaza-public"')
+    expect(page).toContain('loadRewardDashboard(session.token)')
+    expect(page).toContain('@updated="updateStats"')
+    expect(source('services/onboarding-steps.ts')).not.toContain('点「公共空间」')
     expect(page).toContain('object-fit: contain')
     expect(page).not.toContain('mix-blend-mode: multiply')
+  })
+  it('refreshes the child-space wallet after detail actions award teacher coins', () => {
+    const page = source('pages/PlazaPage.vue')
+    const updateStats = page.slice(page.indexOf('function updateStats'), page.indexOf('async function refreshWallet'))
+    expect(updateStats).toContain('Object.assign(post, stats)')
+    expect(updateStats).toContain('void refreshWallet()')
+    expect(page).toContain('dashboard.value = await loadRewardDashboard(session.token)')
   })
   it('keeps account transaction and sync conflict safeguards while applying asset skins', () => {
     const page = source('pages/PersonalCenterPage.vue')

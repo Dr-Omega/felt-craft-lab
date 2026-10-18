@@ -750,6 +750,12 @@ export class FabricEditorAdapter {
       locked: false
     }), operation, canvas)
     this.ensureCurrentOperation(operation)
+    if (version.providedPsd && position === undefined) {
+      try {
+        const scale = calculateStickerInitialScale(canvas.getWidth(), canvas.getHeight(), loaded.object.width, loaded.object.height)
+        loaded.object.set({ scaleX: scale, scaleY: scale }); loaded.object.setCoords()
+      } catch (error) { loaded.release(); throw error }
+    }
     canvas.add(loaded.object)
     this.objectResources.set(loaded.object, loaded.release)
     this.personalAssetCache.set(personalAssetKey(asset.personalAssetId, version.versionId), bundle)

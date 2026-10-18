@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-08T08:17:03.203Z",
+  "updatedAt": "2026-10-17T00:00:00Z",
   "assets": {
     "background_lantern_street_001": {
       "contentVersion": 2,
@@ -429,7 +429,7 @@
       }
     },
     "background_couplet_gate_001": {
-      "contentVersion": 2,
+      "contentVersion": 3,
       "projection": {
         "type": "background",
         "themeId": "spring_festival",
@@ -448,11 +448,11 @@
         ],
         "image": {
           "logicalName": "background_couplet_gate_001.png",
-          "sha256": "bfe30d4f8b7e05190b987c897a3111533a51610b28f081631c5ce3aaf6e52623"
+          "sha256": "e067286dccc1a96fb83d03eb9633a0d4ba1040d2863e5a362d8dc3013bfc8d04"
         },
         "thumbnail": {
           "logicalName": "background_couplet_gate_001_thumb.png",
-          "sha256": "cd0c63b3ba51eb97d36c33b61cf56551a33801790064efa0b2ce19a07416a80e"
+          "sha256": "545afccf2fbb45abf3f6c8e2f52415985521b4d893b4c40ecd035bf58a8def67"
         },
         "preSplit": {
           "logicalName": "",
@@ -472,7 +472,7 @@
             "sha256": "e3ad9c6f689a770dfca991384c1401d04d7bb3a8eef2299982ffe9bc6120b668"
           }
         },
-        "source": "Midjourney／豆包生成 + 后期",
+        "source": "用户提供 PSD，UI 素材重绘，原始图层保留",
         "license": "生成平台条款；组内按MJ主口径确认"
       }
     },
@@ -619,7 +619,7 @@
       }
     },
     "sticker_red_envelope_001": {
-      "contentVersion": 2,
+      "contentVersion": 3,
       "projection": {
         "type": "sticker",
         "themeId": "spring_festival",
@@ -637,15 +637,15 @@
         ],
         "image": {
           "logicalName": "sticker_red_envelope_001.png",
-          "sha256": "8c9842a1d9756d8bcb675ad360ba39f88ca260a980eb47bead95bbf8de114753"
+          "sha256": "37cce4113f80177cfc241850b85d60b48423418c8be456274caa0951d10c935f"
         },
         "thumbnail": {
           "logicalName": "sticker_red_envelope_001_thumb.png",
-          "sha256": "a60e9d8a68f657db6eabdaea5521505f03eb968ad4256c80f92e2cf117b29291"
+          "sha256": "58092f09700583eb813d2aebaf6f456ebb9f8250feb30f169a197da49b63bf65"
         },
         "preSplit": {
-          "logicalName": "",
-          "sha256": ""
+          "logicalName": "layers.json",
+          "sha256": "07a75fdbd61e741a8ea185388a356797ca7b807c1a9d52b14e40a7a1e227329f"
         },
         "audio": {
           "nameZh": {
@@ -661,12 +661,12 @@
             "sha256": "10fac81a9632f8e1c5cd7f19f2553fbdea5665ef4211509d7db3363fff89eb1b"
           }
         },
-        "source": "Midjourney生成 + 后期",
+        "source": "用户提供 PSD，UI 素材重绘，原始图层保留",
         "license": "生成平台条款；组内按MJ主口径确认"
       }
     },
     "sticker_lantern_001": {
-      "contentVersion": 2,
+      "contentVersion": 3,
       "projection": {
         "type": "sticker",
         "themeId": "spring_festival",
@@ -684,15 +684,15 @@
         ],
         "image": {
           "logicalName": "sticker_lantern_001.png",
-          "sha256": "f87f2681ffaed12072f058cb53807cb36b055e2a71b94f07ae1bed2d41985544"
+          "sha256": "b80712efa210549b650fda8f9a677ab975ed87015c6172d76e20fa306dd6646a"
         },
         "thumbnail": {
           "logicalName": "sticker_lantern_001_thumb.png",
-          "sha256": "1cb24e4dcc78385a2cb120e9542adae125a43908b871a495eee33883be7ad0bd"
+          "sha256": "d7d784915490bd809522f60d772b0b86ce1a546c674bc9ee9e9f12497fb02796"
         },
         "preSplit": {
-          "logicalName": "",
-          "sha256": ""
+          "logicalName": "layers.json",
+          "sha256": "90c5a8c27f1f2f45185e650a275b2b214db2080eda4f98e9a51b74d7bf9ae19c"
         },
         "audio": {
           "nameZh": {
@@ -708,7 +708,7 @@
             "sha256": "f4d771b847ab184d5209859facf52faa89312975b98922718d2597cfeb8ef0f2"
           }
         },
-        "source": "Midjourney生成 + 后期",
+        "source": "用户提供 PSD，UI 素材重绘，原始图层保留",
         "license": "生成平台条款；组内按MJ主口径确认"
       }
     },
@@ -759,7 +759,7 @@
       }
     },
     "sticker_dumpling_001": {
-      "contentVersion": 2,
+      "contentVersion": 3,
       "projection": {
         "type": "sticker",
         "themeId": "spring_festival",
@@ -777,15 +777,15 @@
         ],
         "image": {
           "logicalName": "sticker_dumpling_001.png",
-          "sha256": "78f2ec170a41b37ca41d7c4f1f6e6c68977890dc7b9e69fd8d91797070fcde43"
+          "sha256": "6790560675e4579485cd883644edf381f2ce489f71d04c62cbfc7692f976341b"
         },
         "thumbnail": {
           "logicalName": "sticker_dumpling_001_thumb.png",
-          "sha256": "31e41b18abf6148864ab1493065fc011ab4419a2c7b212bf0f61e07c7d0ef851"
+          "sha256": "e4342232118cdcaf632c783bbe2f36463aaa468af28e27a412a25cd36ae23270"
         },
         "preSplit": {
-          "logicalName": "",
-          "sha256": ""
+          "logicalName": "layers.json",
+          "sha256": "5eb9528d679dc0ba92067145185fa4cc5c689b23c13daf7887093a226f98c42c"
         },
         "audio": {
           "nameZh": {
@@ -801,7 +801,7 @@
             "sha256": "57127a2438ce8f707c638197b448e75d63e2f5eff89e6424d80879569f44e914"
           }
         },
-        "source": "Midjourney生成 + 后期",
+        "source": "用户提供 PSD，UI 素材重绘，原始图层保留",
         "license": "生成平台条款；组内按MJ主口径确认"
       }
     },

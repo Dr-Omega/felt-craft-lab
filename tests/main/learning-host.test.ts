@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { LearningHost, learningFailure } from '../../src/main/learning/host'
 import catalog from '../../src/renderer/src/catalog/assets.manifest.json'
 import { listLevels } from '../../sticker-game-backend/src/levels.js'
+import learningGuides from '../../src/shared/learning-guides.json'
 
 function sceneFor(session: any) {
   return { schemaVersion: 2, sceneId: crypto.randomUUID(), userId: 'user-1', workName: '引导任务', themeId: session.level.themeId,
@@ -49,9 +50,31 @@ describe('private learning engine and verified completion', () => {
       const receipt = request(`${path}/completion`)
       expect(receipt).toMatchObject({ userId: 'user-1', assetSnapshotId: snapshot, themeId: session.level.themeId })
       expect(receipt.stickerIds).toEqual(session.level.stickers.map((s: any) => s.stickerId))
-      expect([...receipt.stickerIds].sort()).toEqual(catalog.assets.filter(asset => asset.themeId === receipt.themeId && asset.type === 'sticker').map(asset => asset.assetId).sort())
+      const expectedIds = levelId === learningGuides.springFestivalCoupletGate.levelId
+        ? learningGuides.springFestivalCoupletGate.placements.map(p=>p.stickerId)
+        : catalog.assets.filter(asset => asset.themeId === receipt.themeId && asset.type === 'sticker').map(asset => asset.assetId)
+      expect([...receipt.stickerIds].sort()).toEqual(expectedIds.sort())
       expect(request(path).allFinished).toBe(true)
     })
+  it('uses only the three authored Spring Festival teaching placements and leaves other lessons unchanged', () => {
+    const request=client(),guide=learningGuides.springFestivalCoupletGate
+    const session=request('/api/sessions','POST',{levelId:guide.levelId})
+    expect(session.level.canvasBounds).toEqual({minX:0,minY:0,maxX:1686,maxY:960})
+    expect(session.level.stickers.map((s:any)=>[s.stickerId,s.placeholder.x,s.placeholder.y,s.placeholder.width,s.placeholder.height])).toEqual([
+      ['sticker_lantern_001',369,243,237,321],
+      ['sticker_red_envelope_001',1281,495,140,199],
+      ['sticker_dumpling_001',134,546,167,97]
+    ])
+    expect(session.level.stickers.map((s:any)=>s.stickerId)).toEqual(guide.placements.map(p=>p.stickerId))
+    for (const [i,sticker] of session.level.stickers.entries()) {
+      const p=guide.placements[i]
+      expect(sticker.placeholder).toMatchObject({x:p.x,y:p.y,width:p.width,height:p.height,rotation:0})
+      expect(sticker.targetArea).toEqual({minX:p.x,minY:p.y,maxX:p.x+p.width,maxY:p.y+p.height})
+    }
+    const other=request('/api/sessions','POST',{levelId:'spring-festival-snow-window-001'})
+    expect(other.level.stickers).toHaveLength(6)
+    expect(other.level.canvasBounds.maxX).toBe(1024)
+  })
   it('rejects skipped audio, wrong theme, hidden/duplicate material, and edits to previous placements', () => {
     const request = client()
     const session = request('/api/sessions', 'POST', { levelId: 'mid-autumn-lake-001' })

@@ -1,5 +1,6 @@
 import type { AssetRecord } from '@shared/contracts'
 import type { LearningCompletion } from '@shared/learning'
+import learningGuides from '@shared/learning-guides.json'
 import type { FeltCraftDatabase } from '../persistence/db'
 import { AssetAccessStore } from '../persistence/stores'
 
@@ -9,8 +10,12 @@ export async function saveLearningCompletion(db: FeltCraftDatabase, receipt: Lea
   if (!receipt || Object.entries(expected).some(([key, value]) => receipt[key as keyof LearningCompletion] !== value)
     || !Number.isFinite(Date.parse(receipt.completedAt)) || !Array.isArray(receipt.stickerIds)) throw new Error('学习完成凭据不匹配。')
   const eligible = assets.filter(asset => asset.themeId === expected.themeId && (asset.type === 'background' || asset.type === 'sticker'))
-  const required = eligible.filter(asset => asset.type === 'sticker').map(asset => asset.assetId).sort()
+  const guide = learningGuides.springFestivalCoupletGate
+  const authoredLesson = receipt.levelId === guide.levelId && expected.themeId === guide.themeId && expected.assetSnapshotId === guide.assetSnapshotId
+  const required = authoredLesson ? guide.placements.map(item => item.stickerId).sort()
+    : eligible.filter(asset => asset.type === 'sticker').map(asset => asset.assetId).sort()
   if (!required.length || new Set(receipt.stickerIds).size !== receipt.stickerIds.length
+    || required.some(id => !eligible.some(asset => asset.type === 'sticker' && asset.assetId === id))
     || JSON.stringify(required) !== JSON.stringify([...receipt.stickerIds].sort())) throw new Error('学习完成的贴纸与主题素材不匹配。')
   await db.transaction('rw', db.learningProgress, db.assetAccess, async () => {
     const key: [string, string, string] = [expected.userId, expected.assetSnapshotId, expected.themeId]

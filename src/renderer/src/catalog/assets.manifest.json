@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "assetSnapshotId": "snapshot_ywn_material_v2_1cdf77d",
-  "generatedAt": "2026-10-08T08:17:03.203Z",
-  "sourcePack": "content/material-assets-v2@1cdf77db19d99bc1446277c86783bb09c5f595d6; 素材库.xlsx; byte-preserving aliases: docs/material-v2-source-map.json",
+  "assetSnapshotId": "snapshot_ywn_psd_20261017",
+  "generatedAt": "2026-10-17T00:00:00Z",
+  "sourcePack": "User-provided PSD pack 2026-10-17; base snapshot_ywn_material_v2_1cdf77d; original hashes and layers: assets/generated/provided-psd-20261017.json",
   "assets": [
     {
       "assetId": "background_lake_moon_001",
@@ -21,14 +21,14 @@
         "小船",
         "赏月"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_lake_moon_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_lake_moon_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_lake_moon_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_lake_moon_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_lake_moon_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_lake_moon_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_lake_moon_001_thumb.png",
       "source": "Midjourney + 豆包后期",
       "license": "Midjourney用户条款为主",
       "contentVersion": 2
@@ -50,14 +50,14 @@
         "夜空",
         "赏月"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_osmanthus_moon_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_osmanthus_moon_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_osmanthus_moon_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_osmanthus_moon_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_osmanthus_moon_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_osmanthus_moon_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_osmanthus_moon_001_thumb.png",
       "source": "Midjourney + 后期",
       "license": "生成平台条款；组内按MJ主口径确认",
       "contentVersion": 2
@@ -78,14 +78,14 @@
         "团圆",
         "食物"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_mooncake_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_mooncake_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_mooncake_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_mooncake_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_mooncake_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_mooncake_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_mooncake_001_thumb.png",
       "source": "Midjourney + 豆包后期",
       "license": "Midjourney用户条款为主",
       "contentVersion": 2
@@ -106,14 +106,14 @@
         "嫦娥",
         "传说"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_rabbit_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_rabbit_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_rabbit_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_rabbit_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_rabbit_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_rabbit_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_rabbit_001_thumb.png",
       "source": "Midjourney + 豆包后期",
       "license": "Midjourney用户条款为主",
       "contentVersion": 2
@@ -135,14 +135,14 @@
         "静夜思",
         "水调歌头"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_moon_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_moon_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_moon_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_moon_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_moon_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_moon_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_moon_001_thumb.png",
       "source": "Midjourney + 后期",
       "license": "生成平台条款；组内按MJ主口径确认",
       "contentVersion": 1
@@ -164,17 +164,17 @@
         "春联",
         "夜景"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_couplet_gate_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_couplet_gate_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_couplet_gate_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_couplet_gate_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_couplet_gate_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_couplet_gate_001_thumb.png",
-      "source": "Midjourney／豆包生成 + 后期",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_couplet_gate_001_thumb.png",
+      "source": "用户提供 PSD，UI 素材重绘，原始图层保留",
       "license": "生成平台条款；组内按MJ主口径确认",
-      "contentVersion": 2
+      "contentVersion": 3
     },
     {
       "assetId": "background_snow_window_001",
@@ -193,14 +193,14 @@
         "窗户",
         "冬天"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_snow_window_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_snow_window_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_snow_window_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_snow_window_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_snow_window_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_snow_window_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_snow_window_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "生成平台条款；组内按MJ主口径确认",
       "contentVersion": 2
@@ -221,14 +221,14 @@
         "剪纸",
         "装饰"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_window_flower_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_window_flower_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_window_flower_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_window_flower_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_window_flower_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_window_flower_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_window_flower_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "生成平台条款；组内按MJ主口径确认",
       "contentVersion": 2
@@ -249,14 +249,14 @@
         "祝福",
         "装饰"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_fu_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_fu_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_fu_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_fu_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_fu_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_fu_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_fu_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "生成平台条款；组内按MJ主口径确认",
       "contentVersion": 2
@@ -277,17 +277,18 @@
         "压岁钱",
         "习俗"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_red_envelope_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_red_envelope_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_red_envelope_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_red_envelope_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_red_envelope_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_red_envelope_001_thumb.png",
-      "source": "Midjourney生成 + 后期",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_red_envelope_001_thumb.png",
+      "source": "用户提供 PSD，UI 素材重绘，原始图层保留",
       "license": "生成平台条款；组内按MJ主口径确认",
-      "contentVersion": 2
+      "contentVersion": 3,
+      "preSplitDataUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/hongbao/layers.json"
     },
     {
       "assetId": "sticker_lantern_001",
@@ -305,17 +306,18 @@
         "装饰",
         "喜庆"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_lantern_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_lantern_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_lantern_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_lantern_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_lantern_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_lantern_001_thumb.png",
-      "source": "Midjourney生成 + 后期",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_lantern_001_thumb.png",
+      "source": "用户提供 PSD，UI 素材重绘，原始图层保留",
       "license": "生成平台条款；组内按MJ主口径确认",
-      "contentVersion": 2
+      "contentVersion": 3,
+      "preSplitDataUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/denglong/layers.json"
     },
     {
       "assetId": "sticker_firecracker_001",
@@ -332,14 +334,14 @@
         "鞭炮",
         "辞旧迎新"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_firecracker_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_firecracker_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_firecracker_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_firecracker_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_firecracker_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_firecracker_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_firecracker_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "生成平台条款；组内按MJ主口径确认",
       "contentVersion": 2
@@ -360,17 +362,18 @@
         "团圆",
         "食物"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_dumpling_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_dumpling_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_dumpling_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_dumpling_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_dumpling_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_dumpling_001_thumb.png",
-      "source": "Midjourney生成 + 后期",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_dumpling_001_thumb.png",
+      "source": "用户提供 PSD，UI 素材重绘，原始图层保留",
       "license": "生成平台条款；组内按MJ主口径确认",
-      "contentVersion": 2
+      "contentVersion": 3,
+      "preSplitDataUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/jiaozi/layers.json"
     },
     {
       "assetId": "background_lantern_street_001",
@@ -389,14 +392,14 @@
         "夜景",
         "灯笼"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_lantern_street_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_lantern_street_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_lantern_street_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_lantern_street_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_lantern_street_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_lantern_street_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_lantern_street_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "生成平台条款；组内按MJ主口径确认",
       "contentVersion": 2
@@ -417,14 +420,14 @@
         "河边",
         "月亮"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_river_lantern_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_river_lantern_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_river_lantern_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_river_lantern_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_river_lantern_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_river_lantern_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_river_lantern_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "生成平台条款；组内按MJ主口径确认",
       "contentVersion": 2
@@ -445,14 +448,14 @@
         "河灯",
         "心愿"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_flower_lantern_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_flower_lantern_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_flower_lantern_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_flower_lantern_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_flower_lantern_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_flower_lantern_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_flower_lantern_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "生成平台条款；组内按MJ主口径确认",
       "contentVersion": 2
@@ -473,14 +476,14 @@
         "团圆",
         "诗词"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_tangyuan_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_tangyuan_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_tangyuan_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_tangyuan_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_tangyuan_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_tangyuan_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_tangyuan_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "生成平台条款；组内按MJ主口径确认",
       "contentVersion": 2
@@ -501,14 +504,14 @@
         "江面",
         "比赛"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_dragon_boat_race_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_dragon_boat_race_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_dragon_boat_race_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_dragon_boat_race_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_dragon_boat_race_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_dragon_boat_race_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_dragon_boat_race_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -529,14 +532,14 @@
         "食物",
         "习俗"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_zongzi_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_zongzi_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_zongzi_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_zongzi_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_zongzi_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_zongzi_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_zongzi_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -557,14 +560,14 @@
         "挂门",
         "平安"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_mugwort_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_mugwort_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_mugwort_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_mugwort_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_mugwort_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_mugwort_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_mugwort_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -585,14 +588,14 @@
         "佩戴",
         "安康"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_sachet_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_sachet_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_sachet_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_sachet_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_sachet_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_sachet_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_sachet_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -613,14 +616,14 @@
         "河岸",
         "踏青"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_willow_riverbank_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_willow_riverbank_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_willow_riverbank_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_willow_riverbank_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_willow_riverbank_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_willow_riverbank_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_willow_riverbank_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -641,14 +644,14 @@
         "风筝",
         "踏青"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_kite_meadow_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_kite_meadow_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_kite_meadow_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_kite_meadow_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_kite_meadow_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_kite_meadow_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_kite_meadow_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -669,14 +672,14 @@
         "春天",
         "踏青"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_kite_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_kite_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_kite_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_kite_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_kite_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_kite_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_kite_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -697,14 +700,14 @@
         "春天",
         "踏青"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_willow_leaf_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_willow_leaf_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_willow_leaf_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_willow_leaf_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_willow_leaf_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_willow_leaf_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_willow_leaf_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -725,14 +728,14 @@
         "春天",
         "飞鸟"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_swallow_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_swallow_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_swallow_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_swallow_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_swallow_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_swallow_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_swallow_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -753,14 +756,14 @@
         "食物",
         "春天"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_qingtuan_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_qingtuan_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_qingtuan_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_qingtuan_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_qingtuan_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_qingtuan_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_qingtuan_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -781,14 +784,14 @@
         "春天",
         "踏青"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_oil_paper_umbrella_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_oil_paper_umbrella_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_oil_paper_umbrella_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_oil_paper_umbrella_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_oil_paper_umbrella_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_oil_paper_umbrella_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_oil_paper_umbrella_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -809,14 +812,14 @@
         "绿野",
         "踏青"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_spring_meadow_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_spring_meadow_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_spring_meadow_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_spring_meadow_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_spring_meadow_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_spring_meadow_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_spring_meadow_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -837,14 +840,14 @@
         "花朵",
         "桃红"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_peach_blossom_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_peach_blossom_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_peach_blossom_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_peach_blossom_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_peach_blossom_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_peach_blossom_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_peach_blossom_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -865,14 +868,14 @@
         "柳绿",
         "植物"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_willow_branch_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_willow_branch_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_willow_branch_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_willow_branch_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_willow_branch_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_willow_branch_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_willow_branch_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -893,14 +896,14 @@
         "荷叶",
         "夏日"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_summer_lotus_pond_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_summer_lotus_pond_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_summer_lotus_pond_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_summer_lotus_pond_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_summer_lotus_pond_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_summer_lotus_pond_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_summer_lotus_pond_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -921,14 +924,14 @@
         "纳凉",
         "树荫"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_summer_courtyard_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_summer_courtyard_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_summer_courtyard_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_summer_courtyard_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_summer_courtyard_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_summer_courtyard_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_summer_courtyard_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -949,14 +952,14 @@
         "荷叶",
         "荷塘"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_lotus_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_lotus_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_lotus_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_lotus_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_lotus_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_lotus_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_lotus_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -977,14 +980,14 @@
         "纳凉",
         "扇子"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_palm_fan_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_palm_fan_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_palm_fan_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_palm_fan_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_palm_fan_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_palm_fan_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_palm_fan_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -1005,14 +1008,14 @@
         "荷塘",
         "游玩"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_small_boat_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_small_boat_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_small_boat_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_small_boat_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_small_boat_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_small_boat_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_small_boat_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -1033,14 +1036,14 @@
         "水果",
         "解暑"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_watermelon_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_watermelon_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_watermelon_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_watermelon_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_watermelon_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_watermelon_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_watermelon_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -1061,14 +1064,14 @@
         "落叶",
         "小路"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_autumn_ginkgo_path_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_autumn_ginkgo_path_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_autumn_ginkgo_path_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_autumn_ginkgo_path_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_autumn_ginkgo_path_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_autumn_ginkgo_path_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_autumn_ginkgo_path_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -1089,14 +1092,14 @@
         "黄昏",
         "丰收"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_autumn_field_dusk_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_autumn_field_dusk_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_autumn_field_dusk_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_autumn_field_dusk_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_autumn_field_dusk_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_autumn_field_dusk_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_autumn_field_dusk_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -1117,14 +1120,14 @@
         "黄叶",
         "自然"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_fallen_leaf_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_fallen_leaf_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_fallen_leaf_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_fallen_leaf_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_fallen_leaf_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_fallen_leaf_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_fallen_leaf_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -1145,14 +1148,14 @@
         "红叶",
         "植物"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_maple_leaf_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_maple_leaf_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_maple_leaf_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_maple_leaf_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_maple_leaf_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_maple_leaf_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_maple_leaf_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -1173,14 +1176,14 @@
         "水果",
         "丰收"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_persimmon_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_persimmon_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_persimmon_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_persimmon_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_persimmon_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_persimmon_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_persimmon_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -1201,14 +1204,14 @@
         "雪人",
         "雪景"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_winter_snowman_field_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_winter_snowman_field_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_winter_snowman_field_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_winter_snowman_field_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_winter_snowman_field_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_winter_snowman_field_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_winter_snowman_field_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -1229,14 +1232,14 @@
         "下雪",
         "自然"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_snowflake_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_snowflake_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_snowflake_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_snowflake_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_snowflake_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_snowflake_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_snowflake_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -1257,14 +1260,14 @@
         "花朵",
         "耐寒"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_plum_blossom_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_plum_blossom_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_plum_blossom_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_plum_blossom_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_plum_blossom_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_plum_blossom_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_plum_blossom_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -1283,14 +1286,14 @@
         "雅集",
         "厅堂"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_elegant_hall_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_elegant_hall_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_elegant_hall_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_elegant_hall_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_elegant_hall_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_elegant_hall_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_elegant_hall_001_thumb.png",
       "source": "AI生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -1309,14 +1312,14 @@
         "竹笛",
         "民乐"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_bamboo_flute_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_bamboo_flute_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_bamboo_flute_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_bamboo_flute_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_bamboo_flute_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_bamboo_flute_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_bamboo_flute_001_thumb.png",
       "source": "AI生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -1335,14 +1338,14 @@
         "古筝",
         "民乐"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_guzheng_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_guzheng_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_guzheng_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_guzheng_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_guzheng_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_guzheng_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_guzheng_001_thumb.png",
       "source": "AI生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -1361,14 +1364,14 @@
         "木鱼",
         "打击乐"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_wooden_fish_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_wooden_fish_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_wooden_fish_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_wooden_fish_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_wooden_fish_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_wooden_fish_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_wooden_fish_001_thumb.png",
       "source": "AI生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -1388,14 +1391,14 @@
         "画案",
         "宣纸"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_study_desk_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_study_desk_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_study_desk_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_study_desk_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_study_desk_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_study_desk_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_study_desk_001_thumb.png",
       "source": "AI生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -1414,14 +1417,14 @@
         "毛笔",
         "书法"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_calligraphy_brush_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_calligraphy_brush_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_calligraphy_brush_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_calligraphy_brush_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_calligraphy_brush_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_calligraphy_brush_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_calligraphy_brush_001_thumb.png",
       "source": "AI生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -1440,14 +1443,14 @@
         "砚台",
         "研墨"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_inkstone_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_inkstone_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_inkstone_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_inkstone_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_inkstone_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_inkstone_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_inkstone_001_thumb.png",
       "source": "AI生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -1466,14 +1469,14 @@
         "戏台",
         "戏曲"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_ancient_opera_stage_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_ancient_opera_stage_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_ancient_opera_stage_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_ancient_opera_stage_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_ancient_opera_stage_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_ancient_opera_stage_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_ancient_opera_stage_001_thumb.png",
       "source": "AI生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -1492,14 +1495,14 @@
         "折扇",
         "戏曲道具"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_folding_fan_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_folding_fan_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_folding_fan_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_folding_fan_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_folding_fan_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_folding_fan_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_folding_fan_001_thumb.png",
       "source": "AI生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -1518,14 +1521,14 @@
         "小鼓",
         "戏曲"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_small_drum_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_small_drum_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_small_drum_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_small_drum_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_small_drum_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_small_drum_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_small_drum_001_thumb.png",
       "source": "AI生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -1545,14 +1548,14 @@
         "茶席",
         "木桌"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_classical_tea_room_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_classical_tea_room_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_classical_tea_room_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_classical_tea_room_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_classical_tea_room_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_classical_tea_room_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_classical_tea_room_001_thumb.png",
       "source": "AI生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -1571,14 +1574,14 @@
         "茶壶",
         "泡茶"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_teapot_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_teapot_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_teapot_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_teapot_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_teapot_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_teapot_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_teapot_001_thumb.png",
       "source": "AI生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -1597,14 +1600,14 @@
         "茶杯",
         "品茶"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_teacup_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_teacup_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_teacup_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_teacup_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_teacup_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_teacup_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_teacup_001_thumb.png",
       "source": "AI生成 + 后期",
       "license": "生成平台条款；组内确认",
       "contentVersion": 1
@@ -1625,14 +1628,14 @@
         "田园",
         "庭院"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_pastoral_courtyard_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_pastoral_courtyard_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_pastoral_courtyard_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_pastoral_courtyard_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_pastoral_courtyard_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_pastoral_courtyard_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_pastoral_courtyard_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "组内确认",
       "contentVersion": 1
@@ -1653,14 +1656,14 @@
         "芙蓉",
         "莲花"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_plant_lotus_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_plant_lotus_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_plant_lotus_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_plant_lotus_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_plant_lotus_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_plant_lotus_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_plant_lotus_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "组内确认",
       "contentVersion": 1
@@ -1681,14 +1684,14 @@
         "黄花",
         "隐逸"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_chrysanthemum_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_chrysanthemum_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_chrysanthemum_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_chrysanthemum_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_chrysanthemum_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_chrysanthemum_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_chrysanthemum_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "组内确认",
       "contentVersion": 1
@@ -1709,14 +1712,14 @@
         "月夜",
         "清幽"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_osmanthus_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_osmanthus_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_osmanthus_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_osmanthus_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_osmanthus_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_osmanthus_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_osmanthus_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "组内确认",
       "contentVersion": 1
@@ -1737,14 +1740,14 @@
         "秋雨",
         "忧愁"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_wutong_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_wutong_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_wutong_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_wutong_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_wutong_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_wutong_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_wutong_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "组内确认",
       "contentVersion": 1
@@ -1765,14 +1768,14 @@
         "坚韧",
         "高洁"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_pine_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_pine_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_pine_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_pine_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_pine_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_pine_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_pine_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "组内确认",
       "contentVersion": 1
@@ -1793,14 +1796,14 @@
         "正直",
         "清雅"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_bamboo_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_bamboo_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_bamboo_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_bamboo_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_bamboo_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_bamboo_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_bamboo_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "组内确认",
       "contentVersion": 1
@@ -1821,14 +1824,14 @@
         "坚贞",
         "凌寒"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_plant_plum_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_plant_plum_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_plant_plum_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_plant_plum_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_plant_plum_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_plant_plum_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_plant_plum_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "组内确认",
       "contentVersion": 1
@@ -1849,14 +1852,14 @@
         "江岸",
         "流水"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_animal_riverbank_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_animal_riverbank_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_animal_riverbank_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_animal_riverbank_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/background_animal_riverbank_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/background_animal_riverbank_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_animal_riverbank_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "组内确认",
       "contentVersion": 1
@@ -1877,14 +1880,14 @@
         "猿啼",
         "思乡"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_ape_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_ape_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_ape_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_ape_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_ape_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_ape_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_ape_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "组内确认",
       "contentVersion": 1
@@ -1905,14 +1908,14 @@
         "鸿雁",
         "思乡"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_wild_goose_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_wild_goose_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_wild_goose_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_wild_goose_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_wild_goose_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_wild_goose_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_wild_goose_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "组内确认",
       "contentVersion": 1
@@ -1933,14 +1936,14 @@
         "子规",
         "离愁"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_cuckoo_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_cuckoo_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_cuckoo_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_cuckoo_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_cuckoo_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_cuckoo_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_cuckoo_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "组内确认",
       "contentVersion": 1
@@ -1961,14 +1964,14 @@
         "变迁",
         "爱情"
       ],
-      "imageUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_animal_swallow_001.png",
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_animal_swallow_001.png",
       "audio": {
         "nameZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_animal_swallow_001_name_zh.mp3",
         "nameEnUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_animal_swallow_001_name_en.mp3",
         "introZhUrl": "felt-resource://audio/snapshot_ywn_material_v2_1cdf77d/sticker_animal_swallow_001_intro_zh.mp3"
       },
       "status": "ready",
-      "thumbnailUrl": "felt-resource://material/snapshot_ywn_material_v2_1cdf77d/sticker_animal_swallow_001_thumb.png",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_animal_swallow_001_thumb.png",
       "source": "Midjourney生成 + 后期",
       "license": "组内确认",
       "contentVersion": 1
@@ -1976,7 +1979,7 @@
   ],
   "snapshotContext": {
     "snapshots": {
-      "snapshot_ywn_material_v2_1cdf77d": [
+      "snapshot_ywn_psd_20261017": [
         {
           "assetId": "background_lake_moon_001",
           "type": "background"

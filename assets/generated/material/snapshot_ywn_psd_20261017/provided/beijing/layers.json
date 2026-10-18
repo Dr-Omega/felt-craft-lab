@@ -1,0 +1,194 @@
+{
+  "schemaVersion": "provided-psd-layers/1",
+  "key": "beijing",
+  "source": {
+    "filename": "beijing(2).psd",
+    "sha256": "fab9fab008d13ceaf1dd05115ee6a6ca7c202c3924d44ac4c5c0529ab9cd47a5",
+    "width": 1686,
+    "height": 960,
+    "depth": 8
+  },
+  "width": 1686,
+  "height": 960,
+  "sourceCrop": [
+    0,
+    0,
+    1686,
+    960
+  ],
+  "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_couplet_gate_001.png",
+  "imageSha256": "e067286dccc1a96fb83d03eb9633a0d4ba1040d2863e5a362d8dc3013bfc8d04",
+  "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/beijing/thumbnail.png",
+  "layers": [
+    {
+      "id": "psd-000",
+      "name": "图层 1",
+      "paintOrder": 0,
+      "kind": "pixel",
+      "visible": true,
+      "effectiveVisible": true,
+      "opacity": 255,
+      "blendMode": "normal",
+      "sourceBounds": [
+        0,
+        0,
+        1686,
+        960
+      ],
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/beijing/layer-000.png",
+      "imageSha256": "648eeff9442cd0168143c6df77f6a6819de4305d8762cee7d8aeb6360e2c97fe",
+      "dominantColor": "#AAD8E7",
+      "interiorColorCount": 1,
+      "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/beijing/assembly-000.png"
+    },
+    {
+      "id": "psd-001",
+      "name": "图层 2",
+      "paintOrder": 1,
+      "kind": "pixel",
+      "visible": true,
+      "effectiveVisible": true,
+      "opacity": 255,
+      "blendMode": "normal",
+      "sourceBounds": [
+        0,
+        73,
+        1686,
+        960
+      ],
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/beijing/layer-001.png",
+      "imageSha256": "a990ee5be90012551fbec0c93c1cfe8af3a4a959582b7b64698ccba091edfc19",
+      "dominantColor": "#F3E5B6",
+      "interiorColorCount": 1,
+      "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/beijing/assembly-001.png"
+    },
+    {
+      "id": "psd-002",
+      "name": "图层 8",
+      "paintOrder": 2,
+      "kind": "pixel",
+      "visible": true,
+      "effectiveVisible": true,
+      "opacity": 255,
+      "blendMode": "normal",
+      "sourceBounds": [
+        0,
+        240,
+        1686,
+        960
+      ],
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/beijing/layer-002.png",
+      "imageSha256": "33d171a9a15b176fdfa32fac5b40257350b8204d0ffbc9b33785a6c2fe9fe41a",
+      "dominantColor": "#F4D497",
+      "interiorColorCount": 1,
+      "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/beijing/assembly-002.png"
+    },
+    {
+      "id": "psd-003",
+      "name": "图层 3",
+      "paintOrder": 3,
+      "kind": "pixel",
+      "visible": true,
+      "effectiveVisible": true,
+      "opacity": 255,
+      "blendMode": "normal",
+      "sourceBounds": [
+        696,
+        348,
+        1008,
+        761
+      ],
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/beijing/layer-003.png",
+      "imageSha256": "628232a6380b2b886f3dead63eac6fb833ea24bed87f16ddd7364cb539c76c28",
+      "dominantColor": "#D6A060",
+      "interiorColorCount": 1,
+      "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/beijing/assembly-003.png"
+    },
+    {
+      "id": "psd-004",
+      "name": "图层 7",
+      "paintOrder": 4,
+      "kind": "pixel",
+      "visible": true,
+      "effectiveVisible": true,
+      "opacity": 255,
+      "blendMode": "normal",
+      "sourceBounds": [
+        719,
+        373,
+        984,
+        738
+      ],
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/beijing/layer-004.png",
+      "imageSha256": "67d9c98d4336afd63d283a93ed75ed75bb4d24ec2b1a7bb63ce69d7c17c64459",
+      "dominantColor": "#F4C287",
+      "interiorColorCount": 1,
+      "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/beijing/assembly-004.png"
+    },
+    {
+      "id": "psd-005",
+      "name": "图层 5",
+      "paintOrder": 5,
+      "kind": "pixel",
+      "visible": true,
+      "effectiveVisible": true,
+      "opacity": 255,
+      "blendMode": "normal",
+      "sourceBounds": [
+        606,
+        263,
+        1096,
+        694
+      ],
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/beijing/layer-005.png",
+      "imageSha256": "623e119892860c27b93dcb157aebb670bb7c077de68cb1f200c2a280710e3d9f",
+      "dominantColor": "#F66B58",
+      "interiorColorCount": 1,
+      "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/beijing/assembly-005.png"
+    },
+    {
+      "id": "psd-006",
+      "name": "图层 4",
+      "paintOrder": 6,
+      "kind": "pixel",
+      "visible": true,
+      "effectiveVisible": true,
+      "opacity": 255,
+      "blendMode": "normal",
+      "sourceBounds": [
+        440,
+        73,
+        1266,
+        243
+      ],
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/beijing/layer-006.png",
+      "imageSha256": "e11c90015a8a132a525f403f036239a6db764f0ded34739770611d21dbf68482",
+      "dominantColor": "#CB8E61",
+      "interiorColorCount": 1,
+      "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/beijing/assembly-006.png"
+    },
+    {
+      "id": "psd-007",
+      "name": "图层 6",
+      "paintOrder": 7,
+      "kind": "pixel",
+      "visible": true,
+      "effectiveVisible": true,
+      "opacity": 255,
+      "blendMode": "normal",
+      "sourceBounds": [
+        0,
+        716,
+        1686,
+        960
+      ],
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/beijing/layer-007.png",
+      "imageSha256": "85d3a1e6fd95f494f4ce6ed76adba91ce35c37b34ea814b722813e5456c8e047",
+      "dominantColor": "#FDFEF9",
+      "interiorColorCount": 1,
+      "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/beijing/assembly-007.png"
+    }
+  ],
+  "reconstructionMaxChannelError": 0,
+  "nativeCompositeMaxChannelError": 1
+}

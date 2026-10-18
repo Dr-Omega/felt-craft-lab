@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "provided-psd-layers/1",
+  "key": "denglong",
+  "source": {
+    "filename": "denglong(1).psd",
+    "sha256": "de9728169aa5d336c626233b1679f18d60f61ec7969d731bd2ce2aeb51800520",
+    "width": 1024,
+    "height": 1024,
+    "depth": 8
+  },
+  "width": 683,
+  "height": 925,
+  "sourceCrop": [
+    168,
+    47,
+    851,
+    972
+  ],
+  "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_lantern_001.png",
+  "imageSha256": "b80712efa210549b650fda8f9a677ab975ed87015c6172d76e20fa306dd6646a",
+  "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/denglong/thumbnail.png",
+  "layers": [
+    {
+      "id": "psd-000",
+      "name": "图层 2",
+      "paintOrder": 0,
+      "kind": "pixel",
+      "visible": true,
+      "effectiveVisible": true,
+      "opacity": 255,
+      "blendMode": "normal",
+      "sourceBounds": [
+        168,
+        47,
+        851,
+        972
+      ],
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/denglong/layer-000.png",
+      "imageSha256": "65f6c141702bbc0a278f6004ac24b7228fb74a15b1a442f0c5eacd3018456856",
+      "dominantColor": "#F9B81A",
+      "interiorColorCount": 1,
+      "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/denglong/assembly-000.png"
+    },
+    {
+      "id": "psd-001",
+      "name": "图层 3",
+      "paintOrder": 1,
+      "kind": "pixel",
+      "visible": true,
+      "effectiveVisible": true,
+      "opacity": 255,
+      "blendMode": "normal",
+      "sourceBounds": [
+        174,
+        53,
+        847,
+        767
+      ],
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/denglong/layer-001.png",
+      "imageSha256": "f578db2e73d03505f87bf82e787f1078d991b2776985874ed77ffe95933b4f14",
+      "dominantColor": "#F13724",
+      "interiorColorCount": 1,
+      "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/denglong/assembly-001.png"
+    }
+  ],
+  "reconstructionMaxChannelError": 0,
+  "nativeCompositeMaxChannelError": 1
+}

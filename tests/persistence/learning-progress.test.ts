@@ -5,6 +5,7 @@ import { createFeltCraftDatabase, type FeltCraftDatabase } from '../../src/rende
 import { saveLearningCompletion, completedThemes } from '../../src/renderer/src/learning-zone/progress'
 import { CATALOG_ASSETS, YWN_SNAPSHOT_ID } from '../../src/renderer/src/catalog/ywn-catalog'
 import type { LearningCompletion } from '../../src/shared/learning'
+import learningGuides from '../../src/shared/learning-guides.json'
 
 describe('learning transaction, migration and permission separation', () => {
   let db: FeltCraftDatabase
@@ -39,6 +40,22 @@ describe('learning transaction, migration and permission separation', () => {
     await expect(saveLearningCompletion(db, receipt, expected, CATALOG_ASSETS)).rejects.toThrow('storage failure')
     expect(await db.assetAccess.count()).toBe(0)
     expect(await db.learningProgress.count()).toBe(0)
+  })
+  it('unlocks the Spring Festival theme after exactly the three authored lesson elements, retaining strict receipt checks', async () => {
+    const guide=learningGuides.springFestivalCoupletGate
+    const context={...expected,themeId:guide.themeId}
+    const lesson={...receipt,...context,levelId:guide.levelId,stickerIds:guide.placements.map(p=>p.stickerId)}
+    for (const invalid of [
+      {...lesson,stickerIds:lesson.stickerIds.slice(0,2)},
+      {...lesson,levelId:'spring-festival-snow-window-001'},
+      {...lesson,stickerIds:[...lesson.stickerIds,'sticker_fu_001']}
+    ]) await expect(saveLearningCompletion(db,invalid,context,CATALOG_ASSETS)).rejects.toThrow('不匹配')
+    expect(await db.assetAccess.count()).toBe(0)
+    await saveLearningCompletion(db,lesson,context,CATALOG_ASSETS)
+    expect(await completedThemes(db,context.userId,context.assetSnapshotId)).toEqual([guide.themeId])
+    const eligible=CATALOG_ASSETS.filter(a=>a.themeId===guide.themeId&&(a.type==='background'||a.type==='sticker'))
+    expect((await db.assetAccess.toArray()).map(a=>a.assetId).sort()).toEqual(eligible.map(a=>a.assetId).sort())
+    expect((await db.learningProgress.toArray())[0].stickerIds).toEqual(lesson.stickerIds)
   })
   it('preserves V3 stories while adding an empty authoritative completion ledger', async () => {
     const old = new Dexie(db.name)

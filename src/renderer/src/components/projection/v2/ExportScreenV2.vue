@@ -69,7 +69,7 @@ function onConfirm(): void {
 <template>
   <div class="export-v2-screen" aria-label="导出页">
     <img class="layer z-1" :src="exportV2Assets.bigBackground" alt="" />
-    <img class="layer z-2" :src="exportV2Assets.projectionFrame" alt="" />
+    <img class="layer layer--projection-frame z-2" :src="exportV2Assets.projectionFrame" alt="" />
 
     <div class="layer layer--preview z-3" :style="boxStyle(VIEWPORT_BOUNDS)">
       <slot name="preview"><LayoutPreviewCanvas :layers="layers" :subject-size="subjectSize" /></slot>
@@ -187,6 +187,11 @@ function onConfirm(): void {
 
 .layer--preview {
   overflow: hidden;
+}
+
+/* The source frame contains a white center; blend it into the warm UI surface. */
+.layer--projection-frame {
+  mix-blend-mode: multiply;
 }
 
 .mode-layer--inactive {

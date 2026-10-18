@@ -1,5 +1,5 @@
 {
-  "latestSnapshotId": "snapshot_ywn_material_v2_1cdf77d",
+  "latestSnapshotId": "snapshot_ywn_psd_20261017",
   "snapshots": {
     "snapshot_ywn_20260805_112922": {
       "manifest": "assets/generated/snapshots/snapshot_ywn_20260805_112922/assets.manifest.json",
@@ -8,6 +8,10 @@
     "snapshot_ywn_material_v2_1cdf77d": {
       "manifest": "assets/generated/snapshots/snapshot_ywn_material_v2_1cdf77d/assets.manifest.json",
       "generatedAt": "2026-10-08T08:17:03.203Z"
+    },
+    "snapshot_ywn_psd_20261017": {
+      "manifest": "assets/generated/snapshots/snapshot_ywn_psd_20261017/assets.manifest.json",
+      "generatedAt": "2026-10-17T00:00:00Z"
     }
   }
 }

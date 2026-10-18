@@ -1,0 +1,639 @@
+{
+  "schemaVersion": 1,
+  "snapshotId": "snapshot_ywn_psd_20261017",
+  "assets": {
+    "fuwa": {
+      "schemaVersion": "provided-psd-layers/1",
+      "key": "fuwa",
+      "source": {
+        "filename": "fuwa(1).psd",
+        "sha256": "9ef26310f899518d55926b77d6f61dd79547f244e24aaddf2cb583698e903695",
+        "width": 2480,
+        "height": 3508,
+        "depth": 8
+      },
+      "width": 1323,
+      "height": 2183,
+      "sourceCrop": [
+        579,
+        911,
+        1902,
+        3094
+      ],
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/fuwa/composite.png",
+      "imageSha256": "548a082377dab81e0e6f32cc987d88cac74cc735a0978f7508a29e7cba957f42",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/fuwa/thumbnail.png",
+      "layers": [
+        {
+          "id": "psd-000",
+          "name": "矩形 1",
+          "paintOrder": 0,
+          "kind": "pixel",
+          "visible": true,
+          "effectiveVisible": true,
+          "opacity": 255,
+          "blendMode": "normal",
+          "sourceBounds": [
+            579,
+            911,
+            1902,
+            3020
+          ],
+          "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/fuwa/layer-000.png",
+          "imageSha256": "3549216b7df450c4e6ddf8c4ef80ff231b8aac3f8d398a57ace16d584d1dfeaf",
+          "dominantColor": "#FFCDC0",
+          "interiorColorCount": 1,
+          "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/fuwa/assembly-000.png"
+        },
+        {
+          "id": "psd-001",
+          "name": "椭圆 1",
+          "paintOrder": 1,
+          "kind": "pixel",
+          "visible": true,
+          "effectiveVisible": true,
+          "opacity": 255,
+          "blendMode": "normal",
+          "sourceBounds": [
+            1675,
+            2386,
+            1892,
+            2577
+          ],
+          "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/fuwa/layer-001.png",
+          "imageSha256": "084b6d1a6a3b29cdbe11df8ee8c23ceff8d41a3a1aaaca69f3f2954c13def1b5",
+          "dominantColor": "#FFCDC0",
+          "interiorColorCount": 1,
+          "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/fuwa/assembly-001.png"
+        },
+        {
+          "id": "psd-002",
+          "name": "椭圆 1 拷贝",
+          "paintOrder": 2,
+          "kind": "pixel",
+          "visible": true,
+          "effectiveVisible": true,
+          "opacity": 255,
+          "blendMode": "normal",
+          "sourceBounds": [
+            585,
+            2386,
+            802,
+            2577
+          ],
+          "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/fuwa/layer-002.png",
+          "imageSha256": "f847cb546b874eafdb9c91a2021f3f39fe0f8ac311197ef723234246074843d2",
+          "dominantColor": "#FFCDC0",
+          "interiorColorCount": 1,
+          "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/fuwa/assembly-002.png"
+        },
+        {
+          "id": "psd-003",
+          "name": "图层 4",
+          "paintOrder": 3,
+          "kind": "pixel",
+          "visible": true,
+          "effectiveVisible": true,
+          "opacity": 255,
+          "blendMode": "normal",
+          "sourceBounds": [
+            598,
+            1973,
+            1883,
+            3094
+          ],
+          "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/fuwa/layer-003.png",
+          "imageSha256": "41819168a843b618b8eed7a1b5938ea07b86c14ca4589d64587594c9ccca95a6",
+          "dominantColor": "#D61313",
+          "interiorColorCount": 1,
+          "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/fuwa/assembly-003.png"
+        },
+        {
+          "id": "psd-004",
+          "name": "矩形 2 拷贝 2",
+          "paintOrder": 4,
+          "kind": "pixel",
+          "visible": true,
+          "effectiveVisible": true,
+          "opacity": 255,
+          "blendMode": "normal",
+          "sourceBounds": [
+            1039,
+            2166,
+            1441,
+            2614
+          ],
+          "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/fuwa/layer-004.png",
+          "imageSha256": "f84e8498c88b04079bbb7e154d661c7a3c208c16b1108e52b53bd86a62627014",
+          "dominantColor": "#FFB042",
+          "interiorColorCount": 1,
+          "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/fuwa/assembly-004.png"
+        },
+        {
+          "id": "psd-005",
+          "name": "图层 1",
+          "paintOrder": 5,
+          "kind": "pixel",
+          "visible": true,
+          "effectiveVisible": true,
+          "opacity": 255,
+          "blendMode": "normal",
+          "sourceBounds": [
+            579,
+            911,
+            1902,
+            1889
+          ],
+          "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/fuwa/layer-005.png",
+          "imageSha256": "f0ac0cd5437568a932f5353b31b9f8b1fe898992b92070fe40eaf7810fdec015",
+          "dominantColor": "#000000",
+          "interiorColorCount": 1,
+          "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/fuwa/assembly-005.png"
+        },
+        {
+          "id": "psd-006",
+          "name": "图层 3",
+          "paintOrder": 6,
+          "kind": "pixel",
+          "visible": true,
+          "effectiveVisible": true,
+          "opacity": 255,
+          "blendMode": "normal",
+          "sourceBounds": [
+            942,
+            1723,
+            1538,
+            1821
+          ],
+          "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/fuwa/layer-006.png",
+          "imageSha256": "47b040febeb15c8c916459cf1247946bb802d9afb9b2a73b9795d7791d90a6a0",
+          "dominantColor": "#FF8787",
+          "interiorColorCount": 1,
+          "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/fuwa/assembly-006.png"
+        },
+        {
+          "id": "psd-007",
+          "name": "图层 2",
+          "paintOrder": 7,
+          "kind": "pixel",
+          "visible": true,
+          "effectiveVisible": true,
+          "opacity": 255,
+          "blendMode": "normal",
+          "sourceBounds": [
+            656,
+            989,
+            1824,
+            1219
+          ],
+          "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/fuwa/layer-007.png",
+          "imageSha256": "934a779880481e21d790e0d774a7925719b51b5c82b998fcd998e0fcad799172",
+          "dominantColor": "#FF0000",
+          "interiorColorCount": 1,
+          "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/fuwa/assembly-007.png"
+        }
+      ],
+      "reconstructionMaxChannelError": 0,
+      "nativeCompositeMaxChannelError": 1
+    },
+    "hongbao": {
+      "schemaVersion": "provided-psd-layers/1",
+      "key": "hongbao",
+      "source": {
+        "filename": "hongbao(2).psd",
+        "sha256": "d9a9b0348f3e09e3e785f3a68b64bf7d17bb67b1fcf1a3ea69a0b674b942a7f8",
+        "width": 1024,
+        "height": 1024,
+        "depth": 8
+      },
+      "width": 370,
+      "height": 525,
+      "sourceCrop": [
+        328,
+        249,
+        698,
+        774
+      ],
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_red_envelope_001.png",
+      "imageSha256": "37cce4113f80177cfc241850b85d60b48423418c8be456274caa0951d10c935f",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/hongbao/thumbnail.png",
+      "layers": [
+        {
+          "id": "psd-000",
+          "name": "背景",
+          "paintOrder": 0,
+          "kind": "pixel",
+          "visible": false,
+          "effectiveVisible": false,
+          "opacity": 255,
+          "blendMode": "normal",
+          "sourceBounds": [
+            0,
+            0,
+            1024,
+            1024
+          ],
+          "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/hongbao/layer-000.png",
+          "imageSha256": "9787af976790a5255dfd5435b1bde0d517e1a9055e2924670fe0dd341085d90b",
+          "dominantColor": "#FFFFFF",
+          "interiorColorCount": 6870
+        },
+        {
+          "id": "psd-001",
+          "name": "图层 1",
+          "paintOrder": 1,
+          "kind": "pixel",
+          "visible": true,
+          "effectiveVisible": true,
+          "opacity": 255,
+          "blendMode": "normal",
+          "sourceBounds": [
+            328,
+            249,
+            698,
+            774
+          ],
+          "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/hongbao/layer-001.png",
+          "imageSha256": "85b2757b2c04f697405be48c15de8142503c06a3cad0bcc1ccced9da42c306c1",
+          "dominantColor": "#FE5447",
+          "interiorColorCount": 1,
+          "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/hongbao/assembly-001.png"
+        },
+        {
+          "id": "psd-002",
+          "name": "图层 2",
+          "paintOrder": 2,
+          "kind": "pixel",
+          "visible": true,
+          "effectiveVisible": true,
+          "opacity": 255,
+          "blendMode": "normal",
+          "sourceBounds": [
+            332,
+            249,
+            694,
+            377
+          ],
+          "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/hongbao/layer-002.png",
+          "imageSha256": "7fdbec3aec26fdf43a84c40f3a78bf5738279bc5e458986182bfc57250eb4e77",
+          "dominantColor": "#FB9066",
+          "interiorColorCount": 1,
+          "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/hongbao/assembly-002.png"
+        },
+        {
+          "id": "psd-003",
+          "name": "图层 3",
+          "paintOrder": 3,
+          "kind": "pixel",
+          "visible": true,
+          "effectiveVisible": true,
+          "opacity": 255,
+          "blendMode": "normal",
+          "sourceBounds": [
+            466,
+            331,
+            559,
+            425
+          ],
+          "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/hongbao/layer-003.png",
+          "imageSha256": "4f20535ba8aaebbffbdce7c88c5c52f8eeb3e7bd3411504f1b2930f57ecd8abe",
+          "dominantColor": "#FBEC5B",
+          "interiorColorCount": 1,
+          "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/hongbao/assembly-003.png"
+        }
+      ],
+      "reconstructionMaxChannelError": 0,
+      "nativeCompositeMaxChannelError": 1
+    },
+    "jiaozi": {
+      "schemaVersion": "provided-psd-layers/1",
+      "key": "jiaozi",
+      "source": {
+        "filename": "jiaozi 拷贝(3).psd",
+        "sha256": "ff2d27cc9d208356ca26388ceb907d143a9b2515b8e769c9b77631cda78ce83a",
+        "width": 1280,
+        "height": 1280,
+        "depth": 8
+      },
+      "width": 956,
+      "height": 558,
+      "sourceCrop": [
+        162,
+        364,
+        1118,
+        922
+      ],
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_dumpling_001.png",
+      "imageSha256": "6790560675e4579485cd883644edf381f2ce489f71d04c62cbfc7692f976341b",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/jiaozi/thumbnail.png",
+      "layers": [
+        {
+          "id": "psd-000",
+          "name": "图层 1",
+          "paintOrder": 0,
+          "kind": "pixel",
+          "visible": true,
+          "effectiveVisible": true,
+          "opacity": 255,
+          "blendMode": "normal",
+          "sourceBounds": [
+            162,
+            364,
+            1118,
+            922
+          ],
+          "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/jiaozi/layer-000.png",
+          "imageSha256": "57d7ab04871c30a534f5ed8258f531d30c391326ba8034062713cf6f458c6122",
+          "dominantColor": "#010101",
+          "interiorColorCount": 1,
+          "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/jiaozi/assembly-000.png"
+        },
+        {
+          "id": "psd-001",
+          "name": "图层 2",
+          "paintOrder": 1,
+          "kind": "pixel",
+          "visible": true,
+          "effectiveVisible": true,
+          "opacity": 255,
+          "blendMode": "normal",
+          "sourceBounds": [
+            197,
+            398,
+            1085,
+            886
+          ],
+          "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/jiaozi/layer-001.png",
+          "imageSha256": "56bc23117d4ea27e84ddb54e0eb81bcfc16ef53aa2a54729037f790ede6deb39",
+          "dominantColor": "#FEFFFA",
+          "interiorColorCount": 1,
+          "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/jiaozi/assembly-001.png"
+        }
+      ],
+      "reconstructionMaxChannelError": 0,
+      "nativeCompositeMaxChannelError": 1
+    },
+    "denglong": {
+      "schemaVersion": "provided-psd-layers/1",
+      "key": "denglong",
+      "source": {
+        "filename": "denglong(1).psd",
+        "sha256": "de9728169aa5d336c626233b1679f18d60f61ec7969d731bd2ce2aeb51800520",
+        "width": 1024,
+        "height": 1024,
+        "depth": 8
+      },
+      "width": 683,
+      "height": 925,
+      "sourceCrop": [
+        168,
+        47,
+        851,
+        972
+      ],
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_lantern_001.png",
+      "imageSha256": "b80712efa210549b650fda8f9a677ab975ed87015c6172d76e20fa306dd6646a",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/denglong/thumbnail.png",
+      "layers": [
+        {
+          "id": "psd-000",
+          "name": "图层 2",
+          "paintOrder": 0,
+          "kind": "pixel",
+          "visible": true,
+          "effectiveVisible": true,
+          "opacity": 255,
+          "blendMode": "normal",
+          "sourceBounds": [
+            168,
+            47,
+            851,
+            972
+          ],
+          "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/denglong/layer-000.png",
+          "imageSha256": "65f6c141702bbc0a278f6004ac24b7228fb74a15b1a442f0c5eacd3018456856",
+          "dominantColor": "#F9B81A",
+          "interiorColorCount": 1,
+          "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/denglong/assembly-000.png"
+        },
+        {
+          "id": "psd-001",
+          "name": "图层 3",
+          "paintOrder": 1,
+          "kind": "pixel",
+          "visible": true,
+          "effectiveVisible": true,
+          "opacity": 255,
+          "blendMode": "normal",
+          "sourceBounds": [
+            174,
+            53,
+            847,
+            767
+          ],
+          "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/denglong/layer-001.png",
+          "imageSha256": "f578db2e73d03505f87bf82e787f1078d991b2776985874ed77ffe95933b4f14",
+          "dominantColor": "#F13724",
+          "interiorColorCount": 1,
+          "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/denglong/assembly-001.png"
+        }
+      ],
+      "reconstructionMaxChannelError": 0,
+      "nativeCompositeMaxChannelError": 1
+    },
+    "beijing": {
+      "schemaVersion": "provided-psd-layers/1",
+      "key": "beijing",
+      "source": {
+        "filename": "beijing(2).psd",
+        "sha256": "fab9fab008d13ceaf1dd05115ee6a6ca7c202c3924d44ac4c5c0529ab9cd47a5",
+        "width": 1686,
+        "height": 960,
+        "depth": 8
+      },
+      "width": 1686,
+      "height": 960,
+      "sourceCrop": [
+        0,
+        0,
+        1686,
+        960
+      ],
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/background_couplet_gate_001.png",
+      "imageSha256": "e067286dccc1a96fb83d03eb9633a0d4ba1040d2863e5a362d8dc3013bfc8d04",
+      "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/beijing/thumbnail.png",
+      "layers": [
+        {
+          "id": "psd-000",
+          "name": "图层 1",
+          "paintOrder": 0,
+          "kind": "pixel",
+          "visible": true,
+          "effectiveVisible": true,
+          "opacity": 255,
+          "blendMode": "normal",
+          "sourceBounds": [
+            0,
+            0,
+            1686,
+            960
+          ],
+          "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/beijing/layer-000.png",
+          "imageSha256": "648eeff9442cd0168143c6df77f6a6819de4305d8762cee7d8aeb6360e2c97fe",
+          "dominantColor": "#AAD8E7",
+          "interiorColorCount": 1,
+          "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/beijing/assembly-000.png"
+        },
+        {
+          "id": "psd-001",
+          "name": "图层 2",
+          "paintOrder": 1,
+          "kind": "pixel",
+          "visible": true,
+          "effectiveVisible": true,
+          "opacity": 255,
+          "blendMode": "normal",
+          "sourceBounds": [
+            0,
+            73,
+            1686,
+            960
+          ],
+          "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/beijing/layer-001.png",
+          "imageSha256": "a990ee5be90012551fbec0c93c1cfe8af3a4a959582b7b64698ccba091edfc19",
+          "dominantColor": "#F3E5B6",
+          "interiorColorCount": 1,
+          "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/beijing/assembly-001.png"
+        },
+        {
+          "id": "psd-002",
+          "name": "图层 8",
+          "paintOrder": 2,
+          "kind": "pixel",
+          "visible": true,
+          "effectiveVisible": true,
+          "opacity": 255,
+          "blendMode": "normal",
+          "sourceBounds": [
+            0,
+            240,
+            1686,
+            960
+          ],
+          "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/beijing/layer-002.png",
+          "imageSha256": "33d171a9a15b176fdfa32fac5b40257350b8204d0ffbc9b33785a6c2fe9fe41a",
+          "dominantColor": "#F4D497",
+          "interiorColorCount": 1,
+          "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/beijing/assembly-002.png"
+        },
+        {
+          "id": "psd-003",
+          "name": "图层 3",
+          "paintOrder": 3,
+          "kind": "pixel",
+          "visible": true,
+          "effectiveVisible": true,
+          "opacity": 255,
+          "blendMode": "normal",
+          "sourceBounds": [
+            696,
+            348,
+            1008,
+            761
+          ],
+          "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/beijing/layer-003.png",
+          "imageSha256": "628232a6380b2b886f3dead63eac6fb833ea24bed87f16ddd7364cb539c76c28",
+          "dominantColor": "#D6A060",
+          "interiorColorCount": 1,
+          "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/beijing/assembly-003.png"
+        },
+        {
+          "id": "psd-004",
+          "name": "图层 7",
+          "paintOrder": 4,
+          "kind": "pixel",
+          "visible": true,
+          "effectiveVisible": true,
+          "opacity": 255,
+          "blendMode": "normal",
+          "sourceBounds": [
+            719,
+            373,
+            984,
+            738
+          ],
+          "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/beijing/layer-004.png",
+          "imageSha256": "67d9c98d4336afd63d283a93ed75ed75bb4d24ec2b1a7bb63ce69d7c17c64459",
+          "dominantColor": "#F4C287",
+          "interiorColorCount": 1,
+          "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/beijing/assembly-004.png"
+        },
+        {
+          "id": "psd-005",
+          "name": "图层 5",
+          "paintOrder": 5,
+          "kind": "pixel",
+          "visible": true,
+          "effectiveVisible": true,
+          "opacity": 255,
+          "blendMode": "normal",
+          "sourceBounds": [
+            606,
+            263,
+            1096,
+            694
+          ],
+          "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/beijing/layer-005.png",
+          "imageSha256": "623e119892860c27b93dcb157aebb670bb7c077de68cb1f200c2a280710e3d9f",
+          "dominantColor": "#F66B58",
+          "interiorColorCount": 1,
+          "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/beijing/assembly-005.png"
+        },
+        {
+          "id": "psd-006",
+          "name": "图层 4",
+          "paintOrder": 6,
+          "kind": "pixel",
+          "visible": true,
+          "effectiveVisible": true,
+          "opacity": 255,
+          "blendMode": "normal",
+          "sourceBounds": [
+            440,
+            73,
+            1266,
+            243
+          ],
+          "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/beijing/layer-006.png",
+          "imageSha256": "e11c90015a8a132a525f403f036239a6db764f0ded34739770611d21dbf68482",
+          "dominantColor": "#CB8E61",
+          "interiorColorCount": 1,
+          "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/beijing/assembly-006.png"
+        },
+        {
+          "id": "psd-007",
+          "name": "图层 6",
+          "paintOrder": 7,
+          "kind": "pixel",
+          "visible": true,
+          "effectiveVisible": true,
+          "opacity": 255,
+          "blendMode": "normal",
+          "sourceBounds": [
+            0,
+            716,
+            1686,
+            960
+          ],
+          "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/beijing/layer-007.png",
+          "imageSha256": "85d3a1e6fd95f494f4ce6ed76adba91ce35c37b34ea814b722813e5456c8e047",
+          "dominantColor": "#FDFEF9",
+          "interiorColorCount": 1,
+          "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/beijing/assembly-007.png"
+        }
+      ],
+      "reconstructionMaxChannelError": 0,
+      "nativeCompositeMaxChannelError": 1
+    }
+  }
+}

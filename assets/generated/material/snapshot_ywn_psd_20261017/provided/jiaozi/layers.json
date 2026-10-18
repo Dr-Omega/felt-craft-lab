@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "provided-psd-layers/1",
+  "key": "jiaozi",
+  "source": {
+    "filename": "jiaozi 拷贝(3).psd",
+    "sha256": "ff2d27cc9d208356ca26388ceb907d143a9b2515b8e769c9b77631cda78ce83a",
+    "width": 1280,
+    "height": 1280,
+    "depth": 8
+  },
+  "width": 956,
+  "height": 558,
+  "sourceCrop": [
+    162,
+    364,
+    1118,
+    922
+  ],
+  "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_dumpling_001.png",
+  "imageSha256": "6790560675e4579485cd883644edf381f2ce489f71d04c62cbfc7692f976341b",
+  "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/jiaozi/thumbnail.png",
+  "layers": [
+    {
+      "id": "psd-000",
+      "name": "图层 1",
+      "paintOrder": 0,
+      "kind": "pixel",
+      "visible": true,
+      "effectiveVisible": true,
+      "opacity": 255,
+      "blendMode": "normal",
+      "sourceBounds": [
+        162,
+        364,
+        1118,
+        922
+      ],
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/jiaozi/layer-000.png",
+      "imageSha256": "57d7ab04871c30a534f5ed8258f531d30c391326ba8034062713cf6f458c6122",
+      "dominantColor": "#010101",
+      "interiorColorCount": 1,
+      "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/jiaozi/assembly-000.png"
+    },
+    {
+      "id": "psd-001",
+      "name": "图层 2",
+      "paintOrder": 1,
+      "kind": "pixel",
+      "visible": true,
+      "effectiveVisible": true,
+      "opacity": 255,
+      "blendMode": "normal",
+      "sourceBounds": [
+        197,
+        398,
+        1085,
+        886
+      ],
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/jiaozi/layer-001.png",
+      "imageSha256": "56bc23117d4ea27e84ddb54e0eb81bcfc16ef53aa2a54729037f790ede6deb39",
+      "dominantColor": "#FEFFFA",
+      "interiorColorCount": 1,
+      "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/jiaozi/assembly-001.png"
+    }
+  ],
+  "reconstructionMaxChannelError": 0,
+  "nativeCompositeMaxChannelError": 1
+}

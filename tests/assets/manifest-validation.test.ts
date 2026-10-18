@@ -99,7 +99,7 @@ describe('YWN formal manifest', () => {
         }
       }
     }
-    expect(checked).toBe(71 * 5)
+    expect(checked).toBe(71 * 5 + 3) // Three authored PSD layer manifests in addition to image/audio refs.
   })
 })
 

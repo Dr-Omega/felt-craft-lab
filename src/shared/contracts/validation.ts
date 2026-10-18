@@ -12,6 +12,7 @@ import { PROJECT_SYNC_STATUSES } from './project'
 import type { DraftRecord, ProjectRecord } from './project'
 import { PERSONAL_ASSET_ROLES, PERSONAL_ASSET_SOURCE_TYPES } from './personal-asset'
 import type { PersonalAssetRecord, PersonalAssetVersionRecord } from './personal-asset'
+import { validProvidedPsdEdit } from '../provided-psd'
 import {
   DEFAULT_BACKGROUND_CONSTRAINTS,
   DEFAULT_CORE_PATTERN_CONSTRAINTS,
@@ -318,7 +319,10 @@ export function validatePersonalAssetVersionRecord(
   const errors: ValidationIssue[] = []
   const value = requireObject(raw, 'personalAssetVersion', errors)
   if (!value) return failure(errors)
-  hasOnlyKeys(value, ['versionId', 'personalAssetId', 'versionNumber', 'sourceImageRef', 'parentVersionId', 'createdAt'], 'personalAssetVersion', errors)
+  hasOnlyKeys(value, ['versionId', 'personalAssetId', 'versionNumber', 'sourceImageRef', 'parentVersionId', 'createdAt', 'providedPsd'], 'personalAssetVersion', errors)
+  if (value.providedPsd !== undefined && !validProvidedPsdEdit(value.providedPsd)) {
+    errors.push({ path: 'personalAssetVersion.providedPsd', message: 'PSD 来源和逐层颜色记录无效。' })
+  }
   requireUuid(value.versionId, 'personalAssetVersion.versionId', errors)
   requireUuid(value.personalAssetId, 'personalAssetVersion.personalAssetId', errors)
   const versionNumber = value.versionNumber

@@ -1,10 +1,8 @@
 import type { ProjectRecord, SceneObject, ScenePersonalTransformBase } from '@shared/contracts'
-import { initialColors, validateColors } from '@shared/fabrication-colors'
 import { artworkBackgroundColor } from '@shared/scene-background'
 import { createCatalogResolver } from '../catalog/ywn-catalog'
-import { readCanvasRecolorLink } from '../fabrication/canvas-recolor'
-import { recolorLayers } from '../fabrication/recolor'
 import { loadResourceObjectUrl } from '../services/resource.service'
+import { checkedPsdEdit, providedPsdName } from '../projection/provided-psd-artwork'
 
 export interface WorkDisplayLayer {
   id: string
@@ -16,7 +14,7 @@ export interface WorkDisplayLayer {
 }
 export interface WorkDisplay { layers: WorkDisplayLayer[]; assemblies: string[]; width: number; height: number }
 
-/** Scene ordering and element-internal ordering are separate. Never group by color. */
+/** Scene ordering only. Each complete element is one plane; PSD colors belong to export/editing. */
 export function displayObjectOrder(scene: ProjectRecord['scene']) {
   return [
     ...(scene.corePattern?.visible ? [scene.corePattern] : []),
@@ -108,45 +106,21 @@ export async function buildWorkDisplay(work: ProjectRecord, signal?: AbortSignal
     check()
     if ('assetId' in object) {
       const asset = await resolver.resolveAsset(object.assetId, scene.assetSnapshotId)
-      await draw(asset.imageUrl, object, { id: object.objectId, objectId: object.objectId, label: asset.nameZh + '（完整元素）', background: false })
+      await draw(asset.imageUrl, object, { id: object.objectId, objectId: object.objectId, label: asset.nameZh, background: false })
       continue
     }
     const resolved = await personal(object)
-    const link = readCanvasRecolorLink(object.versionId)
-    if (!link) {
-      await draw(resolved.version.sourceImageRef, object, { id: object.objectId, objectId: object.objectId, label: resolved.asset.name + '（未拆分元素）', background: false })
-      continue
-    }
-    if (link.ownerUserId !== scene.userId) throw new Error('拆分图层与作品用户不匹配。')
-    const job = await window.electronAPI.fabrication.resume(link.jobId)
-    if (job.status !== 'complete' || !job.result || job.result.sourceSha256 !== link.sourceSha256) {
-      throw new Error('已保存元素的拆分结果缺失或来源不匹配；没有使用其他任务代替。')
-    }
-    const view = job.result
-    const colors = validateColors(link.colors, initialColors(view, link.binding))
-    const masks: string[] = []
-    try {
-      for (const step of view.steps) {
-        const asset = await window.electronAPI.fabrication.asset(job.id, step.asset)
-        masks.push(URL.createObjectURL(new Blob([new Uint8Array(asset.bytes).buffer], { type: asset.mime })))
-      }
-      check()
-      const painted = await recolorLayers(colors, masks, view.width, view.height)
-      await assertSavedComposite(resolved.version.sourceImageRef, painted.composite)
-      for (const layer of colors.layers) {
-        await draw(painted.layers[layer.layerIndex], object, {
-          id: object.objectId + ':' + layer.layerIndex, objectId: object.objectId, layerIndex: layer.layerIndex,
-          label: resolved.asset.name + ' · 第 ' + (layer.layerIndex + 1) + ' 层 ' + layer.hex + ' · ' + layer.pieceIds.length + ' 块',
-          background: false
-        }, painted.assemblies[layer.layerIndex], layer.layerIndex === colors.layers.length - 1)
-      }
-    } finally { masks.forEach(url => URL.revokeObjectURL(url)) }
+    const label = resolved.version.providedPsd
+      ? providedPsdName(checkedPsdEdit(resolved.version.providedPsd).sourceKey) : resolved.asset.name
+    // Draw the immutable saved composite, not its internal masks. This includes
+    // recolored elements and works even when their old algorithm task is unavailable.
+    await draw(resolved.version.sourceImageRef, object, { id: object.objectId, objectId: object.objectId, label, background: false })
   }
   return { layers, assemblies, width, height }
 }
 
 /** A valid color document alone is not proof that it belongs to the pinned PNG. */
-async function assertSavedComposite(savedRef: string, composite: string): Promise<void> {
+export async function assertSavedComposite(savedRef: string, composite: string): Promise<void> {
   const saved = await image(savedRef), rebuilt = await image(composite)
   if (saved.width !== rebuilt.width || saved.height !== rebuilt.height) throw new Error('已保存素材与图层尺寸不一致。')
   const canvas = document.createElement('canvas'); canvas.width = saved.width; canvas.height = saved.height

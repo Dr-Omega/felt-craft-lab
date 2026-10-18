@@ -126,7 +126,7 @@ async function beginGuidedCreation(): Promise<void> {
   try {
     const task: GameSession = await createGameSession(topic.themeId)
     if (epoch !== pageEpoch) return
-    const scene = createBlankScene(`${topic.name}·引导解锁`, topic.themeId)
+    const scene = createBlankScene(`${topic.name}·引导教学`, topic.themeId)
     scene.canvas.width = task.level.canvasBounds.maxX - task.level.canvasBounds.minX
     scene.canvas.height = task.level.canvasBounds.maxY - task.level.canvasBounds.minY
     openEditor({ mode: 'new', scene, guidedTheme: { sessionId: task.playSessionId, themeId: topic.themeId } })
@@ -183,7 +183,7 @@ onBeforeUnmount(() => { pageEpoch++; stopActiveAudio() })
       <section class="unlock-panel" :style="unlockPanelStyle()" :aria-label="`${selectedTopic.name}待解锁内容`">
       <div class="theme-preview-card">
       <div class="unlock-heading"><span class="status-label">待解锁</span><h2>{{ selectedTopic.name }}</h2></div>
-      <p class="unlock-copy">完成引导创作后解锁。</p>
+      <p class="unlock-copy">完成引导教学后解锁。</p>
       <div class="background-preview" aria-label="主题背景预览">
         <img v-if="background" :src="previewUrl(background.thumbnailUrl ?? background.imageUrl)" :alt="background.nameZh">
       </div>
@@ -196,7 +196,7 @@ onBeforeUnmount(() => { pageEpoch++; stopActiveAudio() })
           </figure>
         </div>
       </section>
-      <button class="begin-guided" data-tour-id="tour-learning-guided" type="button" :disabled="loadingGame" @click="beginGuidedCreation">{{ loadingGame ? '正在准备…' : '进入引导创作，解锁本主题' }}</button>
+      <button class="begin-guided" data-tour-id="tour-learning-guided" type="button" :disabled="loadingGame" @click="beginGuidedCreation">{{ loadingGame ? '正在准备…' : '进入引导教学，解锁本主题' }}</button>
       <p v-if="gameError" role="alert">{{ gameError }}</p>
       </section>
     </template>

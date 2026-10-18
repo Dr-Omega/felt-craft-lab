@@ -293,6 +293,7 @@ function samePersonalAssetVersion(
     && left.sourceImageRef === right.sourceImageRef
     && left.parentVersionId === right.parentVersionId
     && left.createdAt === right.createdAt
+    && JSON.stringify(left.providedPsd) === JSON.stringify(right.providedPsd)
 }
 
 export class AssetAccessStore {

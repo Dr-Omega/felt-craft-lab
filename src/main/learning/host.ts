@@ -66,6 +66,7 @@ export class LearningHost {
         throw new Error('学习任务尚未完成，不能解锁素材。')
       }
       return {
+        levelId: session.level.levelId,
         userId, themeId: session.level.themeId, sessionId, assetSnapshotId: snapshotId,
         stickerIds: session.level.stickers.map((s: any) => s.stickerId), completedAt: binding.completedAt
       } satisfies LearningCompletion

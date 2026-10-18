@@ -1,26 +1,77 @@
 import { describe, it, expect } from 'vitest'
 import { planCuttingPages, transformCuts, type CutPiece } from '../../src/renderer/src/projection/cutting-layout'
 import type { CuttingGeometry, CutPolygon } from '../../src/shared/cutting-pattern'
+import { defaultSubjectSizeChoice } from '../../src/renderer/src/projection/subject-size'
 const rect = (x: number, y: number, w: number, h: number): CutPolygon => [[[x,y],[x+w,y],[x+w,y+h],[x,y+h],[x,y]]]
 const piece = (id: string, color: string, rings: CutPolygon, step = 1): CutPiece => ({ id, color, rings, step, element: 1 })
 const size = (mm: number) => ({ mode: 'metaphor' as const, targetLongEdgeMm: mm, label: 'test' })
-describe('physical color cutting sheets', () => {
-  it('groups final colors across steps without changing assembly sequence or individual scale', () => {
+describe('physical mixed-color cutting sheets', () => {
+  it('defaults to an 18 cm long edge, fitting landscape, portrait and square cuts on A4 without stretching', () => {
+    const choice = defaultSubjectSizeChoice()
+    expect(choice.targetLongEdgeMm).toBe(180)
+    for (const [w, h] of [[100,100],[200,100],[100,200]]) {
+      const plan = planCuttingPages([piece('single','#3575CF',rect(0,0,w,h))], choice)
+      expect(Math.max(plan.widthMm, plan.heightMm)).toBeCloseTo(180)
+      expect(plan.widthMm / plan.heightMm).toBeCloseTo(w / h)
+      expect(plan.pages[0].pieces[0].x + plan.widthMm).toBeLessThanOrEqual(198)
+    }
+  })
+  it('shares paper across colors in making order without changing individual scale', () => {
     const plan = planCuttingPages([piece('a','#ff0000',rect(0,0,100,100)),piece('b','#0000ff',rect(10,10,10,10),2),piece('c','#FF0000',rect(20,20,20,20),3)],size(100))
-    expect(plan.pages.map(p=>p.color)).toEqual(['#FF0000','#0000FF'])
-    expect(plan.pages[0].pieces.map(p=>[p.id,p.step,p.width,p.number])).toEqual([['a',1,100,1],['c',3,20,3]])
-    expect(plan.pages[1].pieces[0].width).toBe(10)
+    expect(plan.pages).toHaveLength(1)
+    expect(plan.pages[0].pieces.map(p=>[p.id,p.step,p.width,p.number,p.color])).toEqual([['a',1,100,1,'#FF0000'],['b',2,10,2,'#0000FF'],['c',3,20,3,'#FF0000']])
     expect(plan.widthMm).toBe(100)
   })
-  it('continues a color onto additional pages, retaining common scale and printable bounds', () => {
-    const cuts = Array.from({length:12},(_,i)=>piece(String(i),'#123456',rect(0,0,90,90)))
+  it('continues onto additional pages, retaining common scale and printable bounds', () => {
+    const cuts = Array.from({length:12},(_,i)=>piece(String(i),'#123456',rect(0,0,90,90),i+1))
     const plan = planCuttingPages(cuts,size(90))
     expect(plan.pages).toHaveLength(3)
     expect(plan.pages.flatMap(p=>p.pieces)).toHaveLength(12)
     for(const page of plan.pages) for (const p of page.pieces) {
       expect(p.width).toBe(90); expect(p.x).toBeGreaterThanOrEqual(12); expect(p.x+p.width).toBeLessThanOrEqual(198)
-      expect(p.y).toBeGreaterThanOrEqual(30); expect(p.y+p.height+6).toBeLessThanOrEqual(267)
+      expect(p.y).toBeGreaterThanOrEqual(12); expect(p.y+p.height+6).toBeLessThanOrEqual(285)
       for (const q of page.pieces) if(q!==p) expect(p.x+p.width<=q.x || q.x+q.width<=p.x || p.y+p.height+6<=q.y || q.y+q.height+6<=p.y).toBe(true)
+    }
+  })
+  it('keeps elements and their making layers together even when the source arrives out of order', () => {
+    const source = [
+      {...piece('e2-l2','#123456',rect(0,0,20,20),2),element:2},
+      piece('e1-l2','#FF0000',rect(0,0,20,20),2),
+      {...piece('e2-l1','#FFFFFF',rect(0,0,20,20)),element:2},
+      piece('e1-l1-a','#000000',rect(0,0,10,10)),piece('e1-l1-b','#000000',rect(12,0,10,10))
+    ]
+    const plan = planCuttingPages(source,size(40))
+    expect(plan.pages).toHaveLength(1)
+    expect(plan.pages[0].pieces.map(p=>p.id)).toEqual(['e1-l1-a','e1-l1-b','e1-l2','e2-l1','e2-l2'])
+    expect(source[0].id).toBe('e2-l2')
+  })
+  it('keeps disconnected parts in their original relative positions and labels their layer only once', () => {
+    const source = [piece('a','#FF0000',rect(0,0,10,10)),piece('b','#FF0000',rect(40,20,10,10))]
+    const plan = planCuttingPages(source,size(100))
+    expect(plan.pieceCount).toBe(2)
+    expect(plan.pages).toHaveLength(1)
+    expect(plan.pages[0].labels).toEqual([{element:1,step:1,x:12,y:76}])
+    const [a,b]=plan.pages[0].pieces
+    expect(b.x-a.x).toBe(80); expect(b.y-a.y).toBe(40)
+    expect(a.width).toBe(20); expect(b.width).toBe(20)
+  })
+  it('fills an earlier page with small later cuts instead of leaving its row space unused', () => {
+    const plan = planCuttingPages([
+      piece('tall','#FFFFFF',rect(0,0,120,180)),
+      piece('wide','#FF0000',rect(0,0,180,100),2),
+      piece('small','#000000',rect(0,0,40,50),3)
+    ],size(180))
+    expect(plan.pages).toHaveLength(2)
+    expect(plan.pages[0].pieces.map(p=>p.id)).toEqual(['tall','small'])
+    expect(plan.pages[1].pieces.map(p=>p.id)).toEqual(['wide'])
+  })
+  it('packs many tiny mixed-color cuts with enough room for each numeric label', () => {
+    const cuts = Array.from({length:60},(_,i)=>piece(String(i),i%2?'#FF0000':'#000000',rect(0,0,1,1),i+1))
+    const plan = planCuttingPages(cuts,size(1))
+    expect(plan.pages).toHaveLength(1)
+    for (const p of plan.pages[0].pieces) for (const q of plan.pages[0].pieces) if(p!==q) {
+      const pw=Math.max(p.width,`${p.element}-${p.step}`.length*2+1),qw=Math.max(q.width,`${q.element}-${q.step}`.length*2+1)
+      expect(p.x+pw+6<=q.x+1e-8 || q.x+qw+6<=p.x+1e-8 || p.y+p.height+12<=q.y+1e-8 || q.y+q.height+12<=p.y+1e-8).toBe(true)
     }
   })
   it('rejects oversize and invalid choices rather than silently shrinking a piece', () => {
@@ -39,7 +90,8 @@ describe('physical color cutting sheets', () => {
   it('uses the assembled foreground bounds, not the padded canvas or independent piece bounds',()=>{
     const plan=planCuttingPages([piece('a','#000000',rect(500,500,100,50)),piece('b','#FFFFFF',rect(600,500,100,50))],{...size(100),boundsMm:{width:100,height:100}})
     expect(plan.scale).toBe(.5); expect(plan.widthMm).toBe(100);expect(plan.heightMm).toBe(25)
-    expect(plan.pages[0].pieces[0].width).toBe(50);expect(plan.pages[1].pieces[0].width).toBe(50)
+    expect(plan.pages).toHaveLength(1)
+    expect(plan.pages[0].pieces.map(p=>p.width)).toEqual([50,50])
   })
   it('does not merge source pieces or substitute a backing contour during layout',()=>{
     const g: CuttingGeometry = {resultSha256:'hash',sourceSha256:'source',width:100,height:100,

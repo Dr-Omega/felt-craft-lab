@@ -15,7 +15,7 @@ const snapA = 'snapshot_ywn_20260805_112922'
 describe('historical snapshot registry + resolver', () => {
   it('loads registry and exposes latest-only Library catalog', () => {
     const registry = loadSnapshotRegistry(JSON.parse(readFileSync(registryPath, 'utf8')))
-    expect(registry.latestSnapshotId).toBe('snapshot_ywn_material_v2_1cdf77d')
+    expect(registry.latestSnapshotId).toBe('snapshot_ywn_psd_20261017')
     expect(YWN_SNAPSHOT_ID).toBe(registry.latestSnapshotId)
     expect(CATALOG_ASSETS).toHaveLength(71)
     expect(YWN_SNAPSHOT_CONTEXT.snapshots[snapA]).toHaveLength(17)

@@ -1,11 +1,14 @@
 import type { ProjectRecord } from '@shared/contracts'
 import { initialColors, validateColors } from '@shared/fabrication-colors'
 import { sameElementSource } from '@shared/fabrication-task-identity'
+import { artworkBackgroundColor } from '@shared/scene-background'
 import { createCatalogResolver } from '../catalog/ywn-catalog'
 import { readCanvasRecolorLink } from '../fabrication/canvas-recolor'
 import { readPersonalElementInput } from '../fabrication/element-input'
-import { displayObjectOrder } from './work-display'
+import { assertSavedComposite, displayObjectOrder } from './work-display'
 import { transformCuts, type CutPiece } from '../projection/cutting-layout'
+import { loadProvidedPsdLayers } from '../projection/provided-psd-layers'
+import { originalPsdEdit, checkedPsdEdit, paintProvidedPsd, providedPsdGeometry } from '../projection/provided-psd-artwork'
 
 /** Read existing layered inputs only. PDF layout never starts or retries image decomposition. */
 export async function prepareWorkCuts(work: ProjectRecord, progress: (text: string) => void, signal: AbortSignal): Promise<CutPiece[]> {
@@ -13,9 +16,30 @@ export async function prepareWorkCuts(work: ProjectRecord, progress: (text: stri
   const pieces: CutPiece[] = []
   const check = () => { if (signal.aborted) throw new Error('已取消图纸准备。') }
   const objects = displayObjectOrder(scene)
+  const firstElementNumber = artworkBackgroundColor(scene.canvas) || scene.personalBackground || scene.backgroundAssetId ? 2 : 1
   if (!objects.length) throw new Error('没有可排版的前景素材。画布底色与场景背景不作为裁片。')
   for (const [index, object] of objects.entries()) {
     check()
+    // Authored PSD masks bypass every algorithm/job endpoint, including list/resume.
+    const psdEdit = 'assetId' in object
+      ? await (async () => {
+          const asset = await resolver.resolveAsset(object.assetId, scene.assetSnapshotId)
+          const pack = await loadProvidedPsdLayers(asset)
+          return pack ? originalPsdEdit(pack) : undefined
+        })()
+      : await (async () => {
+          const resolved = await resolver.resolvePersonalAsset!(object.personalAssetId, object.versionId)
+          if (resolved.asset.userId !== scene.userId) throw new Error('个人素材不属于当前账号。')
+          if (!resolved.version.providedPsd) return undefined
+          const edit = checkedPsdEdit(resolved.version.providedPsd)
+          await assertSavedComposite(resolved.version.sourceImageRef, (await paintProvidedPsd(edit)).composite)
+          return edit
+        })()
+    if (psdEdit) {
+      progress(`正在读取 PSD 原始图层 ${index + 1} / ${objects.length}…`)
+      const geometry = await providedPsdGeometry(psdEdit)
+      check(); pieces.push(...transformCuts(geometry, object, index + firstElementNumber)); continue
+    }
     const link = 'versionId' in object ? readCanvasRecolorLink(object.versionId) : undefined
     let job, colors
     if (link) {
@@ -47,7 +71,7 @@ export async function prepareWorkCuts(work: ProjectRecord, progress: (text: stri
     const geometry = await api.cuttingGeometry(job.id)
     if (geometry.resultSha256 !== colors.resultSha256) throw new Error('裁片轮廓与颜色版本不匹配。')
     const byPiece = new Map(colors.layers.flatMap(layer => layer.pieceIds.map(id => [id, layer.hex] as const)))
-    pieces.push(...transformCuts(geometry, object, index + 1, byPiece))
+    pieces.push(...transformCuts(geometry, object, index + firstElementNumber, byPiece))
   }
   check(); return pieces
 }

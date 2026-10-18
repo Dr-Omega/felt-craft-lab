@@ -1,0 +1,194 @@
+{
+  "schemaVersion": "provided-psd-layers/1",
+  "key": "fuwa",
+  "source": {
+    "filename": "fuwa(1).psd",
+    "sha256": "9ef26310f899518d55926b77d6f61dd79547f244e24aaddf2cb583698e903695",
+    "width": 2480,
+    "height": 3508,
+    "depth": 8
+  },
+  "width": 1323,
+  "height": 2183,
+  "sourceCrop": [
+    579,
+    911,
+    1902,
+    3094
+  ],
+  "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/fuwa/composite.png",
+  "imageSha256": "548a082377dab81e0e6f32cc987d88cac74cc735a0978f7508a29e7cba957f42",
+  "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/fuwa/thumbnail.png",
+  "layers": [
+    {
+      "id": "psd-000",
+      "name": "矩形 1",
+      "paintOrder": 0,
+      "kind": "pixel",
+      "visible": true,
+      "effectiveVisible": true,
+      "opacity": 255,
+      "blendMode": "normal",
+      "sourceBounds": [
+        579,
+        911,
+        1902,
+        3020
+      ],
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/fuwa/layer-000.png",
+      "imageSha256": "3549216b7df450c4e6ddf8c4ef80ff231b8aac3f8d398a57ace16d584d1dfeaf",
+      "dominantColor": "#FFCDC0",
+      "interiorColorCount": 1,
+      "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/fuwa/assembly-000.png"
+    },
+    {
+      "id": "psd-001",
+      "name": "椭圆 1",
+      "paintOrder": 1,
+      "kind": "pixel",
+      "visible": true,
+      "effectiveVisible": true,
+      "opacity": 255,
+      "blendMode": "normal",
+      "sourceBounds": [
+        1675,
+        2386,
+        1892,
+        2577
+      ],
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/fuwa/layer-001.png",
+      "imageSha256": "084b6d1a6a3b29cdbe11df8ee8c23ceff8d41a3a1aaaca69f3f2954c13def1b5",
+      "dominantColor": "#FFCDC0",
+      "interiorColorCount": 1,
+      "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/fuwa/assembly-001.png"
+    },
+    {
+      "id": "psd-002",
+      "name": "椭圆 1 拷贝",
+      "paintOrder": 2,
+      "kind": "pixel",
+      "visible": true,
+      "effectiveVisible": true,
+      "opacity": 255,
+      "blendMode": "normal",
+      "sourceBounds": [
+        585,
+        2386,
+        802,
+        2577
+      ],
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/fuwa/layer-002.png",
+      "imageSha256": "f847cb546b874eafdb9c91a2021f3f39fe0f8ac311197ef723234246074843d2",
+      "dominantColor": "#FFCDC0",
+      "interiorColorCount": 1,
+      "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/fuwa/assembly-002.png"
+    },
+    {
+      "id": "psd-003",
+      "name": "图层 4",
+      "paintOrder": 3,
+      "kind": "pixel",
+      "visible": true,
+      "effectiveVisible": true,
+      "opacity": 255,
+      "blendMode": "normal",
+      "sourceBounds": [
+        598,
+        1973,
+        1883,
+        3094
+      ],
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/fuwa/layer-003.png",
+      "imageSha256": "41819168a843b618b8eed7a1b5938ea07b86c14ca4589d64587594c9ccca95a6",
+      "dominantColor": "#D61313",
+      "interiorColorCount": 1,
+      "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/fuwa/assembly-003.png"
+    },
+    {
+      "id": "psd-004",
+      "name": "矩形 2 拷贝 2",
+      "paintOrder": 4,
+      "kind": "pixel",
+      "visible": true,
+      "effectiveVisible": true,
+      "opacity": 255,
+      "blendMode": "normal",
+      "sourceBounds": [
+        1039,
+        2166,
+        1441,
+        2614
+      ],
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/fuwa/layer-004.png",
+      "imageSha256": "f84e8498c88b04079bbb7e154d661c7a3c208c16b1108e52b53bd86a62627014",
+      "dominantColor": "#FFB042",
+      "interiorColorCount": 1,
+      "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/fuwa/assembly-004.png"
+    },
+    {
+      "id": "psd-005",
+      "name": "图层 1",
+      "paintOrder": 5,
+      "kind": "pixel",
+      "visible": true,
+      "effectiveVisible": true,
+      "opacity": 255,
+      "blendMode": "normal",
+      "sourceBounds": [
+        579,
+        911,
+        1902,
+        1889
+      ],
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/fuwa/layer-005.png",
+      "imageSha256": "f0ac0cd5437568a932f5353b31b9f8b1fe898992b92070fe40eaf7810fdec015",
+      "dominantColor": "#000000",
+      "interiorColorCount": 1,
+      "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/fuwa/assembly-005.png"
+    },
+    {
+      "id": "psd-006",
+      "name": "图层 3",
+      "paintOrder": 6,
+      "kind": "pixel",
+      "visible": true,
+      "effectiveVisible": true,
+      "opacity": 255,
+      "blendMode": "normal",
+      "sourceBounds": [
+        942,
+        1723,
+        1538,
+        1821
+      ],
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/fuwa/layer-006.png",
+      "imageSha256": "47b040febeb15c8c916459cf1247946bb802d9afb9b2a73b9795d7791d90a6a0",
+      "dominantColor": "#FF8787",
+      "interiorColorCount": 1,
+      "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/fuwa/assembly-006.png"
+    },
+    {
+      "id": "psd-007",
+      "name": "图层 2",
+      "paintOrder": 7,
+      "kind": "pixel",
+      "visible": true,
+      "effectiveVisible": true,
+      "opacity": 255,
+      "blendMode": "normal",
+      "sourceBounds": [
+        656,
+        989,
+        1824,
+        1219
+      ],
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/fuwa/layer-007.png",
+      "imageSha256": "934a779880481e21d790e0d774a7925719b51b5c82b998fcd998e0fcad799172",
+      "dominantColor": "#FF0000",
+      "interiorColorCount": 1,
+      "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/fuwa/assembly-007.png"
+    }
+  ],
+  "reconstructionMaxChannelError": 0,
+  "nativeCompositeMaxChannelError": 1
+}

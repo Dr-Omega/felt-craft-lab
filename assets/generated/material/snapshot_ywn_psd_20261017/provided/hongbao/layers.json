@@ -1,0 +1,109 @@
+{
+  "schemaVersion": "provided-psd-layers/1",
+  "key": "hongbao",
+  "source": {
+    "filename": "hongbao(2).psd",
+    "sha256": "d9a9b0348f3e09e3e785f3a68b64bf7d17bb67b1fcf1a3ea69a0b674b942a7f8",
+    "width": 1024,
+    "height": 1024,
+    "depth": 8
+  },
+  "width": 370,
+  "height": 525,
+  "sourceCrop": [
+    328,
+    249,
+    698,
+    774
+  ],
+  "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/sticker_red_envelope_001.png",
+  "imageSha256": "37cce4113f80177cfc241850b85d60b48423418c8be456274caa0951d10c935f",
+  "thumbnailUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/hongbao/thumbnail.png",
+  "layers": [
+    {
+      "id": "psd-000",
+      "name": "背景",
+      "paintOrder": 0,
+      "kind": "pixel",
+      "visible": false,
+      "effectiveVisible": false,
+      "opacity": 255,
+      "blendMode": "normal",
+      "sourceBounds": [
+        0,
+        0,
+        1024,
+        1024
+      ],
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/hongbao/layer-000.png",
+      "imageSha256": "9787af976790a5255dfd5435b1bde0d517e1a9055e2924670fe0dd341085d90b",
+      "dominantColor": "#FFFFFF",
+      "interiorColorCount": 6870
+    },
+    {
+      "id": "psd-001",
+      "name": "图层 1",
+      "paintOrder": 1,
+      "kind": "pixel",
+      "visible": true,
+      "effectiveVisible": true,
+      "opacity": 255,
+      "blendMode": "normal",
+      "sourceBounds": [
+        328,
+        249,
+        698,
+        774
+      ],
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/hongbao/layer-001.png",
+      "imageSha256": "85b2757b2c04f697405be48c15de8142503c06a3cad0bcc1ccced9da42c306c1",
+      "dominantColor": "#FE5447",
+      "interiorColorCount": 1,
+      "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/hongbao/assembly-001.png"
+    },
+    {
+      "id": "psd-002",
+      "name": "图层 2",
+      "paintOrder": 2,
+      "kind": "pixel",
+      "visible": true,
+      "effectiveVisible": true,
+      "opacity": 255,
+      "blendMode": "normal",
+      "sourceBounds": [
+        332,
+        249,
+        694,
+        377
+      ],
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/hongbao/layer-002.png",
+      "imageSha256": "7fdbec3aec26fdf43a84c40f3a78bf5738279bc5e458986182bfc57250eb4e77",
+      "dominantColor": "#FB9066",
+      "interiorColorCount": 1,
+      "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/hongbao/assembly-002.png"
+    },
+    {
+      "id": "psd-003",
+      "name": "图层 3",
+      "paintOrder": 3,
+      "kind": "pixel",
+      "visible": true,
+      "effectiveVisible": true,
+      "opacity": 255,
+      "blendMode": "normal",
+      "sourceBounds": [
+        466,
+        331,
+        559,
+        425
+      ],
+      "imageUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/hongbao/layer-003.png",
+      "imageSha256": "4f20535ba8aaebbffbdce7c88c5c52f8eeb3e7bd3411504f1b2930f57ecd8abe",
+      "dominantColor": "#FBEC5B",
+      "interiorColorCount": 1,
+      "assemblyUrl": "felt-resource://material/snapshot_ywn_psd_20261017/provided/hongbao/assembly-003.png"
+    }
+  ],
+  "reconstructionMaxChannelError": 0,
+  "nativeCompositeMaxChannelError": 1
+}

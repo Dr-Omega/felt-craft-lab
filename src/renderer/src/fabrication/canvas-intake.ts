@@ -1,5 +1,6 @@
 import type { PersonalAssetRecord, PersonalAssetVersionRecord } from '@shared/contracts'
 import { encodedImageFormat } from '@shared/resource/image-format'
+import type { ProvidedPsdEdit } from '@shared/provided-psd'
 import { getFeltCraftDatabase, PersonalAssetStore, PersonalAssetVersionStore } from '../persistence'
 
 export function validateImageIntake(type: string, bytes: number, width?: number, height?: number): void {
@@ -22,14 +23,16 @@ export async function normalizeCanvasUpload(file: File): Promise<Uint8Array> {
     return bytes
   } finally { URL.revokeObjectURL(url) }
 }
-export async function persistCanvasInput(imageBytes: Uint8Array, name: string, userId: string, sourceType: 'uploaded' | 'ai_generated') {
+export async function persistCanvasInput(imageBytes: Uint8Array, name: string, userId: string, sourceType: 'uploaded' | 'ai_generated' | 'hand_drawn',
+  providedPsd?: ProvidedPsdEdit, role: PersonalAssetRecord['role'] = 'element') {
   const format = encodedImageFormat(imageBytes)
   validateImageIntake(format === 'jpg' ? 'image/jpeg' : format === 'png' ? 'image/png' : '', imageBytes.byteLength)
   const personalAssetId = crypto.randomUUID(), versionId = crypto.randomUUID(), now = new Date().toISOString()
   const sourceImageRef = await window.electronAPI.ingestPersonalAssetImage({ personalAssetId, versionId, imageBytes })
-  const version: PersonalAssetVersionRecord = { versionId, personalAssetId, versionNumber: 1, sourceImageRef, parentVersionId: null, createdAt: now }
+  const version: PersonalAssetVersionRecord = { versionId, personalAssetId, versionNumber: 1, sourceImageRef, parentVersionId: null, createdAt: now,
+    ...(providedPsd ? { providedPsd: structuredClone(providedPsd) } : {}) }
   const asset: PersonalAssetRecord = { personalAssetId, currentVersionId: versionId, name: name.slice(0, 100) || '我的图片',
-    userId, role: 'element', sourceType, createdAt: now, updatedAt: now }
+    userId, role, sourceType, createdAt: now, updatedAt: now }
   const db = getFeltCraftDatabase()
   await db.transaction('rw', db.personalAssets, db.personalAssetVersions, async () => {
     await new PersonalAssetVersionStore(db).save(version); await new PersonalAssetStore(db).save(asset)

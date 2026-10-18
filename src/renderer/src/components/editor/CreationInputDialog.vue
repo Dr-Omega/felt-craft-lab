@@ -2,6 +2,8 @@
 import { nextTick, onMounted, onUnmounted, ref } from 'vue'
 import type { CreationIntentAccepted } from '@shared/creation-intent'
 import type { ForegroundMode } from '@shared/fabrication-desktop'
+import type { ProvidedPsdEdit } from '@shared/provided-psd'
+import { createCatalogResolver } from '../../catalog/ywn-catalog'
 import CreateAssetPage from '../../pages/CreateAssetPage.vue'
 import { normalizeCanvasUpload } from '../../fabrication/canvas-intake'
 import ArtworkButton from './ArtworkButton.vue'
@@ -11,7 +13,7 @@ import chooseArt from '../../../../../assets/ui/creation/choose.png'
 import uploadArt from '../../../../../assets/ui/creation/upload.png'
 import voiceArt from '../../../../../assets/ui/creation/voice.png'
 import panelArt from '../../../../../assets/ui/creation/voice-panel.png'
-const props = defineProps<{ insert: (bytes: Uint8Array, name: string, source: 'uploaded' | 'ai_generated', foregroundMode?: ForegroundMode) => Promise<void> }>()
+const props = defineProps<{ insert: (bytes: Uint8Array, name: string, source: 'uploaded' | 'ai_generated', foregroundMode?: ForegroundMode, providedPsd?: ProvidedPsdEdit) => Promise<void> }>()
 const foregroundMode = ref<ForegroundMode>('birefnet-general')
 const emit = defineEmits<{ close: [] }>()
 const mode = ref<'choose'|'upload'|'voice'>('choose'), busy = ref(false), error = ref(''), preview = ref(''), filename = ref('')
@@ -50,7 +52,9 @@ async function useGenerated(accepted: CreationIntentAccepted): Promise<void> {
   try {
     const response = await fetch(accepted.sourceImageRef)
     if (!response.ok) throw new Error('生成图片未能读回，请重试。')
-    await props.insert(new Uint8Array(await response.arrayBuffer()), accepted.name, 'ai_generated'); emit('close')
+    const resolved = await createCatalogResolver().resolvePersonalAsset!(accepted.personalAssetId, accepted.versionId)
+    await props.insert(new Uint8Array(await response.arrayBuffer()), accepted.name, 'ai_generated',
+      resolved.version.providedPsd ? 'embedded-alpha' : undefined, resolved.version.providedPsd); emit('close')
   } finally { busy.value = false }
 }
 onMounted(async () => { opener = document.activeElement as HTMLElement; await nextTick(); panel.value?.querySelector('button')?.focus() })

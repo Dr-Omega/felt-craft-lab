@@ -3,8 +3,11 @@ import type { SubjectSizeChoice } from './subject-size'
 
 export interface CutPiece { id: string; color: string; step: number; element: number; rings: CutPolygon }
 export interface PlacedCut extends CutPiece { number: number; x: number; y: number; width: number; height: number }
-export interface CuttingPage { color: string; pieces: PlacedCut[] }
+export interface CutLabel { element: number; step: number; x: number; y: number }
+export interface CuttingPage { pieces: PlacedCut[]; labels: CutLabel[] }
 export interface CuttingPlan { pages: CuttingPage[]; scale: number; widthMm: number; heightMm: number; pieceCount: number }
+/** Scene element order, then that element's bottom-to-top making step. No cut serial. */
+export function cuttingLabel(piece: Pick<CutPiece, 'element' | 'step'>): string { return `${piece.element}-${piece.step}` }
 export interface CutTransform { left: number; top: number; scaleX: number; scaleY: number; angle: number }
 export function transformCuts(geometry: CuttingGeometry, transform: CutTransform, element: number, colors?: Map<string, string>): CutPiece[] {
   const { left, top, scaleX, scaleY, angle } = transform
@@ -33,28 +36,62 @@ export function planCuttingPages(pieces: CutPiece[], size: SubjectSizeChoice): C
   const all = bounds(pieces.flatMap(piece => piece.rings))
   const scale = size.boundsMm ? Math.min(size.boundsMm.width / all.width, size.boundsMm.height / all.height) : size.targetLongEdgeMm / Math.max(all.width, all.height)
   if (!Number.isFinite(scale) || scale <= 0) throw new Error('成品尺寸无效。')
-  const groups = new Map<string, PlacedCut[]>()
+  const groups = new Map<string, { piece: CutPiece; number: number }[]>()
   pieces.forEach((piece, index) => {
     const color = piece.color.toUpperCase()
     if (!/^#[\dA-F]{6}$/.test(color)) throw new Error('裁片颜色无效。')
-    const box = bounds(piece.rings), width = box.width * scale, height = box.height * scale
-    // A4 margins 12 mm, header 30 mm, footer starts at 273 mm; 6 mm label beneath each piece.
-    if (width > 186 || height + 6 > 237) throw new Error(`裁片 ${index + 1} 超过 A4 可打印区域，请选择更小的成品尺寸；不会单独缩小该裁片。`)
-    const item: PlacedCut = { ...piece, color, number: index + 1, x: 0, y: 0, width, height,
-      rings: piece.rings.map(ring => ring.map(([x, y]): CutPoint => [(x - box.minX) * scale, (y - box.minY) * scale])) }
-    const group = groups.get(color) ?? []; group.push(item); groups.set(color, group)
+    const key = cuttingLabel(piece), group = groups.get(key) ?? []
+    group.push({ piece: { ...piece, color }, number: index + 1 }); groups.set(key, group)
   })
-  const pages: CuttingPage[] = []
-  for (const [color, group] of groups) {
-    let page: CuttingPage = { color, pieces: [] }, x = 12, y = 30, rowHeight = 0
-    pages.push(page)
-    for (const piece of group) {
-      if (x + piece.width > 198 + 1e-8) { x = 12; y += rowHeight + 6; rowHeight = 0 }
-      if (y + piece.height + 6 > 267 + 1e-8) { page = { color, pieces: [] }; pages.push(page); x = 12; y = 30; rowHeight = 0 }
-      page.pieces.push({ ...piece, x, y })
-      x += Math.max(piece.width, 27) + 6; rowHeight = Math.max(rowHeight, piece.height + 6)
+  const ordered = [...groups.values()].map(group => {
+    const { element, step } = group[0].piece
+    const box = bounds(group.flatMap(item => item.piece.rings))
+    const width = box.width * scale, height = box.height * scale
+    if (width > 186 || height + 6 > 273) throw new Error(`图层 ${element}-${step} 超过 A4 本页排版区域，请选择更小的成品尺寸；不会单独缩小该图层。`)
+    return { element, step, width, height, pieces: group.map(({ piece, number }): PlacedCut => {
+      const own = bounds(piece.rings)
+      return { ...piece, number, x: (own.minX - box.minX) * scale, y: (own.minY - box.minY) * scale,
+        width: own.width * scale, height: own.height * scale,
+        rings: piece.rings.map(ring => ring.map(([x, y]): CutPoint => [(x - own.minX) * scale, (y - own.minY) * scale])) }
+    }) }
+  }).sort((a, b) => a.element - b.element || a.step - b.step)
+  // Process each element's layers together, without color/page breaks. Reuse row
+  // space before adding rows or paper; never change a cut's scale or orientation.
+  interface Shelf { x: number; y: number; height: number }
+  const sheets: { page: CuttingPage; shelves: Shelf[] }[] = []
+  for (const layer of ordered) {
+    // Keep the original relative positions of disconnected cuts in one layer,
+    // with one shared label. Do not scatter tiny islands into numbered rows.
+    const width = Math.max(layer.width, cuttingLabel(layer).length * 2 + 1)
+    const height = layer.height + 6
+    const place = (page: CuttingPage, x: number, y: number) => {
+      page.pieces.push(...layer.pieces.map(piece => ({ ...piece, x: piece.x + x, y: piece.y + y })))
+      page.labels.push({ element: layer.element, step: layer.step, x, y: y + layer.height + 4 })
+    }
+    let placed = false
+    for (const sheet of sheets) {
+      for (const [index, shelf] of sheet.shelves.entries()) {
+        const lastRow = index === sheet.shelves.length - 1
+        if (shelf.x + width > 198 + 1e-8 || (!lastRow && height > shelf.height + 1e-8) || shelf.y + Math.max(shelf.height, height) > 285 + 1e-8) continue
+        place(sheet.page, shelf.x, shelf.y)
+        shelf.x += width + 6; shelf.height = Math.max(shelf.height, height)
+        placed = true; break
+      }
+      if (placed) break
+      const last = sheet.shelves.at(-1)
+      const y = last ? last.y + last.height + 6 : 12
+      if (y + height > 285 + 1e-8) continue
+      sheet.shelves.push({ x: 12 + width + 6, y, height })
+      place(sheet.page, 12, y)
+      placed = true; break
+    }
+    if (!placed) {
+      const page: CuttingPage = { pieces: [], labels: [] }
+      place(page, 12, 12)
+      sheets.push({ page, shelves: [{ x: 12 + width + 6, y: 12, height }] })
     }
   }
+  const pages = sheets.map(sheet => sheet.page)
   return { pages, scale, widthMm: all.width * scale, heightMm: all.height * scale, pieceCount: pieces.length }
 }
 export function cutPath(piece: PlacedCut): string {

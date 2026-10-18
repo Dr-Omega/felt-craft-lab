@@ -3,7 +3,8 @@ import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import sourceMap from '../../docs/material-v2-source-map.json'
-import manifest from '../../src/renderer/src/catalog/assets.manifest.json'
+// This test freezes the original V2 source identity, not later user-authored replacements.
+import manifest from '../../src/renderer/src/catalog/snapshots/snapshot_ywn_material_v2_1cdf77d.manifest.json'
 
 describe('material v2 packaged bytes and source identity', () => {
   it('matches every image, thumbnail and audio against the pinned source tree', () => {

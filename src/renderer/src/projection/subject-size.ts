@@ -70,8 +70,9 @@ export function layoutOptionsForSubject(choice: SubjectSizeChoice) {
   return { maxLayerLongEdgeMm: choice.targetLongEdgeMm, boundsMm: choice.boundsMm }
 }
 
-export const DEFAULT_METAPHOR_ID = 'apple'
+/** Large enough to read and cut, while fitting A4 printable width in either orientation. */
+export const DEFAULT_SUBJECT_LONG_EDGE_MM = 180
 
 export function defaultSubjectSizeChoice(): SubjectSizeChoice {
-  return choiceFromMetaphor(DEFAULT_METAPHOR_ID)!
+  return choiceFromSpecificCm(DEFAULT_SUBJECT_LONG_EDGE_MM / CM_TO_MM, DEFAULT_SUBJECT_LONG_EDGE_MM / CM_TO_MM)!
 }

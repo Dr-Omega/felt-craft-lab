@@ -71,7 +71,7 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
     view: 'plaza',
     targetSelector: '[data-tour-id="tour-plaza-public"]',
     title: '广场逛逛',
-    body: '这里是广场！点「公共空间」，看看大家分享的作品吧。',
+    body: '这里是童创空间，看看大家分享的作品吧。自己的草稿和作品可以在个人中心找到。',
     waitingHint: '正在打开分享广场…',
     bubbleSide: 'right'
   },
@@ -80,7 +80,7 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
     view: 'learning',
     targetSelector: '[data-tour-id="tour-learning-guided"]',
     title: '学习区任务',
-    body: '选一个主题，点「进入引导创作」，跟着步骤做，就能解锁新素材！',
+    body: '选一个主题，点「进入引导教学」，跟着步骤做，就能解锁新素材！',
     waitingHint: '正在打开学习区…',
     bubbleSide: 'top'
   },

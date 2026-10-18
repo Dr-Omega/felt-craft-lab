@@ -3,6 +3,9 @@ import { computed, nextTick, onUnmounted, reactive, ref, watch } from 'vue'
 import { openEditor } from '../app-nav'
 import { createSceneWithCorePattern } from '../catalog/ywn-catalog'
 import { CreationIntentController } from '../services/creation-intent.controller'
+import { ProvidedDemoController, isProvidedPsdDemoEnabled } from '../services/provided-demo.controller'
+import { providedPsdPack } from '../projection/provided-psd-artwork'
+import { calculateStickerInitialScale } from '../editor/fabric-editor-adapter'
 import { aiClient } from '../services/ai.client'
 import { blobToBase64, MicRecorder, parseAsrEnvelope } from '../services/voice-input'
 import type { CreationIntentAccepted } from '@shared/creation-intent'
@@ -24,7 +27,8 @@ let voiceTimer: ReturnType<typeof setTimeout> | undefined, disposed = false
 
 const helpOpen = ref(false), editing = ref(false)
 const originalDescription = ref('')
-const controller = reactive(new CreationIntentController())
+const demoMode = isProvidedPsdDemoEnabled()
+const controller = reactive(demoMode ? new ProvidedDemoController() : new CreationIntentController())
 const scrollArea = ref<HTMLElement>()
 const pageRoot = ref<HTMLElement>()
 // Reset only the content slot on stage changes; never push the whole dialog to its bottom.
@@ -74,6 +78,7 @@ const voiceBusy = computed(() => recording.value || startingMic.value || transcr
 onUnmounted(() => {
   disposed = true; clearTimeout(voiceTimer)
   recorder.cancel()
+  if (controller instanceof ProvidedDemoController) controller.dispose()
 })
 
 async function retryVoice(): Promise<void> {
@@ -159,14 +164,20 @@ async function startWork(): Promise<void> {
       await props.useCandidate(controller.accepted)
       return
     }
-    openEditor({
-    mode: 'new',
-    fromGeneration: true,
-    scene: createSceneWithCorePattern({
+    const scene = createSceneWithCorePattern({
       workName: controller.accepted.name,
       personalAssetId: controller.accepted.personalAssetId,
       versionId: controller.accepted.versionId
     })
+    if (demoMode && scene.corePattern) {
+      const pack = providedPsdPack('fuwa')
+      const scale = calculateStickerInitialScale(scene.canvas.width, scene.canvas.height, pack.width, pack.height)
+      scene.corePattern.scaleX = scene.corePattern.scaleY = scale
+    }
+    openEditor({
+    mode: 'new',
+    fromGeneration: true,
+    scene
     })
   } catch (e) { controller.error = e instanceof Error ? e.message : String(e) }
   finally { placing.value = false }
@@ -180,6 +191,7 @@ async function restartVoice(): Promise<void> { recorder.cancel(); clearTimeout(v
   <section ref="pageRoot" class="create-page" aria-label="生成作品">
     <header class="section-head">
       <h2>{{ compiled ? '看看这张图' : controller.hasPlan && !inputVisible ? '确认绘画内容' : '想画什么？' }}</h2>
+      <small v-if="demoMode" class="demo-label">演示模式</small>
       <button class="help-toggle" type="button" :aria-expanded="helpOpen" @click="helpOpen = !helpOpen">{{ helpOpen ? '返回创作' : '怎么用' }}</button>
     </header>
     <div class="actions">

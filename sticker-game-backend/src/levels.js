@@ -1,3 +1,5 @@
+import learningGuides from "../../src/shared/learning-guides.json" with { type: "json" };
+
 const MATERIAL_ASSET_ROOT = "/assets/material/snapshot_ywn_20260925_latest";
 const AUDIO_ASSET_ROOT = "/assets/audio/snapshot_ywn_20260925_latest";
 
@@ -139,15 +141,29 @@ function level(levelId, name, backgroundFileName, height, layout = "auto") { ret
 function placement(placeholder, targetArea, tolerance) { return { placeholder: { ...placeholder, rotation: 0 }, targetArea, tolerance }; }
 
 function createLevel(themeDefinition, levelDefinition, placements) {
+  // The supplied full-scene reference PNGs define this lesson only. Other
+  // Spring Festival levels and freely placed creation assets keep their rules.
+  const guide = levelDefinition.levelId === learningGuides.springFestivalCoupletGate.levelId
+    ? learningGuides.springFestivalCoupletGate : null;
+  const lessonStickers = guide ? guide.placements.map(item => {
+    const sticker = themeDefinition.stickers.find(sticker => sticker.stickerId === item.stickerId);
+    if (!sticker) throw new Error(`Missing guided lesson sticker: ${item.stickerId}`);
+    return sticker;
+  }) : themeDefinition.stickers;
   return {
     levelId: levelDefinition.levelId,
     themeId: themeDefinition.themeId,
     themeName: themeDefinition.themeName,
     name: levelDefinition.name,
     backgroundAssetUrl: `${MATERIAL_ASSET_ROOT}/${levelDefinition.backgroundFileName}`,
-    canvasBounds: { minX: 0, minY: 0, maxX: 1024, maxY: levelDefinition.height },
-    stickers: themeDefinition.stickers.map((item) => {
-      const currentPlacement = placements[item.stickerId];
+    canvasBounds: { minX: 0, minY: 0, maxX: guide?.width ?? 1024, maxY: guide?.height ?? levelDefinition.height },
+    stickers: lessonStickers.map((item, index) => {
+      const authored = guide?.placements.find(p => p.stickerId === item.stickerId);
+      const currentPlacement = authored ? placement(
+        { x: authored.x, y: authored.y, width: authored.width, height: authored.height, zIndex: index + 1 },
+        { minX: authored.x, minY: authored.y, maxX: authored.x + authored.width, maxY: authored.y + authored.height },
+        authored.tolerance,
+      ) : placements[item.stickerId];
       return {
         stickerId: item.stickerId,
         name: item.name,

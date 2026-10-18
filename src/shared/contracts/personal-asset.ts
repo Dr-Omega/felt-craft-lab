@@ -1,4 +1,5 @@
 import type { ResourceRef, UtcIso8601, Uuid } from './common'
+import type { ProvidedPsdEdit } from '../provided-psd'
 
 export const PERSONAL_ASSET_ROLES = ['core_pattern', 'element', 'background'] as const
 export type PersonalAssetRole = (typeof PERSONAL_ASSET_ROLES)[number]
@@ -27,4 +28,5 @@ export interface PersonalAssetVersionRecord {
   sourceImageRef: ResourceRef
   parentVersionId: Uuid | null
   createdAt: UtcIso8601
+  providedPsd?: ProvidedPsdEdit
 }

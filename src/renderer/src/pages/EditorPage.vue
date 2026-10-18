@@ -41,6 +41,10 @@ import ObjectQuickTools from '../components/editor/ObjectQuickTools.vue'
 import RemoveToast from '../components/editor/RemoveToast.vue'
 import { audioService } from '../services/audio.service'
 import ElementLayerEditor from '../components/projection/ElementLayerEditor.vue'
+import ProvidedPsdLayerEditor from '../components/projection/ProvidedPsdLayerEditor.vue'
+import type { ProvidedPsdEdit } from '@shared/provided-psd'
+import { loadProvidedPsdLayers } from '../projection/provided-psd-layers'
+import { originalPsdEdit, checkedPsdEdit, providedPsdName } from '../projection/provided-psd-artwork'
 import type { SceneBinding, LayerColors } from '@shared/fabrication-colors'
 import { persistCanvasRecolor, readCanvasRecolorLink, type CanvasRecolorLink } from '../fabrication/canvas-recolor'
 import { recolorLayers } from '../fabrication/recolor'
@@ -88,11 +92,13 @@ const oqtPosition = ref({ left: 0, top: 0, below: false })
 const oqtElement = ref<{ $el: HTMLElement } | null>(null)
 const removeToastOpen = ref(false)
 const layerEditor = shallowRef<{ input: Uint8Array; binding: SceneBinding | null; selection: EditorSelectionProjection; savedEdit?: CanvasRecolorLink; foregroundMode: ForegroundMode }>()
+const psdEditor = shallowRef<{ selection: EditorSelectionProjection; edit: ProvidedPsdEdit }>()
+const editingLayers = computed(() => Boolean(layerEditor.value || psdEditor.value))
 const layerAnchor = ref<ScreenBox>({ left: 0, top: 0, width: 0, height: 0 })
 
 function updateLayerAnchor(): void {
   const rect = canvasEl.value?.getBoundingClientRect()
-  const bounds = layerEditor.value?.selection.bounds
+  const bounds = (layerEditor.value ?? psdEditor.value)?.selection.bounds
   if (!rect || !bounds) return
   layerAnchor.value = { left: rect.left + bounds.left * rect.width / logicalCanvasWidth,
     top: rect.top + bounds.top * rect.height / logicalCanvasHeight,
@@ -100,7 +106,7 @@ function updateLayerAnchor(): void {
 }
 
 async function previewLayerColor(png: string): Promise<void> {
-  const current = layerEditor.value
+  const current = layerEditor.value ?? psdEditor.value
   if (!current || !session.value) return
   try { await session.value.previewElementImage(current.selection.objectId, png) }
   catch (e) { showFeedback(friendlyError(e), 'error') }
@@ -109,6 +115,16 @@ async function previewLayerColor(png: string): Promise<void> {
 function closeLayerEditor(): void {
   session.value?.clearElementPreview()
   layerEditor.value = undefined
+  psdEditor.value = undefined
+}
+
+async function applyPsdColor(png: string, edit: ProvidedPsdEdit): Promise<void> {
+  const current = psdEditor.value, service = session.value
+  if (!current || !service) throw new Error('元素编辑已关闭。')
+  const bytes = new Uint8Array(await (await fetch(png)).arrayBuffer())
+  const { asset, version } = await persistCanvasInput(bytes, providedPsdName(edit.sourceKey), launch!.scene.userId, 'hand_drawn',
+    checkedPsdEdit(edit), current.selection.kind === 'core_pattern' ? 'core_pattern' : 'element')
+  await service.replaceElementImage(current.selection.objectId, asset, version)
 }
 
 async function applyLayerColor(png: string, colors: LayerColors, jobId: string, sourceSha256: string): Promise<void> {
@@ -153,8 +169,27 @@ async function editElementLayers(): Promise<void> {
   busy.value = true
   try {
     const scene = session.value.prepareDraftSave()
+    const catalogObject = scene.objects.find(item => item.objectId === selection.objectId)
+    if (catalogObject) {
+      const sourceAsset = await createCatalogResolver().resolveAsset(catalogObject.assetId, scene.assetSnapshotId)
+      if (sourceAsset.preSplitDataUrl) {
+        const pack = await loadProvidedPsdLayers(sourceAsset)
+        if (!pack) throw new Error('PSD 图层缺失。')
+        psdEditor.value = { selection, edit: originalPsdEdit(pack) }
+        updateLayerAnchor(); closeTransientContexts()
+        return
+      }
+    }
     const personal = [...scene.personalElements, ...(scene.corePattern ? [scene.corePattern] : [])]
       .find(item => item.objectId === selection.objectId)
+    if (personal) {
+      const resolved = await createCatalogResolver().resolvePersonalAsset!(personal.personalAssetId, personal.versionId)
+      if (resolved.asset.userId !== scene.userId) throw new Error('PSD 素材不属于当前账号。')
+      if (resolved.version.providedPsd) {
+        psdEditor.value = { selection, edit: checkedPsdEdit(resolved.version.providedPsd) }
+        updateLayerAnchor(); closeTransientContexts(); return
+      }
+    }
     const savedEdit = personal ? readCanvasRecolorLink(personal.versionId) : undefined
     if (savedEdit && savedEdit.ownerUserId !== scene.userId) throw new Error('换色记录不属于当前用户。')
     // Saved recolors resume their bound job. Never split the recolored composite again.
@@ -173,12 +208,12 @@ async function editElementLayers(): Promise<void> {
   finally { busy.value = false }
 }
 
-async function insertCreationImage(bytes: Uint8Array, name: string, source: 'uploaded'|'ai_generated', foregroundMode: ForegroundMode = 'birefnet-general'): Promise<void> {
+async function insertCreationImage(bytes: Uint8Array, name: string, source: 'uploaded'|'ai_generated', foregroundMode: ForegroundMode = 'birefnet-general', providedPsd?: ProvidedPsdEdit): Promise<void> {
   const service = session.value
   if (!service || busy.value) throw new Error('画布尚未就绪，请稍后重试。')
   busy.value = true
   try {
-    const { asset, version } = await persistCanvasInput(bytes, name, launch!.scene.userId, source)
+    const { asset, version } = await persistCanvasInput(bytes, name, launch!.scene.userId, source, providedPsd ? checkedPsdEdit(providedPsd) : undefined)
     localStorage.setItem(`felt-foreground-mode:${version.versionId}`, foregroundMode)
     const objectId = await service.addPersonalElement(asset, version)
     inputDialogOpen.value = false
@@ -482,7 +517,7 @@ async function redo(): Promise<void> {
 }
 
 async function finish(): Promise<void> {
-  if (!session.value || busy.value || !canFinish.value || guidedTheme || layerEditor.value) return
+  if (!session.value || busy.value || !canFinish.value || guidedTheme || editingLayers.value) return
   closeOqt()
   busy.value = true
   try {
@@ -651,7 +686,7 @@ watch([oqtOpen, oqtSelection], () => { void nextTick(updateOqtPosition) })
 
 <template>
   <section class="editor-stage">
-    <DrawingFrame :task-mode="!!guidedTheme" :busy="busy" :can-undo="canUndo" :can-redo="canRedo" :can-save="canFinish && !guidedTheme && !layerEditor"
+    <DrawingFrame :task-mode="!!guidedTheme" :busy="busy" :can-undo="canUndo" :can-redo="canRedo" :can-save="canFinish && !guidedTheme && !editingLayers"
       :back-label="guidedTheme ? '返回学习主题' : launch?.returnTo === 'lobby' || launch?.mode === 'new' && !launch?.returnTo ? '返回游戏大厅' : '返回个人作品'"
       @back="requestBack" @undo="undo" @redo="redo" @save="finish">
       <div class="editor-frame-inner" @click.self="closeTransientContexts">
@@ -686,7 +721,7 @@ watch([oqtOpen, oqtSelection], () => { void nextTick(updateOqtPosition) })
       </div>
       <template v-if="!guidedTheme" #tools>
         <nav v-if="!inputDialogOpen" class="creation-art-tools" aria-label="创作工具">
-        <button class="hand-btn-primary" :disabled="busy || !canEdit || !!layerEditor" @click="inputDialogOpen = true" data-tour-id="tour-editor-add-image">添加图片</button>
+        <button class="hand-btn-primary" :disabled="busy || !canEdit || editingLayers" @click="inputDialogOpen = true" data-tour-id="tour-editor-add-image">添加图片</button>
         <button class="creation-art-control" aria-label="打开素材盒" data-tour-id="tour-editor-material" title="素材" :disabled="busy || !canEdit" @click="toggleSheet"><img :src="handDrawnAssets.btnRoundMaterial" alt="" /></button>
         <button class="creation-art-control creation-background-control" aria-label="打开背景选择" data-tour-id="tour-editor-background" title="背景" :aria-expanded="backgroundDrawerOpen" :disabled="busy || !canEdit" @click="toggleBackgroundDrawer"><img :src="handDrawnAssets.backgroundTrigger" alt="" /></button>
         <details v-if="!inputDialogOpen" class="creation-tools" :open="toolsOpen" @toggle="toolsOpen = ($event.target as HTMLDetailsElement).open">
@@ -740,6 +775,8 @@ watch([oqtOpen, oqtSelection], () => { void nextTick(updateOqtPosition) })
 
     <ElementLayerEditor v-if="layerEditor" :key="layerEditor.selection.objectId" :input="layerEditor.input" :binding="layerEditor.binding" :foreground-mode="layerEditor.foregroundMode"
       :anchor="layerAnchor" :saved-edit="layerEditor.savedEdit" :apply="applyLayerColor" @preview="previewLayerColor" @close="closeLayerEditor" />
+    <ProvidedPsdLayerEditor v-if="psdEditor" :key="psdEditor.selection.objectId" :edit="psdEditor.edit" :anchor="layerAnchor"
+      :apply="applyPsdColor" @preview="previewLayerColor" @close="closeLayerEditor" />
     <CreationInputDialog v-if="inputDialogOpen" :insert="insertCreationImage" @close="inputDialogOpen = false" />
 
     <ReturnSaveModal
