@@ -117,7 +117,8 @@ describe('Dexie V2 upgrade and personal asset stores', () => {
 
     const upgraded = createFeltCraftDatabase(name)
     await upgraded.open()
-    expect(FELT_PERSISTENCE_DB_VERSION).toBe(5)
+    expect(FELT_PERSISTENCE_DB_VERSION).toBe(6)
+    expect(await upgraded.table('blueprints').count()).toBe(0)
     expect(await upgraded.table('syncBackups').count()).toBe(0)
     expect(await upgraded.table('learningProgress').count()).toBe(0)
     expect(await upgraded.table('drafts').count()).toBe(1)

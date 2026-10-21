@@ -37,6 +37,8 @@ class PlazaPostRow:
     preview_filename: str
     created_at: str
     output_type: str = "collage"
+    story_title: str = ""
+    story_text: str = ""
 
 
 class PlazaDb:
@@ -92,6 +94,9 @@ class PlazaDb:
             post_columns = {row["name"] for row in conn.execute("PRAGMA table_info(plaza_posts)")}
             if "output_type" not in post_columns:
                 conn.execute("ALTER TABLE plaza_posts ADD COLUMN output_type TEXT NOT NULL DEFAULT 'collage'")
+            for column in ("story_title", "story_text"):
+                if column not in post_columns:
+                    conn.execute(f"ALTER TABLE plaza_posts ADD COLUMN {column} TEXT NOT NULL DEFAULT ''")
 
     def create_user(self, username: str, password_hash: str, role: str = "child") -> PlazaUserRow:
         user_id = f"user_{uuid.uuid4().hex}"
@@ -170,6 +175,8 @@ class PlazaDb:
         author_name: str,
         preview_filename: str,
         output_type: str = "collage",
+        story_title: str = "",
+        story_text: str = "",
     ) -> PlazaPostRow:
         post_id = f"post_{uuid.uuid4().hex}"
         created_at = _utc_now_iso()
@@ -178,8 +185,8 @@ class PlazaDb:
                 conn.execute(
                     """
                     INSERT INTO plaza_posts
-                      (post_id, user_id, project_id, title, author_name, preview_filename, created_at, output_type)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                      (post_id, user_id, project_id, title, author_name, preview_filename, created_at, output_type, story_title, story_text)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     (
                         post_id,
@@ -190,6 +197,8 @@ class PlazaDb:
                         preview_filename,
                         created_at,
                         output_type,
+                        story_title,
+                        story_text,
                     ),
                 )
             except sqlite3.IntegrityError as exc:
@@ -203,13 +212,15 @@ class PlazaDb:
             preview_filename=preview_filename,
             created_at=created_at,
             output_type=output_type,
+            story_title=story_title,
+            story_text=story_text,
         )
 
     def list_posts(self) -> list[PlazaPostRow]:
         with self._connect() as conn:
             rows = conn.execute(
                 """
-                SELECT post_id, user_id, project_id, title, author_name, preview_filename, created_at, output_type
+                SELECT *
                 FROM plaza_posts
                 ORDER BY datetime(created_at) DESC
                 """
@@ -224,6 +235,7 @@ class PlazaDb:
                 preview_filename=row["preview_filename"],
                 created_at=row["created_at"],
                 output_type=row["output_type"],
+                story_title=row["story_title"], story_text=row["story_text"],
             )
             for row in rows
         ]
@@ -232,7 +244,7 @@ class PlazaDb:
         with self._connect() as conn:
             row = conn.execute(
                 """
-                SELECT post_id, user_id, project_id, title, author_name, preview_filename, created_at, output_type
+                SELECT *
                 FROM plaza_posts WHERE post_id = ?
                 """,
                 (post_id,),
@@ -248,13 +260,14 @@ class PlazaDb:
             preview_filename=row["preview_filename"],
             created_at=row["created_at"],
             output_type=row["output_type"],
+            story_title=row["story_title"], story_text=row["story_text"],
         )
 
     def find_post_by_user_project(self, user_id: str, project_id: str) -> Optional[PlazaPostRow]:
         with self._connect() as conn:
             row = conn.execute(
                 """
-                SELECT post_id, user_id, project_id, title, author_name, preview_filename, created_at, output_type
+                SELECT *
                 FROM plaza_posts WHERE user_id = ? AND project_id = ?
                 """,
                 (user_id, project_id),
@@ -270,6 +283,7 @@ class PlazaDb:
             preview_filename=row["preview_filename"],
             created_at=row["created_at"],
             output_type=row["output_type"],
+            story_title=row["story_title"], story_text=row["story_text"],
         )
 
     def list_shared_project_ids_for_user(self, user_id: str) -> list[str]:

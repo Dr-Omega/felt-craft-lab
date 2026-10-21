@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { planCuttingPages, transformCuts, type CutPiece } from '../../src/renderer/src/projection/cutting-layout'
 import type { CuttingGeometry, CutPolygon } from '../../src/shared/cutting-pattern'
-import { defaultSubjectSizeChoice } from '../../src/renderer/src/projection/subject-size'
+import { choiceFromMetaphor, defaultSubjectSizeChoice } from '../../src/renderer/src/projection/subject-size'
 const rect = (x: number, y: number, w: number, h: number): CutPolygon => [[[x,y],[x+w,y],[x+w,y+h],[x,y+h],[x,y]]]
 const piece = (id: string, color: string, rings: CutPolygon, step = 1): CutPiece => ({ id, color, rings, step, element: 1 })
 const size = (mm: number) => ({ mode: 'metaphor' as const, targetLongEdgeMm: mm, label: 'test' })
@@ -74,10 +74,44 @@ describe('physical mixed-color cutting sheets', () => {
       expect(p.x+pw+6<=q.x+1e-8 || q.x+qw+6<=p.x+1e-8 || p.y+p.height+12<=q.y+1e-8 || q.y+q.height+12<=p.y+1e-8).toBe(true)
     }
   })
-  it('rejects oversize and invalid choices rather than silently shrinking a piece', () => {
-    expect(()=>planCuttingPages([piece('a','#123456',rect(0,0,1,1))],size(200))).toThrow('超过 A4')
+  it('caps book-size artwork to landscape A4 safe margins with one uniform scale', () => {
+    const plan=planCuttingPages([piece('a','#123456',rect(0,0,1302,858))],choiceFromMetaphor('book')!)
+    expect(plan.pages).toHaveLength(1);expect(plan.pages[0].landscape).toBe(true)
+    expect(plan.widthMm).toBeCloseTo(273);expect(plan.pages[0].pieces[0].width).toBeCloseTo(273)
+    expect(plan.pages[0].pieces[0].height).toBeCloseTo(858/1302*273)
+    expect(plan.pages[0].pieces[0].x).toBeCloseTo(12)
+  })
+  it('caps oversize artwork to one A4 with a shared scale, preserving holes and every material', () => {
+    const source=[piece('a','#123456',[...rect(0,0,100,100),...rect(40,40,20,20)]),piece('b','#FF0000',rect(10,10,10,10),2)]
+    const before=JSON.stringify(source),plan=planCuttingPages(source,size(400))
+    expect(plan.pages).toHaveLength(1)
+    expect(plan.scale).toBe(1.86);expect(plan.widthMm).toBe(186)
+    expect(plan.pages[0].pieces[0].rings).toHaveLength(2)
+    expect(plan.pages[0].pieces[0].width).toBe(186)
+    expect(plan.pages[0].pieces[1].width).toBeCloseTo(18.6)
+    expect(plan.pages[0].pieces[1].y).toBeGreaterThan(plan.pages[0].pieces[0].y+186+6)
+    expect(JSON.stringify(source)).toBe(before)
+  })
+  it('fits intact backgrounds on one A4 and rejects invalid sizes', () => {
+    const source={...piece('image','#FFFFFF',rect(0,0,100,100)),imageUrl:'data:image/png;base64,test'}
+    const plan=planCuttingPages([source],size(400))
+    expect(plan.pages).toHaveLength(1)
+    expect(plan.pages.every(p=>p.pieces[0].imageUrl===source.imageUrl)).toBe(true)
+    expect(planCuttingPages([source],size(100000)).widthMm).toBe(186)
     expect(()=>planCuttingPages([piece('a','#123456',rect(0,0,1,1))],size(NaN))).toThrow('尺寸无效')
     expect(()=>planCuttingPages([],size(80))).toThrow('没有可导出')
+  })
+  it('fits landscape, portrait and square book-size backgrounds to A4 without stretching or overflowing',()=>{
+    for(const [w,h] of [[1302,858],[858,1302],[100,100],[120,100]]){
+      const source={...piece('bg','#FFFFFF',rect(0,0,w,h)),backgroundFrame:{width:w,height:h}}
+      const plan=planCuttingPages([source],choiceFromMetaphor('book')!)
+      expect(plan.pages).toHaveLength(1)
+      const p=plan.pages[0],cut=p.pieces[0],pw=p.landscape?297:210,ph=p.landscape?210:297
+      expect(cut.width/cut.height).toBeCloseTo(w/h)
+      expect(cut.x).toBeGreaterThanOrEqual(12);expect(cut.y).toBeGreaterThanOrEqual(12)
+      expect(cut.x+cut.width).toBeLessThanOrEqual(pw-12+1e-7);expect(cut.y+cut.height+6).toBeLessThanOrEqual(ph-12+1e-7)
+      expect(Math.abs(cut.width-(pw-24))<1e-7||Math.abs(cut.height-(ph-30))<1e-7).toBe(true)
+    }
   })
   it('keeps holes and disconnected polygons, native centering, scene rotation, mirroring and recolors', () => {
     const g: CuttingGeometry = {resultSha256:'hash',sourceSha256:'source',width:100,height:100,pieces:[{id:'p',color:'#123456',step:2,polygons:[[...rect(10,10,10,10),...rect(12,12,4,4)],rect(40,40,5,5)]}]}

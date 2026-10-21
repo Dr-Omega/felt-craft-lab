@@ -9,15 +9,23 @@ import { assertSavedComposite, displayObjectOrder } from './work-display'
 import { transformCuts, type CutPiece } from '../projection/cutting-layout'
 import { loadProvidedPsdLayers } from '../projection/provided-psd-layers'
 import { originalPsdEdit, checkedPsdEdit, paintProvidedPsd, providedPsdGeometry } from '../projection/provided-psd-artwork'
+import { prepareBackgroundCuts } from './work-background-cutting'
+
+export interface WorkCuttingOptions { backgroundMode: 'layers' | 'image'; backgroundImage?: string }
 
 /** Read existing layered inputs only. PDF layout never starts or retries image decomposition. */
-export async function prepareWorkCuts(work: ProjectRecord, progress: (text: string) => void, signal: AbortSignal): Promise<CutPiece[]> {
+export async function prepareWorkCuts(work: ProjectRecord, progress: (text: string) => void, signal: AbortSignal, options?: WorkCuttingOptions): Promise<CutPiece[]> {
   const scene = work.scene, resolver = createCatalogResolver(), api = window.electronAPI.fabrication
   const pieces: CutPiece[] = []
   const check = () => { if (signal.aborted) throw new Error('已取消图纸准备。') }
   const objects = displayObjectOrder(scene)
   const firstElementNumber = artworkBackgroundColor(scene.canvas) || scene.personalBackground || scene.backgroundAssetId ? 2 : 1
-  if (!objects.length) throw new Error('没有可排版的前景素材。画布底色与场景背景不作为裁片。')
+  check()
+  if (options) {
+    progress('正在读取作品背景…')
+    pieces.push(...await prepareBackgroundCuts(work, options.backgroundMode, signal, options.backgroundImage))
+  }
+  if (!objects.length && !pieces.length) throw new Error('没有可排版的素材或作品背景。界面白底不作为图纸。')
   for (const [index, object] of objects.entries()) {
     check()
     // Authored PSD masks bypass every algorithm/job endpoint, including list/resume.

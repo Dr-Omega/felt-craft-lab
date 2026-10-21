@@ -53,6 +53,7 @@ describe('CreateAssetPage surface', () => {
     expect(page).toContain('candidateRef')
     expect(page).not.toContain('positiveText')
     expect(page).not.toContain('negativeText')
+    expect(page).not.toContain('演示模式')
   })
 
   it('places an accepted core into a new editor scene', () => {

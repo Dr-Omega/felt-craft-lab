@@ -26,6 +26,7 @@ try {
   foreach ($key in $allowed) {
     if (-not $settings[$key]) { throw "Missing desktop setting: $key" }
   }
+  if ($env:FELT_LOCAL_DEMO_PROFILE -eq '1') { $settings['FELT_AI_GATEWAY_BASE_URL'] = 'http://127.0.0.1:8789' }
   foreach ($key in @('FELT_FABRICATION_PYTHON','FELT_BACKGROUND_PYTHON','FELT_BIREFNET_CACHE')) {
     if (-not (Test-Path -LiteralPath $settings[$key])) { throw "Missing local runtime: $key" }
   }

@@ -27,6 +27,57 @@ def register(client, name):
     return response.json["result"]
 
 
+def test_shared_feed_story_reviews_and_unlike_do_not_duplicate_rewards(client):
+    author, reader = register(client, "storyAuthor"), register(client, "storyReader")
+    teacher = client.post('/api/plaza/auth/register', json={
+        'username': 'storyTeacher', 'password': 'testpass', 'role': 'art_teacher'
+    }).json['result']
+    auth = {'Authorization': 'Bearer ' + author['token']}
+    read = {'Authorization': 'Bearer ' + reader['token']}
+    teach = {'Authorization': 'Bearer ' + teacher['token']}
+    image = io.BytesIO()
+    Image.new('RGBA', (16,16), 'orange').save(image, format='PNG'); image.seek(0)
+    response = client.post('/api/plaza/posts', headers=auth, data={
+        'projectId': 'story-snapshot', 'title': '画面标题', 'storyTitle': '故事标题',
+        'storyText': '小兔把月饼送给朋友。', 'file': (image, 'preview.png')
+    })
+    assert response.status_code == 201
+    post = response.json['result']['post']; path = '/api/plaza/posts/' + post['postId']
+    listed = client.get('/api/plaza/posts', headers=read).json['result']['posts'][0]
+    assert listed['storyTitle'] == '故事标题' and listed['storyText'] == '小兔把月饼送给朋友。'
+    assert client.get(path).status_code == 401
+    assert client.get(path, headers=read).json['result']['post']['reviews'] == []
+    assert client.post(path+'/like', headers=read).json['result']['likeCount'] == 1
+    assert client.delete(path+'/like', headers=read).json['result']['likedByMe'] is False
+    assert client.delete(path+'/like', headers=read).json['result']['likeCount'] == 0
+    assert client.post(path+'/like', headers=read).json['result']['likeCount'] == 1
+    inbox = client.get('/api/rewards/inbox', headers=auth).json['result']['messages']
+    assert len(inbox) == 1
+    review = client.post(path+'/reviews', headers=teach, json={'score':9,'comment':'构图有层次。'})
+    assert review.status_code == 201
+    loaded = client.get(path, headers=read).json['result']['post']
+    assert loaded['reviewCount'] == 1
+    assert loaded['reviews'][0]['authorName'] == 'storyTeacher'
+    assert loaded['reviews'][0]['comment'] == '构图有层次。'
+    assert 'teacher_id' not in loaded['reviews'][0]
+    assert client.delete(path+'/like', headers=teach).status_code == 403
+    assert client.delete('/api/plaza/posts/by-project/story-snapshot', headers=read).status_code == 404
+
+
+def test_story_columns_migrate_existing_posts_without_inventing_content(tmp_path):
+    import sqlite3
+    from services.plaza_db import PlazaDb
+    path=tmp_path/'old-plaza.db'
+    with sqlite3.connect(path) as conn:
+        conn.execute('CREATE TABLE plaza_users (user_id TEXT PRIMARY KEY, username TEXT UNIQUE, password_hash TEXT, created_at TEXT, role TEXT)')
+        conn.execute("INSERT INTO plaza_users VALUES ('u','old','hash','2026-01-01','child')")
+        conn.execute('CREATE TABLE plaza_posts (post_id TEXT PRIMARY KEY,user_id TEXT,project_id TEXT,title TEXT,author_name TEXT,preview_filename TEXT,created_at TEXT,output_type TEXT)')
+        conn.execute("INSERT INTO plaza_posts VALUES ('p','u','w','旧作品','old','old.png','2026-01-01','collage')")
+    for _ in range(2):
+        post=PlazaDb(path).get_post('p')
+        assert post.title=='旧作品' and post.story_text=='' and post.story_title==''
+
+
 def test_account_publish_read_withdraw_and_owner_isolation(client):
     first, second = register(client, "accountA"), register(client, "accountB")
     auth = {"Authorization": "Bearer " + first["token"]}

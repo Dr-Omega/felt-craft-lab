@@ -1,5 +1,8 @@
 import 'fake-indexeddb/auto'
-import { describe, it, expect, vi } from 'vitest'
+import { afterEach, describe, it, expect, vi } from 'vitest'
+import { readFileSync } from 'node:fs'
+import * as artwork from '../../src/renderer/src/projection/provided-psd-artwork'
+import { persistCanvasInput } from '../../src/renderer/src/fabrication/canvas-intake'
 import { checkedPsdEdit, originalPsdEdit, providedPsdPack, psdLayerColors } from '../../src/renderer/src/projection/provided-psd-artwork'
 import { createFeltCraftDatabase, PersonalAssetVersionStore } from '../../src/renderer/src/persistence'
 import { validatePersonalAssetVersionRecord } from '../../src/shared/contracts/validation'
@@ -7,6 +10,7 @@ import { FELT_RESOURCE_REF_POLICY } from '../../src/shared/resource'
 import { isProvidedPsdDemoEnabled, ProvidedDemoController } from '../../src/renderer/src/services/provided-demo.controller'
 
 vi.mock('../../src/renderer/src/fabrication/canvas-intake', () => ({ persistCanvasInput: vi.fn() }))
+afterEach(() => { vi.useRealTimers(); vi.restoreAllMocks(); vi.unstubAllGlobals(); vi.mocked(persistCanvasInput).mockReset() })
 describe('provided PSD version bindings', () => {
   it('uses exactly the authored visible layers and original color for each', () => {
     for (const [key, count] of [['fuwa',8],['hongbao',3],['denglong',2],['jiaozi',2]] as const) {
@@ -43,6 +47,64 @@ describe('provided PSD version bindings', () => {
   })
 })
 describe('explicit provided-image demo', () => {
+  it('keeps the loading state for five seconds, blocks duplicate clicks and delays redraw too', async () => {
+    vi.useFakeTimers()
+    const image = vi.spyOn(artwork, 'psdImageDataUrl').mockResolvedValue('data:image/png;base64,demo')
+    const controller = new ProvidedDemoController()
+    await controller.acceptUtterance('福娃')
+    const generating = controller.confirmPlan()
+    expect(controller.busy).toBe(true)
+    expect(controller.busyHint).toBe('正在生成图片…')
+    await controller.confirmPlan()
+    expect(image).toHaveBeenCalledTimes(1)
+    await vi.advanceTimersByTimeAsync(4_999)
+    expect(controller.candidateRef).toBeNull()
+    expect(controller.busy).toBe(true)
+    await vi.advanceTimersByTimeAsync(1); await generating
+    expect(controller.phase).toBe('generated')
+    expect(controller.busy).toBe(false)
+    const redraw = controller.redrawCandidate()
+    expect(controller.candidateRef).toBeNull()
+    await vi.advanceTimersByTimeAsync(5_000); await redraw
+    expect(controller.candidateRef).toBe('data:image/png;base64,demo')
+  })
+  it('does not show a delayed result after leaving or resetting', async () => {
+    vi.useFakeTimers()
+    vi.spyOn(artwork, 'psdImageDataUrl').mockResolvedValue('data:image/png;base64,demo')
+    const controller = new ProvidedDemoController()
+    await controller.acceptUtterance('福娃')
+    const generating = controller.confirmPlan()
+    controller.dispose()
+    await vi.advanceTimersByTimeAsync(5_000); await generating
+    expect(controller.phase).toBe('idle')
+    expect(controller.candidateRef).toBeNull()
+    expect(controller.busy).toBe(false)
+  })
+  it('adopts the exact preview PNG with its eight PSD layers without fetching a data URL (production CSP)', async () => {
+    vi.useFakeTimers()
+    const pack = providedPsdPack('fuwa')
+    const png = readFileSync('assets/generated/' + pack.imageUrl.replace('felt-resource://', ''))
+    vi.spyOn(artwork, 'psdImageDataUrl').mockResolvedValue('data:image/png;base64,' + png.toString('base64'))
+    const fetchUnderCsp = vi.fn().mockRejectedValue(new TypeError('Failed to fetch'))
+    vi.stubGlobal('fetch', fetchUnderCsp)
+    const personalAssetId = crypto.randomUUID(), versionId = crypto.randomUUID(), createdAt = new Date().toISOString()
+    const providedPsd = originalPsdEdit(pack)
+    vi.mocked(persistCanvasInput).mockResolvedValue({
+      asset: { personalAssetId, currentVersionId: versionId, userId: 'user_demo_001', name: '福娃',
+        role: 'core_pattern', sourceType: 'ai_generated', createdAt, updatedAt: createdAt },
+      version: { personalAssetId, versionId, versionNumber: 1, parentVersionId: null, createdAt,
+        sourceImageRef: `felt-resource://personal/${personalAssetId}/${versionId}/source.png`, providedPsd }
+    })
+    const controller = new ProvidedDemoController()
+    await controller.acceptUtterance('一头牛')
+    const generating = controller.confirmPlan()
+    await vi.advanceTimersByTimeAsync(5_000); await generating; await controller.acceptCandidate()
+    expect(controller.error).toBeNull()
+    expect(controller.phase).toBe('accepted')
+    expect(fetchUnderCsp).not.toHaveBeenCalled()
+    expect(persistCanvasInput).toHaveBeenCalledWith(new Uint8Array(png), '福娃', 'user_demo_001', 'ai_generated', providedPsd, 'core_pattern')
+    expect(controller.accepted?.versionId).toBe(versionId)
+  })
   it('is off by default; only the explicit 1 flag enables it', () => {
     for (const value of [undefined, '', '0', 'true', true]) expect(isProvidedPsdDemoEnabled(value)).toBe(false)
     expect(isProvidedPsdDemoEnabled('1')).toBe(true)

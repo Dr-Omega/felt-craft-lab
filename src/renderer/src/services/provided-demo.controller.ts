@@ -3,6 +3,7 @@ import { CreationIntentController, planFromSpec } from './creation-intent.contro
 import { originalPsdEdit, providedPsdPack, psdImageDataUrl } from '../projection/provided-psd-artwork'
 import { persistCanvasInput } from '../fabrication/canvas-intake'
 import { getCurrentUserId } from './plaza-session'
+import { decodePngDataUrl } from './png-data-url'
 
 /** Explicit build/dev switch. Normal creation and all QA/ASR/TTS APIs are untouched. */
 export function isProvidedPsdDemoEnabled(value: unknown = import.meta.env.VITE_PROVIDED_PSD_DEMO): boolean { return value === '1' }
@@ -23,10 +24,15 @@ export class ProvidedDemoController extends CreationIntentController {
   override async confirmPlan(): Promise<void> {
     if (!this.sessionId || this.busy) return
     const token = this.epoch
-    this.busy = true; this.busyHint = '正在准备图片…'; this.error = null
+    this.busy = true; this.busyHint = '正在生成图片…'; this.error = null
+    this.candidateRef = null; this.accepted = null; this.phase = 'ready_to_confirm'
     try {
       const pack = providedPsdPack('fuwa')
-      const preview = await psdImageDataUrl(pack.imageUrl, pack.imageSha256)
+      // Demo pacing only: prepare in parallel, but never reveal a cached image before five seconds.
+      const [preview] = await Promise.all([
+        psdImageDataUrl(pack.imageUrl, pack.imageSha256),
+        new Promise<void>(resolve => setTimeout(resolve, 5_000))
+      ])
       if (token === this.epoch) { this.candidateRef = preview; this.phase = 'generated'; this.accepted = null; this.retryAction = null }
     } catch (cause) { if (token === this.epoch) { this.error = (cause as Error).message; this.retryAction = 'confirm' } }
     finally { if (token === this.epoch) { this.busy = false; this.busyHint = null } }
@@ -38,7 +44,7 @@ export class ProvidedDemoController extends CreationIntentController {
     const token = this.epoch
     this.busy = true; this.busyHint = '正在打开作品…'; this.error = null
     try {
-      const bytes = new Uint8Array(await (await fetch(this.candidateRef)).arrayBuffer())
+      const bytes = decodePngDataUrl(this.candidateRef)
       const { asset, version } = await persistCanvasInput(bytes, '福娃', getCurrentUserId(), 'ai_generated', originalPsdEdit(providedPsdPack('fuwa')), 'core_pattern')
       if (token === this.epoch) {
         this.accepted = { personalAssetId: asset.personalAssetId, versionId: version.versionId, sourceImageRef: version.sourceImageRef, name: '福娃', role: 'core_pattern' }

@@ -16,6 +16,14 @@ const context: StoryCardWorkContext = { workId: 'work', completionStatus: 'compl
   artworkImageRef: 'felt-resource://preview/work.png', background: null, subject: { name: '作品' }, stickers: [] }
 afterEach(() => { openLibrary(); vi.clearAllMocks() })
 describe('saved work navigation', () => {
+  it('opens the export surface directly from personal works and returns there without forcing a story page', async () => {
+    mocks.load.mockResolvedValue(validFeltProject())
+    await openSavedWork(validFeltProject().projectId, 'work-export', 'profile')
+    expect(getAppView()).toBe('work-display'); expect(getWorkDisplayEntry()).toBe('export')
+    expect(mocks.context).not.toHaveBeenCalled()
+    await returnFromSavedWork()
+    expect(getAppView()).toBe('profile')
+  })
   it('continues from story directly to explosion and returns through story to the saved editor', async () => {
     const work = validFeltProject()
     mocks.load.mockResolvedValue(work); mocks.context.mockResolvedValue(context)

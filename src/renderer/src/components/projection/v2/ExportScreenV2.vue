@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import LayoutPreviewCanvas from './LayoutPreviewCanvas.vue'
-import { exportV2Assets, exportV2HitAreas } from '../../../ui/export-v2-assets'
+import { exportV2Assets, exportV2HitAreas, exportFinishOffsetPercent } from '../../../ui/export-v2-assets'
 import { boxStyle, VIEWPORT_BOUNDS } from '../../../ui/stage-1920'
 import {
   SIZE_METAPHOR_OPTIONS,
@@ -76,7 +76,7 @@ function onConfirm(): void {
     </div>
 
     <img class="layer z-4" :src="exportV2Assets.btnExport" alt="" />
-    <img class="layer z-5" :src="exportV2Assets.btnFinish" alt="" />
+    <img class="layer z-5 finish-art" :src="exportV2Assets.btnFinish" :style="{ transform: `translateX(${exportFinishOffsetPercent}%)` }" alt="" />
 
     <template v-if="modalOpen">
       <img class="layer z-30" :src="exportV2Assets.exportModal" alt="" />

@@ -1,20 +1,23 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import type { PlazaPost } from '@shared/contracts/plaza'
 import type { RewardDashboard } from '@shared/contracts/rewards'
 import AuthArtboard from '../components/auth/AuthArtboard.vue'
-import PlazaPostDetailModal from '../components/plaza/PlazaPostDetailModal.vue'
+import PlazaFeed from '../components/plaza/PlazaFeed.vue'
 import { openLobby } from '../app-nav'
 import { loadPlazaSession } from '../services/plaza-session'
-import { listPlazaPosts, loadPlazaPreviewUrl } from '../services/plaza-api'
-import { loadRewardDashboard } from '../services/reward-api'
+import { getPlazaPost, listPlazaPosts, loadPlazaPreviewUrl, withdrawPlazaPost } from '../services/plaza-api'
+import { action, loadRewardDashboard, submitTeacherReview } from '../services/reward-api'
+import { showCenterToast } from '../composables/center-toast'
 import { rewardAssets } from '../ui/reward-assets'
-import { plazaV2Assets, plazaV2ContentSlotStyle, plazaV2FullLayerStyle, plazaV2HitBoxStyle } from '../ui/plaza-v2-assets'
+import { plazaV2Assets, plazaV2FullLayerStyle, plazaV2HitBoxStyle } from '../ui/plaza-v2-assets'
 
 const session = loadPlazaSession()
+const modalOpen = ref(false)
 const posts = ref<PlazaPost[]>([])
 const previews = ref<Record<string, string>>({})
-const detail = ref<PlazaPost | null>(null)
+const busyPostId = ref(''), detailLoading = ref(false), detailError = ref('')
+let active = true, detailRequest = 0, feedRequest = 0
 const loading = ref(false)
 const error = ref('')
 const dashboard = ref<RewardDashboard | null>(null)
@@ -26,29 +29,69 @@ const showWallet = computed(() => {
 })
 
 async function refresh(): Promise<void> {
-  if (!session) return
+  if (!session) { error.value='请先登录后查看分享作品。'; return }
+  const request = ++feedRequest
   loading.value = true
   error.value = ''
   try {
-    posts.value = await listPlazaPosts(session.token)
-    await Promise.all(posts.value.map(async (post) => {
+    const next = await listPlazaPosts(session.token)
+    if (!active || request !== feedRequest) return
+    posts.value = next
+    await Promise.all(next.map(async (post) => {
       try {
-        previews.value[post.postId] = await loadPlazaPreviewUrl(session.token, post.previewMediaPath)
+        if (previews.value[post.postId]) return
+        const url = await loadPlazaPreviewUrl(session.token, post.previewMediaPath)
+        if (!active || request !== feedRequest) { if (url.startsWith('blob:')) URL.revokeObjectURL(url); return }
+        previews.value[post.postId] = url
       } catch {
-        error.value = '部分作品图片未能加载，请重试。'
+        if(active && request===feedRequest) error.value = '部分作品图片未能加载，请重试。'
       }
     }))
   } catch (e) {
-    error.value = (e as Error)?.message || '分享广场加载失败。'
+    if(active && request===feedRequest) error.value = (e as Error)?.message || '分享广场加载失败。'
   } finally {
-    loading.value = false
+    if(active && request===feedRequest) loading.value = false
   }
 }
 
-function updateStats(stats: { postId: string; likeCount: number; likedByMe: boolean; reviewCount: number }): void {
-  const post = posts.value.find((item) => item.postId === stats.postId)
-  if (post) Object.assign(post, stats)
-  void refreshWallet()
+async function inspect(post: PlazaPost): Promise<void> {
+  if (!session) return
+  const request=++detailRequest
+  detailLoading.value=true;detailError.value=''
+  try {
+    const loaded=await getPlazaPost(session.token,post.postId)
+    if (!active || request!==detailRequest) return
+    const current=posts.value.find(item=>item.postId===post.postId)
+    if(current) Object.assign(current,{reviews:loaded.reviews??[],storyTitle:loaded.storyTitle,storyText:loaded.storyText})
+  } catch(error) {if(active&&request===detailRequest)detailError.value=(error as Error)?.message||'评论加载失败，请重试。'}
+  finally {if(active&&request===detailRequest)detailLoading.value=false}
+}
+async function like(post: PlazaPost): Promise<void> {
+  if(!session || busyPostId.value) return
+  busyPostId.value=post.postId
+  try {
+    const stats=await action<{likeCount:number;likedByMe:boolean;reviewCount:number}>(session.token,post.likedByMe?'unlike':'like',{postId:post.postId})
+    if(active)Object.assign(post,stats)
+  } catch(error) {showCenterToast((error as Error)?.message||'点赞没有完成，请重试。')}
+  finally {busyPostId.value=''}
+}
+async function review(post: PlazaPost, score:number, comment:string): Promise<void> {
+  if(!session || busyPostId.value) return
+  busyPostId.value=post.postId
+  try {
+    const result=await submitTeacherReview(session.token,{postId:post.postId,score,comment})
+    if(active){post.reviewCount++;await inspect(post);await refreshWallet();showCenterToast(`点评已提交，获得 ${result.teacherRewardCoins} 金币`)}
+  } catch(error) {showCenterToast((error as Error)?.message||'点评没有完成，请重试。')}
+  finally {busyPostId.value=''}
+}
+async function withdraw(post: PlazaPost): Promise<void> {
+  if(!session || busyPostId.value || post.userId!==session.user.userId) return
+  busyPostId.value=post.postId
+  try {
+    await withdrawPlazaPost(session.token,post.projectId)
+    if(active){posts.value=posts.value.filter(item=>item.postId!==post.postId);showCenterToast('已移除分享，本机作品保留')}
+  } catch(error) {showCenterToast((error as Error)?.message||'操作没有完成，请重试。')}
+  finally {busyPostId.value=''}
 }
 
 async function refreshWallet(): Promise<void> {
@@ -64,6 +107,7 @@ onMounted(() => {
   void refresh()
   void refreshWallet()
 })
+onUnmounted(()=>{active=false;feedRequest++;detailRequest++;Object.values(previews.value).forEach(url=>{if(url.startsWith('blob:'))URL.revokeObjectURL(url)})})
 </script>
 
 <template>
@@ -73,27 +117,12 @@ onMounted(() => {
     <img class="plaza-v2-layer plaza-v2-layer--frame" :style="plazaV2FullLayerStyle" :src="plazaV2Assets.showcaseFrame" alt="" aria-hidden="true" />
     <img class="plaza-v2-layer plaza-v2-layer--title" :style="plazaV2FullLayerStyle" :src="plazaV2Assets.titleBanner" alt="童创空间" />
 
-    <section class="plaza-v2-content-slot" :style="plazaV2ContentSlotStyle" aria-label="童创空间作品" data-tour-id="tour-plaza-public">
-      <p v-if="loading" role="status">正在加载分享作品…</p>
-      <p v-else-if="error" role="alert">{{ error }} <button class="hand-btn-secondary" @click="refresh">重试</button></p>
-      <p v-else-if="!posts.length">还没有人分享作品，来做第一个吧。</p>
-      <ul v-else class="plaza-grid">
-        <li v-for="post in posts" :key="post.postId">
-          <button type="button" class="plaza-card text-box-surface" @click="detail = post">
-            <div class="plaza-card__thumb">
-              <img v-if="previews[post.postId]" :src="previews[post.postId]" :alt="post.title" />
-            </div>
-            <div class="plaza-card__body">
-              <h3>{{ post.title }}</h3>
-              <p>{{ post.authorName }} · {{ post.likeCount }} 赞</p>
-            </div>
-          </button>
-        </li>
-      </ul>
-    </section>
+    <PlazaFeed :posts="posts" :previews="previews" :viewer="session?.user" :loading="loading" :error="error"
+      :busy-post-id="busyPostId" :detail-loading="detailLoading" :detail-error="detailError"
+      @retry="refresh" @inspect="inspect" @like="like" @review="review" @withdraw="withdraw" @modal-change="modalOpen=$event" />
 
     <img class="plaza-v2-layer plaza-v2-layer--back" :style="plazaV2FullLayerStyle" :src="plazaV2Assets.backButton" alt="" aria-hidden="true" />
-    <button type="button" class="plaza-v2-hit plaza-v2-hit--back" :style="backHit" aria-label="返回游戏大厅" @click="openLobby" />
+    <button type="button" class="plaza-v2-hit plaza-v2-hit--back" :style="backHit" :disabled="modalOpen" aria-label="返回游戏大厅" @click="openLobby" />
 
     <div v-if="showWallet" class="plaza-account" aria-label="账户余额">
       <span><img :src="rewardAssets.diamond" alt="钻石" /><strong>{{ wallet.diamonds }}</strong></span>
@@ -101,14 +130,6 @@ onMounted(() => {
     </div>
   </AuthArtboard>
 
-  <PlazaPostDetailModal
-    :post="detail"
-    :open="Boolean(detail)"
-    :preview-src="detail ? previews[detail.postId] || '' : ''"
-    :role="session?.user.role ?? 'child'"
-    @close="detail = null"
-    @updated="updateStats"
-  />
 </template>
 
 <style scoped>
@@ -140,62 +161,6 @@ onMounted(() => {
 }
 
 .plaza-v2-hit--back { z-index: 9; }
-
-.plaza-v2-content-slot {
-  position: absolute;
-  z-index: 6;
-  overflow-x: hidden;
-  overflow-y: auto;
-  padding: 18px 22px 12px;
-  background: transparent;
-  font-size: 1.05rem;
-  text-align: center;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(89, 71, 56, 0.35) transparent;
-}
-
-.plaza-v2-content-slot::-webkit-scrollbar { width: 10px; }
-.plaza-v2-content-slot::-webkit-scrollbar-thumb {
-  background: rgba(89, 71, 56, 0.28);
-  border-radius: 999px;
-}
-
-.plaza-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 18px;
-  margin: 0;
-  padding: 4px 2px 12px;
-  list-style: none;
-  text-align: left;
-}
-
-.plaza-card {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  padding: 12px;
-  border: 0;
-  text-align: left;
-  cursor: pointer;
-}
-
-.plaza-card__thumb {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  aspect-ratio: 4 / 3;
-  margin-bottom: 12px;
-  border-radius: 12px;
-  overflow: hidden;
-  background: rgba(255, 255, 255, 0.5);
-}
-
-.plaza-card__thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
 
 .plaza-account {
   position: absolute;

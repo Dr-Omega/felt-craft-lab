@@ -3,9 +3,13 @@
 from __future__ import annotations
 
 import json
+import hashlib
+import logging
 import os
 import re
 import time
+import uuid
+from pathlib import Path
 from typing import Any, Optional
 
 import requests
@@ -18,6 +22,12 @@ MAX_WORK_ID_CHARS = 128
 MAX_TITLE_CHARS = 80
 MAX_STORY_CHARS = 2000
 MAX_ELEMENT_NAME_CHARS = 80
+STORY_REWRITE_REVISION = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+_log = logging.getLogger('felt.story_rewrite')
+if not _log.handlers:
+    _log.addHandler(logging.StreamHandler())
+_log.setLevel(logging.INFO)
+_log.propagate = False
 
 
 def _story_key() -> str:
@@ -115,7 +125,21 @@ def _build_system_prompt(context: dict[str, Any]) -> str:
 """
 
 
-def rewrite_story(*, work_id: Any, text: Any, context: Any) -> dict[str, Any]:
+def rewrite_story(*, work_id: Any, text: Any, context: Any, request_id: Any = None) -> dict[str, Any]:
+    trace_id = str(request_id) if isinstance(request_id, str) and re.fullmatch(r'[0-9a-fA-F-]{36}', request_id) else str(uuid.uuid4())
+    started = time.perf_counter()
+
+    def trace(stage: str, *, failed: bool = False, status: Optional[int] = None) -> None:
+        record = {'event': 'story_rewrite', 'requestId': trace_id, 'stage': stage,
+                  'elapsedMs': int((time.perf_counter() - started) * 1000)}
+        if status is not None:
+            record['upstreamStatus'] = status
+        (_log.warning if failed else _log.info)(json.dumps(record))
+
+    def failure(code: str, message: str, stage: str, *, retryable: bool = True) -> dict[str, Any]:
+        trace(stage, failed=True)
+        return fail(code=code, message=message, request_id=trace_id, retryable=retryable)
+
     safe_work_id = _clean_text(work_id, MAX_WORK_ID_CHARS)
     max_input = int(os.getenv("AI_MAX_STORY_CHARS", "3000"))
     safe_text = _clean_text(text, max_input + 1)
@@ -145,33 +169,38 @@ def rewrite_story(*, work_id: Any, text: Any, context: Any) -> dict[str, Any]:
         "max_tokens": 700,
     }
     try:
-        started = time.perf_counter()
+        trace('upstream_request')
         response = requests.post(
             f"{base_url}/chat/completions",
             headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
             json=payload,
             timeout=45,
         )
-        _ = int((time.perf_counter() - started) * 1000)
+        trace('upstream_response', status=response.status_code)
+    except requests.ConnectTimeout:
+        return failure('QA_TIMEOUT', '故事服务连接超时，请重试；已输入的文字仍保留。', 'connect_timeout')
+    except requests.ReadTimeout:
+        return failure('QA_TIMEOUT', '故事整理等待超时，请重试；已输入的文字仍保留。', 'read_timeout')
     except requests.Timeout:
-        return fail(code="QA_TIMEOUT")
+        return failure('QA_TIMEOUT', '故事整理超时，请重试；已输入的文字仍保留。', 'upstream_timeout')
     except requests.RequestException:
-        return fail(code="QA_NETWORK_ERROR")
+        return failure('QA_NETWORK_ERROR', '暂时无法连接故事服务，请稍后重试。', 'network_error')
 
     try:
         body = response.json()
     except ValueError:
-        return fail(code="QA_UPSTREAM_ERROR")
+        return failure('QA_UPSTREAM_ERROR', '故事服务返回的结果无效，请重试。', 'invalid_response')
     if response.status_code >= 400:
-        return fail(code="QA_UPSTREAM_ERROR", retryable=response.status_code >= 500)
+        return failure('QA_UPSTREAM_ERROR', '故事服务暂时未完成整理，请稍后重试。', 'upstream_error', retryable=response.status_code >= 500)
 
     try:
         content = body["choices"][0]["message"]["content"]
     except (KeyError, IndexError, TypeError):
-        return fail(code="QA_UPSTREAM_ERROR")
+        return failure('QA_UPSTREAM_ERROR', '故事服务返回的结果无效，请重试。', 'missing_content')
     draft = _extract_json(content)
     if not draft:
-        return fail(code="QA_UPSTREAM_ERROR")
+        return failure('QA_UPSTREAM_ERROR', '故事服务返回的结果无效，请重试。', 'invalid_draft')
+    trace(draft['status'])
     if draft["status"] == "needs_more_input":
         return ok(
             {

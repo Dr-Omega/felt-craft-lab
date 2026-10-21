@@ -22,7 +22,12 @@ export interface PlazaPost {
   likeCount: number
   likedByMe: boolean
   reviewCount: number
+  storyTitle?: string
+  storyText?: string
+  reviews?: PlazaReview[]
 }
+
+export interface PlazaReview { reviewId: string; authorName: string; score: number; comment: string; createdAt: string }
 
 export interface PlazaAuthResult {
   token: string

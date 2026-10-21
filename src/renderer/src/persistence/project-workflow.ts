@@ -187,9 +187,10 @@ export async function deleteExistingProject(
 
   try {
     const db = options.db ?? getFeltCraftDatabase()
-    await db.transaction('rw', db.projects, db.storyCards, async () => {
+    await db.transaction('rw', db.projects, db.storyCards, db.blueprints, async () => {
       await store.delete(projectId)
       await db.storyCards.delete(projectId)
+      await db.blueprints.delete(projectId)
     })
   } catch (error) {
     // Dexie failed — preview must remain.

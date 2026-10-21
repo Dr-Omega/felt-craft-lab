@@ -6,7 +6,7 @@ import { defaultSubjectSizeChoice } from '../../src/renderer/src/projection/subj
 const doc = vi.hoisted(() => ({
   addPage: vi.fn(), addImage: vi.fn(), setFillColor: vi.fn(), setDrawColor: vi.fn(), setLineWidth: vi.fn(), rect: vi.fn(),
   setFontSize: vi.fn(), setTextColor: vi.fn(), text: vi.fn(), lines: vi.fn(), fillStrokeEvenOdd: vi.fn(), line: vi.fn(),
-  output: vi.fn(() => new Blob(['pdf'], { type: 'application/pdf' }))
+  viewerPreferences:vi.fn(),output: vi.fn(() => new Blob(['pdf'], { type: 'application/pdf' }))
 }))
 vi.mock('jspdf', () => ({ jsPDF: class { constructor() { return doc } } }))
 vi.mock('../../src/renderer/src/projection/pdf-text-image', () => ({

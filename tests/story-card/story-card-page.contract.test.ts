@@ -5,6 +5,12 @@ import { describe, expect, it } from 'vitest'
 const page = readFileSync(resolve('src/renderer/src/pages/StoryCardPage.vue'), 'utf8')
 
 describe('StoryCardPage contract', () => {
+  it('submits only visible editable text, never re-appends a hidden recording transcript', () => {
+    expect(page).not.toContain('transcript.value +')
+    expect(page).not.toContain('recognized?.ok ? recognized.transcript.text')
+    expect(page).toContain('await prepareRecordingText(')
+    expect(page).toContain('text: supplementText.value.trim()')
+  })
   it('does not overlay extra follow-up questions on the supplied artwork', () => {
     expect(page).not.toContain('draft.followUpQuestions.join')
     expect(page).not.toContain('question-text')
