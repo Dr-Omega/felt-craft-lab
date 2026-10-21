@@ -63,6 +63,8 @@ export default defineConfig(({ mode, command }) => {
       }
     },
     renderer: {
+      // Separate browser origin prevents Demo login/local works replacing formal state.
+      ...(process.env.VITE_PROVIDED_PSD_DEMO === '1' ? { server: { port: 5175, strictPort: true } } : {}),
       build: {
         rollupOptions: {
           input: rendererInput

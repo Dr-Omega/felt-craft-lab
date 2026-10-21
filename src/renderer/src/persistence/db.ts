@@ -9,13 +9,15 @@ import type {
 } from '@shared/contracts'
 import type { FavoriteRecord } from './favorites'
 import type { LearningCompletion } from '@shared/learning'
+import type { BlueprintRecord } from './blueprints'
 
 export const FELT_PERSISTENCE_DB_NAME = 'felt-craft-lab'
-export const FELT_PERSISTENCE_DB_VERSION = 5
+export const FELT_PERSISTENCE_DB_VERSION = 6
 
 export type FeltCraftDatabase = Dexie & {
   learningProgress: Table<LearningCompletion, [string, string, string]>
   storyCards: Table<StoryCard, string>
+  blueprints: Table<BlueprintRecord, string>
   drafts: Table<DraftRecord, string>
   projects: Table<ProjectRecord, string>
   assetAccess: Table<AssetAccessState, [string, string]>
@@ -42,7 +44,8 @@ export function createFeltCraftDatabase(name = FELT_PERSISTENCE_DB_NAME): FeltCr
   })
   db.version(3).stores({ storyCards: 'workId, confirmedAt' })
   db.version(4).stores({ learningProgress: '[userId+assetSnapshotId+themeId], userId, themeId' })
-  db.version(FELT_PERSISTENCE_DB_VERSION).stores({ syncBackups: '++id,userId,createdAt' })
+  db.version(5).stores({ syncBackups: '++id,userId,createdAt' })
+  db.version(FELT_PERSISTENCE_DB_VERSION).stores({ blueprints: 'projectId,userId,exportedAt' })
   return db
 }
 

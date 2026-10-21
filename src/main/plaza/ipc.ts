@@ -170,6 +170,8 @@ export function registerPlazaIpc(roots: ResourceRoots): void {
       title,
       previewBytes: Buffer.from(preview.bytes),
       outputType,
+      storyTitle: typeof input.storyTitle === 'string' ? input.storyTitle : '',
+      storyText: typeof input.storyText === 'string' ? input.storyText : '',
       isPackaged: packaged
     })
     return mapGatewayBody(published)
@@ -221,6 +223,7 @@ export function registerPlazaIpc(roots: ResourceRoots): void {
       'inbox',
       'claim',
       'like',
+      'unlike',
       'review',
       'convert',
       'recharge',

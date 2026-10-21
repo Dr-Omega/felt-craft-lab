@@ -191,7 +191,6 @@ async function restartVoice(): Promise<void> { recorder.cancel(); clearTimeout(v
   <section ref="pageRoot" class="create-page" aria-label="生成作品">
     <header class="section-head">
       <h2>{{ compiled ? '看看这张图' : controller.hasPlan && !inputVisible ? '确认绘画内容' : '想画什么？' }}</h2>
-      <small v-if="demoMode" class="demo-label">演示模式</small>
       <button class="help-toggle" type="button" :aria-expanded="helpOpen" @click="helpOpen = !helpOpen">{{ helpOpen ? '返回创作' : '怎么用' }}</button>
     </header>
     <div class="actions">

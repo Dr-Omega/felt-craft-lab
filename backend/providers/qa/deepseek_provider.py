@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import os
 import re
 import time
 from typing import Any
+from pathlib import Path
 
 import requests
 
@@ -17,6 +19,8 @@ from .base import QaProvider
 
 DEFAULT_BASE = "https://api.deepseek.com"
 MODEL = "deepseek-chat"
+# Capture at import time: health must report the loaded code, not newly edited files.
+QA_PERSONA_REVISION = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
 
 REJECT_PATTERNS = [
     r"自杀",

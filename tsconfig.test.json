@@ -19,6 +19,7 @@
     "src/renderer/src/services/**/*",
     "src/renderer/src/persistence/**/*",
     "src/renderer/src/catalog/**/*",
+    "src/renderer/src/demo/**/*",
     "src/renderer/src/util/**/*",
     "src/renderer/src/app-nav.ts",
     "src/renderer/src/env.d.ts",

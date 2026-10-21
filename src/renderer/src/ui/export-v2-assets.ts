@@ -25,9 +25,12 @@ export const exportV2Assets = {
 export const exportV2HitAreas = {
   back: { left: 39, top: 35, width: 208, height: 112 },
   exportToggle: { left: 1726, top: 431, width: 117, height: 216 },
-  finish: { left: 956, top: 938, width: 375, height: 122 },
+  finish: { left: 772.5, top: 938, width: 375, height: 122 },
   modalSpecific: { left: 703, top: 517, width: 150, height: 91 },
   modalOptional: { left: 844, top: 517, width: 150, height: 91 },
   modalField: { left: 701, top: 603, width: 584, height: 199 },
   modalConfirm: { left: 870, top: 798, width: 300, height: 84 }
 } as const
+
+// Move the unmodified full-artboard button layer together with its hit area.
+export const exportFinishOffsetPercent = (772.5 - 956) / 1920 * 100

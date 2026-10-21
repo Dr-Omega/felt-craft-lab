@@ -133,6 +133,8 @@ const electronAPI = {
       ipcRenderer.invoke(IPC_CHANNELS.PLAZA_ONBOARDING_COMPLETE, input),
     listPosts: (input: { token: string }): Promise<PlazaIpcResult<unknown>> =>
       ipcRenderer.invoke(IPC_CHANNELS.PLAZA_LIST_POSTS, input),
+    getPost: (input: { token: string; postId: string }): Promise<PlazaIpcResult<unknown>> =>
+      ipcRenderer.invoke(IPC_CHANNELS.PLAZA_GET_POST, input),
     mySharedProjectIds: (input: { token: string }): Promise<PlazaIpcResult<unknown>> =>
       ipcRenderer.invoke(IPC_CHANNELS.PLAZA_MY_PROJECT_IDS, input),
     publish: (input: {
@@ -141,6 +143,8 @@ const electronAPI = {
       title: string
       previewRef: string
       outputType?: 'collage' | 'story'
+      storyTitle?: string
+      storyText?: string
     }): Promise<PlazaIpcResult<unknown>> => ipcRenderer.invoke(IPC_CHANNELS.PLAZA_PUBLISH, input),
     withdraw: (input: { token: string; projectId: string }): Promise<PlazaIpcResult<unknown>> =>
       ipcRenderer.invoke(IPC_CHANNELS.PLAZA_WITHDRAW, input),

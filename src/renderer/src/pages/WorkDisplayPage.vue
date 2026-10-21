@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, shallowRef } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue'
 import { getSavedWork, getWorkDisplayEntry, returnFromSavedWork } from '../app-nav'
 import { buildWorkDisplay, type WorkDisplay } from '../workflows/work-display'
 import Stage1920 from '../components/projection/v2/Stage1920.vue'
@@ -7,6 +7,9 @@ import ExplodeScreenV2 from '../components/projection/v2/ExplodeScreenV2.vue'
 import ExportScreenV2 from '../components/projection/v2/ExportScreenV2.vue'
 import { defaultSubjectSizeChoice, type SubjectSizeChoice } from '../projection/subject-size'
 import { exportCuttingPdf } from '../projection/cutting-pdf'
+import { buildAssemblyGuide } from '../projection/assembly-guide'
+import { BlueprintStore } from '../persistence/blueprints'
+import { cuttingPageThumbnail } from '../projection/cutting-thumbnail'
 import { planCuttingPages, type CutPiece } from '../projection/cutting-layout'
 import { prepareWorkCuts } from '../workflows/work-cutting'
 import CuttingPreview from '../components/projection/v2/CuttingPreview.vue'
@@ -26,6 +29,7 @@ const exporting = ref(false)
 const cuts = shallowRef<CutPiece[]>([])
 const preparing = ref(false)
 const progress = ref('')
+let preparationGeneration = 0
 const plan = computed(() => {
   if (!cuts.value.length) return undefined
   try { return planCuttingPages(cuts.value, subjectSize.value) } catch { return undefined }
@@ -33,17 +37,27 @@ const plan = computed(() => {
 async function prepareCuts() {
   if (!work || preparing.value) return
   preparing.value = true; error.value = ''
-  try { cuts.value = await prepareWorkCuts(work, text => { progress.value = text }, controller.signal) }
+  const generation = preparationGeneration
+  try {
+    const prepared = await prepareWorkCuts(work, text => { progress.value = text }, controller.signal, {
+      backgroundMode: includeBackground.value ? 'layers' : 'image',
+      backgroundImage: display.value?.layers.find(layer => layer.background)?.image
+    })
+    if (generation === preparationGeneration && !controller.signal.aborted) cuts.value = prepared
+  }
   catch (cause) { if (!controller.signal.aborted) error.value = (cause as Error).message }
   finally { preparing.value = false; progress.value = '' }
 }
 async function downloadPdf(choice: SubjectSizeChoice) {
-  if (!work || exporting.value || !cuts.value.length) return
+  if (!work || !display.value || exporting.value || !cuts.value.length) return
   exporting.value = true; error.value = ''
   try {
     const next = planCuttingPages(cuts.value, choice)
     subjectSize.value = choice
-    const blob = await exportCuttingPdf(next, work.projectName)
+    const guide = buildAssemblyGuide(cuts.value, display.value)
+    const blob = await exportCuttingPdf(next, work.projectName, guide)
+    await new BlueprintStore().save(work, { pdf:blob, thumbnail:await cuttingPageThumbnail(next.pages[0]),
+      size:choice, backgroundMode:includeBackground.value ? 'layers' : 'image' })
     const url = URL.createObjectURL(blob), anchor = document.createElement('a')
     anchor.href = url; anchor.download = `${work.projectName.replace(/[\\/:*?"<>|]/g, '_')}-彩色裁片图纸.pdf`; anchor.click()
     setTimeout(() => URL.revokeObjectURL(url), 30000)
@@ -53,6 +67,7 @@ async function downloadPdf(choice: SubjectSizeChoice) {
 const step = ref(0)
 const explode = ref(35)
 const includeBackground = ref(true)
+watch(includeBackground, () => { preparationGeneration++; cuts.value = []; error.value = '' })
 const controller = new AbortController()
 const layers = computed(() => (display.value?.layers ?? [])
   .filter(layer => includeBackground.value || !layer.background)
@@ -69,6 +84,12 @@ onMounted(async () => {
     if (controller.signal.aborted) return
     display.value = result
     step.value = result.layers.length - 1
+    if (entryScreen === 'export') {
+      const saved = await new BlueprintStore().getForWork(work)
+      if (saved) { includeBackground.value = saved.backgroundMode === 'layers'; subjectSize.value = saved.size }
+      await nextTick()
+      await prepareCuts()
+    }
   } catch (cause) {
     if (!controller.signal.aborted) error.value = cause instanceof Error ? cause.message : String(cause)
   } finally { loading.value = false }
@@ -90,16 +111,13 @@ onUnmounted(() => controller.abort())
           <template #preview>
             <CuttingPreview v-if="plan" :plan="plan" />
             <div v-else class="cut-preparation">
-              <h2>按现有图层排版图纸</h2>
-              <p>A4 纸张 · 图层混色排版 · 放不下自动续页</p>
-              <p>同一元素按制作层序集中排列，所有裁片保持统一比例。</p>
               <p v-if="preparing" role="status">{{ progress || '正在准备裁片…' }}</p>
               <button class="hand-btn-primary" :disabled="preparing" @click="prepareCuts">{{ preparing ? '正在准备…' : error ? '重试准备裁片' : '准备图纸排版' }}</button>
             </div>
           </template>
         </ExportScreenV2>
       </Stage1920>
-      <p v-if="error || exporting || screen === 'export'" class="export-notice" :role="error ? 'alert' : 'status'">{{ error || (exporting ? '正在生成 PDF……' : '按 100% 实际大小打印；编号为“元素层序-内部制作层序”。图纸尚未完成实物制作验证。') }}</p>
+      <p v-if="error || exporting" class="export-notice" :role="error ? 'alert' : 'status'">{{ error || '正在生成 PDF……' }}</p>
     </template>
     <template v-else>
       <header><button class="hand-icon-btn hand-icon-btn--back" aria-label="返回作品" @click="back"><img :src="handDrawnAssets.btnBack" alt="" /></button><h1>{{ work?.projectName }} · 展示</h1>

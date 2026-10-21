@@ -446,12 +446,16 @@ class RewardSystem:
                 raise RewardError("ALREADY_LIKED", "已经点过赞了。", 409) from exc
             config = self._config(conn)
             reward = int(config["likeRewardCoins"])
+            # Unlike/re-like must never create a second reward for the same pair.
             conn.execute(
                 """
                 INSERT INTO reward_inbox
                   (message_id, user_id, message_type, title, body, reward_coins, status,
                    source_user_id, source_name, post_id, created_at)
-                VALUES (?, ?, 'like', ?, ?, ?, 'unclaimed', ?, ?, ?, ?)
+                SELECT ?, ?, 'like', ?, ?, ?, 'unclaimed', ?, ?, ?, ?
+                WHERE NOT EXISTS (
+                  SELECT 1 FROM reward_inbox WHERE post_id = ? AND source_user_id = ? AND message_type = 'like'
+                )
                 """,
                 (
                     _new_id("msg"),
@@ -463,9 +467,28 @@ class RewardSystem:
                     user.username,
                     post.post_id,
                     _utc_now_iso(),
+                    post.post_id,
+                    user.user_id,
                 ),
             )
         return self.post_stats(user.user_id, post.post_id)
+
+    def unlike_post(self, user: PlazaUserRow, post: PlazaPostRow) -> dict[str, Any]:
+        if user.role not in LIKE_ROLES:
+            raise RewardError("FORBIDDEN", "只有儿童或家长可以点赞。", 403)
+        with self._connect() as conn:
+            conn.execute("DELETE FROM plaza_likes WHERE post_id = ? AND user_id = ?", (post.post_id, user.user_id))
+        return self.post_stats(user.user_id, post.post_id)
+
+    def list_post_reviews(self, post_id: str) -> list[dict[str, Any]]:
+        with self._connect() as conn:
+            rows = conn.execute(
+                """SELECT r.review_id, u.username, r.score, r.comment, r.created_at
+                   FROM teacher_reviews r JOIN plaza_users u ON u.user_id = r.teacher_id
+                   WHERE r.post_id = ? ORDER BY r.created_at DESC, r.review_id DESC""", (post_id,)
+            ).fetchall()
+        return [{"reviewId": row["review_id"], "authorName": row["username"], "score": row["score"],
+                 "comment": row["comment"], "createdAt": row["created_at"]} for row in rows]
 
     def list_inbox(self, user: PlazaUserRow) -> list[dict[str, Any]]:
         if user.role != "child":

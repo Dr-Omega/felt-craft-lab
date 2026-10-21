@@ -14,7 +14,7 @@ type IpcFail = { ok: false; error: SharedError }
 const browserRewardsEnabled = (): boolean => !window.electronAPI?.rewards
 
 async function browserRewardAction<T>(token: string, name: RewardAction, payload: Record<string, unknown>): Promise<T> {
-  const routes: Record<RewardAction, { path: string; method: 'GET' | 'POST' | 'PUT' }> = {
+  const routes: Record<RewardAction, { path: string; method: 'GET' | 'POST' | 'PUT' | 'DELETE' }> = {
     paymentCapabilities: { path: '/api/payments/capabilities', method: 'GET' },
     paymentCreate: { path: '/api/payments/orders', method: 'POST' },
     paymentQuery: { path: `/api/payments/orders/${encodeURIComponent(String(payload.orderId || ''))}`, method: 'GET' },
@@ -23,6 +23,7 @@ async function browserRewardAction<T>(token: string, name: RewardAction, payload
     inbox: { path: '/api/rewards/inbox', method: 'GET' },
     claim: { path: `/api/rewards/inbox/${encodeURIComponent(String(payload.messageId ?? ''))}/claim`, method: 'POST' },
     like: { path: `/api/plaza/posts/${encodeURIComponent(String(payload.postId ?? ''))}/like`, method: 'POST' },
+    unlike: { path: `/api/plaza/posts/${encodeURIComponent(String(payload.postId ?? ''))}/like`, method: 'DELETE' },
     review: { path: `/api/plaza/posts/${encodeURIComponent(String(payload.postId ?? ''))}/reviews`, method: 'POST' },
     convert: { path: '/api/rewards/convert', method: 'POST' },
     recharge: { path: '/api/rewards/recharge', method: 'POST' },

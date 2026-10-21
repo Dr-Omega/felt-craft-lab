@@ -1,6 +1,7 @@
 import { toSharedError, type SharedError } from '@shared/contracts/error'
 import { resolveAiGatewayBaseUrlResult } from './gateway-config'
 import { readResponseTextBounded } from './read-response-bounded'
+import { randomUUID } from 'node:crypto'
 
 const DEFAULT_TIMEOUT_MS = 60_000
 /** Cap Gateway response body while streaming (covers oversized TTS audioBase64 envelopes). */
@@ -372,12 +373,21 @@ export async function gatewayStoryRewrite(input: {
   isPackaged?: boolean
   auth?: GatewayAuth
 }): Promise<GatewayJsonResult> {
-  return gatewayJson('/api/story/rewrite', {
+  const requestId = randomUUID(), started = Date.now()
+  console.info('[story-rewrite]', JSON.stringify({ requestId, stage: 'gateway_request' }))
+  const response = await gatewayJson('/api/story/rewrite', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'X-Felt-Request-Id': requestId },
     body: JSON.stringify({ workId: input.workId, text: input.text, context: input.context }),
     signal: input.signal,
     isPackaged: input.isPackaged,
     auth: input.auth
   })
+  console.info('[story-rewrite]', JSON.stringify({ requestId, stage: response.ok ? 'gateway_response' : 'gateway_error',
+    elapsedMs: Date.now() - started, ...(response.ok ? { status: response.status } : { code: response.error.code }) }))
+  if (!response.ok) {
+    return { ...response, error: { ...response.error, requestId,
+      ...(response.error.code === 'QA_TIMEOUT' ? { message: '故事整理等待超时，请重试；已输入的文字仍保留。' } : {}) } }
+  }
+  return response
 }

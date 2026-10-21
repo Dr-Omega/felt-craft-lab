@@ -3,6 +3,7 @@ No AI routes or demo seed are imported; current app providers remain unchanged.
 """
 from __future__ import annotations
 import os
+import hashlib
 from pathlib import Path
 from flask import Blueprint, jsonify, request, send_from_directory
 from services.shared_error_map import fail
@@ -24,6 +25,10 @@ from services.workspace_sync import WorkspaceSync
 
 app = Blueprint("plaza", __name__)
 BASE_DIR = Path(__file__).resolve().parent.parent
+PLAZA_UI_REVISION = hashlib.sha256(':'.join(
+    hashlib.sha256((BASE_DIR / 'services' / name).read_bytes()).hexdigest()
+    for name in ('plaza_routes.py', 'plaza_db.py', 'plaza_posts.py', 'reward_system.py')
+).encode()).hexdigest()
 IMAGE_UPLOAD_DIR = Path(os.getenv("PLAZA_UPLOAD_DIR", str(BASE_DIR / "data" / "uploads")))
 PLAZA_DB = PlazaDb(Path(os.environ["PLAZA_DB_PATH"]) if os.getenv("PLAZA_DB_PATH") else None)
 REWARD_SYSTEM = RewardSystem(PLAZA_DB.db_path)
@@ -231,6 +236,7 @@ def plaza_get_post(post_id: str):
         return _json_fail("INVALID_ARGUMENT", 404)
     public_post = post_public_dict(post)
     public_post.update(REWARD_SYSTEM.post_stats(user.user_id, post.post_id))
+    public_post["reviews"] = REWARD_SYSTEM.list_post_reviews(post.post_id)
     return _json_ok({"result": {"post": public_post}})
 
 
@@ -259,6 +265,8 @@ def plaza_publish_post():
             preview_mime=preview.mimetype,
             upload_root=IMAGE_UPLOAD_DIR,
             output_type=output_type,
+            story_title=request.form.get("storyTitle", ""),
+            story_text=request.form.get("storyText", ""),
         )
     except ValueError as exc:
         code = str(exc)
@@ -314,6 +322,20 @@ def plaza_like_post(post_id: str):
     except RewardError as exc:
         return _reward_fail(exc)
     return _json_ok({"result": result}, 201)
+
+
+@app.delete("/api/plaza/posts/<post_id>/like")
+def plaza_unlike_post(post_id: str):
+    user, err = _require_plaza_user()
+    if err:
+        return err
+    post = PLAZA_DB.get_post((post_id or "").strip())
+    if not post:
+        return _json_fail("INVALID_ARGUMENT", 404)
+    try:
+        return _json_ok({"result": REWARD_SYSTEM.unlike_post(user, post)})
+    except RewardError as exc:
+        return _reward_fail(exc)
 
 
 @app.post("/api/plaza/posts/<post_id>/reviews")

@@ -1,6 +1,7 @@
 import type { PersonalAssetRecord, PersonalAssetVersionRecord } from '@shared/contracts'
 import type { LayerColors, SceneBinding } from '@shared/fabrication-colors'
 import { getFeltCraftDatabase, PersonalAssetStore, PersonalAssetVersionStore } from '../persistence'
+import { decodePngDataUrl } from '../services/png-data-url'
 
 export interface CanvasRecolorLink {
   versionId: string; jobId: string; sourceSha256: string; binding: SceneBinding | null; colors: LayerColors; ownerUserId: string
@@ -14,10 +15,8 @@ export function readCanvasRecolorLink(versionId: string): CanvasRecolorLink | un
 }
 /** Reuse existing immutable Personal Asset ingestion and Scene version pins. Never overwrite catalog images. */
 export async function persistCanvasRecolor(png: string, link: Omit<CanvasRecolorLink, 'versionId'>, role: 'element' | 'core_pattern') {
-  const match = /^data:image\/png;base64,([A-Za-z0-9+/=]+)$/.exec(png)
-  if (!match) throw new Error('换色结果必须为 PNG。')
+  const pngBytes = decodePngDataUrl(png)
   const personalAssetId = crypto.randomUUID(), versionId = crypto.randomUUID(), now = new Date().toISOString()
-  const pngBytes = Uint8Array.from(atob(match[1]), value => value.charCodeAt(0))
   const sourceImageRef = await window.electronAPI.ingestPersonalAssetPng({ personalAssetId, versionId, pngBytes })
   const version: PersonalAssetVersionRecord = { versionId, personalAssetId, versionNumber: 1, sourceImageRef, parentVersionId: null, createdAt: now }
   const asset: PersonalAssetRecord = { personalAssetId, currentVersionId: versionId, userId: link.ownerUserId,

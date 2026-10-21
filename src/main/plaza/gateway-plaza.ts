@@ -94,6 +94,8 @@ export async function plazaPublishPost(input: {
   title: string
   previewBytes: Buffer
   outputType?: 'collage' | 'story'
+  storyTitle?: string
+  storyText?: string
   isPackaged?: boolean
 }): Promise<GatewayJsonResult> {
   const form = new FormData()
@@ -102,6 +104,8 @@ export async function plazaPublishPost(input: {
   form.append('projectId', input.projectId)
   form.append('title', input.title)
   form.append('outputType', input.outputType ?? 'collage')
+  form.append('storyTitle', input.storyTitle ?? '')
+  form.append('storyText', input.storyText ?? '')
   return gatewayJson('/api/plaza/posts', {
     method: 'POST',
     body: form,

@@ -2,13 +2,13 @@ import { describe, expect, it } from 'vitest'
 import { StoryRewriteRuleValidator } from '../../src/renderer/src/story-card/story-rewrite-rules.service'
 
 describe('StoryRewriteRuleValidator', () => {
-  it('does not require English for Chinese input, but checks recorded English as part of combined input', () => {
+  it('does not impose English word retention as a hard gate to reviewing a story', () => {
     const validator = new StoryRewriteRuleValidator()
     const draft = { workId: 'work-zh', status: 'ready_for_review' as const,
       suggestedTitle: '月饼', suggestedStoryText: '我想吃月饼，和妈妈一起过中秋节。' }
     expect(validator.validate('我想吃月饼，和妈妈一起过中秋节。', draft).status).toBe('ready_for_review')
     expect(validator.validate('I like mooncake.\n我想吃月饼，和妈妈一起过中秋节。', draft)).toMatchObject({
-      status: 'failed', error: { message: '故事整理结果没有保留孩子表达中的英文词。' }
+      status: 'ready_for_review'
     })
   })
   it('accepts cleaned Chinese, English, and mixed-language candidate drafts without translating English words', () => {
@@ -29,7 +29,7 @@ describe('StoryRewriteRuleValidator', () => {
     })
   })
 
-  it('blocks candidate drafts that retain oral fillers or remove English words from the child input', () => {
+  it('blocks oral fillers but leaves language fidelity for the editable candidate review', () => {
     const validator = new StoryRewriteRuleValidator()
 
     expect(
@@ -47,7 +47,7 @@ describe('StoryRewriteRuleValidator', () => {
         suggestedTitle: '兔子的花园',
         suggestedStoryText: '我的兔子在花园找朋友。'
       })
-    ).toMatchObject({ status: 'failed', error: { code: 'QA_BLOCKED', retryable: false } })
+    ).toMatchObject({ status: 'ready_for_review' })
   })
 
   it('replaces the confirmed child-unfriendly person labels without adding new story facts', () => {

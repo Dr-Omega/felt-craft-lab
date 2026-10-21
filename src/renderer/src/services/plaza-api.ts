@@ -157,12 +157,21 @@ export async function listMySharedProjectIds(token: string): Promise<string[]> {
   return result.projectIds ?? []
 }
 
+export async function getPlazaPost(token: string, postId: string): Promise<PlazaPost> {
+  const result = browserPlazaEnabled()
+    ? await browserPlazaRequest<{ post: PlazaPost }>(`/api/plaza/posts/${encodeURIComponent(postId)}`, { headers: { Authorization: `Bearer ${token}` } })
+    : await invoke<{ post: PlazaPost }>(getPlazaApi().getPost({ token, postId }))
+  return result.post
+}
+
 export async function publishPlazaPost(input: {
   token: string
   projectId: string
   title: string
   previewRef: string
   outputType?: 'collage' | 'story'
+  storyTitle?: string
+  storyText?: string
 }): Promise<PlazaPost> {
   if (browserPlazaEnabled()) {
     throw { code: 'UNKNOWN', message: '浏览器预览暂不支持发布作品，请使用桌面应用。', retryable: false } satisfies SharedError

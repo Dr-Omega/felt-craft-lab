@@ -21,6 +21,8 @@ def post_public_dict(post: PlazaPostRow) -> dict[str, Any]:
         "createdAt": post.created_at,
         "userId": post.user_id,
         "outputType": post.output_type,
+        "storyTitle": post.story_title,
+        "storyText": post.story_text,
     }
 
 
@@ -52,6 +54,8 @@ def publish_post(
     preview_mime: str | None,
     upload_root: Path,
     output_type: str = "collage",
+    story_title: str = "",
+    story_text: str = "",
 ) -> PlazaPostRow:
     project_id = (project_id or "").strip()
     title = (title or "").strip()
@@ -63,6 +67,8 @@ def publish_post(
         raise ValueError("TITLE_TOO_LONG")
     if output_type not in {"collage", "story"}:
         raise ValueError("INVALID_OUTPUT_TYPE")
+    if not isinstance(story_title, str) or not isinstance(story_text, str) or len(story_title) > 80 or len(story_text) > 2000:
+        raise ValueError("INVALID_STORY")
 
     try:
         stored_name = save_plaza_preview(
@@ -82,6 +88,7 @@ def publish_post(
             author_name=author_name,
             preview_filename=stored_name,
             output_type=output_type,
+            story_title=story_title.strip(), story_text=story_text.strip(),
         )
     except ValueError:
         raise

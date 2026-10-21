@@ -26,6 +26,9 @@ export async function plazaRewardAction(input: {
   isPackaged?: boolean
 }): Promise<GatewayJsonResult> {
   const { token, action, payload, isPackaged } = input
+  if (action === 'unlike') return gatewayJson(`/api/plaza/posts/${encodeURIComponent(String(payload.postId || ''))}/like`, {
+    method: 'DELETE', plazaUserToken: token, isPackaged
+  })
   if (action === 'saveRoom') return jsonRequest('/api/rewards/bear/room', 'PUT', token, payload, isPackaged)
   if (action === 'paymentCapabilities') return gatewayJson('/api/payments/capabilities', { method: 'GET', plazaUserToken: token, isPackaged })
   if (action === 'paymentCreate') return jsonRequest('/api/payments/orders', 'POST', token, payload, isPackaged)

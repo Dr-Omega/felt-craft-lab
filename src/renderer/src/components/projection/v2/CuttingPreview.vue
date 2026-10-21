@@ -53,7 +53,10 @@ const preview = computed(() => {
     <svg :viewBox="`0 0 ${VIEWPORT_BOUNDS.width} ${VIEWPORT_BOUNDS.height}`" role="img" :aria-label="`${preview.layers.length} 个制作图层，按元素和制作层序排列`">
       <g :transform="preview.transform">
         <g v-for="layer in preview.layers" :key="cuttingLabel(layer)" class="cutting-preview__layer" :transform="`translate(${layer.x} ${layer.y})`">
-          <path v-for="piece in layer.pieces" :key="piece.id" :d="cutPath(piece)" :fill="piece.color" fill-rule="evenodd" stroke="#111" stroke-width="0.2" />
+          <template v-for="piece in layer.pieces" :key="piece.id">
+            <image v-if="piece.imageUrl" :href="piece.imageUrl" :x="piece.x" :y="piece.y" :width="piece.width" :height="piece.height" />
+            <path v-else :d="cutPath(piece)" :fill="piece.color" fill-rule="evenodd" stroke="#111" stroke-width="0.2" />
+          </template>
           <text x="0" :y="layer.height + 5" font-size="4.2" fill="currentColor">{{ cuttingLabel(layer) }}</text>
         </g>
       </g>

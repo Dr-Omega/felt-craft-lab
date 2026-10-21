@@ -54,6 +54,13 @@ def load_configuration():
         if os.environ.get(key) != expected:
             raise SystemExit(f"Unexpected provider setting: {key}; local real-service profile required.")
     os.environ["ALLOW_SIMULATED_RECHARGE"] = "false"
+    # Demo accounts and simulated community records never share formal storage.
+    if os.environ.get("FELT_LOCAL_DEMO_PROFILE") == "1":
+        demo_data = ROOT / "tmp" / "demo-data"
+        demo_data.mkdir(parents=True, exist_ok=True)
+        os.environ["PLAZA_DB_PATH"] = str(demo_data / "plaza.db")
+        os.environ["PLAZA_UPLOAD_DIR"] = str(demo_data / "uploads")
+        os.environ["PORT"] = "8789"
     sys.path.insert(0, str(BACKEND))
 
 
@@ -64,6 +71,7 @@ def check():
     ready = lambda key: bool(os.environ.get(key, "").strip())
     print(json.dumps({
         "mode": "local-real-services-no-mock",
+        "demoStorage": os.environ.get("FELT_LOCAL_DEMO_PROFILE") == "1",
         "qwenAsrKeyPresent": ready("QWEN_ASR_API_KEY") or ready("DASHSCOPE_API_KEY"),
         "storyKeyPresent": any(ready(k) for k in ("QWEN_STORY_API_KEY", "QWEN_ASR_API_KEY", "DASHSCOPE_API_KEY")),
         "deepseekKeyPresent": ready("DEEPSEEK_API_KEY"),

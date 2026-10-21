@@ -19,7 +19,6 @@ import { decideStoryCardContentUpdate, type StoryCardContentUpdateChoice } from 
 import { syncStoryCardArtworkImage } from '../story-card/story-card-artwork-sync.service'
 import { processFullRerecording } from '../story-card/full-rerecording-flow.service'
 import { confirmPartialSupplement, processPartialSupplement } from '../story-card/partial-supplement-flow.service'
-import { adaptManualTextSupplement } from '../story-card/manual-text-input.adapter'
 import { adaptPartialSupplementInput } from '../story-card/partial-supplement-input.adapter'
 import {
   confirmTemporaryFullStoryCardRecording,
@@ -47,7 +46,6 @@ const recordingState = ref<RecordingSessionState>('not_started')
 const durationMs = ref(0)
 const fullRecording = ref<TemporaryFullRecordingInput>()
 const partialRecording = ref<TemporaryPartialSupplementInput>()
-const transcript = ref('')
 const supplementText = ref('')
 const draft = ref<StoryCardDraft>()
 const editTitle = ref('')
@@ -56,6 +54,7 @@ const confirmedCard = ref<StoryCard>()
 const busy = ref(false)
 const errorMessage = ref('')
 const speechFailed = ref(false)
+const recognizing = ref(false)
 const notice = ref('')
 const confirmLeave = ref(false)
 const audioElement = ref<HTMLAudioElement>()
@@ -278,7 +277,6 @@ async function startRecording(replace = false): Promise<void> {
     recordingState.value = session.state
     if (replace) {
       durationMs.value = 0
-      transcript.value = ''
       supplementText.value = ''
       draft.value = undefined
     }
@@ -348,20 +346,14 @@ async function finishRecording(): Promise<void> {
       const previous = partialRecording.value?.audioRef
       partialRecording.value = partial.request
       if (previous) await deleteTemporaryStoryCardRecording(previous)
-      phase.value = 'processing'
-      await processStory()
     } else {
       const previous = fullRecording.value?.audioRef
       fullRecording.value = recorded
       if (previous) await deleteTemporaryStoryCardRecording(previous)
-      if (purpose.value === 'full-update') {
-        phase.value = 'processing'
-        await processStory()
-      } else {
-        phase.value = 'supplement'
-      }
     }
     releaseStream()
+    phase.value = 'supplement'
+    await prepareRecordingText(purpose.value === 'partial-update' ? partialRecording.value! : recorded)
   } catch (error) {
     errorMessage.value = messageFor(error)
   } finally {
@@ -369,15 +361,38 @@ async function finishRecording(): Promise<void> {
   }
 }
 
-async function processStory(textOnly = false): Promise<void> {
+/** Recognition populates the existing editable box once. It is never a hidden submit source. */
+async function prepareRecordingText(recording: TemporaryFullRecordingInput | TemporaryPartialSupplementInput): Promise<void> {
+  recognizing.value = true
+  notice.value = '正在识别录音…'
+  supplementText.value = purpose.value === 'partial-update' ? confirmedCard.value?.storyText ?? '' : ''
+  try {
+    const recognized = await speech.transcribe(recording)
+    if (!recognized.ok) {
+      speechFailed.value = true
+      errorMessage.value = recognized.error.message
+      return
+    }
+    supplementText.value = [supplementText.value, recognized.transcript.text].filter(text => text.trim()).join('\n')
+    speechFailed.value = false
+  } catch (error) {
+    speechFailed.value = true
+    errorMessage.value = messageFor(error)
+  } finally {
+    recognizing.value = false
+    notice.value = ''
+  }
+}
+
+async function processStory(): Promise<void> {
   const context = props.workContext
-  if (!context || busy.value && phase.value !== 'processing') return
+  if (!context || busy.value) return
   const returnPhase = phase.value === 'insufficient' ? 'insufficient' : 'supplement'
   busy.value = true
   phase.value = 'processing'
   errorMessage.value = ''
   try {
-    if (textOnly && !supplementText.value.trim()) throw new Error('请先输入完整的故事内容。')
+    if (!supplementText.value.trim()) throw new Error('请先输入完整的故事内容。')
     let result: StoryCardDraft
     if (purpose.value === 'partial-update') {
       const partial = partialRecording.value
@@ -388,14 +403,9 @@ async function processStory(textOnly = false): Promise<void> {
         store,
         {
           process: async () => {
-            const recognized = textOnly ? null : await speech.transcribe(partial)
-            if (recognized && !recognized.ok) {
-              speechFailed.value = true
-              return { workId: context.workId, status: 'failed', error: recognized.error }
-            }
             return processor.processTranscript({
               workId: context.workId,
-              text: current.storyText + '\n' + (recognized?.ok ? recognized.transcript.text : '') + '\n' + supplementText.value.trim(),
+              text: supplementText.value.trim(),
               context
             })
           }
@@ -404,31 +414,13 @@ async function processStory(textOnly = false): Promise<void> {
     } else {
       const full = fullRecording.value
       if (!full) throw new Error('请先完成一段录音。')
-      if (!textOnly && !transcript.value) {
-        const recognized = await speech.transcribe(full)
-        if (!recognized.ok) {
-          speechFailed.value = true
-          result = { workId: context.workId, status: 'failed', error: recognized.error }
-          showDraft(result)
-          phase.value = returnPhase
-          return
-        }
-        transcript.value = recognized.transcript.text
-      }
-      const extra = supplementText.value.trim()
-      if (extra) {
-        const manual = adaptManualTextSupplement({ workId: context.workId, text: extra, fullRecording: full })
-        if (!manual.ok) throw new Error(manual.error.message)
-      }
-      // Explicit text-only choice after ASR failure: do not silently discard recorded speech.
-      const text = textOnly ? extra : transcript.value + (extra ? '\n' + extra : '')
       result = purpose.value === 'full-update'
         ? await processFullRerecording(
           { recording: full, context },
           store,
-          { process: () => processor.processTranscript({ workId: context.workId, text, context }) }
+          { process: () => processor.processTranscript({ workId: context.workId, text: supplementText.value.trim(), context }) }
         )
-        : await processor.processTranscript({ workId: context.workId, text, context })
+        : await processor.processTranscript({ workId: context.workId, text: supplementText.value.trim(), context })
     }
     showDraft(result)
     if (phase.value === 'processing') phase.value = returnPhase
@@ -504,7 +496,6 @@ function chooseUpdate(choice: StoryCardContentUpdateChoice): void {
   session = new RecordingSession()
   recordingState.value = session.state
   durationMs.value = 0
-  transcript.value = ''
   supplementText.value = ''
   speechFailed.value = false
   fullRecording.value = undefined
@@ -621,15 +612,15 @@ onUnmounted(() => {
           v-model="supplementText"
           class="layer-input supplement-input"
           :style="box(610, 465, 670, 190, 8.2)"
-          placeholder="还想补充什么？写在这里"
+          placeholder="在这里修改或补充故事内容"
           aria-label="故事补充内容"
           :disabled="busy"
         />
         <button class="added-button supplement-rerecord" :style="box(620, 704, 300, 82, 9.2)" :disabled="busy" @click="startRecording(true)">
           重新录音
         </button>
-        <button class="added-button supplement-submit" :style="box(980, 704, 300, 82, 9.2)" :disabled="busy || (speechFailed && !supplementText.trim())" @click="processStory(speechFailed)">
-          {{ busy ? '正在生成…' : speechFailed ? '仅用文字生成' : '生成故事' }}
+        <button class="added-button supplement-submit" :style="box(980, 704, 300, 82, 9.2)" :disabled="busy || (speechFailed && !supplementText.trim())" @click="processStory()">
+          {{ busy ? (recognizing ? '正在识别…' : '正在生成…') : speechFailed ? '仅用文字生成' : '生成故事' }}
         </button>
         <p v-if="speechFailed" class="feedback" :style="box(940, 800, 390, 100, 9.2)">识别未完成，请输入完整故事。录音仍保留。</p>
       </template>

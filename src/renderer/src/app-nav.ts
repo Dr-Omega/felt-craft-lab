@@ -54,7 +54,7 @@ let launch: EditorLaunchContext | undefined
 let savedWork: ProjectRecord | undefined
 let storyContext: StoryCardWorkContext | undefined
 let workReturn: 'library' | 'editor' | 'profile' = 'library'
-let workDisplayEntry: 'picture' | 'explode' = 'picture'
+let workDisplayEntry: 'picture' | 'explode' | 'export' = 'picture'
 let navigationGeneration = 0
 const listeners = new Set<() => void>()
 
@@ -152,11 +152,11 @@ export function openEditor(context: EditorLaunchContext): void {
 
 export function getSavedWork(): ProjectRecord | undefined { return savedWork }
 export function getStoryCardContext(): StoryCardWorkContext | undefined { return storyContext }
-export function getWorkDisplayEntry(): 'picture' | 'explode' { return workDisplayEntry }
+export function getWorkDisplayEntry(): 'picture' | 'explode' | 'export' { return workDisplayEntry }
 
 /** Load first, navigate only after success. Missing/deleted work never opens a stale page. */
 export async function openSavedWork(
-  projectId: string, target: 'story-card' | 'work-display' | 'work-explode', back: 'library' | 'editor' | 'profile' = 'library'
+  projectId: string, target: 'story-card' | 'work-display' | 'work-explode' | 'work-export', back: 'library' | 'editor' | 'profile' = 'library'
 ): Promise<void> {
   const generation = ++navigationGeneration
   const work = await loadSavedWork(projectId)
@@ -165,8 +165,8 @@ export async function openSavedWork(
   savedWork = work
   storyContext = context
   workReturn = back
-  workDisplayEntry = target === 'work-explode' ? 'explode' : 'picture'
-  currentView = target === 'work-explode' ? 'work-display' : target
+  workDisplayEntry = target === 'work-export' ? 'export' : target === 'work-explode' ? 'explode' : 'picture'
+  currentView = target === 'work-explode' || target === 'work-export' ? 'work-display' : target
   notify()
 }
 

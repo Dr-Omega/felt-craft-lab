@@ -19,7 +19,7 @@ export interface SizeMetaphorOption {
 export const SIZE_METAPHOR_OPTIONS: SizeMetaphorOption[] = [
   { id: 'egg', label: '一个鸡蛋', longEdgeCm: 6 },
   { id: 'apple', label: '一个苹果', longEdgeCm: 8 },
-  { id: 'book', label: '一本书', longEdgeCm: 21 }
+  { id: 'book', label: '一本书', longEdgeCm: 29.7 }
 ]
 
 const CM_TO_MM = 10

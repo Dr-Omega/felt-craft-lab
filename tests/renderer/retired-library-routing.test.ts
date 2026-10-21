@@ -13,7 +13,9 @@ describe('approved UI route consolidation', () => {
   })
   it('retains old work and material capabilities at the new entry points', () => {
     const profile = read('pages/PersonalCenterPage.vue')
-    for (const feature of ['deleteExistingProject', 'DraftStore', "'story-card'", "'work-display'", 'returnFilter: filter.value', '确定删除']) expect(profile).toContain(feature)
+    for (const feature of ['deleteExistingProject', 'DraftStore', "'story-card'", "'work-export'", 'returnFilter: filter.value', '确定删除']) expect(profile).toContain(feature)
+    // The old display entry was explicitly hidden; direct paper export remains available.
+    expect(profile).not.toContain('查看图层展示')
     for (const surface of ['MaterialSheet', 'BackgroundDrawer']) expect(read(`components/editor/${surface}.vue`)).toContain('<AssetFavoriteButton')
   })
 })

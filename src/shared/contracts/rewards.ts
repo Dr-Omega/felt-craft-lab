@@ -7,6 +7,7 @@ export type RewardAction =
   | 'inbox'
   | 'claim'
   | 'like'
+  | 'unlike'
   | 'review'
   | 'convert'
   | 'recharge'

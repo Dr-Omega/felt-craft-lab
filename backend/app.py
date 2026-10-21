@@ -45,6 +45,7 @@ from services.guards import (
 )
 from services.ops_rules import ops_rules_doc
 from services.qa_service import QaService, UnknownQaProvider
+from providers.qa.deepseek_provider import QA_PERSONA_REVISION
 from services.intent_service import IntentService, UnknownIntentProvider
 from services.qa_types import QA_ERROR_CODES
 from services.qa_history import valid_qa_history
@@ -55,7 +56,7 @@ from services.session_auth import (
     session_secret_status,
     verify_session_token,
 )
-from services.story_rewrite_service import rewrite_story
+from services.story_rewrite_service import rewrite_story, STORY_REWRITE_REVISION
 from services.shared_error_map import fail
 from services.tts_cache import prune_tts_cache
 from services.tts_service import TtsService, UnknownTtsProvider
@@ -76,7 +77,7 @@ _MAX_CONTENT_LENGTH = int(os.getenv("AI_MAX_CONTENT_LENGTH", str(MAX_AUDIO_BYTES
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = _MAX_CONTENT_LENGTH
 
-from services.plaza_routes import app as plaza_routes
+from services.plaza_routes import app as plaza_routes, PLAZA_UI_REVISION
 app.register_blueprint(plaza_routes)
 
 # JSON audioUrl is not a general client feature — only allowlisted smoke sample.
@@ -217,6 +218,10 @@ def health():
             "ok": True,
             "service": "felt-craft-lab-ai-proxy",
             "version": "review-fix-2",
+            "qaPersonaRevision": QA_PERSONA_REVISION,
+            "storyRewriteRevision": STORY_REWRITE_REVISION,
+            "plazaUiRevision": PLAZA_UI_REVISION,
+            "localDemoProfile": os.environ.get("FELT_LOCAL_DEMO_PROFILE") == "1",
             "env": env,
             "devMode": is_dev_mode(),
             "keysConfigured": {
@@ -575,6 +580,7 @@ def story_rewrite():
                 work_id=data.get("workId"),
                 text=data.get("text"),
                 context=data.get("context"),
+                request_id=request.headers.get('X-Felt-Request-Id'),
             )
             return jsonify(result), (200 if result.get("ok") else 502)
     except TimeoutError:

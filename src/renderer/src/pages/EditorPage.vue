@@ -51,6 +51,7 @@ import { recolorLayers } from '../fabrication/recolor'
 import type { ScreenBox } from '../fabrication/panel-placement'
 import CreationInputDialog from '../components/editor/CreationInputDialog.vue'
 import { persistCanvasInput } from '../fabrication/canvas-intake'
+import { decodePngDataUrl } from '../services/png-data-url'
 import { readPersonalElementInput } from '../fabrication/element-input'
 import { sameElementSource } from '@shared/fabrication-task-identity'
 import type { ForegroundMode } from '@shared/fabrication-desktop'
@@ -121,7 +122,7 @@ function closeLayerEditor(): void {
 async function applyPsdColor(png: string, edit: ProvidedPsdEdit): Promise<void> {
   const current = psdEditor.value, service = session.value
   if (!current || !service) throw new Error('元素编辑已关闭。')
-  const bytes = new Uint8Array(await (await fetch(png)).arrayBuffer())
+  const bytes = decodePngDataUrl(png)
   const { asset, version } = await persistCanvasInput(bytes, providedPsdName(edit.sourceKey), launch!.scene.userId, 'hand_drawn',
     checkedPsdEdit(edit), current.selection.kind === 'core_pattern' ? 'core_pattern' : 'element')
   await service.replaceElementImage(current.selection.objectId, asset, version)
